@@ -1,0 +1,53 @@
+import { Annotation } from "@langchain/langgraph";
+import type { ProductData, VideoScript, UserPreferences } from "../types";
+
+// Define the state schema for the video generation workflow
+export const VideoGenerationState = Annotation.Root({
+  // Input
+  sourceUrl: Annotation<string | null>({
+    reducer: (_, next) => next,
+    default: () => null,
+  }),
+  description: Annotation<string | null>({
+    reducer: (_, next) => next,
+    default: () => null,
+  }),
+  userPreferences: Annotation<UserPreferences>({
+    reducer: (_, next) => next,
+    default: () => ({ style: "professional" as const }),
+  }),
+
+  // Agent outputs
+  productData: Annotation<ProductData | null>({
+    reducer: (_, next) => next,
+    default: () => null,
+  }),
+  videoScript: Annotation<VideoScript | null>({
+    reducer: (_, next) => next,
+    default: () => null,
+  }),
+  remotionCode: Annotation<string | null>({
+    reducer: (_, next) => next,
+    default: () => null,
+  }),
+
+  // Status tracking
+  currentStep: Annotation<
+    "idle" | "scraping" | "scripting" | "generating" | "complete" | "error"
+  >({
+    reducer: (_, next) => next,
+    default: () => "idle",
+  }),
+  errors: Annotation<string[]>({
+    reducer: (current, next) => [...current, ...next],
+    default: () => [],
+  }),
+
+  // Metadata
+  projectId: Annotation<string | null>({
+    reducer: (_, next) => next,
+    default: () => null,
+  }),
+});
+
+export type VideoGenerationStateType = typeof VideoGenerationState.State;
