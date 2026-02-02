@@ -10,7 +10,7 @@ import {
   interpolate,
   spring,
 } from "remotion";
-import type { VideoScript } from "@/lib/types";
+import type { VideoScript, VideoScene } from "@/lib/types";
 
 interface VideoPlayerProps {
   script?: VideoScript;
@@ -18,177 +18,410 @@ interface VideoPlayerProps {
   className?: string;
 }
 
-// Dynamically render scenes based on VideoScript
+// ============================================================================
+// PREMIUM ANIMATION PRIMITIVES
+// ============================================================================
+
+const BlurInText: React.FC<{
+  text: string;
+  fontSize?: number;
+  delay?: number;
+  color?: string;
+}> = ({ text, fontSize = 72, delay = 0, color = "#ffffff" }) => {
+  const frame = useCurrentFrame();
+  const f = Math.max(0, frame - delay);
+  const opacity = interpolate(f, [0, 25], [0, 1], {
+    extrapolateRight: "clamp",
+  });
+  const blur = interpolate(f, [0, 25], [15, 0], { extrapolateRight: "clamp" });
+  const y = interpolate(f, [0, 25], [30, 0], { extrapolateRight: "clamp" });
+
+  return (
+    <span
+      style={{
+        fontSize,
+        fontWeight: "bold",
+        fontFamily: "system-ui, sans-serif",
+        color,
+        opacity,
+        filter: `blur(${blur}px)`,
+        transform: `translateY(${y}px)`,
+        display: "inline-block",
+      }}
+    >
+      {text}
+    </span>
+  );
+};
+
+const StaggerWords: React.FC<{
+  text: string;
+  fontSize?: number;
+  delay?: number;
+  staggerDelay?: number;
+  color?: string;
+}> = ({
+  text,
+  fontSize = 32,
+  delay = 0,
+  staggerDelay = 4,
+  color = "#ffffff",
+}) => {
+  const frame = useCurrentFrame();
+  const words = text.split(" ");
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "0.3em",
+        justifyContent: "center",
+        fontSize,
+        fontFamily: "system-ui, sans-serif",
+        color,
+      }}
+    >
+      {words.map((word, i) => {
+        const f = Math.max(0, frame - delay - i * staggerDelay);
+        const opacity = interpolate(f, [0, 15], [0, 1], {
+          extrapolateRight: "clamp",
+        });
+        const y = interpolate(f, [0, 15], [20, 0], {
+          extrapolateRight: "clamp",
+        });
+        return (
+          <span key={i} style={{ opacity, transform: `translateY(${y}px)` }}>
+            {word}
+          </span>
+        );
+      })}
+    </div>
+  );
+};
+
+const ScaleIn: React.FC<{
+  children: React.ReactNode;
+  delay?: number;
+}> = ({ children, delay = 0 }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const f = Math.max(0, frame - delay);
+  const scale = spring({
+    frame: f,
+    fps,
+    from: 0,
+    to: 1,
+    config: { damping: 15 },
+  });
+  const opacity = interpolate(f, [0, 20], [0, 1], {
+    extrapolateRight: "clamp",
+  });
+
+  return (
+    <div style={{ transform: `scale(${scale})`, opacity }}>{children}</div>
+  );
+};
+
+const GradientMeshBackground: React.FC<{
+  primary: string;
+  secondary: string;
+}> = ({ primary, secondary }) => {
+  const frame = useCurrentFrame();
+  const offset = (frame * 0.5) % 100;
+
+  return (
+    <AbsoluteFill
+      style={{
+        background: `
+          radial-gradient(ellipse 80% 80% at ${20 + offset * 0.3}% ${30}%, ${primary}40 0%, transparent 50%),
+          radial-gradient(ellipse 60% 60% at ${80 - offset * 0.2}% ${70}%, ${secondary}40 0%, transparent 45%),
+          linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%)
+        `,
+      }}
+    />
+  );
+};
+
+const GlassCard: React.FC<{
+  children: React.ReactNode;
+  delay?: number;
+}> = ({ children, delay = 0 }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const f = Math.max(0, frame - delay);
+  const scale = spring({
+    frame: f,
+    fps,
+    from: 0.9,
+    to: 1,
+    config: { damping: 15, stiffness: 100 },
+  });
+  const opacity = interpolate(f, [0, 20], [0, 1], {
+    extrapolateRight: "clamp",
+  });
+
+  return (
+    <div
+      style={{
+        background: "rgba(255, 255, 255, 0.08)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderRadius: 24,
+        border: "1px solid rgba(255, 255, 255, 0.15)",
+        padding: 40,
+        opacity,
+        transform: `scale(${scale})`,
+        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+      }}
+    >
+      {children}
+    </div>
+  );
+};
+
+// ============================================================================
+// PREMIUM SCENE RENDERERS
+// ============================================================================
+
+const extractGradientColors = (
+  background: string,
+): { primary: string; secondary: string } => {
+  const hexMatches = background.match(/#[0-9A-Fa-f]{6}/g);
+  if (hexMatches && hexMatches.length >= 2) {
+    return { primary: hexMatches[0], secondary: hexMatches[1] };
+  }
+  if (hexMatches && hexMatches.length === 1) {
+    return { primary: hexMatches[0], secondary: hexMatches[0] };
+  }
+  return { primary: "#1E40AF", secondary: "#3B82F6" };
+};
+
+const PremiumSceneRenderer: React.FC<{ scene: VideoScene }> = ({ scene }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const colors = extractGradientColors(scene.style?.background || "");
+
+  const headline = scene.content.headline || "";
+  const subtext = scene.content.subtext || "";
+  const icon = scene.content.icon || "";
+  const features = scene.content.features || [];
+
+  // Calculate exit animation
+  const duration = scene.endFrame - scene.startFrame;
+  const exitStart = duration - 20;
+  const exitOpacity =
+    frame > exitStart
+      ? interpolate(frame, [exitStart, duration], [1, 0], {
+          extrapolateLeft: "clamp",
+          extrapolateRight: "clamp",
+        })
+      : 1;
+
+  const sceneType = scene.type;
+
+  // Intro Scene with premium animations
+  if (sceneType === "intro") {
+    return (
+      <AbsoluteFill
+        style={{
+          background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`,
+          opacity: exitOpacity,
+        }}
+      >
+        <GradientMeshBackground
+          primary={colors.primary}
+          secondary={colors.secondary}
+        />
+        <AbsoluteFill
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 80,
+            zIndex: 1,
+          }}
+        >
+          {icon && (
+            <ScaleIn delay={0}>
+              <div style={{ fontSize: 80, marginBottom: 20 }}>{icon}</div>
+            </ScaleIn>
+          )}
+          <BlurInText
+            text={headline}
+            fontSize={84}
+            delay={5}
+            color={scene.style.textColor}
+          />
+          <div style={{ marginTop: 30 }}>
+            <StaggerWords
+              text={subtext}
+              fontSize={32}
+              delay={20}
+              color={scene.style.textColor}
+            />
+          </div>
+        </AbsoluteFill>
+      </AbsoluteFill>
+    );
+  }
+
+  // CTA Scene with pulsing animation
+  if (sceneType === "cta") {
+    const pulse = 1 + Math.sin(frame / 15) * 0.05;
+
+    return (
+      <AbsoluteFill
+        style={{
+          background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`,
+          opacity: exitOpacity,
+        }}
+      >
+        <GradientMeshBackground
+          primary={colors.secondary}
+          secondary={colors.primary}
+        />
+        <AbsoluteFill
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 80,
+            zIndex: 1,
+          }}
+        >
+          {icon && (
+            <ScaleIn delay={0}>
+              <div
+                style={{
+                  fontSize: 100,
+                  marginBottom: 30,
+                  transform: `scale(${pulse})`,
+                }}
+              >
+                {icon}
+              </div>
+            </ScaleIn>
+          )}
+          <BlurInText
+            text={headline}
+            fontSize={78}
+            delay={10}
+            color={scene.style.textColor}
+          />
+          <div style={{ marginTop: 30 }}>
+            <StaggerWords
+              text={subtext}
+              fontSize={36}
+              delay={30}
+              staggerDelay={6}
+              color={scene.style.accentColor || scene.style.textColor}
+            />
+          </div>
+        </AbsoluteFill>
+      </AbsoluteFill>
+    );
+  }
+
+  // Feature Scene with glass cards
+  return (
+    <AbsoluteFill
+      style={{
+        background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`,
+        opacity: exitOpacity,
+      }}
+    >
+      <GradientMeshBackground
+        primary={colors.primary}
+        secondary={colors.secondary}
+      />
+      <AbsoluteFill
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 60,
+          zIndex: 1,
+        }}
+      >
+        {icon && (
+          <ScaleIn delay={0}>
+            <div style={{ fontSize: 70, marginBottom: 20 }}>{icon}</div>
+          </ScaleIn>
+        )}
+        <BlurInText
+          text={headline}
+          fontSize={72}
+          delay={5}
+          color={scene.style.textColor}
+        />
+        <div style={{ marginTop: 20, marginBottom: 40 }}>
+          <StaggerWords
+            text={subtext}
+            fontSize={28}
+            delay={20}
+            color={scene.style.textColor}
+          />
+        </div>
+
+        {/* Feature Cards */}
+        {features.length > 0 && (
+          <div
+            style={{
+              display: "flex",
+              gap: 30,
+              flexWrap: "wrap",
+              justifyContent: "center",
+              maxWidth: 1000,
+            }}
+          >
+            {features.map((feature, i) => (
+              <GlassCard key={i} delay={40 + i * 15}>
+                <div
+                  style={{
+                    textAlign: "center",
+                    color: scene.style.textColor,
+                    fontFamily: "system-ui",
+                  }}
+                >
+                  <div style={{ fontSize: 48, marginBottom: 10 }}>
+                    {feature.icon || "✨"}
+                  </div>
+                  <div style={{ fontSize: 24, fontWeight: "bold" }}>
+                    {feature.title}
+                  </div>
+                  <div style={{ fontSize: 16, opacity: 0.8, marginTop: 8 }}>
+                    {feature.description}
+                  </div>
+                </div>
+              </GlassCard>
+            ))}
+          </div>
+        )}
+      </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+
+// ============================================================================
+// DYNAMIC COMPOSITION - Uses Premium Animations
+// ============================================================================
+
 const DynamicComposition: React.FC<{ script: VideoScript }> = ({ script }) => {
   return (
-    <AbsoluteFill>
+    <AbsoluteFill style={{ backgroundColor: "#0f0f1a" }}>
       {script.scenes.map((scene) => (
         <Sequence
           key={scene.id}
           from={scene.startFrame}
           durationInFrames={scene.endFrame - scene.startFrame}
         >
-          <SceneRenderer scene={scene} />
+          <PremiumSceneRenderer scene={scene} />
         </Sequence>
       ))}
-    </AbsoluteFill>
-  );
-};
-
-const SceneRenderer: React.FC<{ scene: VideoScript["scenes"][0] }> = ({
-  scene,
-}) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const duration = scene.endFrame - scene.startFrame;
-
-  // Animation calculations based on scene.animation.enter
-  const getEnterAnimation = () => {
-    switch (scene.animation.enter) {
-      case "fade":
-        return {
-          opacity: interpolate(frame, [0, 20], [0, 1], {
-            extrapolateRight: "clamp",
-          }),
-          transform: "none",
-        };
-      case "slide-up":
-        return {
-          opacity: interpolate(frame, [0, 20], [0, 1], {
-            extrapolateRight: "clamp",
-          }),
-          transform: `translateY(${interpolate(frame, [0, 20], [50, 0], { extrapolateRight: "clamp" })}px)`,
-        };
-      case "scale":
-        const scale = spring({ frame, fps, config: { damping: 12, stiffness: 100 } });
-        return {
-          opacity: interpolate(frame, [0, 15], [0, 1], {
-            extrapolateRight: "clamp",
-          }),
-          transform: `scale(${scale})`,
-        };
-      case "reveal":
-        return {
-          opacity: 1,
-          clipPath: `inset(0 ${interpolate(frame, [0, 25], [100, 0], { extrapolateRight: "clamp" })}% 0 0)`,
-          transform: "none",
-        };
-      case "typewriter":
-      default:
-        return {
-          opacity: interpolate(frame, [0, 15], [0, 1], {
-            extrapolateRight: "clamp",
-          }),
-          transform: "none",
-        };
-    }
-  };
-
-  // Exit animation
-  const getExitAnimation = () => {
-    const exitStart = duration - 15;
-    if (frame < exitStart) return {};
-
-    switch (scene.animation.exit) {
-      case "fade":
-        return {
-          opacity: interpolate(frame, [exitStart, duration], [1, 0], {
-            extrapolateLeft: "clamp",
-          }),
-        };
-      case "slide-down":
-        return {
-          transform: `translateY(${interpolate(frame, [exitStart, duration], [0, 50], { extrapolateLeft: "clamp" })}px)`,
-          opacity: interpolate(frame, [exitStart, duration], [1, 0], {
-            extrapolateLeft: "clamp",
-          }),
-        };
-      case "scale-out":
-        return {
-          transform: `scale(${interpolate(frame, [exitStart, duration], [1, 0.8], { extrapolateLeft: "clamp" })})`,
-          opacity: interpolate(frame, [exitStart, duration], [1, 0], {
-            extrapolateLeft: "clamp",
-          }),
-        };
-      default:
-        return {};
-    }
-  };
-
-  const enterStyle = getEnterAnimation();
-  const exitStyle = getExitAnimation();
-  const combinedStyle = { ...enterStyle, ...exitStyle };
-
-  const getFontSize = () => {
-    switch (scene.style.fontSize) {
-      case "large":
-        return { headline: 64, subtext: 28 };
-      case "medium":
-        return { headline: 48, subtext: 22 };
-      case "small":
-        return { headline: 36, subtext: 18 };
-    }
-  };
-
-  const fontSize = getFontSize();
-
-  return (
-    <AbsoluteFill
-      style={{
-        background: scene.style.background,
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 60,
-      }}
-    >
-      <div
-        style={{
-          textAlign: "center",
-          maxWidth: "80%",
-          ...combinedStyle,
-        }}
-      >
-        {scene.content.headline && (
-          <h1
-            style={{
-              color: scene.style.textColor,
-              fontSize: fontSize.headline,
-              fontWeight: "bold",
-              margin: 0,
-              lineHeight: 1.2,
-            }}
-          >
-            {scene.animation.enter === "typewriter"
-              ? scene.content.headline.slice(
-                  0,
-                  Math.floor(
-                    interpolate(
-                      frame,
-                      [0, scene.content.headline.length * 2],
-                      [0, scene.content.headline.length],
-                      { extrapolateRight: "clamp" }
-                    )
-                  )
-                )
-              : scene.content.headline}
-          </h1>
-        )}
-        {scene.content.subtext && (
-          <p
-            style={{
-              color: scene.style.textColor,
-              fontSize: fontSize.subtext,
-              marginTop: 20,
-              opacity: interpolate(frame, [20, 40], [0, 0.8], {
-                extrapolateRight: "clamp",
-                extrapolateLeft: "clamp",
-              }),
-            }}
-          >
-            {scene.content.subtext}
-          </p>
-        )}
-      </div>
     </AbsoluteFill>
   );
 };
@@ -198,7 +431,11 @@ const PlaceholderComposition: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const scale = spring({ frame, fps, config: { damping: 12, stiffness: 100 } });
+  const scale = spring({
+    frame,
+    fps,
+    config: { damping: 12, stiffness: 100 },
+  });
   const opacity = interpolate(frame, [0, 30], [0, 1], {
     extrapolateRight: "clamp",
   });
@@ -211,11 +448,13 @@ const PlaceholderComposition: React.FC = () => {
         alignItems: "center",
       }}
     >
+      <GradientMeshBackground primary="#667eea" secondary="#764ba2" />
       <div
         style={{
           textAlign: "center",
           opacity,
           transform: `scale(${scale})`,
+          zIndex: 1,
         }}
       >
         <div style={{ fontSize: 72, marginBottom: 20 }}>🎬</div>
@@ -242,6 +481,10 @@ const PlaceholderComposition: React.FC = () => {
     </AbsoluteFill>
   );
 };
+
+// ============================================================================
+// VIDEO PLAYER COMPONENT
+// ============================================================================
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   script,
@@ -343,7 +586,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
               </svg>
             ) : (
-              <svg className="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-5 h-5 ml-0.5"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path d="M8 5v14l11-7z" />
               </svg>
             )}

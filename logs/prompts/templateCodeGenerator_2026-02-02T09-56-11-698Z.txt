@@ -1,0 +1,614 @@
+================================================================================
+AGENT: templateCodeGenerator
+TIMESTAMP: 2026-02-02T09:56:11.698Z
+================================================================================
+
+=== SYSTEM PROMPT ===
+TEMPLATE-BASED (no LLM)
+
+=== USER PROMPT ===
+Video Script: {
+  "totalDuration": 1140,
+  "scenes": [
+    {
+      "id": "scene-hook",
+      "startFrame": 0,
+      "endFrame": 90,
+      "type": "intro",
+      "content": {
+        "headline": "THE END OF",
+        "subtext": "\"GOOD ENOUGH\" AI",
+        "image": null,
+        "icon": null,
+        "stats": null,
+        "features": null
+      },
+      "animation": {
+        "enter": "encrypted-text",
+        "exit": "zoom-out",
+        "staggerDelay": 5
+      },
+      "style": {
+        "background": "linear-gradient(180deg, #0f172a 0%, #1E40AF 100%)",
+        "textColor": "#ffffff",
+        "accentColor": "#60A5FA",
+        "fontSize": "large",
+        "layout": "centered",
+        "cardStyle": "none"
+      }
+    },
+    {
+      "id": "scene-reveal",
+      "startFrame": 90,
+      "endFrame": 240,
+      "type": "intro",
+      "content": {
+        "headline": "REMAWT",
+        "subtext": "High-Fidelity Physics Meets Imagination",
+        "image": null,
+        "icon": null,
+        "stats": null,
+        "features": null
+      },
+      "animation": {
+        "enter": "scale",
+        "exit": "slide-up",
+        "staggerDelay": 8
+      },
+      "style": {
+        "background": "linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%)",
+        "textColor": "#ffffff",
+        "accentColor": "#60A5FA",
+        "fontSize": "large",
+        "layout": "centered",
+        "cardStyle": "spotlight"
+      }
+    },
+    {
+      "id": "scene-feature-1",
+      "startFrame": 240,
+      "endFrame": 480,
+      "type": "feature",
+      "content": {
+        "headline": "CINEMATIC POWER",
+        "subtext": "From Concept to 4K in Seconds",
+        "image": null,
+        "icon": "⚡",
+        "stats": null,
+        "features": [
+          {
+            "icon": "🎬",
+            "title": "Text-to-Video",
+            "description": "Photorealistic Renders"
+          },
+          {
+            "icon": "✨",
+            "title": "4K Resolution",
+            "description": "Instant Generation"
+          }
+        ]
+      },
+      "animation": {
+        "enter": "stagger-words",
+        "exit": "blur-out",
+        "staggerDelay": 5
+      },
+      "style": {
+        "background": "linear-gradient(135deg, #000000 0%, #1E40AF 100%)",
+        "textColor": "#ffffff",
+        "accentColor": "#3B82F6",
+        "fontSize": "medium",
+        "layout": "split",
+        "cardStyle": "glass"
+      }
+    },
+    {
+      "id": "scene-feature-2",
+      "startFrame": 480,
+      "endFrame": 720,
+      "type": "feature",
+      "content": {
+        "headline": "NATIVE AUDIO SYNC",
+        "subtext": "Remawt doesn't just make clips. It makes cinema.",
+        "image": null,
+        "icon": "🔊",
+        "stats": null,
+        "features": [
+          {
+            "icon": "🎵",
+            "title": "Auto-Score",
+            "description": "Beats matched to motion"
+          },
+          {
+            "icon": "🎙️",
+            "title": "Voiceover",
+            "description": "Lip-sync precision"
+          },
+          {
+            "icon": "🎚️",
+            "title": "SFX",
+            "description": "Physics-based sound"
+          }
+        ]
+      },
+      "animation": {
+        "enter": "blur-in-up",
+        "exit": "fade",
+        "staggerDelay": 6
+      },
+      "style": {
+        "background": "linear-gradient(45deg, #1E40AF 0%, #3B82F6 50%, #0f172a 100%)",
+        "textColor": "#ffffff",
+        "accentColor": "#60A5FA",
+        "fontSize": "medium",
+        "layout": "bento",
+        "cardStyle": "glass"
+      }
+    },
+    {
+      "id": "scene-feature-3",
+      "startFrame": 720,
+      "endFrame": 930,
+      "type": "feature",
+      "content": {
+        "headline": "PIXEL PERFECT",
+        "subtext": "No glitchy artifacts. Just raw consistency.",
+        "image": null,
+        "icon": "👁️",
+        "stats": [
+          {
+            "value": 100,
+            "label": "Consistency",
+            "suffix": "%"
+          },
+          {
+            "value": 0,
+            "label": "Hallucinations",
+            "suffix": "%"
+          }
+        ],
+        "features": null
+      },
+      "animation": {
+        "enter": "gradient-text",
+        "exit": "zoom-out",
+        "staggerDelay": 5
+      },
+      "style": {
+        "background": "linear-gradient(180deg, #0f172a 0%, #1E40AF 100%)",
+        "textColor": "#ffffff",
+        "accentColor": "#60A5FA",
+        "fontSize": "medium",
+        "layout": "centered",
+        "cardStyle": "floating"
+      }
+    },
+    {
+      "id": "scene-cta",
+      "startFrame": 930,
+      "endFrame": 1140,
+      "type": "cta",
+      "content": {
+        "headline": "YOUR VISION.",
+        "subtext": "UNCOMPROMISED.",
+        "image": null,
+        "icon": null,
+        "stats": null,
+        "features": [
+          {
+            "icon": "🚀",
+            "title": "Start Generating",
+            "description": "remawt.com"
+          }
+        ]
+      },
+      "animation": {
+        "enter": "flip-up",
+        "exit": "fade",
+        "staggerDelay": 10
+      },
+      "style": {
+        "background": "linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%)",
+        "textColor": "#ffffff",
+        "accentColor": "#1E40AF",
+        "fontSize": "large",
+        "layout": "centered",
+        "cardStyle": "none"
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "afterScene": "scene-hook",
+      "type": "zoom-through",
+      "duration": 30,
+      "direction": "up"
+    },
+    {
+      "afterScene": "scene-reveal",
+      "type": "scroll-vertical",
+      "duration": 30,
+      "direction": "down"
+    },
+    {
+      "afterScene": "scene-feature-1",
+      "type": "scroll-horizontal",
+      "duration": 30,
+      "direction": "left"
+    },
+    {
+      "afterScene": "scene-feature-2",
+      "type": "morph",
+      "duration": 30,
+      "direction": null
+    },
+    {
+      "afterScene": "scene-feature-3",
+      "type": "zoom-through",
+      "duration": 40,
+      "direction": "up"
+    }
+  ],
+  "music": {
+    "tempo": 120,
+    "mood": "energetic"
+  }
+}
+
+=== RESPONSE ===
+// Auto-generated Premium Remotion Video
+// Generated at: 2026-02-02T09:56:11.695Z
+import React from 'react';
+import {
+  useCurrentFrame,
+  useVideoConfig,
+  AbsoluteFill,
+  Sequence,
+  interpolate,
+  spring,
+} from 'remotion';
+
+// ============================================================================
+// ANIMATION PRIMITIVES
+// ============================================================================
+
+const BlurInText: React.FC<{
+  text: string;
+  fontSize?: number;
+  delay?: number;
+  color?: string;
+}> = ({ text, fontSize = 72, delay = 0, color = '#ffffff' }) => {
+  const frame = useCurrentFrame();
+  const f = Math.max(0, frame - delay);
+  const opacity = interpolate(f, [0, 25], [0, 1], { extrapolateRight: 'clamp' });
+  const blur = interpolate(f, [0, 25], [15, 0], { extrapolateRight: 'clamp' });
+  const y = interpolate(f, [0, 25], [30, 0], { extrapolateRight: 'clamp' });
+  
+  return (
+    <span style={{
+      fontSize,
+      fontWeight: 'bold',
+      fontFamily: 'system-ui, sans-serif',
+      color,
+      opacity,
+      filter: `blur(${blur}px)`,
+      transform: `translateY(${y}px)`,
+      display: 'inline-block',
+    }}>
+      {text}
+    </span>
+  );
+};
+
+const StaggerWords: React.FC<{
+  text: string;
+  fontSize?: number;
+  delay?: number;
+  staggerDelay?: number;
+  color?: string;
+}> = ({ text, fontSize = 32, delay = 0, staggerDelay = 4, color = '#ffffff' }) => {
+  const frame = useCurrentFrame();
+  const words = text.split(' ');
+  
+  return (
+    <div style={{ 
+      display: 'flex', 
+      flexWrap: 'wrap', 
+      gap: '0.3em', 
+      justifyContent: 'center',
+      fontSize,
+      fontFamily: 'system-ui, sans-serif',
+      color,
+    }}>
+      {words.map((word, i) => {
+        const f = Math.max(0, frame - delay - i * staggerDelay);
+        const opacity = interpolate(f, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
+        const y = interpolate(f, [0, 15], [20, 0], { extrapolateRight: 'clamp' });
+        return (
+          <span key={i} style={{ opacity, transform: `translateY(${y}px)` }}>
+            {word}
+          </span>
+        );
+      })}
+    </div>
+  );
+};
+
+const ScaleIn: React.FC<{
+  children: React.ReactNode;
+  delay?: number;
+}> = ({ children, delay = 0 }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const f = Math.max(0, frame - delay);
+  const scale = spring({ frame: f, fps, from: 0, to: 1, config: { damping: 15 } });
+  const opacity = interpolate(f, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
+  
+  return (
+    <div style={{ transform: `scale(${scale})`, opacity }}>
+      {children}
+    </div>
+  );
+};
+
+const GradientMeshBackground: React.FC<{
+  primary: string;
+  secondary: string;
+}> = ({ primary, secondary }) => {
+  const frame = useCurrentFrame();
+  const offset = (frame * 0.5) % 100;
+  
+  return (
+    <AbsoluteFill style={{
+      background: `
+        radial-gradient(ellipse 80% 80% at ${20 + offset * 0.3}% ${30}%, ${primary}40 0%, transparent 50%),
+        radial-gradient(ellipse 60% 60% at ${80 - offset * 0.2}% ${70}%, ${secondary}40 0%, transparent 45%),
+        linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%)
+      `,
+    }} />
+  );
+};
+
+const GlassCard: React.FC<{
+  children: React.ReactNode;
+  delay?: number;
+}> = ({ children, delay = 0 }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const f = Math.max(0, frame - delay);
+  const scale = spring({ frame: f, fps, from: 0.9, to: 1, config: { damping: 15, stiffness: 100 } });
+  const opacity = interpolate(f, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
+  
+  return (
+    <div style={{
+      background: 'rgba(255, 255, 255, 0.08)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      borderRadius: 24,
+      border: '1px solid rgba(255, 255, 255, 0.15)',
+      padding: 40,
+      opacity,
+      transform: `scale(${scale})`,
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+    }}>
+      {children}
+    </div>
+  );
+};
+
+// ============================================================================
+// SCENE COMPONENTS
+// ============================================================================
+
+const Scene1: React.FC = () => {
+  return (
+    <AbsoluteFill style={{
+      background: 'linear-gradient(135deg, #0f172a 0%, #1E40AF 100%)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 80,
+    }}>
+      <GradientMeshBackground primary="#0f172a" secondary="#1E40AF" />
+      <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+        
+        <BlurInText text="THE END OF" fontSize={84} delay={5} />
+        <div style={{ marginTop: 30 }}>
+          <StaggerWords text=""GOOD ENOUGH" AI" fontSize={32} delay={20} />
+        </div>
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+const Scene2: React.FC = () => {
+  return (
+    <AbsoluteFill style={{
+      background: 'linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 80,
+    }}>
+      <GradientMeshBackground primary="#1E40AF" secondary="#3B82F6" />
+      <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+        
+        <BlurInText text="REMAWT" fontSize={84} delay={5} />
+        <div style={{ marginTop: 30 }}>
+          <StaggerWords text="High-Fidelity Physics Meets Imagination" fontSize={32} delay={20} />
+        </div>
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+const Scene3: React.FC = () => {
+  return (
+    <AbsoluteFill style={{
+      background: 'linear-gradient(135deg, #000000 0%, #1E40AF 100%)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 60,
+    }}>
+      <GradientMeshBackground primary="#000000" secondary="#1E40AF" />
+      <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', width: '100%' }}>
+        <ScaleIn delay={0}><div style={{ fontSize: 70, marginBottom: 20 }}>⚡</div></ScaleIn>
+        <BlurInText text="CINEMATIC POWER" fontSize={72} delay={5} />
+        <div style={{ marginTop: 20, marginBottom: 40 }}>
+          <StaggerWords text="From Concept to 4K in Seconds" fontSize={28} delay={20} />
+        </div>
+        
+        <div style={{ display: 'flex', gap: 30, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 1000 }}>
+          
+          <GlassCard delay={40}>
+            <div style={{ textAlign: 'center', color: '#ffffff', fontFamily: 'system-ui' }}>
+              <div style={{ fontSize: 48, marginBottom: 10 }}>🎬</div>
+              <div style={{ fontSize: 24, fontWeight: 'bold' }}>Text-to-Video</div>
+              <div style={{ fontSize: 16, opacity: 0.8, marginTop: 8 }}>Photorealistic Renders</div>
+            </div>
+          </GlassCard>
+          <GlassCard delay={55}>
+            <div style={{ textAlign: 'center', color: '#ffffff', fontFamily: 'system-ui' }}>
+              <div style={{ fontSize: 48, marginBottom: 10 }}>✨</div>
+              <div style={{ fontSize: 24, fontWeight: 'bold' }}>4K Resolution</div>
+              <div style={{ fontSize: 16, opacity: 0.8, marginTop: 8 }}>Instant Generation</div>
+            </div>
+          </GlassCard>
+        </div>
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+const Scene4: React.FC = () => {
+  return (
+    <AbsoluteFill style={{
+      background: 'linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 60,
+    }}>
+      <GradientMeshBackground primary="#1E40AF" secondary="#3B82F6" />
+      <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', width: '100%' }}>
+        <ScaleIn delay={0}><div style={{ fontSize: 70, marginBottom: 20 }}>🔊</div></ScaleIn>
+        <BlurInText text="NATIVE AUDIO SYNC" fontSize={72} delay={5} />
+        <div style={{ marginTop: 20, marginBottom: 40 }}>
+          <StaggerWords text="Remawt doesn't just make clips. It makes cinema." fontSize={28} delay={20} />
+        </div>
+        
+        <div style={{ display: 'flex', gap: 30, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 1000 }}>
+          
+          <GlassCard delay={40}>
+            <div style={{ textAlign: 'center', color: '#ffffff', fontFamily: 'system-ui' }}>
+              <div style={{ fontSize: 48, marginBottom: 10 }}>🎵</div>
+              <div style={{ fontSize: 24, fontWeight: 'bold' }}>Auto-Score</div>
+              <div style={{ fontSize: 16, opacity: 0.8, marginTop: 8 }}>Beats matched to motion</div>
+            </div>
+          </GlassCard>
+          <GlassCard delay={55}>
+            <div style={{ textAlign: 'center', color: '#ffffff', fontFamily: 'system-ui' }}>
+              <div style={{ fontSize: 48, marginBottom: 10 }}>🎙️</div>
+              <div style={{ fontSize: 24, fontWeight: 'bold' }}>Voiceover</div>
+              <div style={{ fontSize: 16, opacity: 0.8, marginTop: 8 }}>Lip-sync precision</div>
+            </div>
+          </GlassCard>
+          <GlassCard delay={70}>
+            <div style={{ textAlign: 'center', color: '#ffffff', fontFamily: 'system-ui' }}>
+              <div style={{ fontSize: 48, marginBottom: 10 }}>🎚️</div>
+              <div style={{ fontSize: 24, fontWeight: 'bold' }}>SFX</div>
+              <div style={{ fontSize: 16, opacity: 0.8, marginTop: 8 }}>Physics-based sound</div>
+            </div>
+          </GlassCard>
+        </div>
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+const Scene5: React.FC = () => {
+  return (
+    <AbsoluteFill style={{
+      background: 'linear-gradient(135deg, #0f172a 0%, #1E40AF 100%)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 60,
+    }}>
+      <GradientMeshBackground primary="#0f172a" secondary="#1E40AF" />
+      <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', width: '100%' }}>
+        <ScaleIn delay={0}><div style={{ fontSize: 70, marginBottom: 20 }}>👁️</div></ScaleIn>
+        <BlurInText text="PIXEL PERFECT" fontSize={72} delay={5} />
+        <div style={{ marginTop: 20, marginBottom: 40 }}>
+          <StaggerWords text="No glitchy artifacts. Just raw consistency." fontSize={28} delay={20} />
+        </div>
+        
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+const Scene6: React.FC = () => {
+  const frame = useCurrentFrame();
+  const pulse = 1 + Math.sin(frame / 15) * 0.05;
+  
+  return (
+    <AbsoluteFill style={{
+      background: 'linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 80,
+    }}>
+      <GradientMeshBackground primary="#60A5FA" secondary="#3B82F6" />
+      <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+        
+        <BlurInText text="YOUR VISION." fontSize={78} delay={10} />
+        <div style={{ marginTop: 30 }}>
+          <StaggerWords text="UNCOMPROMISED." fontSize={36} delay={30} staggerDelay={6} />
+        </div>
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+// ============================================================================
+// MAIN COMPOSITION
+// ============================================================================
+
+const ProductVideo: React.FC = () => {
+  return (
+    <AbsoluteFill style={{ backgroundColor: '#0f0f1a' }}>
+      <Sequence from={0} durationInFrames={90}>
+        <Scene1 />
+      </Sequence>
+      <Sequence from={90} durationInFrames={150}>
+        <Scene2 />
+      </Sequence>
+      <Sequence from={240} durationInFrames={240}>
+        <Scene3 />
+      </Sequence>
+      <Sequence from={480} durationInFrames={240}>
+        <Scene4 />
+      </Sequence>
+      <Sequence from={720} durationInFrames={210}>
+        <Scene5 />
+      </Sequence>
+      <Sequence from={930} durationInFrames={210}>
+        <Scene6 />
+      </Sequence>
+    </AbsoluteFill>
+  );
+};
+
+export default ProductVideo;
+
+
+================================================================================

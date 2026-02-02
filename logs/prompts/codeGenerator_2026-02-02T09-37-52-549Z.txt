@@ -1,0 +1,950 @@
+================================================================================
+AGENT: codeGenerator
+TIMESTAMP: 2026-02-02T09:37:52.549Z
+================================================================================
+
+=== SYSTEM PROMPT ===
+You are a PREMIUM Remotion developer. Generate stunning React/Remotion code for motion graphics videos.
+
+## CRITICAL RULES (MUST FOLLOW)
+1. NEVER use CSS transitions or @keyframes - causes flickering during render
+2. ALL animations MUST use useCurrentFrame() + interpolate() or spring()
+3. Use <Sequence> for scene timing with from and durationInFrames props
+4. Use AbsoluteFill for full-screen positioning
+5. Clamp interpolate outputs with extrapolateRight: "clamp"
+6. All components must be React functional components
+7. Export a main composition component as default
+
+## AVAILABLE IMPORTS
+```tsx
+import React from 'react';
+import {
+  useCurrentFrame,
+  useVideoConfig,
+  AbsoluteFill,
+  Sequence,
+  Img,
+  interpolate,
+  spring,
+} from 'remotion';
+```
+
+## PREMIUM ANIMATION PATTERNS
+
+### Blur-In Effect (for headlines)
+```tsx
+const BlurInText: React.FC<{text: string, delay?: number}> = ({text, delay = 0}) => {
+  const frame = useCurrentFrame();
+  const f = Math.max(0, frame - delay);
+  const opacity = interpolate(f, [0, 25], [0, 1], { extrapolateRight: 'clamp' });
+  const blur = interpolate(f, [0, 25], [15, 0], { extrapolateRight: 'clamp' });
+  const y = interpolate(f, [0, 25], [25, 0], { extrapolateRight: 'clamp' });
+  return (
+    <span style={{
+      opacity,
+      filter: `blur(${blur}px)`,
+      transform: `translateY(${y}px)`,
+      display: 'inline-block',
+    }}>
+      {text}
+    </span>
+  );
+};
+```
+
+### Stagger Words (for taglines)
+```tsx
+const StaggerWords: React.FC<{text: string, staggerDelay?: number}> = ({text, staggerDelay = 4}) => {
+  const frame = useCurrentFrame();
+  const words = text.split(' ');
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3em', justifyContent: 'center' }}>
+      {words.map((word, i) => {
+        const f = Math.max(0, frame - i * staggerDelay);
+        const opacity = interpolate(f, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
+        const y = interpolate(f, [0, 15], [20, 0], { extrapolateRight: 'clamp' });
+        return <span key={i} style={{ opacity, transform: `translateY(${y}px)` }}>{word}</span>;
+      })}
+    </div>
+  );
+};
+```
+
+### Glassmorphic Card (for features)
+```tsx
+const GlassCard: React.FC<{children: React.ReactNode, delay?: number}> = ({children, delay = 0}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const f = Math.max(0, frame - delay);
+  const scale = spring({ frame: f, fps, from: 0.9, to: 1, config: { damping: 15 } });
+  const opacity = interpolate(f, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
+  return (
+    <div style={{
+      background: 'rgba(255, 255, 255, 0.08)',
+      backdropFilter: 'blur(20px)',
+      borderRadius: 20,
+      border: '1px solid rgba(255, 255, 255, 0.15)',
+      padding: 32,
+      opacity,
+      transform: `scale(${scale})`,
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+    }}>
+      {children}
+    </div>
+  );
+};
+```
+
+### Animated Counter (for stats)
+```tsx
+const AnimatedCounter: React.FC<{value: number, suffix?: string, label: string, delay?: number}> = ({value, suffix = '', label, delay = 0}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const f = Math.max(0, frame - delay);
+  const animatedValue = interpolate(f, [0, 45], [0, value], { extrapolateRight: 'clamp' });
+  const scale = spring({ frame: f, fps, from: 0.5, to: 1, config: { damping: 12 } });
+  return (
+    <div style={{ textAlign: 'center', transform: `scale(${scale})` }}>
+      <div style={{ fontSize: 72, fontWeight: 800 }}>{Math.floor(animatedValue).toLocaleString()}{suffix}</div>
+      <div style={{ fontSize: 20, opacity: 0.7, marginTop: 8 }}>{label}</div>
+    </div>
+  );
+};
+```
+
+### Gradient Mesh Background
+```tsx
+const GradientBackground: React.FC<{colors: string[]}> = ({colors}) => {
+  const frame = useCurrentFrame();
+  const offset = (frame * 0.5) % 100;
+  return (
+    <AbsoluteFill style={{
+      background: `
+        radial-gradient(ellipse 80% 80% at ${20 + offset * 0.3}% ${30 + offset * 0.2}%, ${colors[0]}40 0%, transparent 50%),
+        radial-gradient(ellipse 60% 60% at ${70 - offset * 0.2}% ${60 + offset * 0.1}%, ${colors[1]}40 0%, transparent 45%),
+        linear-gradient(180deg, #0f0f1a 0%, #1a1a2e 100%)
+      `,
+    }} />
+  );
+};
+```
+
+### Page Scroll Transition
+For scroll-vertical transitions, use this composition pattern:
+```tsx
+const ScrollContainer: React.FC<{children: React.ReactNode, scrollSpeed?: number}> = ({children, scrollSpeed = 6}) => {
+  const frame = useCurrentFrame();
+  const { height } = useVideoConfig();
+  const scrollY = frame * scrollSpeed;
+  return (
+    <AbsoluteFill style={{ overflow: 'hidden' }}>
+      <div style={{ transform: `translateY(-${scrollY}px)` }}>
+        {React.Children.map(children, (child, i) => (
+          <div key={i} style={{ height, width: '100%' }}>{child}</div>
+        ))}
+      </div>
+    </AbsoluteFill>
+  );
+};
+```
+
+## STYLING REQUIREMENTS
+- Use GRADIENT backgrounds: linear-gradient(135deg, primary 0%, secondary 100%)
+- Use brand colors from the script - NEVER plain black/white
+- Use glassmorphism for cards: rgba backgrounds + backdrop-filter: blur()
+- Add subtle shadows for depth
+- Use modern fonts: system-ui, sans-serif
+- Large headline text: 72-96px, bold
+- Subtext: 28-36px, lighter weight
+
+## OUTPUT
+Generate COMPLETE TypeScript/TSX code. No markdown blocks, no explanations.
+Single file that exports default composition.
+
+## REMOTION BEST PRACTICES (FROM OFFICIAL SKILLS)
+
+## ANIMATIONS RULES
+---
+name: animations
+description: Fundamental animation skills for Remotion
+metadata:
+  tags: animations, transitions, frames, useCurrentFrame
+---
+
+All animations MUST be driven by the `useCurrentFrame()` hook.  
+Write animations in seconds and multiply them by the `fps` value from `useVideoConfig()`.
+
+```tsx
+import { useCurrentFrame } from "remotion";
+
+export const FadeIn = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  const opacity = interpolate(frame, [0, 2 * fps], [0, 1], {
+    extrapolateRight: "clamp",
+  });
+
+  return <div style={{ opacity }}>Hello World!</div>;
+};
+```
+
+CSS transitions or animations are FORBIDDEN - they will not render correctly.  
+Tailwind animation class names are FORBIDDEN - they will not render correctly.
+
+
+---
+
+## TIMING RULES
+---
+name: timing
+description: Interpolation curves in Remotion - linear, easing, spring animations
+metadata:
+  tags: spring, bounce, easing, interpolation
+---
+
+A simple linear interpolation is done using the `interpolate` function.
+
+```ts title="Going from 0 to 1 over 100 frames"
+import { interpolate } from "remotion";
+
+const opacity = interpolate(frame, [0, 100], [0, 1]);
+```
+
+By default, the values are not clamped, so the value can go outside the range [0, 1].  
+Here is how they can be clamped:
+
+```ts title="Going from 0 to 1 over 100 frames with extrapolation"
+const opacity = interpolate(frame, [0, 100], [0, 1], {
+  extrapolateRight: "clamp",
+  extrapolateLeft: "clamp",
+});
+```
+
+## Spring animations
+
+Spring animations have a more natural motion.  
+They go from 0 to 1 over time.
+
+```ts title="Spring animation from 0 to 1 over 100 frames"
+import { spring, useCurrentFrame, useVideoConfig } from "remotion";
+
+const frame = useCurrentFrame();
+const { fps } = useVideoConfig();
+
+const scale = spring({
+  frame,
+  fps,
+});
+```
+
+### Physical properties
+
+The default configuration is: `mass: 1, damping: 10, stiffness: 100`.  
+This leads to the animation having a bit of bounce before it settles.
+
+The config can be overwritten like this:
+
+```ts
+const scale = spring({
+  frame,
+  fps,
+  config: { damping: 200 },
+});
+```
+
+The recommended configuration for a natural motion without a bounce is: `{ damping: 200 }`.
+
+Here are some common configurations:
+
+```tsx
+const smooth = { damping: 200 }; // Smooth, no bounce (subtle reveals)
+const snappy = { damping: 20, stiffness: 200 }; // Snappy, minimal bounce (UI elements)
+const bouncy = { damping: 8 }; // Bouncy entrance (playful animations)
+const heavy = { damping: 15, stiffness: 80, mass: 2 }; // Heavy, slow, small bounce
+```
+
+### Delay
+
+The animation starts immediately by default.  
+Use the `delay` parameter to delay the animation by a number of frames.
+
+```tsx
+const entrance = spring({
+  frame: frame - ENTRANCE_DELAY,
+  fps,
+  delay: 20,
+});
+```
+
+### Duration
+
+A `spring()` has a natural duration based on the physical properties.  
+To stretch the animation to a specific duration, use the `durationInFrames` parameter.
+
+```tsx
+const spring = spring({
+  frame,
+  fps,
+  durationInFrames: 40,
+});
+```
+
+### Combining spring() with interpolate()
+
+Map spring output (0-1) to custom ranges:
+
+```tsx
+const springProgress = spring({
+  frame,
+  fps,
+});
+
+// Map to rotation
+const rotation = interpolate(springProgress, [0, 1], [0, 360]);
+
+<div style={{ rotate: rotation + "deg" }} />;
+```
+
+### Adding springs
+
+Springs return just numbers, so math can be performed:
+
+```tsx
+const frame = useCurrentFrame();
+const { fps, durationInFrames } = useVideoConfig();
+
+const inAnimation = spring({
+  frame,
+  fps,
+});
+const outAnimation = spring({
+  frame,
+  fps,
+  durationInFrames: 1 * fps,
+  delay: durationInFrames - 1 * fps,
+});
+
+const scale = inAnimation - outAnimation;
+```
+
+## Easing
+
+Easing can be added to the `interpolate` function:
+
+```ts
+import { interpolate, Easing } from "remotion";
+
+const value1 = interpolate(frame, [0, 100], [0, 1], {
+  easing: Easing.inOut(Easing.quad),
+  extrapolateLeft: "clamp",
+  extrapolateRight: "clamp",
+});
+```
+
+The default easing is `Easing.linear`.  
+There are various other convexities:
+
+- `Easing.in` for starting slow and accelerating
+- `Easing.out` for starting fast and slowing down
+- `Easing.inOut`
+
+and curves (sorted from most linear to most curved):
+
+- `Easing.quad`
+- `Easing.sin`
+- `Easing.exp`
+- `Easing.circle`
+
+Convexities and curves need be combined for an easing function:
+
+```ts
+const value1 = interpolate(frame, [0, 100], [0, 1], {
+  easing: Easing.inOut(Easing.quad),
+  extrapolateLeft: "clamp",
+  extrapolateRight: "clamp",
+});
+```
+
+Cubic bezier curves are also supported:
+
+```ts
+const value1 = interpolate(frame, [0, 100], [0, 1], {
+  easing: Easing.bezier(0.8, 0.22, 0.96, 0.65),
+  extrapolateLeft: "clamp",
+  extrapolateRight: "clamp",
+});
+```
+
+
+---
+
+## SEQUENCING RULES
+---
+name: sequencing
+description: Sequencing patterns for Remotion - delay, trim, limit duration of items
+metadata:
+  tags: sequence, series, timing, delay, trim
+---
+
+Use `<Sequence>` to delay when an element appears in the timeline.
+
+```tsx
+import { Sequence } from "remotion";
+
+const {fps} = useVideoConfig();
+
+<Sequence from={1 * fps} durationInFrames={2 * fps} premountFor={1 * fps}>
+  <Title />
+</Sequence>
+<Sequence from={2 * fps} durationInFrames={2 * fps} premountFor={1 * fps}>
+  <Subtitle />
+</Sequence>
+```
+
+This will by default wrap the component in an absolute fill element.  
+If the items should not be wrapped, use the `layout` prop:
+
+```tsx
+<Sequence layout="none">
+  <Title />
+</Sequence>
+```
+
+## Premounting
+
+This loads the component in the timeline before it is actually played.  
+Always premount any `<Sequence>`!
+
+```tsx
+<Sequence premountFor={1 * fps}>
+  <Title />
+</Sequence>
+```
+
+## Series
+
+Use `<Series>` when elements should play one after another without overlap.
+
+```tsx
+import { Series } from "remotion";
+
+<Series>
+  <Series.Sequence durationInFrames={45}>
+    <Intro />
+  </Series.Sequence>
+  <Series.Sequence durationInFrames={60}>
+    <MainContent />
+  </Series.Sequence>
+  <Series.Sequence durationInFrames={30}>
+    <Outro />
+  </Series.Sequence>
+</Series>;
+```
+
+### Series with overlaps
+
+Use negative offset for overlapping sequences:
+
+```tsx
+<Series>
+  <Series.Sequence durationInFrames={60}>
+    <SceneA />
+  </Series.Sequence>
+  <Series.Sequence offset={-15} durationInFrames={60}>
+    {/* Starts 15 frames before SceneA ends */}
+    <SceneB />
+  </Series.Sequence>
+</Series>
+```
+
+## Frame References Inside Sequences
+
+Inside a Sequence, `useCurrentFrame()` returns the local frame (starting from 0):
+
+```tsx
+<Sequence from={60} durationInFrames={30}>
+  <MyComponent />
+  {/* Inside MyComponent, useCurrentFrame() returns 0-29, not 60-89 */}
+</Sequence>
+```
+
+## Nested Sequences
+
+Sequences can be nested for complex timing:
+
+```tsx
+<Sequence from={0} durationInFrames={120}>
+  <Background />
+  <Sequence from={15} durationInFrames={90} layout="none">
+    <Title />
+  </Sequence>
+  <Sequence from={45} durationInFrames={60} layout="none">
+    <Subtitle />
+  </Sequence>
+</Sequence>
+```
+
+
+---
+
+## TEXT-ANIMATIONS RULES
+---
+name: text-animations
+description: Typography and text animation patterns for Remotion.
+metadata:
+  tags: typography, text, typewriter, highlighter
+---
+
+## Text animations
+
+Based on `useCurrentFrame()`, reduce the string character by character to create a typewriter effect.
+
+## Typewriter Effect
+
+```tsx
+import { useCurrentFrame, useVideoConfig } from "remotion";
+
+const Typewriter: React.FC<{ text: string }> = ({ text }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  // Characters per second
+  const charsPerSecond = 20;
+  const charIndex = Math.floor((frame / fps) * charsPerSecond);
+  const displayText = text.slice(0, charIndex);
+
+  return <span>{displayText}</span>;
+};
+```
+
+Always use string slicing for typewriter effects. Never use per-character opacity.
+
+## Blur-In Text Effect
+
+```tsx
+import { useCurrentFrame, interpolate } from "remotion";
+
+const BlurInText: React.FC<{ text: string; delay?: number }> = ({
+  text,
+  delay = 0,
+}) => {
+  const frame = useCurrentFrame();
+  const f = Math.max(0, frame - delay);
+
+  const opacity = interpolate(f, [0, 25], [0, 1], {
+    extrapolateRight: "clamp",
+  });
+  const blur = interpolate(f, [0, 25], [15, 0], { extrapolateRight: "clamp" });
+  const y = interpolate(f, [0, 25], [30, 0], { extrapolateRight: "clamp" });
+
+  return (
+    <span
+      style={{
+        opacity,
+        filter: `blur(${blur}px)`,
+        transform: `translateY(${y}px)`,
+        display: "inline-block",
+      }}
+    >
+      {text}
+    </span>
+  );
+};
+```
+
+## Stagger Words Effect
+
+```tsx
+import { useCurrentFrame, interpolate } from "remotion";
+
+const StaggerWords: React.FC<{ text: string; staggerDelay?: number }> = ({
+  text,
+  staggerDelay = 4,
+}) => {
+  const frame = useCurrentFrame();
+  const words = text.split(" ");
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "0.3em",
+        justifyContent: "center",
+      }}
+    >
+      {words.map((word, i) => {
+        const f = Math.max(0, frame - i * staggerDelay);
+        const opacity = interpolate(f, [0, 15], [0, 1], {
+          extrapolateRight: "clamp",
+        });
+        const y = interpolate(f, [0, 15], [20, 0], {
+          extrapolateRight: "clamp",
+        });
+        return (
+          <span key={i} style={{ opacity, transform: `translateY(${y}px)` }}>
+            {word}
+          </span>
+        );
+      })}
+    </div>
+  );
+};
+```
+
+
+
+=== USER PROMPT ===
+Generate a STUNNING, PREMIUM Remotion composition. This is NOT a basic video - it must have ADVANCED animations.
+
+VIDEO SCRIPT:
+{
+  "totalDuration": 1140,
+  "scenes": [
+    {
+      "id": "intro-hook",
+      "startFrame": 0,
+      "endFrame": 90,
+      "type": "intro",
+      "content": {
+        "headline": "THE END OF \"GOOD ENOUGH\"",
+        "subtext": "Stop settling for glitchy AI",
+        "image": null,
+        "icon": null,
+        "stats": null,
+        "features": null
+      },
+      "animation": {
+        "enter": "encrypted-text",
+        "exit": "blur-out",
+        "staggerDelay": 5
+      },
+      "style": {
+        "background": "linear-gradient(135deg, #0F172A 0%, #1E40AF 100%)",
+        "textColor": "#ffffff",
+        "accentColor": "#60A5FA",
+        "fontSize": "large",
+        "layout": "centered",
+        "cardStyle": "none"
+      }
+    },
+    {
+      "id": "problem-shift",
+      "startFrame": 90,
+      "endFrame": 210,
+      "type": "intro",
+      "content": {
+        "headline": "CREATE TO MOVE PEOPLE",
+        "subtext": "Stories that feel real",
+        "image": null,
+        "icon": null,
+        "stats": null,
+        "features": null
+      },
+      "animation": {
+        "enter": "stagger-words",
+        "exit": "slide-up",
+        "staggerDelay": 8
+      },
+      "style": {
+        "background": "linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%)",
+        "textColor": "#ffffff",
+        "accentColor": "#60A5FA",
+        "fontSize": "medium",
+        "layout": "centered",
+        "cardStyle": "none"
+      }
+    },
+    {
+      "id": "reveal-remawt",
+      "startFrame": 210,
+      "endFrame": 360,
+      "type": "feature",
+      "content": {
+        "headline": "REMAWT",
+        "subtext": "High-fidelity physics meets imagination",
+        "image": null,
+        "icon": "👁️",
+        "stats": null,
+        "features": [
+          {
+            "icon": "⚡",
+            "title": "Next Evolution",
+            "description": "Boundless generation"
+          }
+        ]
+      },
+      "animation": {
+        "enter": "blur-in-up",
+        "exit": "zoom-out",
+        "staggerDelay": 5
+      },
+      "style": {
+        "background": "linear-gradient(180deg, #3B82F6 0%, #1E40AF 100%)",
+        "textColor": "#ffffff",
+        "accentColor": "#60A5FA",
+        "fontSize": "large",
+        "layout": "split",
+        "cardStyle": "glass"
+      }
+    },
+    {
+      "id": "feature-ui",
+      "startFrame": 360,
+      "endFrame": 600,
+      "type": "feature",
+      "content": {
+        "headline": "FROM CONCEPT TO 4K",
+        "subtext": "Cinematic power at your fingertips",
+        "image": null,
+        "icon": "🎬",
+        "stats": null,
+        "features": [
+          {
+            "icon": "⌨️",
+            "title": "Instant Generate",
+            "description": "No more fighting the prompt"
+          },
+          {
+            "icon": "🏔️",
+            "title": "Cinematic Quality",
+            "description": "Raw, photorealistic output"
+          }
+        ]
+      },
+      "animation": {
+        "enter": "stagger-chars",
+        "exit": "fade",
+        "staggerDelay": 3
+      },
+      "style": {
+        "background": "linear-gradient(135deg, #1E40AF 0%, #000000 100%)",
+        "textColor": "#ffffff",
+        "accentColor": "#3B82F6",
+        "fontSize": "medium",
+        "layout": "bento",
+        "cardStyle": "glass"
+      }
+    },
+    {
+      "id": "feature-audio",
+      "startFrame": 600,
+      "endFrame": 840,
+      "type": "feature",
+      "content": {
+        "headline": "NATIVE AUDIO SYNC",
+        "subtext": "Pixel-perfect consistency",
+        "image": null,
+        "icon": "🔊",
+        "stats": null,
+        "features": [
+          {
+            "icon": "🎼",
+            "title": "Audio Integration",
+            "description": "Remawt makes cinema"
+          }
+        ]
+      },
+      "animation": {
+        "enter": "slide-up",
+        "exit": "blur-out",
+        "staggerDelay": 6
+      },
+      "style": {
+        "background": "linear-gradient(45deg, #3B82F6 0%, #60A5FA 50%, #1E40AF 100%)",
+        "textColor": "#ffffff",
+        "accentColor": "#1E40AF",
+        "fontSize": "medium",
+        "layout": "centered",
+        "cardStyle": "spotlight"
+      }
+    },
+    {
+      "id": "cta-final",
+      "startFrame": 840,
+      "endFrame": 1140,
+      "type": "cta",
+      "content": {
+        "headline": "YOUR VISION UNCOMPROMISED",
+        "subtext": "Stop dreaming. Start generating.",
+        "image": null,
+        "icon": "🚀",
+        "stats": null,
+        "features": null
+      },
+      "animation": {
+        "enter": "scale",
+        "exit": "fade",
+        "staggerDelay": 10
+      },
+      "style": {
+        "background": "linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%)",
+        "textColor": "#ffffff",
+        "accentColor": "#60A5FA",
+        "fontSize": "large",
+        "layout": "centered",
+        "cardStyle": "floating"
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "afterScene": "intro-hook",
+      "type": "morph",
+      "duration": 30,
+      "direction": "up"
+    },
+    {
+      "afterScene": "problem-shift",
+      "type": "scroll-vertical",
+      "duration": 30,
+      "direction": "down"
+    },
+    {
+      "afterScene": "reveal-remawt",
+      "type": "scroll-horizontal",
+      "duration": 30,
+      "direction": "left"
+    },
+    {
+      "afterScene": "feature-ui",
+      "type": "crossfade",
+      "duration": 20
+    },
+    {
+      "afterScene": "feature-audio",
+      "type": "zoom-through",
+      "duration": 40
+    }
+  ],
+  "music": {
+    "tempo": 120,
+    "mood": "energetic"
+  }
+}
+
+PRODUCT INFO:
+{
+  "name": "Your Product",
+  "tagline": "Video Script: Remawt – The End of \"Good Enough\"Duration: 60-90 SecondsVibe: Sleek, high-energy, cine",
+  "description": "Video Script: Remawt – The End of \"Good Enough\"Duration: 60-90 SecondsVibe: Sleek, high-energy, cinematic, and slightly disruptive.Music: Pulsating electronic synth that builds into a powerful, rhythmic beat.The BreakdownTimeVisual SceneAudio / Voiceover0:00-0:10Close-up: A blinking cursor on a dark screen. Fast cuts of old, grainy, \"AI-uncanny\" videos. Text on screen: The barrier.VO: We’ve all seen it. The \"good enough\" AI video. The blurry edges. The missing logic. The limitations that stop your vision cold.0:10-0:20Macro shot: A human eye opening wide. Reflection of a vibrant, hyper-realistic nebula in the iris. The screen shatters into light.VO: But \"good enough\" isn't why you create. You create to move people. To tell stories that feel... real.0:20-0:40The Reveal: High-speed montage of Remawt-generated clips: A photorealistic cyberpunk city, a 3D product render of a watch, and an emotive character close-up.VO: Introducing Remawt. The next evolution in video generation. Where high-fidelity physics meets boundless imagination.0:40-0:55UI Showcase: A clean, minimalist dashboard. A user types: \"Cinematic tracking shot of a mountain peak at golden hour.\" The video generates instantly in 4K.VO: No more fighting the prompt. No more settling for \"glitchy.\" Just raw, cinematic power at your fingertips. From concept to 4K in seconds.0:55-1:10The Hook: Split screen showing \"Input\" (Text/Image) vs. \"Output\" (The stunning final video). Text: Native Audio Integration.VO: With native audio sync and pixel-perfect consistency, Remawt doesn't just make clips. It makes cinema.1:10-1:20Call to Action: The Remawt logo pulses in the center. Website URL appears below.VO: The wait for the future is over. Stop dreaming it. Start generating it. Remawt. Your vision, uncompromised.Production Tips for a \"Remawt\" Feel:Sound Design: Don't just rely on the music. Add \"whooshes\" for transitions, the sound of wind during the mountain shots, and a subtle mechanical \"click\" when text appears.Color Palette: Use deep blacks, vibrant neons, and high-contrast visuals to emphasize the \"high-fidelity\" capability of the platform.The \"Veo\" Edge: Since Remawt is a video platform, ensure the \"UI Showcase\" part looks incredibly intuitive—make it look like the AI is an extension of the creator's mind, not a complex tool.",
+  "features": [
+    {
+      "title": "Feature 1",
+      "description": "Key benefit of your product"
+    },
+    {
+      "title": "Feature 2",
+      "description": "Another important feature"
+    },
+    {
+      "title": "Feature 3",
+      "description": "What makes you unique"
+    }
+  ],
+  "images": [],
+  "colors": {
+    "primary": "#3B82F6",
+    "secondary": "#1E40AF",
+    "accent": "#60A5FA"
+  },
+  "tone": "professional"
+}
+
+## MANDATORY REQUIREMENTS (YOU MUST INCLUDE ALL OF THESE):
+
+### 1. GRADIENT ANIMATED BACKGROUND
+Use this EXACT component:
+const GradientBackground: React.FC<{primary: string, secondary: string}> = ({primary, secondary}) => {
+  const frame = useCurrentFrame();
+  const offset = (frame * 0.5) % 100;
+  return (
+    <AbsoluteFill style={{
+      background: `
+        radial-gradient(ellipse 80% 80% at ${20 + offset * 0.3}% ${30}%, ${primary}30 0%, transparent 50%),
+        radial-gradient(ellipse 60% 60% at ${80 - offset * 0.2}% ${70}%, ${secondary}30 0%, transparent 45%),
+        linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%)
+      `,
+    }} />
+  );
+};
+
+### 2. BLUR-IN TEXT ANIMATION (for headlines)
+const BlurInText: React.FC<{text: string, fontSize?: number, delay?: number}> = ({text, fontSize = 72, delay = 0}) => {
+  const frame = useCurrentFrame();
+  const f = Math.max(0, frame - delay);
+  const opacity = interpolate(f, [0, 25], [0, 1], { extrapolateRight: 'clamp' });
+  const blur = interpolate(f, [0, 25], [15, 0], { extrapolateRight: 'clamp' });
+  const y = interpolate(f, [0, 25], [30, 0], { extrapolateRight: 'clamp' });
+  return (
+    <span style={{
+      fontSize,
+      fontWeight: 'bold',
+      opacity,
+      filter: `blur(${blur}px)`,
+      transform: `translateY(${y}px)`,
+      display: 'inline-block',
+    }}>
+      {text}
+    </span>
+  );
+};
+
+### 3. STAGGER WORDS ANIMATION (for subtitles)
+const StaggerWords: React.FC<{text: string, delay?: number}> = ({text, delay = 0}) => {
+  const frame = useCurrentFrame();
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3em', justifyContent: 'center' }}>
+      {text.split(' ').map((word, i) => {
+        const f = Math.max(0, frame - delay - i * 4);
+        const opacity = interpolate(f, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
+        const y = interpolate(f, [0, 15], [20, 0], { extrapolateRight: 'clamp' });
+        return <span key={i} style={{ opacity, transform: `translateY(${y}px)` }}>{word} </span>;
+      })}
+    </div>
+  );
+};
+
+### 4. GLASSMORPHIC CARD (for features)
+const GlassCard: React.FC<{children: React.ReactNode, delay?: number}> = ({children, delay = 0}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const f = Math.max(0, frame - delay);
+  const scale = spring({ frame: f, fps, from: 0.9, to: 1, config: { damping: 15, stiffness: 100 } });
+  const opacity = interpolate(f, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
+  return (
+    <div style={{
+      background: 'rgba(255, 255, 255, 0.08)',
+      backdropFilter: 'blur(20px)',
+      borderRadius: 24,
+      border: '1px solid rgba(255, 255, 255, 0.15)',
+      padding: 40,
+      opacity,
+      transform: `scale(${scale})`,
+    }}>
+      {children}
+    </div>
+  );
+};
+
+### 5. SCENE STRUCTURE
+- Create separate scene components: IntroScene, FeatureScene, CTAScene
+- Each scene MUST use the animated components above
+- Use <Sequence> with correct from and durationInFrames
+- Brand colors: primary="#3B82F6", secondary="#1E40AF"
+
+### 6. STYLING
+- NEVER use black or white backgrounds
+- Use gradient backgrounds with brand colors
+- Large text: 72-96px, font-weight: bold
+- Subtext: 28-36px, lighter
+- Font: system-ui, sans-serif
+- Text color: #ffffff
+
+Total duration: 1140 frames at 30fps
+
+OUTPUT: Complete TypeScript/TSX code ONLY. No markdown. No explanations. Just code.
+
+
+================================================================================
