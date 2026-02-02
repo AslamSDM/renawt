@@ -1,8 +1,11 @@
-import { codeGeneratorModel } from "./model";
+import {
+  getAnthropicModel,
+  chatWithOpenRouter,
+  isUsingOpenRouter,
+  CODE_GENERATOR_CONFIG,
+} from "./model";
 import type { VideoScript } from "../types";
 import type { VideoGenerationStateType } from "./state";
-
-const model = codeGeneratorModel();
 
 const CODE_GENERATOR_SYSTEM_PROMPT = `You are a Remotion developer. Generate React/Remotion code for product marketing videos.
 
@@ -108,7 +111,7 @@ export default ProductVideo;
 `;
 
 export async function codeGeneratorNode(
-  state: VideoGenerationStateType
+  state: VideoGenerationStateType,
 ): Promise<Partial<VideoGenerationStateType>> {
   console.log("[CodeGenerator] Starting code generator node...");
 
@@ -122,11 +125,7 @@ export async function codeGeneratorNode(
   try {
     const videoScript = state.videoScript;
 
-    const response = await model.invoke([
-      { role: "system", content: CODE_GENERATOR_SYSTEM_PROMPT },
-      {
-        role: "user",
-        content: `Generate a complete Remotion composition for this video script.
+    const userPrompt = `Generate a complete Remotion composition for this video script.
 
 Video Script JSON:
 ${JSON.stringify(videoScript, null, 2)}
@@ -142,17 +141,38 @@ Reference structure (follow this pattern):
 ${CODE_TEMPLATE}
 
 Generate the COMPLETE code. Include all scene components and the main composition.
-Output ONLY TypeScript/TSX code, no markdown code blocks.`,
-      },
-    ]);
+Output ONLY TypeScript/TSX code, no markdown code blocks.`;
 
-    const rawContent = response.content;
-    let codeText: string =
-      typeof rawContent === "string"
-        ? rawContent
-        : Array.isArray(rawContent) && rawContent[0]?.type === "text"
-          ? (rawContent[0] as { type: "text"; text: string }).text
-          : "";
+    let codeText: string;
+
+    if (isUsingOpenRouter()) {
+      // Use OpenRouter for development
+      console.log("[CodeGenerator] Using OpenRouter for development");
+      const response = await chatWithOpenRouter(
+        [
+          { role: "system", content: CODE_GENERATOR_SYSTEM_PROMPT },
+          { role: "user", content: userPrompt },
+        ],
+        CODE_GENERATOR_CONFIG,
+      );
+      codeText = response.content;
+    } else {
+      // Use Anthropic for production
+      console.log("[CodeGenerator] Using Anthropic for production");
+      const model = getAnthropicModel(CODE_GENERATOR_CONFIG);
+      const response = await model.invoke([
+        { role: "system", content: CODE_GENERATOR_SYSTEM_PROMPT },
+        { role: "user", content: userPrompt },
+      ]);
+
+      const rawContent = response.content;
+      codeText =
+        typeof rawContent === "string"
+          ? rawContent
+          : Array.isArray(rawContent) && rawContent[0]?.type === "text"
+            ? (rawContent[0] as { type: "text"; text: string }).text
+            : "";
+    }
 
     // Clean up the code - remove markdown code blocks if present
     codeText = codeText
@@ -161,7 +181,10 @@ Output ONLY TypeScript/TSX code, no markdown code blocks.`,
       .trim();
 
     // Validate the code has required imports
-    if (!codeText.includes("remotion") || !codeText.includes("useCurrentFrame")) {
+    if (
+      !codeText.includes("remotion") ||
+      !codeText.includes("useCurrentFrame")
+    ) {
       throw new Error("Generated code missing required Remotion imports");
     }
 

@@ -1,9 +1,12 @@
-import { scriptWriterModel } from "./model";
+import {
+  isUsingOpenRouter,
+  chatWithOpenRouterMultiTurn,
+  getAnthropicModel,
+  SCRIPT_WRITER_CONFIG,
+} from "./model";
 import type { VideoScript } from "../types";
 import type { VideoGenerationStateType } from "./state";
 import { v4 as uuidv4 } from "uuid";
-
-const model = scriptWriterModel();
 
 const SCRIPT_WRITER_SYSTEM_PROMPT = `You are a video scriptwriter specializing in product marketing videos.
 Given product data, create a compelling 30-60 second video script (at 30fps = 900-1800 frames).
@@ -62,6 +65,27 @@ Guidelines:
 - Use larger fonts for headlines, smaller for supporting text
 - Create smooth flow between scenes`;
 
+async function callModel(systemPrompt: string, userMessage: string): Promise<string> {
+  if (isUsingOpenRouter()) {
+    // Use OpenRouter with reasoning
+    return chatWithOpenRouterMultiTurn(systemPrompt, userMessage, SCRIPT_WRITER_CONFIG);
+  } else {
+    // Use Anthropic Claude directly
+    const model = getAnthropicModel(SCRIPT_WRITER_CONFIG);
+    const response = await model.invoke([
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userMessage },
+    ]);
+
+    const rawContent = response.content;
+    return typeof rawContent === "string"
+      ? rawContent
+      : Array.isArray(rawContent) && rawContent[0]?.type === "text"
+        ? (rawContent[0] as { type: "text"; text: string }).text
+        : "";
+  }
+}
+
 export async function scriptWriterNode(
   state: VideoGenerationStateType
 ): Promise<Partial<VideoGenerationStateType>> {
@@ -96,11 +120,7 @@ export async function scriptWriterNode(
 
     const bpm = preferences.musicBpm || 120;
 
-    const response = await model.invoke([
-      { role: "system", content: SCRIPT_WRITER_SYSTEM_PROMPT },
-      {
-        role: "user",
-        content: `Create a video script for this product:
+    const userMessage = `Create a video script for this product:
 
 Product Name: ${productData.name}
 Tagline: ${productData.tagline}
@@ -127,17 +147,9 @@ Music BPM: ${bpm}
 
 Consider timing transitions to align with beats (every ${Math.round(1800 / bpm)} frames at ${bpm} BPM).
 
-Return ONLY valid JSON.`,
-      },
-    ]);
+Return ONLY valid JSON.`;
 
-    const rawContent = response.content;
-    const responseText: string =
-      typeof rawContent === "string"
-        ? rawContent
-        : Array.isArray(rawContent) && rawContent[0]?.type === "text"
-          ? (rawContent[0] as { type: "text"; text: string }).text
-          : "";
+    const responseText = await callModel(SCRIPT_WRITER_SYSTEM_PROMPT, userMessage);
 
     // Extract JSON from response
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);

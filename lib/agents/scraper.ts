@@ -1,9 +1,12 @@
 import puppeteer from "puppeteer";
-import { scraperModel } from "./model";
+import {
+  isUsingOpenRouter,
+  chatWithOpenRouterMultiTurn,
+  getAnthropicModel,
+  SCRAPER_CONFIG,
+} from "./model";
 import type { ProductData } from "../types";
 import type { VideoGenerationStateType } from "./state";
-
-const model = scraperModel();
 
 const SCRAPER_SYSTEM_PROMPT = `You are a product analyst specializing in extracting marketing information from websites.
 Given a URL and its rendered content (HTML + page text), extract:
@@ -135,6 +138,27 @@ function createProductDataFromDescription(description: string): ProductData {
   };
 }
 
+async function callModel(systemPrompt: string, userMessage: string): Promise<string> {
+  if (isUsingOpenRouter()) {
+    // Use OpenRouter with reasoning
+    return chatWithOpenRouterMultiTurn(systemPrompt, userMessage, SCRAPER_CONFIG);
+  } else {
+    // Use Anthropic Claude directly
+    const model = getAnthropicModel(SCRAPER_CONFIG);
+    const response = await model.invoke([
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userMessage },
+    ]);
+
+    const rawContent = response.content;
+    return typeof rawContent === "string"
+      ? rawContent
+      : Array.isArray(rawContent) && rawContent[0]?.type === "text"
+        ? (rawContent[0] as { type: "text"; text: string }).text
+        : "";
+  }
+}
+
 export async function scraperNode(
   state: VideoGenerationStateType
 ): Promise<Partial<VideoGenerationStateType>> {
@@ -163,12 +187,7 @@ export async function scraperNode(
 
     console.log(`[Scraper] Scraped ${text.length} chars, ${images.length} images`);
 
-    // Use Claude to extract structured product data
-    const response = await model.invoke([
-      { role: "system", content: SCRAPER_SYSTEM_PROMPT },
-      {
-        role: "user",
-        content: `Analyze this website and extract product information:
+    const userMessage = `Analyze this website and extract product information:
 
 URL: ${state.sourceUrl}
 Page Title: ${title}
@@ -181,17 +200,9 @@ ${text}
 Found Images:
 ${images.join("\n")}
 
-Return ONLY valid JSON.`,
-      },
-    ]);
+Return ONLY valid JSON.`;
 
-    const rawContent = response.content;
-    const responseText: string =
-      typeof rawContent === "string"
-        ? rawContent
-        : Array.isArray(rawContent) && rawContent[0]?.type === "text"
-          ? (rawContent[0] as { type: "text"; text: string }).text
-          : "";
+    const responseText = await callModel(SCRAPER_SYSTEM_PROMPT, userMessage);
 
     // Extract JSON from response
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
