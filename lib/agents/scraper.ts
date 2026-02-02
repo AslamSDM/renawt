@@ -138,12 +138,26 @@ function createProductDataFromDescription(description: string): ProductData {
   };
 }
 
-async function callModel(systemPrompt: string, userMessage: string): Promise<string> {
+async function callModel(
+  systemPrompt: string,
+  userMessage: string,
+): Promise<string> {
+  console.log("[Scraper] Calling LLM...");
+  console.log(`[Scraper] User message length: ${userMessage.length} chars`);
+
+  let responseText: string;
+
   if (isUsingOpenRouter()) {
-    // Use OpenRouter with reasoning
-    return chatWithOpenRouterMultiTurn(systemPrompt, userMessage, SCRAPER_CONFIG);
+    // Use Gemini (aliased as OpenRouter)
+    console.log("[Scraper] Using Gemini via isUsingOpenRouter()");
+    responseText = await chatWithOpenRouterMultiTurn(
+      systemPrompt,
+      userMessage,
+      SCRAPER_CONFIG,
+    );
   } else {
     // Use Anthropic Claude directly
+    console.log("[Scraper] Using Anthropic Claude");
     const model = getAnthropicModel(SCRAPER_CONFIG);
     const response = await model.invoke([
       { role: "system", content: systemPrompt },
@@ -151,16 +165,29 @@ async function callModel(systemPrompt: string, userMessage: string): Promise<str
     ]);
 
     const rawContent = response.content;
-    return typeof rawContent === "string"
-      ? rawContent
-      : Array.isArray(rawContent) && rawContent[0]?.type === "text"
-        ? (rawContent[0] as { type: "text"; text: string }).text
-        : "";
+    responseText =
+      typeof rawContent === "string"
+        ? rawContent
+        : Array.isArray(rawContent) && rawContent[0]?.type === "text"
+          ? (rawContent[0] as { type: "text"; text: string }).text
+          : "";
   }
+
+  console.log("[Scraper] LLM Response length:", responseText.length);
+  console.log(
+    "[Scraper] LLM Response preview:",
+    responseText.substring(0, 500),
+  );
+  console.log(
+    "[Scraper] LLM Response end:",
+    responseText.substring(responseText.length - 200),
+  );
+
+  return responseText;
 }
 
 export async function scraperNode(
-  state: VideoGenerationStateType
+  state: VideoGenerationStateType,
 ): Promise<Partial<VideoGenerationStateType>> {
   console.log("[Scraper] Starting scraper node...");
 
@@ -185,7 +212,9 @@ export async function scraperNode(
     console.log(`[Scraper] Scraping URL: ${state.sourceUrl}`);
     const { text, images, title } = await scrapeWebsite(state.sourceUrl);
 
-    console.log(`[Scraper] Scraped ${text.length} chars, ${images.length} images`);
+    console.log(
+      `[Scraper] Scraped ${text.length} chars, ${images.length} images`,
+    );
 
     const userMessage = `Analyze this website and extract product information:
 
@@ -205,10 +234,16 @@ Return ONLY valid JSON.`;
     const responseText = await callModel(SCRAPER_SYSTEM_PROMPT, userMessage);
 
     // Extract JSON from response
+    console.log("[Scraper] Attempting to extract JSON from response...");
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
+      console.error("[Scraper] No JSON found in response!");
+      console.error("[Scraper] Full response:", responseText);
       throw new Error("Failed to extract JSON from response");
     }
+
+    console.log("[Scraper] Extracted JSON length:", jsonMatch[0].length);
+    console.log("[Scraper] JSON preview:", jsonMatch[0].substring(0, 300));
 
     const productData = JSON.parse(jsonMatch[0]) as ProductData;
 
@@ -217,7 +252,12 @@ Return ONLY valid JSON.`;
       productData.images = images.slice(0, 5);
     }
 
-    console.log(`[Scraper] Extracted product: ${productData.name}`);
+    console.log("[Scraper] Extracted product name:", productData.name);
+    console.log("[Scraper] Extracted tagline:", productData.tagline);
+    console.log(
+      "[Scraper] Extracted features count:",
+      productData.features?.length || 0,
+    );
 
     return {
       productData,

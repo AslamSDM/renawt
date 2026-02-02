@@ -1,5 +1,6 @@
 import { Annotation } from "@langchain/langgraph";
 import type { ProductData, VideoScript, UserPreferences } from "../types";
+import type { BeatMap } from "../audio/beatSync";
 
 // Define the state schema for the video generation workflow
 export const VideoGenerationState = Annotation.Root({
@@ -27,6 +28,12 @@ export const VideoGenerationState = Annotation.Root({
     default: () => null,
   }),
   remotionCode: Annotation<string | null>({
+    reducer: (_, next) => next,
+    default: () => null,
+  }),
+
+  // Audio/Beat sync
+  beatMap: Annotation<BeatMap | null>({
     reducer: (_, next) => next,
     default: () => null,
   }),

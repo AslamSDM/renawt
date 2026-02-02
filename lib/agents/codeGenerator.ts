@@ -7,9 +7,9 @@ import {
 import type { VideoScript } from "../types";
 import type { VideoGenerationStateType } from "./state";
 
-const CODE_GENERATOR_SYSTEM_PROMPT = `You are a Remotion developer. Generate React/Remotion code for product marketing videos.
+const CODE_GENERATOR_SYSTEM_PROMPT = `You are a PREMIUM Remotion developer. Generate stunning React/Remotion code for motion graphics videos.
 
-CRITICAL RULES:
+## CRITICAL RULES (MUST FOLLOW)
 1. NEVER use CSS transitions or @keyframes - causes flickering during render
 2. ALL animations MUST use useCurrentFrame() + interpolate() or spring()
 3. Use <Sequence> for scene timing with from and durationInFrames props
@@ -18,31 +18,154 @@ CRITICAL RULES:
 6. All components must be React functional components
 7. Export a main composition component as default
 
-Available imports:
-- remotion: useCurrentFrame, useVideoConfig, AbsoluteFill, Sequence, Img, interpolate, spring
-- react: React
+## AVAILABLE IMPORTS
+\`\`\`tsx
+import React from 'react';
+import {
+  useCurrentFrame,
+  useVideoConfig,
+  AbsoluteFill,
+  Sequence,
+  Img,
+  interpolate,
+  spring,
+} from 'remotion';
+\`\`\`
 
-Animation Patterns:
+## PREMIUM ANIMATION PATTERNS
 
-Fade In:
-const opacity = interpolate(frame, [0, 30], [0, 1], { extrapolateRight: "clamp" });
+### Blur-In Effect (for headlines)
+\`\`\`tsx
+const BlurInText: React.FC<{text: string, delay?: number}> = ({text, delay = 0}) => {
+  const frame = useCurrentFrame();
+  const f = Math.max(0, frame - delay);
+  const opacity = interpolate(f, [0, 25], [0, 1], { extrapolateRight: 'clamp' });
+  const blur = interpolate(f, [0, 25], [15, 0], { extrapolateRight: 'clamp' });
+  const y = interpolate(f, [0, 25], [25, 0], { extrapolateRight: 'clamp' });
+  return (
+    <span style={{
+      opacity,
+      filter: \`blur(\${blur}px)\`,
+      transform: \`translateY(\${y}px)\`,
+      display: 'inline-block',
+    }}>
+      {text}
+    </span>
+  );
+};
+\`\`\`
 
-Slide Up:
-const translateY = interpolate(frame, [0, 30], [50, 0], { extrapolateRight: "clamp" });
+### Stagger Words (for taglines)
+\`\`\`tsx
+const StaggerWords: React.FC<{text: string, staggerDelay?: number}> = ({text, staggerDelay = 4}) => {
+  const frame = useCurrentFrame();
+  const words = text.split(' ');
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3em', justifyContent: 'center' }}>
+      {words.map((word, i) => {
+        const f = Math.max(0, frame - i * staggerDelay);
+        const opacity = interpolate(f, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
+        const y = interpolate(f, [0, 15], [20, 0], { extrapolateRight: 'clamp' });
+        return <span key={i} style={{ opacity, transform: \`translateY(\${y}px)\` }}>{word}</span>;
+      })}
+    </div>
+  );
+};
+\`\`\`
 
-Scale (spring):
-const scale = spring({ frame, fps, config: { damping: 12, stiffness: 100 } });
+### Glassmorphic Card (for features)
+\`\`\`tsx
+const GlassCard: React.FC<{children: React.ReactNode, delay?: number}> = ({children, delay = 0}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const f = Math.max(0, frame - delay);
+  const scale = spring({ frame: f, fps, from: 0.9, to: 1, config: { damping: 15 } });
+  const opacity = interpolate(f, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
+  return (
+    <div style={{
+      background: 'rgba(255, 255, 255, 0.08)',
+      backdropFilter: 'blur(20px)',
+      borderRadius: 20,
+      border: '1px solid rgba(255, 255, 255, 0.15)',
+      padding: 32,
+      opacity,
+      transform: \`scale(\${scale})\`,
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+    }}>
+      {children}
+    </div>
+  );
+};
+\`\`\`
 
-Typewriter:
-const text = "Hello";
-const charsToShow = Math.floor(interpolate(frame, [0, text.length * 3], [0, text.length], { extrapolateRight: "clamp" }));
-const displayText = text.slice(0, charsToShow);
+### Animated Counter (for stats)
+\`\`\`tsx
+const AnimatedCounter: React.FC<{value: number, suffix?: string, label: string, delay?: number}> = ({value, suffix = '', label, delay = 0}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const f = Math.max(0, frame - delay);
+  const animatedValue = interpolate(f, [0, 45], [0, value], { extrapolateRight: 'clamp' });
+  const scale = spring({ frame: f, fps, from: 0.5, to: 1, config: { damping: 12 } });
+  return (
+    <div style={{ textAlign: 'center', transform: \`scale(\${scale})\` }}>
+      <div style={{ fontSize: 72, fontWeight: 800 }}>{Math.floor(animatedValue).toLocaleString()}{suffix}</div>
+      <div style={{ fontSize: 20, opacity: 0.7, marginTop: 8 }}>{label}</div>
+    </div>
+  );
+};
+\`\`\`
 
-Output ONLY the complete TypeScript/TSX code. No markdown, no explanations.
-The code should be a single file that can be saved and used directly.`;
+### Gradient Mesh Background
+\`\`\`tsx
+const GradientBackground: React.FC<{colors: string[]}> = ({colors}) => {
+  const frame = useCurrentFrame();
+  const offset = (frame * 0.5) % 100;
+  return (
+    <AbsoluteFill style={{
+      background: \`
+        radial-gradient(ellipse 80% 80% at \${20 + offset * 0.3}% \${30 + offset * 0.2}%, \${colors[0]}40 0%, transparent 50%),
+        radial-gradient(ellipse 60% 60% at \${70 - offset * 0.2}% \${60 + offset * 0.1}%, \${colors[1]}40 0%, transparent 45%),
+        linear-gradient(180deg, #0f0f1a 0%, #1a1a2e 100%)
+      \`,
+    }} />
+  );
+};
+\`\`\`
+
+### Page Scroll Transition
+For scroll-vertical transitions, use this composition pattern:
+\`\`\`tsx
+const ScrollContainer: React.FC<{children: React.ReactNode, scrollSpeed?: number}> = ({children, scrollSpeed = 6}) => {
+  const frame = useCurrentFrame();
+  const { height } = useVideoConfig();
+  const scrollY = frame * scrollSpeed;
+  return (
+    <AbsoluteFill style={{ overflow: 'hidden' }}>
+      <div style={{ transform: \`translateY(-\${scrollY}px)\` }}>
+        {React.Children.map(children, (child, i) => (
+          <div key={i} style={{ height, width: '100%' }}>{child}</div>
+        ))}
+      </div>
+    </AbsoluteFill>
+  );
+};
+\`\`\`
+
+## STYLING REQUIREMENTS
+- Use GRADIENT backgrounds: linear-gradient(135deg, primary 0%, secondary 100%)
+- Use brand colors from the script - NEVER plain black/white
+- Use glassmorphism for cards: rgba backgrounds + backdrop-filter: blur()
+- Add subtle shadows for depth
+- Use modern fonts: system-ui, sans-serif
+- Large headline text: 72-96px, bold
+- Subtext: 28-36px, lighter weight
+
+## OUTPUT
+Generate COMPLETE TypeScript/TSX code. No markdown blocks, no explanations.
+Single file that exports default composition.`;
 
 const CODE_TEMPLATE = `
-// This is an example of the expected output structure:
+// Premium video template with modern animations
 import React from 'react';
 import {
   useCurrentFrame,
@@ -54,54 +177,107 @@ import {
   spring,
 } from 'remotion';
 
-// Scene Components
-const IntroScene: React.FC<{ headline: string; subtext?: string; background: string; textColor: string }> = ({
-  headline,
-  subtext,
-  background,
-  textColor,
-}) => {
+// Gradient background component
+const GradientBackground: React.FC<{primary: string, secondary: string}> = ({primary, secondary}) => {
+  const frame = useCurrentFrame();
+  const offset = (frame * 0.5) % 100;
+  return (
+    <AbsoluteFill style={{
+      background: \`
+        radial-gradient(ellipse 80% 80% at \${20 + offset * 0.3}% \${30}%, \${primary}30 0%, transparent 50%),
+        radial-gradient(ellipse 60% 60% at \${80 - offset * 0.2}% \${70}%, \${secondary}30 0%, transparent 45%),
+        linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%)
+      \`,
+    }} />
+  );
+};
+
+// Blur-in text animation
+const BlurInText: React.FC<{text: string, fontSize?: number, delay?: number}> = ({text, fontSize = 72, delay = 0}) => {
+  const frame = useCurrentFrame();
+  const f = Math.max(0, frame - delay);
+  const opacity = interpolate(f, [0, 25], [0, 1], { extrapolateRight: 'clamp' });
+  const blur = interpolate(f, [0, 25], [15, 0], { extrapolateRight: 'clamp' });
+  const y = interpolate(f, [0, 25], [30, 0], { extrapolateRight: 'clamp' });
+  return (
+    <span style={{
+      fontSize,
+      fontWeight: 'bold',
+      opacity,
+      filter: \`blur(\${blur}px)\`,
+      transform: \`translateY(\${y}px)\`,
+      display: 'inline-block',
+    }}>
+      {text}
+    </span>
+  );
+};
+
+// Glassmorphic card
+const GlassCard: React.FC<{children: React.ReactNode, delay?: number}> = ({children, delay = 0}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-
-  const titleOpacity = interpolate(frame, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
-  const titleY = interpolate(frame, [0, 20], [30, 0], { extrapolateRight: 'clamp' });
-  const subtextOpacity = interpolate(frame, [15, 35], [0, 1], { extrapolateRight: 'clamp' });
-
+  const f = Math.max(0, frame - delay);
+  const scale = spring({ frame: f, fps, from: 0.9, to: 1, config: { damping: 15, stiffness: 100 } });
+  const opacity = interpolate(f, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
   return (
-    <AbsoluteFill style={{ background, justifyContent: 'center', alignItems: 'center' }}>
-      <div style={{ textAlign: 'center', padding: '0 60px' }}>
-        <h1 style={{
-          color: textColor,
-          fontSize: 72,
-          fontWeight: 'bold',
-          opacity: titleOpacity,
-          transform: \`translateY(\${titleY}px)\`,
-          margin: 0,
-        }}>
-          {headline}
-        </h1>
-        {subtext && (
-          <p style={{
-            color: textColor,
-            fontSize: 32,
-            opacity: subtextOpacity,
-            marginTop: 20,
-          }}>
-            {subtext}
-          </p>
-        )}
-      </div>
+    <div style={{
+      background: 'rgba(255, 255, 255, 0.08)',
+      backdropFilter: 'blur(20px)',
+      borderRadius: 24,
+      border: '1px solid rgba(255, 255, 255, 0.15)',
+      padding: 40,
+      opacity,
+      transform: \`scale(\${scale})\`,
+    }}>
+      {children}
+    </div>
+  );
+};
+
+// Intro scene with blur-in animation
+const IntroScene: React.FC<{headline: string, subtext?: string, primary: string, secondary: string}> = ({
+  headline, subtext, primary, secondary
+}) => {
+  const frame = useCurrentFrame();
+  const subtextOpacity = interpolate(frame, [25, 45], [0, 1], { extrapolateRight: 'clamp' });
+  
+  return (
+    <AbsoluteFill>
+      <GradientBackground primary={primary} secondary={secondary} />
+      <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ textAlign: 'center', padding: '0 80px' }}>
+          <h1 style={{ margin: 0, color: '#ffffff', fontFamily: 'system-ui, sans-serif' }}>
+            <BlurInText text={headline} fontSize={84} />
+          </h1>
+          {subtext && (
+            <p style={{
+              color: 'rgba(255,255,255,0.7)',
+              fontSize: 32,
+              marginTop: 24,
+              opacity: subtextOpacity,
+              fontFamily: 'system-ui, sans-serif',
+            }}>
+              {subtext}
+            </p>
+          )}
+        </div>
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };
 
-// Main composition - this pattern should be followed
+// Main composition
 const ProductVideo: React.FC = () => {
   return (
-    <AbsoluteFill>
-      <Sequence from={0} durationInFrames={90}>
-        <IntroScene headline="Welcome" background="#1a1a2e" textColor="#ffffff" />
+    <AbsoluteFill style={{ background: '#0f0f1a' }}>
+      <Sequence from={0} durationInFrames={120}>
+        <IntroScene
+          headline="Your Product Name"
+          subtext="The future of innovation"
+          primary="#667eea"
+          secondary="#764ba2"
+        />
       </Sequence>
     </AbsoluteFill>
   );

@@ -7,68 +7,100 @@ import {
 import type { VideoScript } from "../types";
 import type { VideoGenerationStateType } from "./state";
 import { v4 as uuidv4 } from "uuid";
+import { generateBeatMap, getBpmFromMood } from "../audio/beatSync";
 
-const SCRIPT_WRITER_SYSTEM_PROMPT = `You are a video scriptwriter specializing in product marketing videos.
-Given product data, create a compelling 30-60 second video script (at 30fps = 900-1800 frames).
+const SCRIPT_WRITER_SYSTEM_PROMPT = `You are a PREMIUM video scriptwriter specializing in stunning motion graphics and product marketing videos.
+Create visually impressive 30-60 second videos (30fps = 900-1800 frames) that look like they were made by a professional agency.
 
-Video Structure (adapt based on content):
-- Hook (0-3 seconds / frames 0-90): Grab attention with a bold statement or question
-- Problem (3-8 seconds / frames 90-240): Relatable pain point the audience faces
-- Solution (8-15 seconds / frames 240-450): Introduce the product as the answer
-- Features (15-40 seconds / frames 450-1200): 2-4 key benefits, one scene each
-- Social Proof (40-50 seconds / frames 1200-1500): Testimonials or trust signals (if available)
-- CTA (50-60 seconds / frames 1500-1800): Clear call to action
+## CRITICAL DESIGN PRINCIPLES
+1. Use the ACTUAL brand colors from the product - NEVER default to black/white
+2. Include images from the product when available
+3. Use modern layouts: bento grids, split screens, centered hero text
+4. Apply glassmorphic card effects for feature showcases
+5. Use smooth scroll-based transitions between scenes
+6. Vary text animations: blur-in, stagger-words, encrypted-text for tech products
 
-Output ONLY valid JSON matching this schema:
+## VIDEO STRUCTURE
+- HOOK (0-3s): Bold statement with blur-in-up animation on gradient background
+- PROBLEM/SOLUTION (3-12s): Split screen or full-width with stagger-words
+- FEATURES (12-40s): Bento grid or feature cards with scroll-vertical transitions
+- STATS (40-50s): Animated counters with accent colors (if data available)
+- CTA (50-60s): Bold call-to-action with scale animation
+
+## OUTPUT JSON SCHEMA
 {
-  "totalDuration": number (in frames at 30fps),
-  "scenes": [
-    {
-      "id": "unique-id",
-      "startFrame": number,
-      "endFrame": number,
-      "type": "intro" | "feature" | "testimonial" | "cta" | "transition",
-      "content": {
-        "headline": "string (short, punchy)",
-        "subtext": "string (supporting text)" | null,
-        "image": "url or null"
-      },
-      "animation": {
-        "enter": "fade" | "slide-up" | "scale" | "reveal" | "typewriter",
-        "exit": "fade" | "slide-down" | "scale-out"
-      },
-      "style": {
-        "background": "hex color or gradient",
-        "textColor": "hex color",
-        "fontSize": "large" | "medium" | "small"
-      }
+  "totalDuration": number (frames at 30fps),
+  "scenes": [{
+    "id": "unique-id",
+    "startFrame": number,
+    "endFrame": number,
+    "type": "intro" | "feature" | "testimonial" | "cta" | "stats",
+    "content": {
+      "headline": "short punchy text",
+      "subtext": "supporting text" | null,
+      "image": "url from product images" | null,
+      "icon": "emoji for features" | null,
+      "stats": [{"value": number, "label": string, "suffix": string}] | null,
+      "features": [{"icon": emoji, "title": string, "description": string}] | null
+    },
+    "animation": {
+      "enter": "blur-in" | "blur-in-up" | "stagger-words" | "stagger-chars" | "scale" | "slide-up" | "fade" | "encrypted-text" | "gradient-text" | "flip-up",
+      "exit": "fade" | "blur-out" | "zoom-out" | "slide-up",
+      "staggerDelay": 5 (frames between items)
+    },
+    "style": {
+      "background": "gradient or solid from brand colors" (e.g. "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" or "#1a1a2e"),
+      "textColor": "#ffffff" or from brand,
+      "accentColor": "brand accent for highlights",
+      "fontSize": "large" | "medium" | "small",
+      "layout": "centered" | "left" | "split" | "grid" | "bento",
+      "cardStyle": "glass" | "spotlight" | "floating" | "none"
     }
-  ],
-  "transitions": [
-    {
-      "afterScene": "scene-id",
-      "type": "cut" | "fade" | "wipe" | "zoom",
-      "duration": number (in frames)
-    }
-  ],
+  }],
+  "transitions": [{
+    "afterScene": "scene-id",
+    "type": "scroll-vertical" | "scroll-horizontal" | "crossfade" | "zoom-through" | "morph" | "fade",
+    "duration": 20-40 frames,
+    "direction": "up" | "down" | "left" | "right" (optional)
+  }],
   "music": {
-    "tempo": 120 (BPM),
-    "mood": "string describing the mood"
+    "tempo": BPM number,
+    "mood": "energetic" | "calm" | "dramatic" | "playful"
   }
 }
 
-Guidelines:
-- Keep headlines under 10 words
-- Use the product's color palette for styling
-- Match the brand's tone (professional, playful, minimal, bold)
-- Vary animation types for visual interest
-- Use larger fonts for headlines, smaller for supporting text
-- Create smooth flow between scenes`;
+## ANIMATION RECOMMENDATIONS BY SCENE TYPE
+- intro: "blur-in-up" or "stagger-words" with large text
+- feature: "stagger-chars" or "slide-up" with "glass" cardStyle
+- stats: "scale" with animated counters
+- testimonial: "fade" or "blur-in" with "floating" cardStyle
+- cta: "scale" or "flip-up" with bold accent colors
 
-async function callModel(systemPrompt: string, userMessage: string): Promise<string> {
+## TRANSITIONS (use varied, flowing transitions)
+- Between intro→features: "scroll-vertical" (like page scroll down)
+- Between features: "scroll-horizontal" (carousel feel) or "crossfade"
+- To CTA: "zoom-through" (dramatic zoom into next scene)
+
+## STYLE REQUIREMENTS
+- ALWAYS use gradients for backgrounds (e.g., "linear-gradient(135deg, primaryColor 0%, secondaryColor 100%)")
+- Use the product's extracted colors - do NOT use plain black/white
+- Add accent colors for emphasis (buttons, highlights)
+- Glass cardStyle for feature cards with backdrop blur effect
+- Include vignette overlays for depth
+
+Return ONLY valid JSON. No markdown, no explanation.`;
+
+async function callModel(
+  systemPrompt: string,
+  userMessage: string,
+): Promise<string> {
   if (isUsingOpenRouter()) {
     // Use OpenRouter with reasoning
-    return chatWithOpenRouterMultiTurn(systemPrompt, userMessage, SCRIPT_WRITER_CONFIG);
+    return chatWithOpenRouterMultiTurn(
+      systemPrompt,
+      userMessage,
+      SCRIPT_WRITER_CONFIG,
+    );
   } else {
     // Use Anthropic Claude directly
     const model = getAnthropicModel(SCRIPT_WRITER_CONFIG);
@@ -87,7 +119,7 @@ async function callModel(systemPrompt: string, userMessage: string): Promise<str
 }
 
 export async function scriptWriterNode(
-  state: VideoGenerationStateType
+  state: VideoGenerationStateType,
 ): Promise<Partial<VideoGenerationStateType>> {
   console.log("[ScriptWriter] Starting script writer node...");
 
@@ -149,7 +181,10 @@ Consider timing transitions to align with beats (every ${Math.round(1800 / bpm)}
 
 Return ONLY valid JSON.`;
 
-    const responseText = await callModel(SCRIPT_WRITER_SYSTEM_PROMPT, userMessage);
+    const responseText = await callModel(
+      SCRIPT_WRITER_SYSTEM_PROMPT,
+      userMessage,
+    );
 
     // Extract JSON from response
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
@@ -165,12 +200,25 @@ Return ONLY valid JSON.`;
       id: scene.id || uuidv4(),
     }));
 
+    // Generate beat map from the music tempo
+    const finalBpm = videoScript.music?.tempo || bpm;
+    const beatMap = generateBeatMap({
+      bpm: finalBpm,
+      totalDurationFrames: videoScript.totalDuration,
+      fps: 30,
+      offset: 0,
+    });
+
     console.log(
-      `[ScriptWriter] Generated script with ${videoScript.scenes.length} scenes, ${videoScript.totalDuration} frames`
+      `[ScriptWriter] Generated script with ${videoScript.scenes.length} scenes, ${videoScript.totalDuration} frames`,
+    );
+    console.log(
+      `[ScriptWriter] Generated beat map: ${beatMap.beats.length} beats at ${beatMap.bpm} BPM`,
     );
 
     return {
       videoScript,
+      beatMap,
       currentStep: "generating",
     };
   } catch (error) {

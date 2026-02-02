@@ -22,7 +22,7 @@ export const ProductDataSchema = z.object({
       title: z.string(),
       description: z.string(),
       icon: z.string().optional(),
-    })
+    }),
   ),
   pricing: z
     .array(
@@ -30,7 +30,7 @@ export const ProductDataSchema = z.object({
         tier: z.string(),
         price: z.string(),
         features: z.array(z.string()),
-      })
+      }),
     )
     .optional(),
   testimonials: z
@@ -39,7 +39,7 @@ export const ProductDataSchema = z.object({
         quote: z.string(),
         author: z.string(),
         role: z.string(),
-      })
+      }),
     )
     .optional(),
   images: z.array(z.string()),
@@ -56,27 +56,73 @@ export interface VideoScene {
   id: string;
   startFrame: number;
   endFrame: number;
-  type: "intro" | "feature" | "testimonial" | "cta" | "transition";
+  type: "intro" | "feature" | "testimonial" | "cta" | "transition" | "stats";
   content: {
     headline?: string;
     subtext?: string;
     image?: string;
+    icon?: string;
+    stats?: Array<{ value: number; label: string; suffix?: string }>;
+    features?: Array<{ icon: string; title: string; description: string }>;
   };
   animation: {
-    enter: "fade" | "slide-up" | "scale" | "reveal" | "typewriter";
-    exit: "fade" | "slide-down" | "scale-out";
+    enter:
+      | "fade"
+      | "slide-up"
+      | "slide-down"
+      | "slide-left"
+      | "slide-right"
+      | "scale"
+      | "scale-bounce"
+      | "reveal"
+      | "typewriter"
+      | "blur-in"
+      | "blur-in-up"
+      | "stagger-words"
+      | "stagger-chars"
+      | "flip-up"
+      | "encrypted-text"
+      | "gradient-text";
+    exit:
+      | "fade"
+      | "slide-down"
+      | "slide-up"
+      | "scale-out"
+      | "blur-out"
+      | "zoom-out";
+    staggerDelay?: number;
   };
   style: {
     background: string;
     textColor: string;
+    accentColor?: string;
     fontSize: "large" | "medium" | "small";
+    fontFamily?: string;
+    layout?: "centered" | "left" | "right" | "split" | "grid" | "bento";
+    cardStyle?: "glass" | "spotlight" | "floating" | "tilt" | "none";
   };
 }
 
 export interface VideoTransition {
   afterScene: string;
-  type: "cut" | "fade" | "wipe" | "zoom" | "beat-sync";
+  type:
+    | "cut"
+    | "fade"
+    | "crossfade"
+    | "wipe"
+    | "wipe-left"
+    | "wipe-right"
+    | "wipe-up"
+    | "wipe-down"
+    | "zoom"
+    | "zoom-through"
+    | "scroll-vertical"
+    | "scroll-horizontal"
+    | "page-flip"
+    | "morph"
+    | "beat-sync";
   duration: number;
+  direction?: "up" | "down" | "left" | "right";
 }
 
 export interface VideoScript {
@@ -188,7 +234,13 @@ export const GenerateRequestSchema = z.object({
 });
 
 export interface GenerateStreamChunk {
-  type: "status" | "productData" | "videoScript" | "remotionCode" | "error" | "complete";
+  type:
+    | "status"
+    | "productData"
+    | "videoScript"
+    | "remotionCode"
+    | "error"
+    | "complete";
   data: unknown;
 }
 
