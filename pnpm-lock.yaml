@@ -38,6 +38,12 @@ importers:
       '@remotion/transitions':
         specifier: ^4.0.416
         version: 4.0.416(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      dodopayments:
+        specifier: ^2.18.0
+        version: 2.18.0
+      dodopayments-checkout:
+        specifier: ^1.7.9
+        version: 1.7.9
       next:
         specifier: 16.1.6
         version: 16.1.6(@babel/core@7.29.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -81,9 +87,6 @@ importers:
       '@types/uuid':
         specifier: ^11.0.0
         version: 11.0.0
-      dodopayments:
-        specifier: ^2.18.0
-        version: 2.18.0
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
@@ -583,6 +586,12 @@ packages:
   '@humanwhocodes/retry@0.4.3':
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
+
+  '@iframe-resizer/core@5.5.8':
+    resolution: {integrity: sha512-sdrZjri7PhR+OumTegeuELG7vNP6BmwDliokXxTCMtzzCZQ/fDxGEvFpe407jSoatv2EU/m4FU/4XXV8lfiLxw==}
+
+  '@iframe-resizer/parent@5.5.8':
+    resolution: {integrity: sha512-IVXO3jugrunaG4OkzHjveM0saGP4a24q9NWYj+sSW42kptZCOBEULxblwRg839FQuxxQMKDLT1UebKiAw0u7ng==}
 
   '@img/colour@1.0.0':
     resolution: {integrity: sha512-A5P/LfWGFSl6nsckYtjw9da+19jB8hkJ6ACTGcDfEJ0aE+l2n2El7dsVM7UVHZQ9s2lmYMWlrS21YLy2IR1LUw==}
@@ -1462,6 +1471,9 @@ packages:
     resolution: {integrity: sha512-hsU18Ae8CDTR6Kgu9DYf0EbCr/a5iGL0rytQDobUcdpYOKokk8LEjVphnXkDkgpi0wYVsqrXuP0bZxJaTqdgoA==}
     engines: {node: '>= 0.4'}
 
+  auto-console-group@1.3.0:
+    resolution: {integrity: sha512-W/G5jy1ZPeVYPyqOVGND7EjbzrsLgRD3s+1QegXfJ7bYlphFxjqG60rviFXWw0d2YCj0Clc7hU5/nTqrBEhBIw==}
+
   available-typed-arrays@1.0.7:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
     engines: {node: '>= 0.4'}
@@ -1716,6 +1728,10 @@ packages:
   doctrine@2.1.0:
     resolution: {integrity: sha512-35mSku4ZXK0vfCuHEDAwt55dg2jNajHZ1odvF+8SSr82EsZY4QmXfuWso8oEd8zRhVObSN18aM0CjSdoBX7zIw==}
     engines: {node: '>=0.10.0'}
+
+  dodopayments-checkout@1.7.9:
+    resolution: {integrity: sha512-TmzzPjdtT78eDsTSWznwspOqOHiJm0a/dZP1llVuwzbQuHpwYoBngIeFSOzE7OsEinohs2tIQfIE388XwR0u+w==}
+    engines: {node: '>=18.0.0'}
 
   dodopayments@2.18.0:
     resolution: {integrity: sha512-MZypTPx99TIT2iqZ++avwy54jNHbe0P1YMrQWW0BISoCznZdbd2iuKoaBnSGsmQDpRhlW98NzoESnTEMmpSfmQ==}
@@ -3771,6 +3787,15 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
+  '@iframe-resizer/core@5.5.8':
+    dependencies:
+      auto-console-group: 1.3.0
+
+  '@iframe-resizer/parent@5.5.8':
+    dependencies:
+      '@iframe-resizer/core': 5.5.8
+      auto-console-group: 1.3.0
+
   '@img/colour@1.0.0':
     optional: true
 
@@ -4728,6 +4753,8 @@ snapshots:
 
   async-function@1.0.0: {}
 
+  auto-console-group@1.3.0: {}
+
   available-typed-arrays@1.0.7:
     dependencies:
       possible-typed-array-names: 1.1.0
@@ -4964,6 +4991,10 @@ snapshots:
   doctrine@2.1.0:
     dependencies:
       esutils: 2.0.3
+
+  dodopayments-checkout@1.7.9:
+    dependencies:
+      '@iframe-resizer/parent': 5.5.8
 
   dodopayments@2.18.0:
     dependencies:
