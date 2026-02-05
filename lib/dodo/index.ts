@@ -1,4 +1,4 @@
-import { dodo } from "./client";
+import { getDodoClient } from "./client";
 
 const productIdMap: Record<string, string> = {
     STARTER: "pdt_0NXgVkOCld7OPSxqFhJpX",
@@ -9,6 +9,7 @@ export async function createCheckoutSession(
     userId: string
 ) {
     try {
+        const dodo = getDodoClient();
         const session = await dodo.checkoutSessions.create({
             product_cart: [
                 {
