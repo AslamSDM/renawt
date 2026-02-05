@@ -13,7 +13,7 @@ import { NextRequest } from "next/server";
 import { streamVideoGeneration } from "@/lib/agents/graph";
 
 export const runtime = "nodejs";
-export const maxDuration = 3000;
+export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
   console.log("[CreativeAPI] Starting LangGraph workflow...");
@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
             // Handle videoRenderer output (Step 3 - with retry loop)
             if (chunk.videoRenderer) {
               const state = chunk.videoRenderer;
-              
+
               // If video URL is available, rendering succeeded
               if (state.videoUrl) {
                 controller.enqueue(
@@ -195,7 +195,7 @@ export async function POST(request: NextRequest) {
                   ),
                 );
               }
-              
+
               // Report render status
               controller.enqueue(
                 encoder.encode(
@@ -203,8 +203,8 @@ export async function POST(request: NextRequest) {
                     type: "status",
                     data: {
                       step: "rendering",
-                      message: state.videoUrl 
-                        ? "Video rendered successfully!" 
+                      message: state.videoUrl
+                        ? "Video rendered successfully!"
                         : `Rendering video (attempt ${state.renderAttempts})...`,
                       attempts: state.renderAttempts,
                     },
@@ -216,7 +216,7 @@ export async function POST(request: NextRequest) {
             // Handle renderErrorFixer output (Step 4 - fixes render errors)
             if (chunk.renderErrorFixer) {
               const state = chunk.renderErrorFixer;
-              
+
               // If fixed code is available
               if (state.remotionCode) {
                 controller.enqueue(
@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
                   ),
                 );
               }
-              
+
               controller.enqueue(
                 encoder.encode(
                   JSON.stringify({
@@ -262,12 +262,12 @@ export async function POST(request: NextRequest) {
           // Send completion with video URL if available
           controller.enqueue(
             encoder.encode(
-              JSON.stringify({ 
-                type: "complete", 
-                data: { 
+              JSON.stringify({
+                type: "complete",
+                data: {
                   success: true,
-                  message: "Video generation complete"
-                } 
+                  message: "Video generation complete",
+                },
               }) + "\n",
             ),
           );
