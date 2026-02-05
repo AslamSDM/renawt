@@ -49,6 +49,12 @@ const initialGenerationState: GenerationState = {
 
 const initialPreferences: UserPreferences = {
   style: "professional",
+  audio: {
+    url: "/audio/audio1.mp3",
+    bpm: 120,
+    duration: 60,
+    volume: 1,
+  },
 };
 
 export const useVideoStore = create<VideoStore>((set, get) => ({

@@ -20,6 +20,7 @@ interface BlurInTextProps {
   duration?: number;
   delay?: number;
   direction?: "up" | "down" | "none";
+  style?: React.CSSProperties;
 }
 
 export const BlurInText: React.FC<BlurInTextProps> = ({
@@ -31,6 +32,7 @@ export const BlurInText: React.FC<BlurInTextProps> = ({
   duration = 30,
   delay = 0,
   direction = "up",
+  style,
 }) => {
   const frame = useCurrentFrame();
   const actualFrame = Math.max(0, frame - delay);
@@ -64,6 +66,7 @@ export const BlurInText: React.FC<BlurInTextProps> = ({
         filter: `blur(${blur}px)`,
         transform: `translateY(${translateY}px)`,
         display: "inline-block",
+        ...style,
       }}
     >
       {text}

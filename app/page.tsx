@@ -1,275 +1,418 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useVideoStore } from "@/lib/store";
-import {
-  Button,
-  Input,
-  TextArea,
-  Card,
-  Select,
-  Tabs,
-  TabPanel,
-  Progress,
-  StepsProgress,
-} from "@/components/ui";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
-const STYLE_OPTIONS = [
-  { value: "professional", label: "Professional" },
-  { value: "playful", label: "Playful" },
-  { value: "minimal", label: "Minimal" },
-  { value: "bold", label: "Bold" },
+const TYPING_TEXTS = [
+  "motion graphics",
+  "Product launch videos", 
+  "info videos",
+  "explainer videos"
 ];
 
-const GENERATION_STEPS = [
-  { id: "scraping", label: "Analyze" },
-  { id: "scripting", label: "Script" },
-  { id: "generating", label: "Generate" },
-  { id: "complete", label: "Complete" },
-];
+const TypewriterText = () => {
+  const [currentTextIndex, setCurrentTextIndex] = useState(0);
+  const [currentText, setCurrentText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
-export default function Home() {
-  const router = useRouter();
-  const {
-    sourceUrl,
-    description,
-    preferences,
-    activeTab,
-    isGenerating,
-    generation,
-    setSourceUrl,
-    setDescription,
-    setPreferences,
-    setActiveTab,
-    generateVideo,
-  } = useVideoStore();
-
-  const handleGenerate = async () => {
-    await generateVideo();
-
-    // Redirect to studio if successful
-    if (generation.projectId && generation.step === "complete") {
-      router.push(`/studio/${generation.projectId}`);
+  useEffect(() => {
+    const text = TYPING_TEXTS[currentTextIndex];
+    
+    if (isPaused) {
+      const pauseTimer = setTimeout(() => {
+        setIsPaused(false);
+        setIsDeleting(true);
+      }, 2000);
+      return () => clearTimeout(pauseTimer);
     }
-  };
 
-  const isInputValid =
-    (activeTab === "url" && sourceUrl.trim()) ||
-    (activeTab === "description" && description.trim());
+    if (isDeleting) {
+      if (currentText === "") {
+        setIsDeleting(false);
+        setCurrentTextIndex((prev) => (prev + 1) % TYPING_TEXTS.length);
+      } else {
+        const timer = setTimeout(() => {
+          setCurrentText(currentText.slice(0, -1));
+        }, 50);
+        return () => clearTimeout(timer);
+      }
+    } else {
+      if (currentText === text) {
+        setIsPaused(true);
+      } else {
+        const timer = setTimeout(() => {
+          setCurrentText(text.slice(0, currentText.length + 1));
+        }, 100);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [currentText, currentTextIndex, isDeleting, isPaused]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900">
-      {/* Hero Section */}
-      <header className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10" />
-        <div className="relative max-w-5xl mx-auto px-6 py-20 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-            AI Video Generator
-          </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Transform your product website or description into a stunning
-            marketing video in minutes. Powered by AI agents and Remotion.
-          </p>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-3xl mx-auto px-6 pb-20 -mt-8">
-        <Card className="shadow-xl">
-          {/* Input Tabs */}
-          <Tabs
-            tabs={[
-              {
-                id: "url",
-                label: "Website URL",
-                icon: (
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                    />
-                  </svg>
-                ),
-              },
-              {
-                id: "description",
-                label: "Description",
-                icon: (
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6h16M4 12h16M4 18h7"
-                    />
-                  </svg>
-                ),
-              },
-            ]}
-            activeTab={activeTab}
-            onChange={(tab) => setActiveTab(tab as "url" | "description")}
-          />
-
-          {/* URL Input */}
-          <TabPanel isActive={activeTab === "url"}>
-            <Input
-              label="Product Website URL"
-              type="url"
-              placeholder="https://example.com/product"
-              value={sourceUrl}
-              onChange={(e) => setSourceUrl(e.target.value)}
-              helperText="Enter your product landing page URL to automatically extract content"
-              disabled={isGenerating}
-            />
-          </TabPanel>
-
-          {/* Description Input */}
-          <TabPanel isActive={activeTab === "description"}>
-            <TextArea
-              label="Product Description"
-              placeholder="Describe your product, its features, and target audience..."
-              rows={5}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              helperText="Write a detailed description of your product for the AI to work with"
-              disabled={isGenerating}
-            />
-          </TabPanel>
-
-          {/* Style Selection */}
-          <div className="mt-6">
-            <Select
-              label="Video Style"
-              options={STYLE_OPTIONS}
-              value={preferences.style}
-              onChange={(value) =>
-                setPreferences({
-                  style: value as "professional" | "playful" | "minimal" | "bold",
-                })
-              }
-              disabled={isGenerating}
-            />
-          </div>
-
-          {/* Generation Progress */}
-          {isGenerating && (
-            <div className="mt-8 space-y-4">
-              <StepsProgress
-                steps={GENERATION_STEPS}
-                currentStep={generation.step}
-              />
-              <div className="text-center">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  {generation.message}
-                </p>
-                <Progress value={generation.progress} showLabel />
-              </div>
-            </div>
-          )}
-
-          {/* Errors */}
-          {generation.errors.length > 0 && (
-            <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <h4 className="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
-                Generation Failed
-              </h4>
-              <ul className="text-sm text-red-600 dark:text-red-400 space-y-1">
-                {generation.errors.map((error, i) => (
-                  <li key={i}>{error}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Generate Button */}
-          <div className="mt-8">
-            <Button
-              onClick={handleGenerate}
-              disabled={!isInputValid || isGenerating}
-              loading={isGenerating}
-              size="lg"
-              className="w-full"
-            >
-              {isGenerating ? "Generating Video..." : "Generate Video"}
-            </Button>
-          </div>
-
-          {/* Success - Go to Studio */}
-          {generation.step === "complete" && generation.projectId && (
-            <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-sm font-medium text-green-800 dark:text-green-200">
-                    Video Generated Successfully!
-                  </h4>
-                  <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                    Your video is ready to preview and export.
-                  </p>
-                </div>
-                <Button
-                  onClick={() => router.push(`/studio/${generation.projectId}`)}
-                  variant="primary"
-                  size="sm"
-                >
-                  Open Studio
-                </Button>
-              </div>
-            </div>
-          )}
-        </Card>
-
-        {/* Features Section */}
-        <div className="mt-16 grid md:grid-cols-3 gap-6">
-          <FeatureCard
-            icon="🤖"
-            title="AI-Powered"
-            description="Multiple AI agents work together to analyze, script, and generate your video"
-          />
-          <FeatureCard
-            icon="🎬"
-            title="Remotion Engine"
-            description="Professional video rendering with React-based animation system"
-          />
-          <FeatureCard
-            icon="🎵"
-            title="Beat Synced"
-            description="Animations automatically sync to music beats for engaging content"
-          />
-        </div>
-      </main>
-    </div>
+    <span className="relative">
+      <span>{currentText}</span>
+      <span className="animate-pulse ml-0.5">|</span>
+    </span>
   );
-}
+};
 
-function FeatureCard({
-  icon,
-  title,
-  description,
-}: {
-  icon: string;
-  title: string;
-  description: string;
-}) {
+const FEATURES = [
+  {
+    title: "AI-Powered Generation",
+    subtitle: "Smart Scripts",
+    description: "Advanced AI agents analyze your content and generate compelling video scripts",
+    image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=300&fit=crop"
+  },
+  {
+    title: "Remotion Engine",
+    subtitle: "Pro Rendering",
+    description: "Professional-grade rendering with React-based animation system",
+    image: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=400&h=300&fit=crop"
+  },
+  {
+    title: "Beat Synchronized",
+    subtitle: "Perfect Timing",
+    description: "Animations automatically sync to music beats for engaging content",
+    image: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=300&fit=crop"
+  },
+  {
+    title: "Export Anywhere",
+    subtitle: "4K Quality",
+    description: "Download in multiple formats including 4K for any platform",
+    image: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=400&h=300&fit=crop"
+  }
+];
+
+const VIDEO_TYPES = [
+  {
+    title: "Product Launch",
+    subtitle: "Cinematic announcements",
+    year: "2024",
+    image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=500&fit=crop"
+  },
+  {
+    title: "Explainer Videos",
+    subtitle: "Clear & engaging",
+    year: "2024",
+    image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=500&fit=crop"
+  },
+  {
+    title: "Motion Graphics",
+    subtitle: "Dynamic visuals",
+    year: "2024",
+    image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&h=500&fit=crop"
+  },
+  {
+    title: "Info Videos",
+    subtitle: "Data-driven",
+    year: "2024",
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=500&fit=crop"
+  }
+];
+
+export default function LandingPage() {
+  const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
-      <div className="text-3xl mb-3">{icon}</div>
-      <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-        {title}
-      </h3>
-      <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>
+    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-white selection:text-black">
+      {/* Film Grain Overlay */}
+      <div 
+        className="fixed inset-0 pointer-events-none z-50 opacity-[0.04]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+        }}
+      />
+
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-40 px-6 py-6 flex items-center justify-between">
+        <Link href="/" className="text-xl font-light tracking-[0.2em] uppercase">
+          Remawt
+        </Link>
+        
+        <div className="hidden md:flex items-center gap-8 text-sm tracking-wider">
+          <Link href="/creative" className="hover:text-gray-400 transition-colors uppercase">Studio</Link>
+          <Link href="/pricing" className="hover:text-gray-400 transition-colors uppercase">Pricing</Link>
+          <button 
+            onClick={() => router.push('/creative')}
+            className="px-6 py-2 border border-white hover:bg-white hover:text-black transition-all uppercase text-xs tracking-widest"
+          >
+            Start
+          </button>
+        </div>
+
+        <button 
+          className="md:hidden"
+          onClick={() => setMenuOpen(!menuOpen)}
+        >
+          {menuOpen ? (
+            <img src="https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=32&h=32&fit=crop" alt="Close" className="w-6 h-6 invert" />
+          ) : (
+            <img src="https://images.unsplash.com/photo-1611532736381-143b08317b74?w=32&h=32&fit=crop" alt="Menu" className="w-6 h-6 invert" />
+          )}
+        </button>
+      </nav>
+
+      {/* Mobile Menu */}
+      {menuOpen && (
+        <div className="fixed inset-0 bg-black z-30 flex flex-col items-center justify-center gap-8 md:hidden">
+          <Link href="/creative" className="text-2xl tracking-wider uppercase" onClick={() => setMenuOpen(false)}>Studio</Link>
+          <Link href="/pricing" className="text-2xl tracking-wider uppercase" onClick={() => setMenuOpen(false)}>Pricing</Link>
+          <button 
+            onClick={() => {router.push('/creative'); setMenuOpen(false);}}
+            className="px-8 py-3 border border-white text-lg tracking-wider uppercase"
+          >
+            Start Creating
+          </button>
+        </div>
+      )}
+
+      {/* Hero Section - Bruegel Style */}
+      <section className="min-h-screen flex flex-col justify-center px-6 md:px-12 pt-24">
+        <div className="max-w-7xl mx-auto w-full">
+          {/* Top Info */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 md:mb-24">
+            <div className="text-sm tracking-widest text-gray-500 uppercase">
+              <span className="block">AI Video</span>
+              <span className="block">Production</span>
+            </div>
+            <div className="text-sm tracking-widest text-gray-500 uppercase mt-4 md:mt-0 text-right">
+              <span className="block">Est. 2024</span>
+              <span className="block">Remotion Powered</span>
+            </div>
+          </div>
+
+          {/* Main Title - Bruegel Style Large Typography */}
+          <div className="mb-16 md:mb-24">
+            <div className="overflow-hidden">
+              <h1 className="text-[12vw] md:text-[10vw] font-light leading-[0.85] tracking-tight">
+                Once in a
+              </h1>
+            </div>
+            <div className="overflow-hidden">
+              <h1 className="text-[12vw] md:text-[10vw] font-light leading-[0.85] tracking-tight">
+                Lifetime
+              </h1>
+            </div>
+          </div>
+
+          {/* Subtitle with Typing Effect */}
+          <div className="max-w-2xl mb-12">
+            <p className="text-lg md:text-xl text-gray-400 mb-4">
+              Create stunning
+            </p>
+            <div className="text-2xl md:text-3xl font-light mb-4">
+              <TypewriterText />
+            </div>
+            <p className="text-lg md:text-xl text-gray-400">
+              in minutes with AI
+            </p>
+          </div>
+
+          {/* Description */}
+          <p className="max-w-xl text-gray-500 leading-relaxed mb-12">
+            The world&apos;s first AI-powered video generation platform combining 
+            Remotion engine with intelligent scripting. Transform your ideas 
+            into professional motion graphics, product launches, and explainer content.
+          </p>
+
+          {/* CTA */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <button 
+              onClick={() => router.push('/creative')}
+              className="group flex items-center gap-4 text-lg tracking-wider uppercase hover:text-gray-400 transition-colors"
+            >
+              <span>Start Creating</span>
+              <img src="https://images.unsplash.com/photo-1611532736381-143b08317b74?w=24&h=24&fit=crop" alt="Arrow" className="w-5 h-5 invert group-hover:translate-x-2 transition-transform" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Video Types Grid - Bruegel Style */}
+      <section className="py-24 md:py-32 px-6 md:px-12 border-t border-white/10">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/10">
+            {VIDEO_TYPES.map((type, i) => (
+              <div 
+                key={i} 
+                className="bg-[#0a0a0a] p-8 group hover:bg-white/5 transition-colors cursor-pointer"
+                onClick={() => router.push('/creative')}
+              >
+                <div className="aspect-[4/5] mb-6 overflow-hidden">
+                  <img 
+                    src={type.image} 
+                    alt={type.title}
+                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                  />
+                </div>
+                <div className="text-xs text-gray-600 tracking-widest mb-4">{type.year}</div>
+                <h3 className="text-2xl font-light mb-2 tracking-wide">{type.title}</h3>
+                <p className="text-sm text-gray-500 tracking-wider uppercase">{type.subtitle}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section - Magazine Layout */}
+      <section className="py-24 md:py-32 px-6 md:px-12 border-t border-white/10">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-16">
+            <span className="text-xs tracking-[0.3em] text-gray-600 uppercase">Features</span>
+            <h2 className="text-4xl md:text-5xl font-light mt-4">How It Works</h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-px bg-white/10">
+            {FEATURES.map((feature, i) => (
+              <Card 
+                key={i} 
+                className="bg-[#0a0a0a] border-0 rounded-none group hover:bg-white/5 transition-colors"
+              >
+                <CardContent className="p-8 md:p-12">
+                  <div className="aspect-video mb-8 overflow-hidden">
+                    <img 
+                      src={feature.image} 
+                      alt={feature.title}
+                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                    />
+                  </div>
+                  <div className="text-xs tracking-[0.2em] text-gray-600 uppercase mb-4">
+                    {feature.subtitle}
+                  </div>
+                  <h3 className="text-2xl font-light mb-4">{feature.title}</h3>
+                  <p className="text-gray-500 leading-relaxed">{feature.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Process Steps - Timeline Style */}
+      <section className="py-24 md:py-32 px-6 md:px-12 border-t border-white/10">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-16">
+            <span className="text-xs tracking-[0.3em] text-gray-600 uppercase">Process</span>
+            <h2 className="text-4xl md:text-5xl font-light mt-4">Four Steps</h2>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-8">
+            {[
+              { step: "01", title: "Describe", desc: "Enter your product URL or description", image: "https://images.unsplash.com/photo-1512314889357-e157c22f938d?w=200&h=200&fit=crop" },
+              { step: "02", title: "Generate", desc: "AI creates your video script & scenes", image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=200&h=200&fit=crop" },
+              { step: "03", title: "Preview", desc: "Review and customize the animation", image: "https://images.unsplash.com/photo-1536240478700-b869070f9279?w=200&h=200&fit=crop" },
+              { step: "04", title: "Export", desc: "Download your professional video", image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&h=200&fit=crop" }
+            ].map((item, i) => (
+              <div key={i} className="border-t border-white/20 pt-8">
+                <div className="w-16 h-16 mb-6 overflow-hidden rounded-full">
+                  <img 
+                    src={item.image} 
+                    alt={item.title}
+                    className="w-full h-full object-cover grayscale"
+                  />
+                </div>
+                <div className="text-5xl font-light text-gray-700 mb-6">{item.step}</div>
+                <h3 className="text-xl font-light mb-3 tracking-wide">{item.title}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Audio/Visual Section - Bruegel Style */}
+      <section className="py-24 md:py-32 px-6 md:px-12 border-t border-white/10">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <span className="text-xs tracking-[0.3em] text-gray-600 uppercase">Audio Guide</span>
+              <h2 className="text-4xl md:text-5xl font-light mt-4 mb-8">
+                Experience the Process
+              </h2>
+              <p className="text-gray-500 leading-relaxed mb-8">
+                Listen to how our AI transforms simple descriptions into 
+                cinematic video content. From script to screen in minutes.
+              </p>
+              
+              <button 
+                onClick={() => setIsPlaying(!isPlaying)}
+                className="flex items-center gap-4 text-sm tracking-wider uppercase hover:text-gray-400 transition-colors"
+              >
+                <div className="w-10 h-10 border border-white/30 flex items-center justify-center">
+                  {isPlaying ? (
+                    <img src="https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=24&h=24&fit=crop" alt="Pause" className="w-5 h-5 invert" />
+                  ) : (
+                    <img src="https://images.unsplash.com/photo-1614680376593-902f74cf0d41?w=24&h=24&fit=crop" alt="Play" className="w-5 h-5 invert" />
+                  )}
+                </div>
+                <span>{isPlaying ? "Pause" : "Play"} Introduction</span>
+              </button>
+            </div>
+
+            <div className="aspect-video bg-white/5 flex items-center justify-center border border-white/10 overflow-hidden">
+              <img 
+                src="https://images.unsplash.com/photo-1536240478700-b869070f9279?w=800&h=450&fit=crop" 
+                alt="Video Preview"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Large CTA Section */}
+      <section className="py-32 md:py-48 px-6 md:px-12 border-t border-white/10">
+        <div className="max-w-7xl mx-auto text-center">
+          <h2 className="text-[8vw] md:text-[6vw] font-light leading-[0.9] mb-8">
+            Ready to Create?
+          </h2>
+          <p className="text-gray-500 max-w-xl mx-auto mb-12">
+            Join thousands of creators producing professional videos with AI. 
+            No experience required.
+          </p>
+          <button 
+            onClick={() => router.push('/creative')}
+            className="px-12 py-4 border border-white text-lg tracking-wider uppercase hover:bg-white hover:text-black transition-all"
+          >
+            Start For Free
+          </button>
+        </div>
+      </section>
+
+      {/* Footer - Minimal */}
+      <footer className="py-12 px-6 md:px-12 border-t border-white/10">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+            <div>
+              <h4 className="text-lg font-light tracking-[0.2em] uppercase mb-2">Remawt</h4>
+              <p className="text-xs text-gray-600 tracking-wider">AI-Powered Video Production</p>
+            </div>
+            
+            <div className="flex gap-8 text-xs tracking-wider text-gray-600">
+              <Link href="/creative" className="hover:text-white transition-colors uppercase">Studio</Link>
+              <Link href="/pricing" className="hover:text-white transition-colors uppercase">Pricing</Link>
+              <span className="hover:text-white transition-colors cursor-pointer uppercase">About</span>
+              <span className="hover:text-white transition-colors cursor-pointer uppercase">Privacy</span>
+            </div>
+          </div>
+          
+          <div className="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-xs text-gray-700 tracking-wider">
+              © 2024 REMAWT. ALL RIGHTS RESERVED.
+            </p>
+            <p className="text-xs text-gray-700 tracking-wider">
+              POWERED BY REMOTION
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

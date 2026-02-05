@@ -55,3 +55,13 @@ export {
   MeasureIndicator,
   BeatSyncedText,
 } from "./BeatSync";
+
+// High-Energy Components
+export {
+  KineticText,
+  GlitchText,
+  AudioReactiveGradient,
+  BeatFlashEnhanced,
+  BeatPulseEnhanced,
+  FastSlide,
+} from "./HighEnergy";

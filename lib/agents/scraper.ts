@@ -1,8 +1,9 @@
 import puppeteer from "puppeteer";
+import * as path from "path";
+import * as fs from "fs";
 import {
-  isUsingOpenRouter,
-  chatWithOpenRouterMultiTurn,
-  getAnthropicModel,
+  chatWithKimi,
+  chatWithKimiVision,
   SCRAPER_CONFIG,
 } from "./model";
 import type { ProductData } from "../types";
@@ -37,6 +38,7 @@ async function scrapeWebsite(url: string): Promise<{
   text: string;
   images: string[];
   title: string;
+  screenshotPath: string;
 }> {
   const browser = await puppeteer.launch({
     headless: true,
@@ -45,8 +47,22 @@ async function scrapeWebsite(url: string): Promise<{
 
   try {
     const page = await browser.newPage();
-    await page.setViewport({ width: 1280, height: 720 });
+    await page.setViewport({ width: 1920, height: 1080 });
     await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
+
+    // Take a full-page screenshot for visual analysis
+    const screenshotDir = path.join(process.cwd(), ".remotion-temp", "screenshots");
+    if (!fs.existsSync(screenshotDir)) {
+      fs.mkdirSync(screenshotDir, { recursive: true });
+    }
+    const screenshotPath = path.join(screenshotDir, `screenshot-${Date.now()}.png`);
+
+    await page.screenshot({
+      path: screenshotPath,
+      fullPage: false, // Just the viewport for faster analysis
+      type: "png"
+    });
+    console.log(`[Scraper] Screenshot saved: ${screenshotPath}`);
 
     // Extract page content
     const content = await page.evaluate(() => {
@@ -102,6 +118,7 @@ Page Content:
 ${content.bodyText}`,
       images: content.images,
       title: content.title,
+      screenshotPath,
     };
   } finally {
     await browser.close();
@@ -142,54 +159,89 @@ async function callModel(
   systemPrompt: string,
   userMessage: string,
 ): Promise<string> {
-  console.log("[Scraper] Calling LLM...");
+  console.log("[Scraper] Calling Kimi K2.5...");
   console.log(`[Scraper] User message length: ${userMessage.length} chars`);
 
-  let responseText: string;
-
-  if (isUsingOpenRouter()) {
-    // Use Gemini (aliased as OpenRouter)
-    console.log("[Scraper] Using Gemini via isUsingOpenRouter()");
-    responseText = await chatWithOpenRouterMultiTurn(
-      systemPrompt,
-      userMessage,
-      SCRAPER_CONFIG,
-    );
-  } else {
-    // Use Anthropic Claude directly
-    console.log("[Scraper] Using Anthropic Claude");
-    const model = getAnthropicModel(SCRAPER_CONFIG);
-    const response = await model.invoke([
+  const response = await chatWithKimi(
+    [
       { role: "system", content: systemPrompt },
       { role: "user", content: userMessage },
-    ]);
+    ],
+    SCRAPER_CONFIG,
+  );
 
-    const rawContent = response.content;
-    responseText =
-      typeof rawContent === "string"
-        ? rawContent
-        : Array.isArray(rawContent) && rawContent[0]?.type === "text"
-          ? (rawContent[0] as { type: "text"; text: string }).text
-          : "";
+  console.log("[Scraper] Kimi Response length:", response.content.length);
+  console.log(
+    "[Scraper] Kimi Response preview:",
+    response.content.substring(0, 500),
+  );
+
+  return response.content;
+}
+
+// Analyze screenshot with Kimi Vision for design insights
+async function analyzeScreenshotForDesign(screenshotPath: string): Promise<{
+  designInsights: string;
+  colorPalette: string[];
+  layoutStyle: string;
+  visualMood: string;
+}> {
+  console.log("[Scraper] Analyzing screenshot with Kimi Vision...");
+
+  const prompt = `Analyze this website screenshot for video production:
+
+1. DESIGN STYLE: What visual style does this website use? (minimal, bold, corporate, playful, tech, etc.)
+2. COLOR PALETTE: List the 4-5 dominant colors as hex codes
+3. LAYOUT: Describe the layout approach (grid, centered, asymmetric, bento, etc.)
+4. VISUAL MOOD: What feeling/emotion does this design convey?
+5. KEY VISUAL ELEMENTS: What unique design elements stand out? (gradients, shadows, animations hints, icons, typography)
+6. VIDEO IDEAS: Based on this design, suggest 3 visual concepts for a promotional video
+
+Return as JSON:
+{
+  "designStyle": "string",
+  "colorPalette": ["#hex1", "#hex2", ...],
+  "layout": "string",
+  "visualMood": "string",
+  "keyElements": ["element1", "element2", ...],
+  "videoIdeas": ["idea1", "idea2", "idea3"],
+  "summary": "Brief design analysis"
+}`;
+
+  try {
+    const response = await chatWithKimiVision(
+      { type: "image", path: screenshotPath },
+      prompt,
+      "You are a design analyst specializing in web and video production.",
+      SCRAPER_CONFIG,
+    );
+
+    const jsonMatch = response.content.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const analysis = JSON.parse(jsonMatch[0]);
+      return {
+        designInsights: analysis.summary || "",
+        colorPalette: analysis.colorPalette || [],
+        layoutStyle: analysis.layout || "centered",
+        visualMood: analysis.visualMood || "professional",
+      };
+    }
+  } catch (error) {
+    console.error("[Scraper] Screenshot analysis error:", error);
   }
 
-  console.log("[Scraper] LLM Response length:", responseText.length);
-  console.log(
-    "[Scraper] LLM Response preview:",
-    responseText.substring(0, 500),
-  );
-  console.log(
-    "[Scraper] LLM Response end:",
-    responseText.substring(responseText.length - 200),
-  );
-
-  return responseText;
+  return {
+    designInsights: "",
+    colorPalette: [],
+    layoutStyle: "centered",
+    visualMood: "professional",
+  };
 }
 
 export async function scraperNode(
   state: VideoGenerationStateType,
 ): Promise<Partial<VideoGenerationStateType>> {
-  console.log("[Scraper] Starting scraper node...");
+  console.log("[Scraper] Starting scraper node with Kimi K2.5...");
 
   try {
     // If only description is provided, create basic product data
@@ -210,11 +262,16 @@ export async function scraperNode(
     }
 
     console.log(`[Scraper] Scraping URL: ${state.sourceUrl}`);
-    const { text, images, title } = await scrapeWebsite(state.sourceUrl);
+    const { text, images, title, screenshotPath } = await scrapeWebsite(state.sourceUrl);
 
     console.log(
       `[Scraper] Scraped ${text.length} chars, ${images.length} images`,
     );
+
+    // Analyze screenshot with Kimi Vision for design insights
+    const designAnalysis = await analyzeScreenshotForDesign(screenshotPath);
+    console.log("[Scraper] Design insights:", designAnalysis.designInsights);
+    console.log("[Scraper] Visual mood:", designAnalysis.visualMood);
 
     const userMessage = `Analyze this website and extract product information:
 
@@ -223,12 +280,19 @@ Page Title: ${title}
 
 ${state.description ? `Additional context from user: ${state.description}\n\n` : ""}
 
+VISUAL ANALYSIS (from screenshot):
+- Design Style: ${designAnalysis.layoutStyle}
+- Visual Mood: ${designAnalysis.visualMood}
+- Key Colors: ${designAnalysis.colorPalette.join(", ")}
+- Design Notes: ${designAnalysis.designInsights}
+
 Page Content:
 ${text}
 
 Found Images:
 ${images.join("\n")}
 
+Use the visual analysis to inform the colors and tone extraction.
 Return ONLY valid JSON.`;
 
     const responseText = await callModel(SCRAPER_SYSTEM_PROMPT, userMessage);
@@ -251,6 +315,20 @@ Return ONLY valid JSON.`;
     if (productData.images.length === 0 && images.length > 0) {
       productData.images = images.slice(0, 5);
     }
+
+    // Override colors from visual analysis if available
+    if (designAnalysis.colorPalette.length >= 3) {
+      productData.colors = {
+        primary: designAnalysis.colorPalette[0],
+        secondary: designAnalysis.colorPalette[1],
+        accent: designAnalysis.colorPalette[2],
+      };
+    }
+
+    // Store design insights for video generation
+    (productData as any).designInsights = designAnalysis.designInsights;
+    (productData as any).visualMood = designAnalysis.visualMood;
+    (productData as any).screenshotPath = screenshotPath;
 
     console.log("[Scraper] Extracted product name:", productData.name);
     console.log("[Scraper] Extracted tagline:", productData.tagline);

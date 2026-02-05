@@ -1,35 +1,47 @@
 import {
-  isUsingOpenRouter,
-  chatWithOpenRouterMultiTurn,
-  getAnthropicModel,
+  chatWithKimi,
   SCRIPT_WRITER_CONFIG,
 } from "./model";
 import type { VideoScript } from "../types";
 import type { VideoGenerationStateType } from "./state";
 import { v4 as uuidv4 } from "uuid";
-import { generateBeatMap, getBpmFromMood } from "../audio/beatSync";
+import { generateBeatMap } from "../audio/beatSync";
 
-const SCRIPT_WRITER_SYSTEM_PROMPT = `You are a PREMIUM video scriptwriter specializing in stunning motion graphics and product marketing videos.
-Create visually impressive 30-60 second videos (30fps = 900-1800 frames) that look like they were made by a professional agency.
+const SCRIPT_WRITER_SYSTEM_PROMPT = `You are a PREMIUM video scriptwriter specializing in continuous, flowing motion graphics videos.
+Create visually impressive 30-60 second videos (30fps = 900-1800 frames) with CONTINUOUS MOTION - NO HARD SCENE CUTS.
 
-## CRITICAL DESIGN PRINCIPLES
-1. Use the ACTUAL brand colors from the product - NEVER default to black/white
-2. Include images from the product when available
-3. Use modern layouts: bento grids, split screens, centered hero text
-4. Apply glassmorphic card effects for feature showcases
-5. Use smooth scroll-based transitions between scenes
-6. Vary text animations: blur-in, stagger-words, encrypted-text for tech products
+## CRITICAL: CONTINUOUS MOTION PHILOSOPHY
+This video must feel like ONE CONTINUOUS SHOT. Elements flow in and out naturally:
+- NO hard cuts or scene transitions
+- Elements animate IN and OUT of frame smoothly
+- Camera movements (pan, zoom, dolly) connect different content
+- Background elements shift and morph continuously
+- Fast-paced background flickers and pulses synced to music beats
+- Text warps, stretches, and transforms with the rhythm
 
-## VIDEO STRUCTURE
-- HOOK (0-3s): Bold statement with blur-in-up animation on gradient background
-- PROBLEM/SOLUTION (3-12s): Split screen or full-width with stagger-words
-- FEATURES (12-40s): Bento grid or feature cards with scroll-vertical transitions
-- STATS (40-50s): Animated counters with accent colors (if data available)
-- CTA (50-60s): Bold call-to-action with scale animation
+## MOTION TECHNIQUES
+1. **Camera Movement**: Continuous zoom, pan, or dolly throughout
+2. **Element Flow**: Content slides/fades in from edges, exits opposite side
+3. **Layered Animation**: Multiple layers moving at different speeds (parallax)
+4. **Beat Sync**: Background flickers, scale pulses, and color shifts on beat
+5. **Morphing**: Text and shapes transform into new content
+6. **Warping**: Subtle distortion waves traveling across the composition
+
+## VIDEO STRUCTURE (All in ONE continuous composition)
+- HOOK (0-3s): Bold text zooms in with background warp effect
+- Content flows with camera pan - elements enter/exit naturally
+- FEATURES: Cards float in from sides, drift across, exit with momentum
+- Stats: Numbers count up while background pulses with energy
+- CTA: Final message scales up as camera pushes in
 
 ## OUTPUT JSON SCHEMA
 {
   "totalDuration": number (frames at 30fps),
+  "continuousMotion": {
+    "cameraMovement": "zoom-in" | "pan-left" | "pan-right" | "dolly-in" | "orbit",
+    "cameraSpeed": number (pixels per frame),
+    "parallaxLayers": number (2-5 layers)
+  },
   "scenes": [{
     "id": "unique-id",
     "startFrame": number,
@@ -44,49 +56,52 @@ Create visually impressive 30-60 second videos (30fps = 900-1800 frames) that lo
       "features": [{"icon": emoji, "title": string, "description": string}] | null
     },
     "animation": {
-      "enter": "blur-in" | "blur-in-up" | "stagger-words" | "stagger-chars" | "scale" | "slide-up" | "fade" | "encrypted-text" | "gradient-text" | "flip-up",
-      "exit": "fade" | "blur-out" | "zoom-out" | "slide-up",
-      "staggerDelay": 5 (frames between items)
+      "enter": "float-in-left" | "float-in-right" | "scale-in" | "warp-in" | "blur-in" | "glitch-in",
+      "exit": "float-out-left" | "float-out-right" | "scale-out" | "warp-out" | "blur-out",
+      "motion": "drift-left" | "drift-right" | "float-up" | "pulse" | "wobble",
+      "staggerDelay": 3-5 (frames between items)
     },
     "style": {
-      "background": "gradient or solid from brand colors" (e.g. "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" or "#1a1a2e"),
+      "background": "none" (shared background),
       "textColor": "#ffffff" or from brand,
       "accentColor": "brand accent for highlights",
       "fontSize": "large" | "medium" | "small",
-      "layout": "centered" | "left" | "split" | "grid" | "bento",
-      "cardStyle": "glass" | "spotlight" | "floating" | "none"
+      "layout": "centered" | "left" | "right" | "floating",
+      "cardStyle": "glass" | "glow" | "floating" | "none",
+      "warpIntensity": 0-1 (how much text warps with music)
     }
   }],
-  "transitions": [{
-    "afterScene": "scene-id",
-    "type": "scroll-vertical" | "scroll-horizontal" | "crossfade" | "zoom-through" | "morph" | "fade",
-    "duration": 20-40 frames,
-    "direction": "up" | "down" | "left" | "right" (optional)
-  }],
+  "backgroundEffects": {
+    "type": "aurora" | "particles" | "mesh-gradient" | "noise-field",
+    "colors": ["#hex1", "#hex2", "#hex3"],
+    "flickerOnBeat": true,
+    "pulseIntensity": 0.1-0.5,
+    "waveSpeed": number
+  },
+  "beatSync": {
+    "flickerIntensity": 0.1-0.3,
+    "scalePulse": 0.02-0.1,
+    "colorShift": true
+  },
   "music": {
     "tempo": BPM number,
-    "mood": "energetic" | "calm" | "dramatic" | "playful"
+    "mood": "energetic" | "hypnotic" | "dramatic" | "chill"
   }
 }
 
-## ANIMATION RECOMMENDATIONS BY SCENE TYPE
-- intro: "blur-in-up" or "stagger-words" with large text
-- feature: "stagger-chars" or "slide-up" with "glass" cardStyle
-- stats: "scale" with animated counters
-- testimonial: "fade" or "blur-in" with "floating" cardStyle
-- cta: "scale" or "flip-up" with bold accent colors
-
-## TRANSITIONS (use varied, flowing transitions)
-- Between intro→features: "scroll-vertical" (like page scroll down)
-- Between features: "scroll-horizontal" (carousel feel) or "crossfade"
-- To CTA: "zoom-through" (dramatic zoom into next scene)
+## ANIMATION STYLE GUIDE
+- Everything moves constantly - nothing is static
+- Use momentum and physics-based easing
+- Layer multiple animations (position + scale + rotation + warp)
+- Background should breathe and pulse with the music
+- Text should have subtle continuous motion even when "still"
 
 ## STYLE REQUIREMENTS
-- ALWAYS use gradients for backgrounds (e.g., "linear-gradient(135deg, primaryColor 0%, secondaryColor 100%)")
-- Use the product's extracted colors - do NOT use plain black/white
-- Add accent colors for emphasis (buttons, highlights)
-- Glass cardStyle for feature cards with backdrop blur effect
-- Include vignette overlays for depth
+- Use DYNAMIC moving gradients/mesh backgrounds
+- Fast micro-animations (flickers, pulses) on every beat
+- Subtle warping/distortion waves
+- Glow effects that pulse with music
+- Motion blur on fast-moving elements
 
 Return ONLY valid JSON. No markdown, no explanation.`;
 
@@ -94,28 +109,15 @@ async function callModel(
   systemPrompt: string,
   userMessage: string,
 ): Promise<string> {
-  if (isUsingOpenRouter()) {
-    // Use OpenRouter with reasoning
-    return chatWithOpenRouterMultiTurn(
-      systemPrompt,
-      userMessage,
-      SCRIPT_WRITER_CONFIG,
-    );
-  } else {
-    // Use Anthropic Claude directly
-    const model = getAnthropicModel(SCRIPT_WRITER_CONFIG);
-    const response = await model.invoke([
+  console.log("[ScriptWriter] Calling Kimi K2.5...");
+  const response = await chatWithKimi(
+    [
       { role: "system", content: systemPrompt },
       { role: "user", content: userMessage },
-    ]);
-
-    const rawContent = response.content;
-    return typeof rawContent === "string"
-      ? rawContent
-      : Array.isArray(rawContent) && rawContent[0]?.type === "text"
-        ? (rawContent[0] as { type: "text"; text: string }).text
-        : "";
-  }
+    ],
+    SCRIPT_WRITER_CONFIG,
+  );
+  return response.content;
 }
 
 export async function scriptWriterNode(

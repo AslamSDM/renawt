@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
           });
 
           for await (const chunk of generator) {
-            // Handle different node outputs
+            // Handle scraper node output
             if (chunk.scraper) {
               const state = chunk.scraper;
               if (state.productData) {
@@ -92,6 +92,7 @@ export async function POST(request: NextRequest) {
               }
             }
 
+            // Handle scriptWriter node output
             if (chunk.scriptWriter) {
               const state = chunk.scriptWriter;
               if (state.videoScript) {
@@ -122,8 +123,63 @@ export async function POST(request: NextRequest) {
               }
             }
 
-            if (chunk.codeGenerator) {
-              const state = chunk.codeGenerator;
+            // Handle demoScriptWriter node output (same as scriptWriter)
+            if (chunk.demoScriptWriter) {
+              const state = chunk.demoScriptWriter;
+              if (state.videoScript) {
+                controller.enqueue(
+                  encoder.encode(
+                    JSON.stringify({
+                      type: "videoScript",
+                      data: state.videoScript,
+                    }) + "\n"
+                  )
+                );
+
+                await prisma.project.update({
+                  where: { id: project.id },
+                  data: { script: JSON.stringify(state.videoScript) },
+                });
+              }
+              if (state.currentStep) {
+                controller.enqueue(
+                  encoder.encode(
+                    JSON.stringify({
+                      type: "status",
+                      data: { step: state.currentStep },
+                    }) + "\n"
+                  )
+                );
+              }
+            }
+
+            // Handle reactPageGenerator node output (Step 1 of code gen)
+            if (chunk.reactPageGenerator) {
+              const state = chunk.reactPageGenerator;
+              if (state.reactPageCode) {
+                controller.enqueue(
+                  encoder.encode(
+                    JSON.stringify({
+                      type: "reactPageCode",
+                      data: state.reactPageCode,
+                    }) + "\n"
+                  )
+                );
+
+                controller.enqueue(
+                  encoder.encode(
+                    JSON.stringify({
+                      type: "status",
+                      data: { step: "translating", message: "Translating React to Remotion..." },
+                    }) + "\n"
+                  )
+                );
+              }
+            }
+
+            // Handle remotionTranslator node output (Step 2 of code gen)
+            if (chunk.remotionTranslator) {
+              const state = chunk.remotionTranslator;
               if (state.remotionCode) {
                 controller.enqueue(
                   encoder.encode(
@@ -155,6 +211,7 @@ export async function POST(request: NextRequest) {
               }
             }
 
+            // Handle errorHandler node output
             if (chunk.errorHandler) {
               const state = chunk.errorHandler;
               if (state.errors && state.errors.length > 0) {

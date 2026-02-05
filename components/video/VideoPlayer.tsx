@@ -9,12 +9,14 @@ import {
   Sequence,
   interpolate,
   spring,
+  Audio,
 } from "remotion";
 import type { VideoScript, VideoScene } from "@/lib/types";
 
 interface VideoPlayerProps {
   script?: VideoScript;
   code?: string;
+  audioUrl?: string | null;
   className?: string;
 }
 
@@ -410,9 +412,16 @@ const PremiumSceneRenderer: React.FC<{ scene: VideoScene }> = ({ scene }) => {
 // DYNAMIC COMPOSITION - Uses Premium Animations
 // ============================================================================
 
-const DynamicComposition: React.FC<{ script: VideoScript }> = ({ script }) => {
+const DynamicComposition: React.FC<{
+  script: VideoScript;
+  audioUrl?: string | null;
+}> = ({ script, audioUrl }) => {
   return (
     <AbsoluteFill style={{ backgroundColor: "#0f0f1a" }}>
+      {/* Background Audio */}
+      {audioUrl && <Audio src={audioUrl} volume={0.8} />}
+
+      {/* Scenes */}
       {script.scenes.map((scene) => (
         <Sequence
           key={scene.id}
@@ -488,6 +497,7 @@ const PlaceholderComposition: React.FC = () => {
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   script,
+  audioUrl,
   className = "",
 }) => {
   const playerRef = React.useRef<PlayerRef>(null);
@@ -498,10 +508,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   const CompositionComponent = useMemo(() => {
     if (script) {
-      return () => <DynamicComposition script={script} />;
+      return () => <DynamicComposition script={script} audioUrl={audioUrl} />;
     }
     return PlaceholderComposition;
-  }, [script]);
+  }, [script, audioUrl]);
 
   // Set up event listeners
   useEffect(() => {
