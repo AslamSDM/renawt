@@ -10,7 +10,8 @@
     "remotion:studio": "remotion studio",
     "remotion:build": "remotion render remotion/Root.tsx Demo out/video.mp4",
     "remotion:preview": "remotion preview remotion/Root.tsx",
-    "setup:dodo-webhook": "tsx scripts/setup_webhook_cloudfared.ts"
+    "setup:dodo-webhook": "tsx scripts/setup_webhook_cloudfared.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@dodopayments/nextjs": "^0.3.3",
