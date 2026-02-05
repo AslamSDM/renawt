@@ -1,22 +1,24 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DodoPayments } from "dodopayments-checkout";
 
 export default function ProductPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    DodoPayments.Initialize({
-        mode: "test",
-        displayType: "inline",
-        onEvent: (event) => {
-            if (event.event_type === "checkout.breakdown") {
-                const breakdown = event.data?.message;
-                // Update your UI with breakdown.subTotal, breakdown.tax, breakdown.total, etc.
-            }
-        },
-    });
+    useEffect(() => {
+        DodoPayments.Initialize({
+            mode: "test",
+            displayType: "inline",
+            onEvent: (event) => {
+                if (event.event_type === "checkout.breakdown") {
+                    const breakdown = event.data?.message;
+                    // Update your UI with breakdown.subTotal, breakdown.tax, breakdown.total, etc.
+                }
+            },
+        });
+    }, []);
 
     const handleBuyStarter = async () => {
         setIsLoading(true);

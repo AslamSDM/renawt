@@ -1,8 +1,12 @@
 import { Webhooks } from "@dodopayments/nextjs";
 import { upsertUserSubscription } from "@/lib/db";
+import { NextResponse } from "next/server";
 
-export const POST = Webhooks({
-  webhookKey: process.env.DODO_PAYMENTS_WEBHOOK_SIGNING_KEY!,
+const webhookKey = process.env.DODO_PAYMENTS_WEBHOOK_SIGNING_KEY;
+
+export const POST = webhookKey
+  ? Webhooks({
+      webhookKey,
   onSubscriptionActive: async (payload) => {
     console.log("Subscription active:");
     await upsertUserSubscription(
@@ -30,4 +34,5 @@ export const POST = Webhooks({
       payload.data.subscription_id
     );
   },
-});
+})
+  : () => NextResponse.json({ error: "Webhook not configured" }, { status: 503 });
