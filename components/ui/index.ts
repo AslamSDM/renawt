@@ -1,4 +1,4 @@
-export { Button } from "./button";
-export { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./card";
+export { Button } from "./Button";
+export { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./Card";
 export { Badge } from "./badge";
 export { Separator } from "./separator";

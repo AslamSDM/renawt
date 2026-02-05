@@ -13,8 +13,8 @@ import {
   spring,
 } from "remotion";
 import type { VideoScript, VideoScene } from "@/lib/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Download, Copy, Loader2, Menu, X, ArrowRight } from "lucide-react";

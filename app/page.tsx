@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { Separator } from "@/components/ui/separator";
 
 const TYPING_TEXTS = [
@@ -66,25 +66,25 @@ const FEATURES = [
     title: "AI-Powered Generation",
     subtitle: "Smart Scripts",
     description: "Advanced AI agents analyze your content and generate compelling video scripts",
-    image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=300&fit=crop"
+    image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800&q=80"
   },
   {
     title: "Remotion Engine",
     subtitle: "Pro Rendering",
     description: "Professional-grade rendering with React-based animation system",
-    image: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=400&h=300&fit=crop"
+    image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=800&q=80"
   },
   {
     title: "Beat Synchronized",
     subtitle: "Perfect Timing",
     description: "Animations automatically sync to music beats for engaging content",
-    image: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=300&fit=crop"
+    image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800&q=80"
   },
   {
     title: "Export Anywhere",
     subtitle: "4K Quality",
     description: "Download in multiple formats including 4K for any platform",
-    image: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=400&h=300&fit=crop"
+    image: "https://images.unsplash.com/photo-1579783901586-d88db74b4fe4?w=800&q=80"
   }
 ];
 
@@ -93,25 +93,25 @@ const VIDEO_TYPES = [
     title: "Product Launch",
     subtitle: "Cinematic announcements",
     year: "2024",
-    image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=500&fit=crop"
+    image: "https://images.unsplash.com/photo-1549490349-8643362247b5?w=600&q=80"
   },
   {
     title: "Explainer Videos",
     subtitle: "Clear & engaging",
     year: "2024",
-    image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=500&fit=crop"
+    image: "https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=600&q=80"
   },
   {
     title: "Motion Graphics",
     subtitle: "Dynamic visuals",
     year: "2024",
-    image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400&h=500&fit=crop"
+    image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=600&q=80"
   },
   {
     title: "Info Videos",
     subtitle: "Data-driven",
     year: "2024",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=500&fit=crop"
+    image: "https://images.unsplash.com/photo-1578321272176-b7bbc0679853?w=600&q=80"
   }
 ];
 
@@ -305,10 +305,10 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-4 gap-8">
             {[
-              { step: "01", title: "Describe", desc: "Enter your product URL or description", image: "https://images.unsplash.com/photo-1512314889357-e157c22f938d?w=200&h=200&fit=crop" },
-              { step: "02", title: "Generate", desc: "AI creates your video script & scenes", image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=200&h=200&fit=crop" },
-              { step: "03", title: "Preview", desc: "Review and customize the animation", image: "https://images.unsplash.com/photo-1536240478700-b869070f9279?w=200&h=200&fit=crop" },
-              { step: "04", title: "Export", desc: "Download your professional video", image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&h=200&fit=crop" }
+              { step: "01", title: "Describe", desc: "Enter your product URL or description", image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=200&q=80" },
+              { step: "02", title: "Generate", desc: "AI creates your video script & scenes", image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=200&q=80" },
+              { step: "03", title: "Preview", desc: "Review and customize the animation", image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=200&q=80" },
+              { step: "04", title: "Export", desc: "Download your professional video", image: "https://images.unsplash.com/photo-1579783901586-d88db74b4fe4?w=200&q=80" }
             ].map((item, i) => (
               <div key={i} className="border-t border-white/20 pt-8">
                 <div className="w-16 h-16 mb-6 overflow-hidden rounded-full">
@@ -358,7 +358,7 @@ export default function LandingPage() {
 
             <div className="aspect-video bg-white/5 flex items-center justify-center border border-white/10 overflow-hidden">
               <img 
-                src="https://images.unsplash.com/photo-1536240478700-b869070f9279?w=800&h=450&fit=crop" 
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Vincent_van_Gogh_-_Almond_blossom_-_Google_Art_Project.jpg/640px-Vincent_van_Gogh_-_Almond_blossom_-_Google_Art_Project.jpg" 
                 alt="Video Preview"
                 className="w-full h-full object-cover"
               />
