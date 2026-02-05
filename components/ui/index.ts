@@ -1,7 +1,4 @@
-export { Button } from "./Button";
-export { Input, TextArea } from "./Input";
-export { Card, CardHeader } from "./Card";
-export { Progress, StepsProgress } from "./Progress";
-export { Spinner, LoadingOverlay } from "./Spinner";
-export { Select } from "./Select";
-export { Tabs, TabPanel } from "./Tabs";
+export { Button } from "./button";
+export { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./card";
+export { Badge } from "./badge";
+export { Separator } from "./separator";

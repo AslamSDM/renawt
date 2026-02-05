@@ -27,6 +27,11 @@ export const VideoGenerationState = Annotation.Root({
     reducer: (_, next) => next,
     default: () => null,
   }),
+  // Two-step code generation: React page first, then Remotion
+  reactPageCode: Annotation<string | null>({
+    reducer: (_, next) => next,
+    default: () => null,
+  }),
   remotionCode: Annotation<string | null>({
     reducer: (_, next) => next,
     default: () => null,
@@ -40,7 +45,15 @@ export const VideoGenerationState = Annotation.Root({
 
   // Status tracking
   currentStep: Annotation<
-    "idle" | "scraping" | "scripting" | "generating" | "complete" | "error"
+    | "idle"
+    | "scraping"
+    | "scripting"
+    | "generating"
+    | "translating"
+    | "rendering"
+    | "fixing"
+    | "complete"
+    | "error"
   >({
     reducer: (_, next) => next,
     default: () => "idle",
@@ -48,6 +61,20 @@ export const VideoGenerationState = Annotation.Root({
   errors: Annotation<string[]>({
     reducer: (current, next) => [...current, ...next],
     default: () => [],
+  }),
+
+  // Render tracking
+  renderAttempts: Annotation<number>({
+    reducer: (_, next) => next,
+    default: () => 0,
+  }),
+  lastRenderError: Annotation<string | null>({
+    reducer: (_, next) => next,
+    default: () => null,
+  }),
+  videoUrl: Annotation<string | null>({
+    reducer: (_, next) => next,
+    default: () => null,
   }),
 
   // Metadata

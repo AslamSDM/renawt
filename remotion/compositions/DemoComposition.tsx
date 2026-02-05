@@ -2,107 +2,118 @@ import React from "react";
 import {
   AbsoluteFill,
   Sequence,
-  useCurrentFrame,
-  useVideoConfig,
-  interpolate,
-  spring,
 } from "remotion";
 import { TextReveal } from "../components/TextReveal";
-import { FadeTransition, SlideTransition } from "../components/Transitions";
-import { CTAScene } from "../components/ProductShowcase";
+import {
+  FadeTransition,
+  SlideTransition,
+  ScaleTransition,
+} from "../components/Transitions";
+import {
+  ProductShowcase,
+  FeatureCard,
+  CTAScene,
+  ModernHero,
+} from "../components/ProductShowcase";
 
-// Demo composition to showcase the animation components
 export const DemoComposition: React.FC = () => {
   return (
-    <AbsoluteFill style={{ background: "#0f0f1a" }}>
-      {/* Scene 1: Intro */}
-      <Sequence from={0} durationInFrames={90}>
+    <AbsoluteFill style={{ background: "#000000" }}>
+      {/* Scene 1: Modern Hero Intro */}
+      <Sequence from={0} durationInFrames={150}>
         <IntroScene />
       </Sequence>
 
-      {/* Scene 2: Features */}
-      <Sequence from={90} durationInFrames={120}>
+      {/* Scene 2: Product Showcase */}
+      <Sequence from={150} durationInFrames={150}>
+        <ShowcaseScene />
+      </Sequence>
+
+      {/* Scene 3: Features */}
+      <Sequence from={300} durationInFrames={150}>
         <FeaturesScene />
       </Sequence>
 
-      {/* Scene 3: CTA */}
-      <Sequence from={210} durationInFrames={90}>
-        <CTAScene
-          headline="Start Creating Today"
-          buttonText="Try Free"
-          background="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-          textColor="#ffffff"
-        />
+      {/* Scene 4: CTA */}
+      <Sequence from={450} durationInFrames={150}>
+        <FinalCTAScene />
       </Sequence>
     </AbsoluteFill>
   );
 };
 
 const IntroScene: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  const titleScale = spring({
-    frame,
-    fps,
-    config: { damping: 12, stiffness: 100 },
-  });
-
-  const subtitleOpacity = interpolate(frame, [30, 50], [0, 1], {
-    extrapolateRight: "clamp",
-  });
-
   return (
-    <FadeTransition totalDuration={90} durationInFrames={15}>
-      <AbsoluteFill
-        style={{
-          background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <div style={{ textAlign: "center" }}>
-          <h1
-            style={{
-              color: "#ffffff",
-              fontSize: 72,
-              fontWeight: "bold",
-              margin: 0,
-              transform: `scale(${titleScale})`,
-            }}
-          >
-            <TextReveal text="Create Stunning Videos" type="word-by-word" duration={40} />
-          </h1>
-          <p
-            style={{
-              color: "#a0a0a0",
-              fontSize: 28,
-              marginTop: 24,
-              opacity: subtitleOpacity,
-            }}
-          >
-            Powered by AI and Remotion
-          </p>
-        </div>
-      </AbsoluteFill>
+    <FadeTransition totalDuration={150} durationInFrames={20}>
+      <ModernHero
+        title="Future of Video"
+        subtitle="Create stunning motion graphics with code."
+        tagline="Powered by Remotion"
+        background="radial-gradient(circle at center, #1a1a2e 0%, #000000 100%)"
+      />
     </FadeTransition>
   );
 };
 
-const FeaturesScene: React.FC = () => {
-  const frame = useCurrentFrame();
+const ShowcaseScene: React.FC = () => {
+  return (
+    <SlideTransition direction="up" totalDuration={150} durationInFrames={20}>
+      <ProductShowcase
+        animation="float"
+        background="linear-gradient(135deg, #240b36 0%, #c31432 100%)"
+      />
+      <AbsoluteFill
+        style={{
+          justifyContent: "flex-end",
+          alignItems: "center",
+          paddingBottom: 80,
+          pointerEvents: "none",
+        }}
+      >
+        <h2
+          style={{
+            color: "white",
+            fontSize: 40,
+            fontWeight: 300,
+            textShadow: "0 4px 20px rgba(0,0,0,0.5)",
+          }}
+        >
+          <TextReveal
+            text="Showcase your product in 3D"
+            type="blur-in"
+            delay={30}
+          />
+        </h2>
+      </AbsoluteFill>
+    </SlideTransition>
+  );
+};
 
+const FeaturesScene: React.FC = () => {
   const features = [
-    { icon: "🚀", title: "Lightning Fast", color: "#667eea" },
-    { icon: "🎨", title: "Beautiful Design", color: "#764ba2" },
-    { icon: "🤖", title: "AI Powered", color: "#f093fb" },
+    {
+      icon: "🚀",
+      title: "Fast Render",
+      description: "Generate video in seconds, not hours.",
+    },
+    {
+      icon: "🎨",
+      title: "Stylable",
+      description: "Use CSS, Canvas, or SVG for full control.",
+    },
+    {
+      icon: "✨",
+      title: "Reactive",
+      description: "Data-driven videos that update automatically.",
+    },
   ];
 
   return (
-    <SlideTransition direction="up" totalDuration={120} durationInFrames={20}>
+    <ScaleTransition totalDuration={150} durationInFrames={20}>
       <AbsoluteFill
         style={{
-          background: "#0f0f1a",
+          background: "#0f0c29", // Fallback
+          backgroundImage: "linear-gradient(to right, #24243e, #302b63, #0f0c29)",
           justifyContent: "center",
           alignItems: "center",
         }}
@@ -110,49 +121,36 @@ const FeaturesScene: React.FC = () => {
         <div
           style={{
             display: "flex",
-            gap: 40,
+            gap: 30,
+            maxWidth: 1400,
+            flexWrap: "wrap",
+            justifyContent: "center",
           }}
         >
-          {features.map((feature, index) => {
-            const delay = index * 15;
-            const cardFrame = Math.max(0, frame - delay);
-
-            const opacity = interpolate(cardFrame, [0, 20], [0, 1], {
-              extrapolateRight: "clamp",
-            });
-            const translateY = interpolate(cardFrame, [0, 20], [40, 0], {
-              extrapolateRight: "clamp",
-            });
-
-            return (
-              <div
-                key={index}
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  borderRadius: 20,
-                  padding: "40px 50px",
-                  textAlign: "center",
-                  opacity,
-                  transform: `translateY(${translateY}px)`,
-                  border: `2px solid ${feature.color}40`,
-                }}
-              >
-                <div style={{ fontSize: 56, marginBottom: 16 }}>{feature.icon}</div>
-                <h3
-                  style={{
-                    color: "#ffffff",
-                    fontSize: 24,
-                    margin: 0,
-                  }}
-                >
-                  {feature.title}
-                </h3>
-              </div>
-            );
-          })}
+          {features.map((feature, index) => (
+            <FeatureCard
+              key={index}
+              index={index}
+              {...feature}
+            />
+          ))}
         </div>
       </AbsoluteFill>
-    </SlideTransition>
+    </ScaleTransition>
+  );
+};
+
+const FinalCTAScene: React.FC = () => {
+  return (
+    <FadeTransition totalDuration={150} durationInFrames={20}>
+      <CTAScene
+        headline="Start Building Today"
+        buttonText="Get Started Free"
+        background="linear-gradient(45deg, #11998e 0%, #38ef7d 100%)"
+        accentColor="#ffffff"
+        textColor="#ffffff"
+      />
+    </FadeTransition>
   );
 };
 

@@ -4,7 +4,7 @@ import { useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
 interface TextRevealProps {
   text: string;
   style?: React.CSSProperties;
-  type?: "typewriter" | "word-by-word" | "fade" | "slide-up" | "scale";
+  type?: "typewriter" | "word-by-word" | "fade" | "slide-up" | "scale" | "blur-in";
   delay?: number;
   duration?: number;
 }
@@ -19,6 +19,32 @@ export const TextReveal: React.FC<TextRevealProps> = ({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const adjustedFrame = Math.max(0, frame - delay);
+
+  if (type === "blur-in") {
+    const opacity = interpolate(adjustedFrame, [0, duration * 0.6], [0, 1], {
+      extrapolateRight: "clamp",
+    });
+    const blur = interpolate(adjustedFrame, [0, duration * 0.6], [10, 0], {
+      extrapolateRight: "clamp",
+    });
+    const translateY = interpolate(adjustedFrame, [0, duration * 0.6], [20, 0], {
+      extrapolateRight: "clamp",
+    });
+
+    return (
+      <span
+        style={{
+          ...style,
+          display: "inline-block",
+          opacity,
+          transform: `translateY(${translateY}px)`,
+          filter: `blur(${blur}px)`,
+        }}
+      >
+        {text}
+      </span>
+    );
+  }
 
   if (type === "typewriter") {
     const charsToShow = Math.floor(

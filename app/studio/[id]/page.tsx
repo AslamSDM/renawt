@@ -29,7 +29,7 @@ export default function StudioPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activePanel, setActivePanel] = useState<"scenes" | "code" | "data">(
-    "scenes"
+    "scenes",
   );
 
   useEffect(() => {
@@ -165,6 +165,7 @@ export default function StudioPage({
               <VideoPlayer
                 script={project.script || undefined}
                 code={project.composition || undefined}
+                audioUrl={project.audioUrl}
                 className="p-4"
               />
             </Card>
@@ -302,7 +303,9 @@ export default function StudioPage({
                       />
                       <div
                         className="w-8 h-8 rounded"
-                        style={{ background: project.productData.colors.accent }}
+                        style={{
+                          background: project.productData.colors.accent,
+                        }}
                         title="Accent"
                       />
                     </div>

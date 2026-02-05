@@ -185,12 +185,23 @@ export const BeatMapSchema = z.object({
   drops: z.array(z.number()),
 });
 
+// Audio configuration for video
+export interface AudioConfig {
+  url: string; // Path to audio file (e.g., "/audio/audio1.mp3")
+  bpm: number; // Beats per minute
+  duration: number; // Duration in seconds
+  volume?: number; // 0-1
+  startFrom?: number; // Start time in seconds
+}
+
 // User Preferences for video generation
 export interface UserPreferences {
   style: "professional" | "playful" | "minimal" | "bold";
   duration?: number;
   musicUrl?: string;
   musicBpm?: number;
+  videoType?: "demo" | "creative" | "fast-paced" | "cinematic";
+  audio?: AudioConfig; // Audio file configuration
 }
 
 export const UserPreferencesSchema = z.object({
