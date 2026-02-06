@@ -188,14 +188,6 @@ export async function* streamVideoGeneration(input: {
   userPreferences: {
     style: "professional" | "playful" | "minimal" | "bold";
     videoType?: "demo" | "creative" | "fast-paced" | "cinematic";
-    duration?: number;
-    audio?: {
-      url: string;
-      bpm: number;
-      duration: number;
-      volume?: number;
-      startFrom?: number;
-    };
   };
   projectId?: string;
 }) {

@@ -12,37 +12,134 @@ import {
   interpolate,
   spring,
 } from "remotion";
+import { loadFont as loadInter } from "@remotion/google-fonts/Inter";
+import { loadFont as loadPoppins } from "@remotion/google-fonts/Poppins";
+import { loadFont as loadRoboto } from "@remotion/google-fonts/Roboto";
 import type { VideoScript, VideoScene } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { AudioSelector, AudioFile } from "@/components/audio/AudioSelector";
 import { Download, Copy, Loader2, Menu, X, ArrowRight } from "lucide-react";
 
-// Animation Components
+// Load Google Fonts with specific weights
+const { fontFamily: interFont } = loadInter("normal", {
+  weights: ["400", "600", "800"],
+  subsets: ["latin"],
+});
+
+const { fontFamily: poppinsFont } = loadPoppins("normal", {
+  weights: ["400", "600", "700"],
+  subsets: ["latin"],
+});
+
+const { fontFamily: robotoFont } = loadRoboto("normal", {
+  weights: ["400", "500", "700"],
+  subsets: ["latin"],
+});
+
+// STYLE GUIDELINES
+// Typography Scale: Display (96px), Title (72px), Headline (48px), Body (28px), Caption (20px)
+// Font Families: Poppins (headlines, bold), Inter (body, clean), Roboto (subtext)
+// Spacing: Line height 1.2 for headlines, 1.5 for body
+// Effects: Typing, blur-in, scale-in with spring physics
+
+// Typography Components with Google Fonts
+
+// Continuous Typing Effect - Types out text character by character
+const TypingText: React.FC<{
+  text: string;
+  fontSize?: number;
+  delay?: number;
+  color?: string;
+  fontFamily?: string;
+  speed?: number;
+  cursor?: boolean;
+}> = ({ 
+  text, 
+  fontSize = 72, 
+  delay = 0, 
+  color = "#ffffff",
+  fontFamily = poppinsFont,
+  speed = 2,
+  cursor = true
+}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const f = Math.max(0, frame - delay);
+  
+  // Characters to show based on frame
+  const charsToShow = Math.floor(f / speed);
+  const displayText = text.slice(0, Math.min(charsToShow, text.length));
+  
+  // Cursor blink
+  const cursorVisible = cursor && (frame % fps < fps / 2);
+  
+  return (
+    <span
+      style={{
+        fontSize,
+        fontWeight: 700,
+        fontFamily,
+        color,
+        lineHeight: 1.1,
+        letterSpacing: "-0.02em",
+        display: "inline-block",
+      }}
+    >
+      {displayText}
+      {cursorVisible && charsToShow < text.length && (
+        <span style={{ opacity: 0.8 }}>|</span>
+      )}
+    </span>
+  );
+};
+
+// Blur-in with Scale - For dramatic headlines
 const BlurInText: React.FC<{
   text: string;
   fontSize?: number;
   delay?: number;
   color?: string;
-}> = ({ text, fontSize = 72, delay = 0, color = "#ffffff" }) => {
+  fontFamily?: string;
+}> = ({ 
+  text, 
+  fontSize = 96, 
+  delay = 0, 
+  color = "#ffffff",
+  fontFamily = poppinsFont
+}) => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
   const f = Math.max(0, frame - delay);
-  const opacity = interpolate(f, [0, 25], [0, 1], { extrapolateRight: "clamp" });
-  const blur = interpolate(f, [0, 25], [15, 0], { extrapolateRight: "clamp" });
-  const y = interpolate(f, [0, 25], [30, 0], { extrapolateRight: "clamp" });
+  
+  // Spring physics for scale
+  const scale = spring({
+    frame: f,
+    fps,
+    config: { damping: 15, stiffness: 100 },
+    from: 0.8,
+    to: 1,
+  });
+  
+  const opacity = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
+  const blur = interpolate(f, [0, 20], [20, 0], { extrapolateRight: "clamp" });
+  const y = interpolate(f, [0, 20], [40, 0], { extrapolateRight: "clamp" });
 
   return (
     <span
       style={{
         fontSize,
-        fontWeight: "bold",
-        fontFamily: "system-ui, sans-serif",
+        fontWeight: 800,
+        fontFamily,
         color,
         opacity,
         filter: `blur(${blur}px)`,
-        transform: `translateY(${y}px)`,
+        transform: `translateY(${y}px) scale(${scale})`,
         display: "inline-block",
+        lineHeight: 1.1,
+        letterSpacing: "-0.03em",
       }}
     >
       {text}
@@ -50,14 +147,24 @@ const BlurInText: React.FC<{
   );
 };
 
-const StaggerWords: React.FC<{
+// Word-by-word reveal with stagger
+const WordReveal: React.FC<{
   text: string;
   fontSize?: number;
   delay?: number;
-  staggerDelay?: number;
   color?: string;
-}> = ({ text, fontSize = 32, delay = 0, staggerDelay = 4, color = "#ffffff" }) => {
+  fontFamily?: string;
+  staggerDelay?: number;
+}> = ({ 
+  text, 
+  fontSize = 48, 
+  delay = 0, 
+  color = "#ffffff",
+  fontFamily = interFont,
+  staggerDelay = 8
+}) => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
   const words = text.split(" ");
 
   return (
@@ -65,19 +172,36 @@ const StaggerWords: React.FC<{
       style={{
         display: "flex",
         flexWrap: "wrap",
-        gap: "0.3em",
+        gap: "0.4em",
         justifyContent: "center",
         fontSize,
-        fontFamily: "system-ui, sans-serif",
+        fontFamily,
         color,
+        lineHeight: 1.3,
+        fontWeight: 600,
       }}
     >
       {words.map((word, i) => {
         const f = Math.max(0, frame - delay - i * staggerDelay);
         const opacity = interpolate(f, [0, 15], [0, 1], { extrapolateRight: "clamp" });
-        const y = interpolate(f, [0, 15], [20, 0], { extrapolateRight: "clamp" });
+        const y = interpolate(f, [0, 15], [30, 0], { extrapolateRight: "clamp" });
+        const scale = spring({
+          frame: f,
+          fps,
+          config: { damping: 12, stiffness: 150 },
+          from: 0.5,
+          to: 1,
+        });
+        
         return (
-          <span key={i} style={{ opacity, transform: `translateY(${y}px)` }}>
+          <span 
+            key={i} 
+            style={{ 
+              opacity, 
+              transform: `translateY(${y}px) scale(${scale})`,
+              display: "inline-block",
+            }}
+          >
             {word}
           </span>
         );
@@ -86,9 +210,84 @@ const StaggerWords: React.FC<{
   );
 };
 
-const GradientBackground: React.FC<{ colors: string[] }> = ({ colors }) => {
+// Clean body text with fade-in
+const BodyText: React.FC<{
+  text: string;
+  fontSize?: number;
+  delay?: number;
+  color?: string;
+  fontFamily?: string;
+}> = ({ 
+  text, 
+  fontSize = 28, 
+  delay = 0, 
+  color = "#e0e0e0",
+  fontFamily = interFont
+}) => {
   const frame = useCurrentFrame();
-  const angle = interpolate(frame, [0, 300], [0, 360]);
+  const f = Math.max(0, frame - delay);
+  const opacity = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
+  const y = interpolate(f, [0, 20], [20, 0], { extrapolateRight: "clamp" });
+
+  return (
+    <p
+      style={{
+        fontSize,
+        fontFamily,
+        color,
+        opacity,
+        transform: `translateY(${y}px)`,
+        lineHeight: 1.5,
+        fontWeight: 400,
+        letterSpacing: "0.01em",
+        margin: 0,
+      }}
+    >
+      {text}
+    </p>
+  );
+};
+
+// Subtext/Caption style
+const CaptionText: React.FC<{
+  text: string;
+  fontSize?: number;
+  delay?: number;
+  color?: string;
+}> = ({ 
+  text, 
+  fontSize = 20, 
+  delay = 0, 
+  color = "#888888"
+}) => {
+  const frame = useCurrentFrame();
+  const f = Math.max(0, frame - delay);
+  const opacity = interpolate(f, [0, 15], [0, 0.7], { extrapolateRight: "clamp" });
+
+  return (
+    <span
+      style={{
+        fontSize,
+        fontFamily: robotoFont,
+        color,
+        opacity,
+        fontWeight: 500,
+        letterSpacing: "0.1em",
+        textTransform: "uppercase" as const,
+      }}
+    >
+      {text}
+    </span>
+  );
+};
+
+const GradientBackground: React.FC<{ 
+  colors: string[];
+  animated?: boolean;
+}> = ({ colors, animated = true }) => {
+  const frame = useCurrentFrame();
+  const angle = animated ? interpolate(frame, [0, 300], [0, 360]) : 45;
+  
   return (
     <AbsoluteFill
       style={{
@@ -98,40 +297,157 @@ const GradientBackground: React.FC<{ colors: string[] }> = ({ colors }) => {
   );
 };
 
-const SceneRenderer: React.FC<{ scene: VideoScene }> = ({ scene }) => {
+// Floating particles for visual interest
+const FloatingParticles: React.FC<{ color?: string }> = ({ color = "#ffffff" }) => {
+  const frame = useCurrentFrame();
+  const particles = Array.from({ length: 20 }, (_, i) => ({
+    x: (i * 137.5) % 100,
+    y: (i * 73.3) % 100,
+    size: 2 + (i % 4),
+    speed: 0.1 + (i % 3) * 0.05,
+  }));
+
+  return (
+    <AbsoluteFill style={{ pointerEvents: "none" }}>
+      {particles.map((p, i) => {
+        const y = (p.y + frame * p.speed) % 100;
+        const opacity = 0.1 + (Math.sin(frame * 0.05 + i) + 1) * 0.1;
+        
+        return (
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              left: `${p.x}%`,
+              top: `${y}%`,
+              width: p.size,
+              height: p.size,
+              borderRadius: "50%",
+              backgroundColor: color,
+              opacity,
+            }}
+          />
+        );
+      })}
+    </AbsoluteFill>
+  );
+};
+
+const SceneRenderer: React.FC<{ scene: VideoScene; sceneIndex?: number }> = ({ scene, sceneIndex = 0 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const sceneProgress = spring({ frame, fps, config: { damping: 200 } });
-  const opacity = interpolate(sceneProgress, [0, 1], [0, 1]);
-
+  const sceneDuration = scene.endFrame - scene.startFrame;
+  const isLastScene = frame > sceneDuration - 30; // Last second for exit
+  
+  // Fade in/out for smooth transitions
+  const fadeIn = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: "clamp" });
+  const fadeOut = interpolate(frame, [sceneDuration - 20, sceneDuration], [1, 0], { 
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp" 
+  });
+  const opacity = Math.min(fadeIn, fadeOut);
+  
+  // Choose animation based on scene type
+  const isIntro = scene.type === "intro";
+  const isCTA = scene.type === "cta";
+  
   return (
     <AbsoluteFill style={{ opacity }}>
       <GradientBackground colors={[scene.style.background, "#0a0a0a"]} />
+      <FloatingParticles color={scene.style.textColor} />
+      
       <AbsoluteFill
         style={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          padding: 80,
+          padding: "60px 100px",
           textAlign: "center",
+          gap: "32px",
         }}
       >
-        {scene.content.headline && (
-          <BlurInText
-            text={scene.content.headline}
-            fontSize={72}
+        {/* Caption/Label for scene type */}
+        {(isIntro || isCTA) && (
+          <CaptionText 
+            text={isIntro ? "Introducing" : "Get Started"}
+            delay={5}
             color={scene.style.textColor}
           />
         )}
+        
+        {/* Main Headline with appropriate animation */}
+        {scene.content.headline && (
+          <div style={{ maxWidth: "900px" }}>
+            {isIntro ? (
+              // Intro: Dramatic blur-in with scale
+              <BlurInText
+                text={scene.content.headline}
+                fontSize={88}
+                delay={10}
+                color={scene.style.textColor}
+              />
+            ) : (
+              // Other scenes: Word-by-word reveal
+              <WordReveal
+                text={scene.content.headline}
+                fontSize={64}
+                delay={8}
+                color={scene.style.textColor}
+                staggerDelay={6}
+              />
+            )}
+          </div>
+        )}
+        
+        {/* Subtext with typing effect for extra impact */}
         {scene.content.subtext && (
-          <div style={{ marginTop: 24 }}>
-            <StaggerWords
+          <div style={{ 
+            marginTop: "16px", 
+            maxWidth: "700px",
+            opacity: isLastScene ? 0.5 : 1,
+            transition: "opacity 0.3s"
+          }}>
+            <BodyText
               text={scene.content.subtext}
-              fontSize={28}
-              delay={15}
+              fontSize={26}
+              delay={isIntro ? 30 : 20}
               color={scene.style.textColor}
             />
+          </div>
+        )}
+        
+        {/* Features list if available */}
+        {scene.content.features && scene.content.features.length > 0 && (
+          <div style={{ 
+            marginTop: "24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "16px",
+            alignItems: "center"
+          }}>
+            {scene.content.features.map((feature, idx) => (
+              <div 
+                key={idx}
+                style={{
+                  opacity: interpolate(frame, [20 + idx * 10, 35 + idx * 10], [0, 1], { 
+                    extrapolateRight: "clamp" 
+                  }),
+                  transform: `translateY(${interpolate(frame, [20 + idx * 10, 35 + idx * 10], [20, 0], { 
+                    extrapolateRight: "clamp" 
+                  })}px)`,
+                }}
+              >
+                <span style={{
+                  fontFamily: poppinsFont,
+                  fontSize: "24px",
+                  fontWeight: 600,
+                  color: scene.style.textColor,
+                }}>
+                  {feature.icon} {feature.title}
+                </span>
+              </div>
+            ))}
           </div>
         )}
       </AbsoluteFill>
@@ -158,8 +474,13 @@ const DynamicComposition: React.FC<{ script: VideoScript }> = ({ script }) => {
 const PlaceholderComposition: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const scale = spring({ frame, fps, config: { damping: 12 } });
-  const opacity = interpolate(frame, [0, 30], [0, 1], { extrapolateRight: "clamp" });
+  
+  // Smooth fade and scale animation
+  const scale = spring({ frame, fps, config: { damping: 12, stiffness: 100 } });
+  const opacity = interpolate(frame, [0, 25], [0, 1], { extrapolateRight: "clamp" });
+  
+  // Subtle floating animation
+  const floatY = Math.sin(frame * 0.05) * 5;
 
   return (
     <AbsoluteFill
@@ -170,14 +491,44 @@ const PlaceholderComposition: React.FC = () => {
         justifyContent: "center",
       }}
     >
-      <div style={{ opacity, transform: `scale(${scale})`, textAlign: "center" }}>
-        <div className="text-6xl mb-6">🎬</div>
-        <h1 style={{ color: "#ffffff", fontSize: 42, fontWeight: "bold", margin: 0 }}>
-          Your Video Awaits
-        </h1>
-        <p style={{ color: "#666", fontSize: 18, marginTop: 16 }}>
-          Enter a description to begin production
-        </p>
+      <div style={{ 
+        opacity, 
+        transform: `scale(${scale}) translateY(${floatY}px)`, 
+        textAlign: "center",
+        maxWidth: "800px",
+        padding: "40px"
+      }}>
+        {/* Animated icon */}
+        <div style={{ 
+          fontSize: "80px", 
+          marginBottom: "40px",
+          opacity: interpolate(frame, [10, 30], [0, 1], { extrapolateRight: "clamp" })
+        }}>
+          🎬
+        </div>
+        
+        {/* Title with typing effect */}
+        <div style={{ marginBottom: "24px" }}>
+          <TypingText
+            text="Your Video Awaits"
+            fontSize={72}
+            delay={20}
+            color="#ffffff"
+            speed={3}
+            cursor={true}
+          />
+        </div>
+        
+        {/* Subtitle */}
+        <div style={{
+          opacity: interpolate(frame, [50, 70], [0, 1], { extrapolateRight: "clamp" })
+        }}>
+          <BodyText
+            text="Enter a description to begin production"
+            fontSize={24}
+            color="#666666"
+          />
+        </div>
       </div>
     </AbsoluteFill>
   );
@@ -203,6 +554,8 @@ export default function CreativeStudioPage() {
   const [customRendering, setCustomRendering] = useState(false);
   const [customVideoUrl, setCustomVideoUrl] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [selectedAudio, setSelectedAudio] = useState<AudioFile | null>(null);
+  const [duration, setDuration] = useState<number>(38); // Default 38s
 
   const logsEndRef = React.useRef<HTMLDivElement>(null);
 
@@ -236,7 +589,17 @@ export default function CreativeStudioPage() {
       const response = await fetch("/api/creative/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description, style, videoType }),
+        body: JSON.stringify({ 
+          description, 
+          style, 
+          videoType,
+          duration,
+          audio: selectedAudio ? {
+            url: selectedAudio.url,
+            bpm: selectedAudio.bpm,
+            duration: selectedAudio.duration,
+          } : undefined,
+        }),
       });
 
       if (!response.ok) throw new Error("API request failed");
@@ -509,6 +872,32 @@ export default function CreativeStudioPage() {
                     </select>
                   </div>
                 </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <label className="text-xs tracking-widest text-gray-500 uppercase">Duration</label>
+                    <span className="text-xs text-gray-400">{duration}s</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="10"
+                    max="120"
+                    step="1"
+                    value={duration}
+                    onChange={(e) => setDuration(parseInt(e.target.value))}
+                    className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
+                  />
+                  <div className="flex justify-between text-xs text-gray-600 mt-1">
+                    <span>10s</span>
+                    <span>65s</span>
+                    <span>120s</span>
+                  </div>
+                </div>
+
+                <AudioSelector
+                  selectedAudio={selectedAudio}
+                  onSelect={setSelectedAudio}
+                />
 
                 <Button
                   onClick={handleGenerate}

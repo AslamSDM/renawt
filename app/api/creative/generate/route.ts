@@ -24,6 +24,8 @@ export async function POST(request: NextRequest) {
       description,
       style = "professional",
       videoType = "creative",
+      duration,
+      audio,
     } = body;
 
     if (!description) {
@@ -34,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`[CreativeAPI] Generating for: "${description}"`);
-    console.log(`[CreativeAPI] Style: ${style}, VideoType: ${videoType}`);
+    console.log(`[CreativeAPI] Style: ${style}, VideoType: ${videoType}, Duration: ${duration}s`);
 
     // Create a streaming response
     const encoder = new TextEncoder();
@@ -48,6 +50,12 @@ export async function POST(request: NextRequest) {
             userPreferences: {
               style: style as any,
               videoType: videoType as any,
+              duration: duration ? parseInt(duration) : undefined,
+              audio: audio ? {
+                url: audio.url,
+                bpm: audio.bpm || 120,
+                duration: audio.duration || 30,
+              } : undefined,
             },
             // No projectId - skip DB persistence
           });
@@ -320,6 +328,8 @@ export async function GET() {
         description: "string (required) - What the video is about",
         style: "string (optional) - professional, playful, minimal, bold",
         videoType: "string (optional) - demo, creative, fast-paced, cinematic",
+        duration: "number (optional) - Video length in seconds (10-120)",
+        audio: "object (optional) - { url: string, bpm?: number, duration?: number }",
       },
       returns:
         "Streaming events: productData, videoScript, reactPageCode, remotionCode, videoUrl, status, error, complete",

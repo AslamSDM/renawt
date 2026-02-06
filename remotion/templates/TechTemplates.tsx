@@ -28,7 +28,7 @@ import { createBeatMapFromBPM } from "../../lib/audio/beatDetection";
 // High-energy, fast-paced tech product video
 // Features: Glitch reveals, kinetic text, particle effects
 // ============================================
-interface ProductData {
+export interface ProductData {
   name: string;
   tagline: string;
   description: string;

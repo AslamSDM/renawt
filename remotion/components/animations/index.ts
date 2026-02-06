@@ -56,7 +56,7 @@ export {
   BeatSyncedText,
 } from "./BeatSync";
 
-// High-Energy Components
+// High-Energy Components (for Tech Templates)
 export {
   KineticText,
   GlitchText,
@@ -65,3 +65,22 @@ export {
   BeatPulseEnhanced,
   FastSlide,
 } from "./HighEnergy";
+
+// Device Mockups
+export { IPhoneMockup, MacBookMockup } from "./DeviceMockups";
+
+// Two-Color Gradient Background
+export { DualRadialGradient } from "./DualRadialGradient";
+
+// Texture Overlays
+export {
+  NoiseTextureOverlay,
+  GeometricTextureOverlay,
+  TextureOverlay,
+} from "./TextureOverlay";
+
+// Three.js Scene
+export { ThreeScene, FloatingGeometries, AnimatedCamera } from "./ThreeScene";
+
+// Camera Wrapper
+export { CameraWrapper } from "./CameraWrapper";

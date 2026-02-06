@@ -1,17 +1,29 @@
 import { z } from "zod";
 
+// Screenshot data captured during scraping
+export interface ScreenshotData {
+  name: string;
+  path: string;
+  url: string;
+  section: "hero" | "features" | "pricing" | "testimonials" | "footer" | "full" | "ui";
+  description: string;
+}
+
 // Product Data extracted from website
 export interface ProductData {
   name: string;
   tagline: string;
   description: string;
+  productType?: "saas" | "ecommerce" | "service" | "other";
   features: Array<{ title: string; description: string; icon?: string }>;
   pricing?: Array<{ tier: string; price: string; features: string[] }>;
   testimonials?: Array<{ quote: string; author: string; role: string }>;
   images: string[];
+  screenshots?: ScreenshotData[];
   colors: { primary: string; secondary: string; accent: string };
   tone: "professional" | "playful" | "minimal" | "bold";
-  screenshotPath?: string; // Path to the website screenshot for video use
+  designInsights?: string;
+  visualMood?: string;
 }
 
 export const ProductDataSchema = z.object({

@@ -8,6 +8,7 @@ import {
   random,
 } from "remotion";
 import { BeatMap } from "../../hooks/useBeatMap";
+import { HEADLINE_FONT } from "../../fonts";
 
 // ============================================
 // KINETIC TEXT
@@ -30,7 +31,7 @@ export const KineticText: React.FC<KineticTextProps> = ({
   startFrame = 0,
   fontSize = 72,
   color = "#ffffff",
-  fontFamily = "system-ui, sans-serif",
+  fontFamily = HEADLINE_FONT,
   fontWeight = "bold",
   charDelay = 2,
   style,
@@ -118,7 +119,7 @@ export const GlitchText: React.FC<GlitchTextProps> = ({
   duration = 15,
   fontSize = 80,
   color = "#ffffff",
-  fontFamily = "system-ui, sans-serif",
+  fontFamily = HEADLINE_FONT,
   fontWeight = "bold",
   style,
 }) => {

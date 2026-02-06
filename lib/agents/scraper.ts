@@ -325,10 +325,21 @@ Return ONLY valid JSON.`;
       };
     }
 
+    // Copy screenshot to public folder for Remotion to access
+    const publicScreenshotsDir = path.join(process.cwd(), "public", "screenshots");
+    if (!fs.existsSync(publicScreenshotsDir)) {
+      fs.mkdirSync(publicScreenshotsDir, { recursive: true });
+    }
+    const screenshotFileName = `screenshot-${Date.now()}.png`;
+    const publicScreenshotPath = path.join(publicScreenshotsDir, screenshotFileName);
+    fs.copyFileSync(screenshotPath, publicScreenshotPath);
+    console.log(`[Scraper] Screenshot copied to public folder: ${publicScreenshotPath}`);
+
     // Store design insights for video generation
     (productData as any).designInsights = designAnalysis.designInsights;
     (productData as any).visualMood = designAnalysis.visualMood;
     (productData as any).screenshotPath = screenshotPath;
+    (productData as any).publicScreenshotPath = `/screenshots/${screenshotFileName}`;
 
     console.log("[Scraper] Extracted product name:", productData.name);
     console.log("[Scraper] Extracted tagline:", productData.tagline);

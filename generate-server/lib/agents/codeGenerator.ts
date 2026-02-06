@@ -24,7 +24,7 @@ Generate ONE CONTINUOUS composition where:
 6. Export default composition
 
 ## AVAILABLE IMPORTS
-```tsx
+\`\`\`tsx
 import React from 'react';
 import {
   useCurrentFrame,
@@ -39,24 +39,44 @@ import {
 } from 'remotion';
 import { loadFont as loadBebasNeue } from "@remotion/google-fonts/BebasNeue";
 import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
-```
 
-## MANDATORY: FONTS
-Load and use these fonts (NEVER use system-ui or sans-serif):
-\`\`\`tsx
-import { loadFont as loadBebasNeue } from "@remotion/google-fonts/BebasNeue";
-import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
+// Load fonts at module level
 const { fontFamily: bebasNeue } = loadBebasNeue("normal", { weights: ["400"], subsets: ["latin"] });
 const { fontFamily: montserrat } = loadMontserrat("normal", { weights: ["400", "600", "700", "800"], subsets: ["latin"] });
 \`\`\`
-- Headlines/titles: Use bebasNeue with fontSize 96-200px, letterSpacing: "0.05em", textTransform: "uppercase"
-- Body/subtitles: Use montserrat with fontSize 24-36px, fontWeight: 500-700
 
-## WEBSITE SCREENSHOTS
-If screenshots are provided in productData.screenshots, display them using the Img component:
-- Use the EXACT paths from productData.screenshots[].url (e.g. staticFile("screenshots/scrape-123-hero-456.png"))
-- Show with animations (zoom, fade, pan, scale effects)
-- NEVER reference a screenshot file that doesn't exist — if no screenshots are available, use text-only scenes
+## CRITICAL: TYPOGRAPHY & FONTS
+You MUST use Bebas Neue and Montserrat for all text:
+- Headlines: Use bebasNeue variable, fontSize: 96-200px, textTransform: "uppercase", letterSpacing: "0.05em"
+- Body text: Use montserrat variable, fontWeight: 500-700, fontSize: 24-36px
+- NEVER use system fonts like 'system-ui' or 'sans-serif'
+- Line height: 1.1 for headlines, 1.5 for body text
+- Headlines should be BIG and fill 30-40% of screen
+
+## TEXT ANIMATION REQUIREMENTS
+You MUST include these animation components with continuous effects:
+
+1. TypingText - Character-by-character typing with cursor:
+   const charsToShow = Math.floor(f / 2);
+   const displayText = text.slice(0, charsToShow);
+   Show cursor | when not complete
+
+2. BlurInText - Blur + scale animation using spring():
+   Use spring({ frame, fps, config: { damping: 15, stiffness: 100 } })
+   Scale from 0.8 to 1, blur from 20px to 0
+
+3. WordReveal - Split text by spaces, animate each word:
+   words.map((word, i) => animate with delay based on i * 8 frames)
+   Use spring for scale effect
+
+4. BodyText - Clean fade-in with translateY
+
+## CRITICAL: WEBSITE SCREENSHOT USAGE
+You MUST include website screenshots in the video using the Img component:
+- Use staticFile() to reference screenshots from the public/screenshots folder
+- Example: <Img src={staticFile("screenshots/hero-screenshot.png")} />
+- Animate screenshots with zoom, pan, fade effects using interpolate()
+- Show at least 2-3 different screenshot sections (hero, features, pricing, etc.)
 
 ## AUDIO INTEGRATION (CRITICAL)
 ALWAYS include audio in the composition:
@@ -86,16 +106,16 @@ const useBeatSync = (bpm: number = 120) => {
 
 ## CONTINUOUS MOTION PATTERNS
 
-### Camera Wrapper (Zoom + Pan + Rotate)
+### Camera Wrapper (Zoom + Pan)
 \`\`\`tsx
 const CameraWrapper: React.FC<{children: React.ReactNode, zoomRange?: [number, number], panX?: [number, number], panY?: [number, number]}> = ({children, zoomRange = [1, 1.15], panX = [0, 0], panY = [0, 0]}) => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
   const scale = interpolate(frame, [0, durationInFrames], zoomRange, { extrapolateRight: 'clamp', easing: Easing.inOut(Easing.quad) });
-  const translateX = interpolate(frame, [0, durationInFrames], panX, { extrapolateRight: 'clamp' });
-  const translateY = interpolate(frame, [0, durationInFrames], panY, { extrapolateRight: 'clamp' });
+  const tx = interpolate(frame, [0, durationInFrames], panX, { extrapolateRight: 'clamp' });
+  const ty = interpolate(frame, [0, durationInFrames], panY, { extrapolateRight: 'clamp' });
   return (
-    <AbsoluteFill style={{ transform: \`scale(\${scale}) translate(\${translateX}px, \${translateY}px)\`, transformOrigin: 'center center' }}>
+    <AbsoluteFill style={{ transform: \`scale(\${scale}) translate(\${tx}px, \${ty}px)\`, transformOrigin: 'center center' }}>
       {children}
     </AbsoluteFill>
   );
@@ -165,22 +185,14 @@ const DualRadialGradient: React.FC<{color1: string, color2: string, speed?: numb
   const g2Size = interpolate(frame, [0, durationInFrames], [35, 50], { extrapolateRight: 'clamp' });
   return (
     <AbsoluteFill style={{ background: '#050510', overflow: 'hidden' }}>
-      <AbsoluteFill style={{
-        background: \`radial-gradient(ellipse \${g1Size}% \${g1Size}% at \${g1X}% \${g1Y}%, \${color1}, transparent)\`,
-        opacity: 0.45 + Math.sin(frame * 0.02 * speed) * 0.08,
-        filter: 'blur(60px)', transform: 'scale(1.4)',
-      }} />
-      <AbsoluteFill style={{
-        background: \`radial-gradient(ellipse \${g2Size}% \${g2Size}% at \${g2X}% \${g2Y}%, \${color2}, transparent)\`,
-        opacity: 0.4 + Math.cos(frame * 0.025 * speed) * 0.08,
-        filter: 'blur(60px)', transform: 'scale(1.4)',
-      }} />
+      <AbsoluteFill style={{ background: \`radial-gradient(ellipse \${g1Size}% \${g1Size}% at \${g1X}% \${g1Y}%, \${color1}, transparent)\`, opacity: 0.45 + Math.sin(frame * 0.02 * speed) * 0.08, filter: 'blur(60px)', transform: 'scale(1.4)' }} />
+      <AbsoluteFill style={{ background: \`radial-gradient(ellipse \${g2Size}% \${g2Size}% at \${g2X}% \${g2Y}%, \${color2}, transparent)\`, opacity: 0.4 + Math.cos(frame * 0.025 * speed) * 0.08, filter: 'blur(60px)', transform: 'scale(1.4)' }} />
     </AbsoluteFill>
   );
 };
 \`\`\`
 
-### Abstract Texture Overlay
+### Abstract Texture Overlay (on top of background)
 \`\`\`tsx
 const TextureOverlay: React.FC<{opacity?: number}> = ({opacity = 0.04}) => {
   const frame = useCurrentFrame();
@@ -230,12 +242,11 @@ const MacBookMockup: React.FC<{children: React.ReactNode, delay?: number, width?
   const enterY = interpolate(f, [0, 35], [50, 0], { extrapolateRight: 'clamp' });
   return (
     <div style={{ position: 'relative', width, opacity, transform: \`perspective(1500px) translateY(\${enterY}px) scale(\${enterScale})\` }}>
-      <div style={{ width: '100%', height: screenHeight, borderRadius: '12px 12px 0 0', background: 'linear-gradient(180deg, #2d2d2d, #1a1a1a)', boxShadow: '0 -2px 20px rgba(0,0,0,0.3)', padding: '24px 10px 10px 10px' }}>
-        <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', width: 8, height: 8, borderRadius: '50%', background: '#1a1a1a', border: '1px solid #333', zIndex: 5 }} />
+      <div style={{ width: '100%', height: screenHeight, borderRadius: '12px 12px 0 0', background: 'linear-gradient(180deg, #2d2d2d, #1a1a1a)', padding: '24px 10px 10px 10px' }}>
         <div style={{ width: '100%', height: '100%', borderRadius: 6, overflow: 'hidden', background: '#000' }}>{children}</div>
       </div>
-      <div style={{ width: '100%', height: 4, background: 'linear-gradient(180deg, #333, #1a1a1a, #222)' }} />
-      <div style={{ width: 'calc(100% + 20px)', marginLeft: -10, height: 14, borderRadius: '0 0 8px 8px', background: 'linear-gradient(180deg, #c0c0c0, #a8a8a8)', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }} />
+      <div style={{ width: '100%', height: 4, background: 'linear-gradient(180deg, #333, #1a1a1a)' }} />
+      <div style={{ width: 'calc(100% + 20px)', marginLeft: -10, height: 14, borderRadius: '0 0 8px 8px', background: 'linear-gradient(180deg, #c0c0c0, #a8a8a8)' }} />
     </div>
   );
 };
@@ -355,12 +366,13 @@ const ProductVideo: React.FC = () => {
 
   return (
     <AbsoluteFill>
-      {/* Continuous background */}
-      <DualRadialGradient color1={'#667eea'} color2={'#764ba2'} />
-      <TextureOverlay />
+      {/* Two-color radial gradient background */}
+      <DualRadialGradient color1="#667eea" color2="#764ba2" />
+      {/* Abstract texture overlay */}
+      <TextureOverlay opacity={0.04} />
 
-      {/* Continuous camera zoom + pan */}
-      <CameraWrapper zoomRange={[1, 1.15]} panX={[0, -20]} panY={[0, -10]}>
+      {/* Camera zoom + pan */}
+      <CameraWrapper zoomRange={[1, 1.15]} panY={[0, -15]}>
         {/* Content that flows in and out */}
         {content.map((item, i) => (
           <FloatingElement key={i} enterFrame={item.enterFrame} exitFrame={item.exitFrame}>
@@ -374,15 +386,15 @@ const ProductVideo: React.FC = () => {
 \`\`\`
 
 ## STYLE REQUIREMENTS
-- Background ALWAYS uses DualRadialGradient with 2 colors that match brand
+- Background ALWAYS uses DualRadialGradient with 2 brand colors
 - TextureOverlay on top of background for premium grain effect
 - Beat-synced pulses and flickers
-- Headlines use Bebas Neue (bebasNeue), body uses Montserrat (montserrat) - NEVER system-ui
-- Headlines should be BIG: 96-200px, uppercase, with letter-spacing
+- Headlines use bebasNeue (Bebas Neue), body uses montserrat - NEVER system-ui
+- Headlines should be BIG: 96-200px, uppercase, with letter-spacing 0.05em
 - Glow effects that breathe
-- Use IPhoneMockup or MacBookMockup when displaying the website screenshot
+- Use IPhoneMockup or MacBookMockup when displaying website screenshots
 - CameraWrapper wraps all content for continuous zoom + pan
-- Use brand colors from productData - NEVER plain black/white
+- Use brand colors - NEVER plain black/white
 
 ## OUTPUT
 Generate COMPLETE TypeScript/TSX code. No markdown. Single file with export default.`;
@@ -398,36 +410,44 @@ import {
   Img,
   interpolate,
   spring,
+  Easing,
 } from 'remotion';
+import { loadFont as loadBebasNeue } from "@remotion/google-fonts/BebasNeue";
+import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
 
-// Dynamic fluid background component
-const DynamicBackground: React.FC<{primary: string, secondary: string}> = ({primary, secondary}) => {
+const { fontFamily: bebasNeue } = loadBebasNeue("normal", { weights: ["400"], subsets: ["latin"] });
+const { fontFamily: montserrat } = loadMontserrat("normal", { weights: ["400", "600", "700", "800"], subsets: ["latin"] });
+
+// Two-color radial gradient background
+const DualRadialGradient: React.FC<{color1: string, color2: string}> = ({color1, color2}) => {
   const frame = useCurrentFrame();
-  
-  const x1 = Math.sin(frame / 60) * 20 + 30;
-  const y1 = Math.cos(frame / 50) * 20 + 40;
-  
-  const x2 = Math.sin(frame / 70) * -20 + 70;
-  const y2 = Math.cos(frame / 40) * 20 + 60;
-
+  const { durationInFrames } = useVideoConfig();
+  const g1X = interpolate(frame, [0, durationInFrames], [25, 55], { extrapolateRight: 'clamp' }) + Math.sin(frame * 0.015) * 10;
+  const g1Y = interpolate(frame, [0, durationInFrames], [30, 50], { extrapolateRight: 'clamp' }) + Math.cos(frame * 0.012) * 12;
+  const g1Size = interpolate(frame, [0, durationInFrames], [40, 55], { extrapolateRight: 'clamp' });
+  const g2X = interpolate(frame, [0, durationInFrames], [70, 45], { extrapolateRight: 'clamp' }) + Math.sin(frame * 0.018 + 2) * 10;
+  const g2Y = interpolate(frame, [0, durationInFrames], [65, 50], { extrapolateRight: 'clamp' }) + Math.cos(frame * 0.014 + 1.5) * 12;
+  const g2Size = interpolate(frame, [0, durationInFrames], [35, 50], { extrapolateRight: 'clamp' });
   return (
-    <AbsoluteFill style={{ background: '#050505', overflow: 'hidden' }}>
-      <AbsoluteFill style={{
-        background: \`radial-gradient(circle at \${x1}% \${y1}%, \${primary}50, transparent 40%)\`,
-        filter: 'blur(80px)',
-        transform: 'scale(1.5)',
-      }} />
-      <AbsoluteFill style={{
-        background: \`radial-gradient(circle at \${x2}% \${y2}%, \${secondary}50, transparent 40%)\`,
-        filter: 'blur(80px)',
-        transform: 'scale(1.5)',
-      }} />
-      <AbsoluteFill style={{
-        opacity: 0.15,
-        backgroundImage: \`linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px)\`,
-        backgroundSize: '50px 50px',
-        maskImage: 'radial-gradient(circle at center, black 30%, transparent 80%)',
-      }} />
+    <AbsoluteFill style={{ background: '#050510', overflow: 'hidden' }}>
+      <AbsoluteFill style={{ background: \`radial-gradient(ellipse \${g1Size}% \${g1Size}% at \${g1X}% \${g1Y}%, \${color1}, transparent)\`, opacity: 0.45 + Math.sin(frame * 0.02) * 0.08, filter: 'blur(60px)', transform: 'scale(1.4)' }} />
+      <AbsoluteFill style={{ background: \`radial-gradient(ellipse \${g2Size}% \${g2Size}% at \${g2X}% \${g2Y}%, \${color2}, transparent)\`, opacity: 0.4 + Math.cos(frame * 0.025) * 0.08, filter: 'blur(60px)', transform: 'scale(1.4)' }} />
+    </AbsoluteFill>
+  );
+};
+
+// Abstract texture overlay
+const TextureOverlay: React.FC = () => {
+  const frame = useCurrentFrame();
+  const seed = Math.floor(frame * 0.3) % 1000;
+  return (
+    <AbsoluteFill style={{ pointerEvents: 'none' }}>
+      <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+        <filter id={\`n-\${seed}\`}>
+          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" seed={seed} stitchTiles="stitch" />
+        </filter>
+      </svg>
+      <AbsoluteFill style={{ opacity: 0.04, filter: \`url(#n-\${seed})\`, mixBlendMode: 'overlay' }} />
     </AbsoluteFill>
   );
 };
@@ -442,67 +462,66 @@ const BlurInText: React.FC<{text: string, fontSize?: number, delay?: number}> = 
   return (
     <span style={{
       fontSize,
+      fontFamily: bebasNeue,
       fontWeight: 'bold',
+      color: '#ffffff',
       opacity,
       filter: \`blur(\${blur}px)\`,
       transform: \`translateY(\${y}px)\`,
       display: 'inline-block',
+      letterSpacing: '0.05em',
+      textTransform: 'uppercase',
     }}>
       {text}
     </span>
   );
 };
 
-// Glassmorphic card
-const GlassCard: React.FC<{children: React.ReactNode, delay?: number}> = ({children, delay = 0}) => {
+// Camera wrapper
+const CameraWrapper: React.FC<{children: React.ReactNode}> = ({children}) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const f = Math.max(0, frame - delay);
-  const scale = spring({ frame: f, fps, from: 0.9, to: 1, config: { damping: 15, stiffness: 100 } });
-  const opacity = interpolate(f, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
+  const { durationInFrames } = useVideoConfig();
+  const scale = interpolate(frame, [0, durationInFrames], [1, 1.15], { extrapolateRight: 'clamp', easing: Easing.inOut(Easing.quad) });
+  const ty = interpolate(frame, [0, durationInFrames], [0, -15], { extrapolateRight: 'clamp' });
   return (
-    <div style={{
-      background: 'rgba(255, 255, 255, 0.08)',
-      backdropFilter: 'blur(20px)',
-      borderRadius: 24,
-      border: '1px solid rgba(255, 255, 255, 0.15)',
-      padding: 40,
-      opacity,
-      transform: \`scale(\${scale})\`,
-    }}>
+    <AbsoluteFill style={{ transform: \`scale(\${scale}) translateY(\${ty}px)\`, transformOrigin: 'center center' }}>
       {children}
-    </div>
+    </AbsoluteFill>
   );
 };
 
-// Intro scene with blur-in animation
+// Intro scene
 const IntroScene: React.FC<{headline: string, subtext?: string, primary: string, secondary: string}> = ({
   headline, subtext, primary, secondary
 }) => {
   const frame = useCurrentFrame();
   const subtextOpacity = interpolate(frame, [15, 30], [0, 1], { extrapolateRight: 'clamp' });
-  
+
   return (
     <AbsoluteFill>
-      <DynamicBackground primary={primary} secondary={secondary} />
-      <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center' }}>
-        <div style={{ textAlign: 'center', padding: '0 80px' }}>
-          <h1 style={{ margin: 0, color: '#ffffff', fontFamily: 'system-ui, sans-serif' }}>
-            <BlurInText text={headline} fontSize={84} />
-          </h1>
-          {subtext && (
-            <p style={{
-              color: 'rgba(255,255,255,0.8)',
-              fontSize: 32,
-              marginTop: 24,
-              opacity: subtextOpacity,
-              fontFamily: 'system-ui, sans-serif',
-            }}>
-              {subtext}
-            </p>
-          )}
-        </div>
-      </AbsoluteFill>
+      <DualRadialGradient color1={primary} color2={secondary} />
+      <TextureOverlay />
+      <CameraWrapper>
+        <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ textAlign: 'center', padding: '0 80px' }}>
+            <BlurInText text={headline} fontSize={140} />
+            {subtext && (
+              <p style={{
+                color: 'rgba(255,255,255,0.8)',
+                fontFamily: montserrat,
+                fontSize: 32,
+                fontWeight: 500,
+                marginTop: 24,
+                opacity: subtextOpacity,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+              }}>
+                {subtext}
+              </p>
+            )}
+          </div>
+        </AbsoluteFill>
+      </CameraWrapper>
     </AbsoluteFill>
   );
 };
@@ -510,7 +529,7 @@ const IntroScene: React.FC<{headline: string, subtext?: string, primary: string,
 // Main composition
 const ProductVideo: React.FC = () => {
   return (
-    <AbsoluteFill style={{ background: '#0f0f1a' }}>
+    <AbsoluteFill style={{ background: '#050510' }}>
       <Sequence from={0} durationInFrames={120}>
         <IntroScene
           headline="Your Product Name"
@@ -570,23 +589,48 @@ ${JSON.stringify(videoScript, null, 2)}
 PRODUCT INFO:
 ${productData ? JSON.stringify(productData, null, 2) : "No product data"}
 
-## WEBSITE SCREENSHOTS
+## MANDATORY: USE WEBSITE SCREENSHOTS IN VIDEO
 ${(() => {
   const screenshots = productData && (productData as any).screenshots;
   if (screenshots && screenshots.length > 0) {
     const heroShot = screenshots.find((s: any) => s.section === "hero") || screenshots[0];
     const isR2 = heroShot.url.startsWith("http");
     const imgSrc = isR2 ? `"${heroShot.url}"` : `staticFile("${heroShot.url.replace(/^\//, '')}")`;
-    return `Available screenshots:
+    return `The scraped website screenshots MUST be displayed in the video:
+Available screenshots:
 ${screenshots.map((s: any) => {
   const sIsR2 = s.url.startsWith("http");
   return `- ${s.section}: ${sIsR2 ? `"${s.url}"` : `staticFile("${s.url.replace(/^\//, '')}")`} — ${s.description}`;
 }).join('\n')}
-Use <Img src={${imgSrc}} /> to display the hero screenshot.
-Display at least one screenshot with zoom/pan/fade animations.`;
+
+USE AT LEAST 1-2 SCREENSHOTS in the video with these patterns:
+1. Hero screenshot: Show at start with zoom/pan effects
+2. Features screenshot: Display with slide-in animations
+
+Import and use screenshots like this:
+\\\`\\\`\\\`tsx
+import { Img${!isR2 ? ', staticFile' : ''} } from 'remotion';
+
+<Img
+  src={${imgSrc}}
+  style={{
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    transform: \\\`scale(\\\${scale})\\\`,
+  }}
+/>
+\\\`\\\`\\\``;
   }
-  return `No screenshots available. Do NOT use <Img> — the file won't exist. Use text-only scenes with gradient backgrounds.`;
+  return `No screenshots are available. Do NOT use <Img> or staticFile("screenshots/...") — the file does not exist and will break the render. Use text-only scenes with DualRadialGradient backgrounds instead.`;
 })()}
+
+Apply animations to screenshots (ONLY if screenshots are available):
+- zoom: scale from 1 to 1.3 over time
+- pan: translateX/Y movements
+- fade: opacity transitions
+- overlay: combine with text and gradients
+- NEVER reference a screenshot file that doesn't exist
 
 AUDIO CONFIG:
 - File: ${audioUrl}

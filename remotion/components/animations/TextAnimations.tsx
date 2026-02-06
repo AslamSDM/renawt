@@ -6,6 +6,7 @@ import {
   spring,
   AbsoluteFill,
 } from "remotion";
+import { HEADLINE_FONT, BODY_FONT } from "../../fonts";
 
 // ============================================
 // BLUR IN TEXT
@@ -27,7 +28,7 @@ export const BlurInText: React.FC<BlurInTextProps> = ({
   text,
   fontSize = 64,
   color = "#ffffff",
-  fontFamily = "system-ui, sans-serif",
+  fontFamily = HEADLINE_FONT,
   fontWeight = "bold",
   duration = 30,
   delay = 0,
@@ -93,7 +94,7 @@ export const StaggerWords: React.FC<StaggerWordsProps> = ({
   text,
   fontSize = 48,
   color = "#ffffff",
-  fontFamily = "system-ui, sans-serif",
+  fontFamily = BODY_FONT,
   fontWeight = "bold",
   staggerDelay = 5,
   wordDuration = 20,
@@ -198,7 +199,7 @@ export const StaggerChars: React.FC<StaggerCharsProps> = ({
   text,
   fontSize = 72,
   color = "#ffffff",
-  fontFamily = "system-ui, sans-serif",
+  fontFamily = HEADLINE_FONT,
   fontWeight = "bold",
   charDelay = 2,
   charDuration = 15,
@@ -368,7 +369,7 @@ interface GradientTextProps {
 export const GradientText: React.FC<GradientTextProps> = ({
   text,
   fontSize = 72,
-  fontFamily = "system-ui, sans-serif",
+  fontFamily = HEADLINE_FONT,
   fontWeight = "bold",
   colors = ["#667eea", "#764ba2", "#f093fb", "#667eea"],
   animationDuration = 90,
@@ -482,7 +483,7 @@ export const FlipText: React.FC<FlipTextProps> = ({
   text,
   fontSize = 64,
   color = "#ffffff",
-  fontFamily = "system-ui, sans-serif",
+  fontFamily = HEADLINE_FONT,
   fontWeight = "bold",
   duration = 30,
   delay = 0,

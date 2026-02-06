@@ -5,6 +5,7 @@ import { TechLaunchContent, AppShowcaseContent } from "./templates/TechTemplates
 import ReelsFlyVideoContent from "./compositions/ReelsFlyVideo";
 import TeambleDemoVideo from "./compositions/TeambleDemo";
 import TechProductDemo from "./compositions/TechProductDemo";
+import PremiumShowcase from "./compositions/PremiumShowcase";
 
 // Wrapper components to satisfy Remotion's type requirements
 const TechLaunchWrapper: React.FC<Record<string, unknown>> = (props) => {
@@ -272,6 +273,16 @@ export const RemotionRoot: React.FC = () => {
         id="TechProductDemo"
         component={TechProductDemo}
         durationInFrames={1020}
+        fps={30}
+        width={1920}
+        height={1080}
+      />
+
+      {/* Premium Showcase - Device Mockups, 3D, Gradients */}
+      <Composition
+        id="PremiumShowcase"
+        component={PremiumShowcase}
+        durationInFrames={900}
         fps={30}
         width={1920}
         height={1080}

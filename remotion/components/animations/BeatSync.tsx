@@ -6,6 +6,7 @@ import {
   spring,
   AbsoluteFill,
 } from "remotion";
+import { HEADLINE_FONT } from "../../fonts";
 
 // BeatMap interface (inline to avoid path issues)
 export interface BeatMap {
@@ -329,7 +330,7 @@ export const BeatSyncedText: React.FC<BeatSyncedTextProps> = ({
     fontSize,
     color,
     fontWeight: "bold",
-    fontFamily: "system-ui, sans-serif",
+    fontFamily: HEADLINE_FONT,
   };
 
   switch (animationType) {

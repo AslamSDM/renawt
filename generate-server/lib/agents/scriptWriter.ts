@@ -164,11 +164,31 @@ export async function scriptWriterNode(
 
     const bpm = preferences.musicBpm || 120;
 
+    // Check if we have screenshots for SaaS product videos
+    const screenshots = (productData as any).screenshots || [];
+    const isSaaSProduct = (productData as any).productType === "saas" || screenshots.length > 0;
+
+    // Build screenshots section if available
+    let screenshotsSection = "";
+    if (screenshots.length > 0) {
+      screenshotsSection = `
+WEBSITE SCREENSHOTS (use these for visual scenes - especially for SaaS product demos):
+${screenshots.map((s: any) => `- ${s.section}: ${s.url} (${s.description})`).join("\n")}
+
+For SaaS products, incorporate these screenshots into scenes:
+- Use hero screenshot for intro/hook scene
+- Use features screenshot for feature showcase
+- Use UI screenshot for demo/walkthrough scenes
+- Screenshots can be shown with browser mockups, device frames, or floating cards
+`;
+    }
+
     const userMessage = `Create a video script for this product:
 
 Product Name: ${productData.name}
 Tagline: ${productData.tagline}
 Description: ${productData.description}
+Product Type: ${(productData as any).productType || "unknown"}${isSaaSProduct ? " (SaaS - use screenshots for visual scenes)" : ""}
 
 Features:
 ${productData.features.map((f, i) => `${i + 1}. ${f.title}: ${f.description}`).join("\n")}
@@ -178,7 +198,7 @@ ${productData.testimonials ? `Testimonials:\n${productData.testimonials.map((t) 
 ${productData.pricing ? `Pricing:\n${productData.pricing.map((p) => `${p.tier}: ${p.price}`).join("\n")}` : ""}
 
 Available Images: ${productData.images.length > 0 ? productData.images.join(", ") : "None - use solid color backgrounds"}
-
+${screenshotsSection}
 Brand Colors:
 - Primary: ${productData.colors.primary}
 - Secondary: ${productData.colors.secondary}
@@ -188,6 +208,14 @@ Brand Tone: ${productData.tone}
 Style Preference: ${preferences.style}
 Target Duration: ~${targetSeconds} seconds (${targetFrames} frames at 30fps)
 Music BPM: ${bpm}
+
+${isSaaSProduct ? `
+IMPORTANT FOR SAAS PRODUCTS:
+- Include screenshot URLs in scene "image" fields where appropriate
+- Show actual product UI in feature scenes
+- Use browser/device mockups to frame screenshots
+- Create scenes that showcase the actual product interface
+` : ""}
 
 Consider timing transitions to align with beats (every ${Math.round(1800 / bpm)} frames at ${bpm} BPM).
 
