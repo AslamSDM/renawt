@@ -534,11 +534,298 @@ const PlaceholderComposition: React.FC = () => {
   );
 };
 
+// Demo Style Composition - Product demo videos with UI mockups
+const DemoStyleComposition: React.FC<{ script: VideoScript }> = ({ script }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const scenes = script.scenes;
+  
+  // Calculate which scene we're on
+  const currentSceneIndex = Math.min(
+    Math.floor(frame / 75),
+    scenes.length - 1
+  );
+  const sceneFrame = frame % 75;
+  const scene = scenes[currentSceneIndex];
+  
+  // Background gradient animation
+  const bgAngle = interpolate(frame, [0, 300], [135, 495]);
+  
+  return (
+    <AbsoluteFill
+      style={{
+        background: `linear-gradient(${bgAngle}deg, #0f0f1a 0%, #1a1a2e 50%, #0f0f1a 100%)`,
+      }}
+    >
+      {/* Animated gradient orbs */}
+      <div
+        style={{
+          position: "absolute",
+          width: "600px",
+          height: "600px",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%)",
+          left: `${20 + Math.sin(frame * 0.02) * 10}%`,
+          top: `${20 + Math.cos(frame * 0.02) * 10}%`,
+          transform: "translate(-50%, -50%)",
+          filter: "blur(60px)",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          width: "500px",
+          height: "500px",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(236, 72, 153, 0.3) 0%, transparent 70%)",
+          right: `${20 + Math.cos(frame * 0.025) * 10}%`,
+          bottom: `${20 + Math.sin(frame * 0.025) * 10}%`,
+          transform: "translate(50%, 50%)",
+          filter: "blur(60px)",
+        }}
+      />
+      
+      {/* Scene content */}
+      <AbsoluteFill
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "80px",
+        }}
+      >
+        {scene && (
+          <>
+            {/* Logo/Brand animation */}
+            {currentSceneIndex === 0 && (
+              <div
+                style={{
+                  opacity: interpolate(sceneFrame, [0, 15, 60, 75], [0, 1, 1, 0], { extrapolateRight: "clamp" }),
+                  transform: `scale(${spring({
+                    frame: sceneFrame,
+                    fps,
+                    config: { damping: 15, stiffness: 100 },
+                    from: 0.8,
+                    to: 1,
+                  })})`,
+                  marginBottom: "40px",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "96px",
+                    fontWeight: 800,
+                    fontFamily: poppinsFont,
+                    background: "linear-gradient(135deg, #a78bfa 0%, #f472b6 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    textAlign: "center",
+                  }}
+                >
+                  {scene.content.headline?.split(" ")[0] || "Product"}
+                </div>
+              </div>
+            )}
+            
+            {/* UI Mockup Card */}
+            {currentSceneIndex > 0 && currentSceneIndex < scenes.length - 1 && (
+              <div
+                style={{
+                  opacity: interpolate(sceneFrame, [0, 10, 65, 75], [0, 1, 1, 0], { extrapolateRight: "clamp" }),
+                  transform: `translateY(${interpolate(sceneFrame, [0, 10], [50, 0], { extrapolateRight: "clamp" })}px)`,
+                }}
+              >
+                {/* Glass card */}
+                <div
+                  style={{
+                    background: "rgba(255, 255, 255, 0.95)",
+                    backdropFilter: "blur(20px)",
+                    borderRadius: "24px",
+                    padding: "40px",
+                    maxWidth: "600px",
+                    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+                  }}
+                >
+                  {/* Card header with icon */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "16px",
+                      marginBottom: "24px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "48px",
+                        height: "48px",
+                        borderRadius: "50%",
+                        background: "linear-gradient(135deg, #a78bfa 0%, #f472b6 100%)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "24px",
+                      }}
+                    >
+                      {scene.content.icon || "✨"}
+                    </div>
+                    <h3
+                      style={{
+                        fontSize: "24px",
+                        fontWeight: 700,
+                        fontFamily: interFont,
+                        color: "#1f2937",
+                      }}
+                    >
+                      {scene.type === "feature" ? "Feature" : "Product"}
+                    </h3>
+                  </div>
+                  
+                  {/* Card content */}
+                  <h4
+                    style={{
+                      fontSize: "28px",
+                      fontWeight: 600,
+                      fontFamily: poppinsFont,
+                      color: "#111827",
+                      marginBottom: "16px",
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {scene.content.headline}
+                  </h4>
+                  
+                  {scene.content.subtext && (
+                    <p
+                      style={{
+                        fontSize: "18px",
+                        fontFamily: interFont,
+                        color: "#6b7280",
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      {scene.content.subtext}
+                    </p>
+                  )}
+                  
+                  {/* Feature tags */}
+                  {scene.content.features && scene.content.features.length > 0 && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "8px",
+                        marginTop: "24px",
+                      }}
+                    >
+                      {scene.content.features.map((feature, idx) => (
+                        <span
+                          key={idx}
+                          style={{
+                            padding: "8px 16px",
+                            background: "#f3f4f6",
+                            borderRadius: "9999px",
+                            fontSize: "14px",
+                            fontFamily: interFont,
+                            color: "#4b5563",
+                          }}
+                        >
+                          + {feature.title}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Action button */}
+                  <div
+                    style={{
+                      marginTop: "24px",
+                      padding: "16px 24px",
+                      background: "linear-gradient(135deg, #a78bfa 0%, #f472b6 100%)",
+                      borderRadius: "9999px",
+                      textAlign: "center",
+                      color: "white",
+                      fontSize: "16px",
+                      fontWeight: 600,
+                      fontFamily: interFont,
+                    }}
+                  >
+                    Learn More
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Final CTA Scene */}
+            {currentSceneIndex === scenes.length - 1 && (
+              <div
+                style={{
+                  opacity: interpolate(sceneFrame, [0, 15], [0, 1], { extrapolateRight: "clamp" }),
+                  textAlign: "center",
+                }}
+              >
+                <h2
+                  style={{
+                    fontSize: "72px",
+                    fontWeight: 800,
+                    fontFamily: poppinsFont,
+                    background: "linear-gradient(135deg, #a78bfa 0%, #f472b6 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    marginBottom: "24px",
+                  }}
+                >
+                  {scene.content.headline}
+                </h2>
+                <p
+                  style={{
+                    fontSize: "24px",
+                    fontFamily: interFont,
+                    color: "#9ca3af",
+                  }}
+                >
+                  {scene.content.subtext}
+                </p>
+              </div>
+            )}
+          </>
+        )}
+      </AbsoluteFill>
+      
+      {/* Progress indicators */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: "40px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          display: "flex",
+          gap: "8px",
+        }}
+      >
+        {scenes.map((_, idx) => (
+          <div
+            key={idx}
+            style={{
+              width: idx === currentSceneIndex ? "24px" : "8px",
+              height: "8px",
+              borderRadius: "4px",
+              background: idx === currentSceneIndex ? "#a78bfa" : idx < currentSceneIndex ? "#c4b5fd" : "#4b5563",
+              transition: "all 0.3s ease",
+            }}
+          />
+        ))}
+      </div>
+    </AbsoluteFill>
+  );
+};
+
 export default function CreativeStudioPage() {
   const router = useRouter();
   const [description, setDescription] = useState("");
   const [style, setStyle] = useState<"professional" | "playful" | "minimal" | "bold">("professional");
-  const [videoType, setVideoType] = useState<"demo" | "creative" | "fast-paced" | "cinematic">("creative");
+  const [videoType, setVideoType] = useState<"demo" | "creative" | "fast-paced" | "cinematic" | "product-demo">("creative");
   const [loading, setLoading] = useState(false);
   const [rendering, setRendering] = useState(false);
   const [renderProgress, setRenderProgress] = useState(0);
@@ -556,6 +843,7 @@ export default function CreativeStudioPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedAudio, setSelectedAudio] = useState<AudioFile | null>(null);
   const [duration, setDuration] = useState<number>(38); // Default 38s
+  const [url, setUrl] = useState("");
 
   const logsEndRef = React.useRef<HTMLDivElement>(null);
 
@@ -569,8 +857,8 @@ export default function CreativeStudioPage() {
   }, [logs]);
 
   const handleGenerate = async () => {
-    if (!description.trim()) {
-      setError("Please enter a description");
+    if (!description.trim() && !url.trim()) {
+      setError("Please enter a URL or description");
       return;
     }
 
@@ -589,11 +877,12 @@ export default function CreativeStudioPage() {
       const response = await fetch("/api/creative/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          description, 
-          style, 
+        body: JSON.stringify({
+          description,
+          style,
           videoType,
           duration,
+          url: url.trim() || undefined,
           audio: selectedAudio ? {
             url: selectedAudio.url,
             bpm: selectedAudio.bpm,
@@ -641,12 +930,17 @@ export default function CreativeStudioPage() {
                 setRemotionCode(event.data);
                 addLog("Remotion code translated", "success");
                 break;
+              case "videoUrl":
+                setRenderedVideoUrl(event.data);
+                addLog("Video rendered successfully!", "success");
+                setActiveTab("rendered");
+                break;
               case "error":
                 setError(event.data.errors?.join(", ") || "Unknown error");
                 addLog(event.data.errors?.[0] || "Error occurred", "error");
                 break;
               case "complete":
-                addLog("Production complete! Click 'Render Video' to export.", "success");
+                addLog("Production complete!", "success");
                 break;
             }
           } catch (e) {
@@ -758,7 +1052,11 @@ export default function CreativeStudioPage() {
     }
   };
 
-  const CompositionComponent = script ? () => <DynamicComposition script={script} /> : PlaceholderComposition;
+  const CompositionComponent = script 
+  ? videoType === "product-demo" 
+    ? () => <DemoStyleComposition script={script} />
+    : () => <DynamicComposition script={script} />
+  : PlaceholderComposition;
   const totalDuration = script?.totalDuration || 300;
 
   return (
@@ -834,6 +1132,17 @@ export default function CreativeStudioPage() {
               </CardHeader>
               <CardContent className="space-y-6 pt-6">
                 <div>
+                  <label className="block text-xs tracking-widest text-gray-500 uppercase mb-3">Product URL</label>
+                  <input
+                    type="url"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    placeholder="https://example.com/product"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none transition-colors text-sm"
+                  />
+                </div>
+
+                <div>
                   <label className="block text-xs tracking-widest text-gray-500 uppercase mb-3">Description</label>
                   <textarea
                     value={description}
@@ -867,6 +1176,7 @@ export default function CreativeStudioPage() {
                     >
                       <option value="creative">Creative</option>
                       <option value="demo">Demo</option>
+                      <option value="product-demo">Product Demo</option>
                       <option value="fast-paced">Fast-paced</option>
                       <option value="cinematic">Cinematic</option>
                     </select>

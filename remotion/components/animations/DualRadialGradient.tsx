@@ -28,7 +28,7 @@ export const DualRadialGradient: React.FC<DualRadialGradientProps> = ({
     frame,
     [0, durationInFrames],
     [25, 55],
-    { extrapolateRight: "clamp", easing: Easing.inOut(Easing.sine) },
+    { extrapolateRight: "clamp", easing: Easing.inOut(Easing.sin) },
   ) + Math.sin(frame * 0.015 * speed) * 10;
 
   const g1Y = interpolate(
@@ -51,7 +51,7 @@ export const DualRadialGradient: React.FC<DualRadialGradientProps> = ({
     frame,
     [0, durationInFrames],
     [70, 45],
-    { extrapolateRight: "clamp", easing: Easing.inOut(Easing.sine) },
+    { extrapolateRight: "clamp", easing: Easing.inOut(Easing.sin) },
   ) + Math.sin(frame * 0.018 * speed + 2) * 10;
 
   const g2Y = interpolate(

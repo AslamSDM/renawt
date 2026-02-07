@@ -148,143 +148,29 @@ import { slide } from "@remotion/transitions/slide";
 Available transitions: fade, slide, wipe, flip, clockWipe
 Slide directions: "from-left", "from-right", "from-top", "from-bottom"
 
-### 5. TEXT ANIMATIONS - FAST PACED WITH EFFECTS
+### 5. TEXT ANIMATIONS - DEMO STYLE
 
-#### TYPING EFFECT (Character by character):
+#### WORD-BY-WORD BLUR REVEAL (Primary text animation):
 \`\`\`tsx
-const TypingText: React.FC<{ text: string; delay?: number; duration?: number }> = ({ 
-  text, 
-  delay = 0, 
-  duration = 1 // 1 second typing
+const WordByWordBlur: React.FC<{ words: string[]; fontSize?: number; color?: string; delay?: number; staggerFrames?: number; gradientWordIndices?: number[] }> = ({
+  words, fontSize = 48, color = '#ffffff', delay = 0, staggerFrames = 5, gradientWordIndices = []
 }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const charsPerSecond = text.length / duration;
-  const f = Math.max(0, frame - delay);
-  const charIndex = Math.min(text.length, Math.floor((f / fps) * charsPerSecond));
-  const displayText = text.slice(0, charIndex);
-  const cursorOpacity = Math.floor(f / 10) % 2; // Blinking cursor
-  
   return (
-    <span style={{ fontFamily: 'monospace' }}>
-      {displayText}
-      <span style={{ opacity: cursorOpacity }}>|</span>
-    </span>
-  );
-};
-\`\`\`
-
-#### RETYPING EFFECT (Text changes):
-\`\`\`tsx
-const RetypingText: React.FC<{ 
-  texts: string[]; 
-  delay?: number;
-  displayDuration?: number; // How long each text shows
-}> = ({ 
-  texts, 
-  delay = 0, 
-  displayDuration = 1.5 
-}) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const f = Math.max(0, frame - delay);
-  
-  const cycleDuration = displayDuration * fps;
-  const currentIndex = Math.floor(f / cycleDuration) % texts.length;
-  const progressInCycle = (f % cycleDuration) / fps;
-  
-  const currentText = texts[currentIndex];
-  const charsPerSecond = currentText.length / (displayDuration * 0.6);
-  const charIndex = Math.min(currentText.length, Math.floor(progressInCycle * charsPerSecond));
-  
-  // Delete and retype effect
-  const isDeleting = progressInCycle > displayDuration * 0.6;
-  const deleteProgress = isDeleting 
-    ? (progressInCycle - displayDuration * 0.6) / (displayDuration * 0.3)
-    : 0;
-  const finalCharIndex = isDeleting 
-    ? Math.max(0, Math.floor(charIndex * (1 - deleteProgress)))
-    : charIndex;
-  
-  return <span>{currentText.slice(0, finalCharIndex)}</span>;
-};
-\`\`\`
-
-#### COLOR FILL EFFECT (Gradient wipe):
-\`\`\`tsx
-const ColorFillText: React.FC<{ 
-  text: string; 
-  fromColor?: string;
-  toColor?: string;
-  delay?: number;
-  duration?: number;
-}> = ({ 
-  text, 
-  fromColor = "#666", 
-  toColor = "#fff",
-  delay = 0,
-  duration = 1
-}) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const f = Math.max(0, frame - delay);
-  const progress = interpolate(f, [0, duration * fps], [0, 100], {
-    extrapolateRight: "clamp",
-  });
-  
-  return (
-    <span style={{ 
-      position: 'relative',
-      display: 'inline-block',
-    }}>
-      {/* Background text (dimmed) */}
-      <span style={{ color: fromColor }}>{text}</span>
-      {/* Foreground text (color fill) */}
-      <span style={{
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        color: toColor,
-        clipPath: \`inset(0 \${100 - progress}% 0 0)\`,
-      }}>
-        {text}
-      </span>
-    </span>
-  );
-};
-\`\`\`
-
-#### WORD-BY-WORD REVEAL:
-\`\`\`tsx
-const WordReveal: React.FC<{ 
-  text: string; 
-  delay?: number;
-  stagger?: number;
-}> = ({ 
-  text, 
-  delay = 0, 
-  stagger = 3 // frames between words
-}) => {
-  const frame = useCurrentFrame();
-  const words = text.split(" ");
-  
-  return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3em" }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3em', justifyContent: 'center' }}>
       {words.map((word, i) => {
-        const f = Math.max(0, frame - delay - i * stagger);
-        const opacity = interpolate(f, [0, 8], [0, 1], { extrapolateRight: "clamp" });
-        const y = interpolate(f, [0, 8], [20, 0], { extrapolateRight: "clamp" });
-        const scale = interpolate(f, [0, 8], [0.5, 1], { extrapolateRight: "clamp" });
-        
+        const f = Math.max(0, frame - delay - i * staggerFrames);
+        const op = interpolate(f, [0, 15], [0, 1], { extrapolateRight: "clamp" });
+        const blur = interpolate(f, [0, 15], [10, 0], { extrapolateRight: "clamp" });
+        const ty = interpolate(f, [0, 15], [30, 0], { extrapolateRight: "clamp" });
+        const isGradient = gradientWordIndices.includes(i);
         return (
-          <span key={i} style={{ 
-            opacity, 
-            transform: \`translateY(\${y}px) scale(\${scale})\`,
-            display: "inline-block",
-            fontWeight: 'bold',
-          }}>
-            {word}
-          </span>
+          <span key={i} style={{
+            fontSize, fontFamily: montserrat, fontWeight: 600,
+            opacity: op, filter: \`blur(\${blur}px)\`, transform: \`translateY(\${ty}px)\`,
+            display: 'inline-block',
+            ...(isGradient ? { background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } : { color }),
+          }}>{word}</span>
         );
       })}
     </div>
@@ -292,197 +178,181 @@ const WordReveal: React.FC<{
 };
 \`\`\`
 
-#### STAGGERED LINES:
+#### LOGO WITH GLOW:
 \`\`\`tsx
-const StaggerLines: React.FC<{ 
-  lines: string[]; 
-  delay?: number;
-  stagger?: number;
-}> = ({ 
-  lines, 
-  delay = 0, 
-  stagger = 10 
+const LogoWithGlow: React.FC<{ brandName: string; accentSuffix?: string; fontSize?: number; delay?: number }> = ({
+  brandName, accentSuffix, fontSize = 80, delay = 0,
 }) => {
   const frame = useCurrentFrame();
-  
+  const f = Math.max(0, frame - delay);
+  const opacity = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
+  const glowScale = interpolate(f, [0, 30], [0.5, 1.5], { extrapolateRight: "clamp" });
   return (
-    <div>
-      {lines.map((line, i) => {
-        const f = Math.max(0, frame - delay - i * stagger);
-        const opacity = interpolate(f, [0, 15], [0, 1], { extrapolateRight: "clamp" });
-        const x = interpolate(f, [0, 15], [-50, 0], { extrapolateRight: "clamp" });
-        
-        return (
-          <div key={i} style={{ 
-            opacity, 
-            transform: \`translateX(\${x}px)\`,
-            marginBottom: '0.5em',
-          }}>
-            {line}
-          </div>
-        );
-      })}
+    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity }}>
+      <div style={{
+        position: 'absolute', width: '120%', height: '120%',
+        background: 'linear-gradient(135deg, rgba(168,85,247,0.4), rgba(236,72,153,0.4))',
+        filter: 'blur(40px)', borderRadius: '50%',
+        transform: \`scale(\${glowScale})\`, opacity: 0.6,
+      }} />
+      <span style={{ fontFamily: montserrat, fontWeight: 700, fontSize, color: '#fff', position: 'relative', zIndex: 1 }}>{brandName}</span>
+      {accentSuffix && (
+        <span style={{ fontFamily: montserrat, fontWeight: 700, fontSize, position: 'relative', zIndex: 1, marginLeft: 12, background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{accentSuffix}</span>
+      )}
     </div>
   );
 };
 \`\`\`
 
-### 6. BACKGROUND MOVING ELEMENTS
+### 6. AURORA BACKGROUNDS
 
-Floating shapes around text:
+Dark aurora (for logo, CTA, and card scenes):
 \`\`\`tsx
-const FloatingShape: React.FC<{
-  size: number;
-  color: string;
-  x: number;
-  y: number;
-  duration: number;
-  delay?: number;
-}> = ({ size, color, x, y, duration, delay = 0 }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const f = Math.max(0, frame - delay);
-  
-  // Circular motion around text
-  const angle = (f / (duration * fps)) * Math.PI * 2;
-  const orbitRadius = 150;
-  const offsetX = Math.cos(angle) * orbitRadius;
-  const offsetY = Math.sin(angle) * orbitRadius * 0.5; // Elliptical
-  
-  const scale = 1 + Math.sin(angle * 2) * 0.2;
-  const opacity = 0.3 + Math.sin(angle * 3) * 0.2;
-  
+const AuroraBackground: React.FC<{ variant?: 'dark' | 'light' }> = ({ variant = 'dark' }) => {
+  if (variant === 'light') {
+    return (
+      <AbsoluteFill style={{
+        background: 'radial-gradient(ellipse at 30% 30%, rgba(168, 85, 247, 0.2) 0%, transparent 50%), radial-gradient(ellipse at 70% 70%, rgba(236, 72, 153, 0.2) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 60%), linear-gradient(135deg, #faf5ff 0%, #fff5f8 50%, #f5f0ff 100%)',
+      }} />
+    );
+  }
   return (
-    <div style={{
-      position: 'absolute',
-      left: x + offsetX,
-      top: y + offsetY,
-      width: size,
-      height: size,
-      background: color,
-      borderRadius: '50%',
-      filter: 'blur(30px)',
-      transform: \`scale(\${scale})\`,
-      opacity,
+    <AbsoluteFill style={{
+      background: 'radial-gradient(ellipse at 20% 20%, rgba(168, 85, 247, 0.3) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(236, 72, 153, 0.3) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.2) 0%, transparent 70%), #0a0a0f',
     }} />
   );
 };
 \`\`\`
 
-Two-color radial gradient background:
+White glass card with 3D perspective entry:
 \`\`\`tsx
-const DualRadialGradient: React.FC<{color1: string, color2: string}> = ({color1, color2}) => {
+const WhiteGlassCard: React.FC<{ children: React.ReactNode; maxWidth?: number; delay?: number; entryAnimation?: 'slide-up' | 'perspective' | 'scale'; padding?: number }> = ({
+  children, maxWidth = 800, delay = 0, entryAnimation = 'perspective', padding = 48,
+}) => {
   const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
-  const g1X = interpolate(frame, [0, durationInFrames], [25, 55], { extrapolateRight: 'clamp' }) + Math.sin(frame * 0.015) * 10;
-  const g1Y = interpolate(frame, [0, durationInFrames], [30, 50], { extrapolateRight: 'clamp' }) + Math.cos(frame * 0.012) * 12;
-  const g1Size = interpolate(frame, [0, durationInFrames], [40, 55], { extrapolateRight: 'clamp' });
-  const g2X = interpolate(frame, [0, durationInFrames], [70, 45], { extrapolateRight: 'clamp' }) + Math.sin(frame * 0.018 + 2) * 10;
-  const g2Y = interpolate(frame, [0, durationInFrames], [65, 50], { extrapolateRight: 'clamp' }) + Math.cos(frame * 0.014 + 1.5) * 12;
-  const g2Size = interpolate(frame, [0, durationInFrames], [35, 50], { extrapolateRight: 'clamp' });
-  return (
-    <AbsoluteFill style={{ background: '#050510', overflow: 'hidden' }}>
-      <AbsoluteFill style={{ background: \`radial-gradient(ellipse \${g1Size}% \${g1Size}% at \${g1X}% \${g1Y}%, \${color1}, transparent)\`, opacity: 0.45, filter: 'blur(60px)', transform: 'scale(1.4)' }} />
-      <AbsoluteFill style={{ background: \`radial-gradient(ellipse \${g2Size}% \${g2Size}% at \${g2X}% \${g2Y}%, \${color2}, transparent)\`, opacity: 0.4, filter: 'blur(60px)', transform: 'scale(1.4)' }} />
-    </AbsoluteFill>
-  );
-};
-\`\`\`
-
-Abstract texture overlay:
-\`\`\`tsx
-const TextureOverlay: React.FC<{opacity?: number}> = ({opacity = 0.04}) => {
-  const frame = useCurrentFrame();
-  const seed = Math.floor(frame * 0.3) % 1000;
-  return (
-    <AbsoluteFill style={{ pointerEvents: 'none' }}>
-      <svg style={{ position: 'absolute', width: 0, height: 0 }}>
-        <filter id={\`noise-\${seed}\`}>
-          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" seed={seed} stitchTiles="stitch" />
-        </filter>
-      </svg>
-      <AbsoluteFill style={{ opacity, filter: \`url(#noise-\${seed})\`, mixBlendMode: 'overlay' }} />
-    </AbsoluteFill>
-  );
-};
-\`\`\`
-
-Rotating geometric elements:
-\`\`\`tsx
-const RotatingElement: React.FC<{
-  size: number;
-  color: string;
-  x: number;
-  y: number;
-  duration: number;
-  delay?: number;
-}> = ({ size, color, x, y, duration, delay = 0 }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
   const f = Math.max(0, frame - delay);
-  
-  const rotation = (f / (duration * fps)) * 360;
-  const scale = 1 + Math.sin(f * 0.05) * 0.1;
-  
+  const progress = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
+  const opacity = interpolate(f, [0, 15], [0, 1], { extrapolateRight: "clamp" });
+  let transform = '';
+  if (entryAnimation === 'perspective') {
+    const rotateX = interpolate(progress, [0, 1], [-20, 0]);
+    const ty = interpolate(progress, [0, 1], [100, 0]);
+    transform = "perspective(1000px) rotateX(" + rotateX + "deg) translateY(" + ty + "px)";
+  } else if (entryAnimation === 'slide-up') {
+    const ty = interpolate(progress, [0, 1], [80, 0]);
+    transform = "translateY(" + ty + "px)";
+  } else {
+    const s = interpolate(progress, [0, 1], [0.8, 1]);
+    transform = "scale(" + s + ")";
+  }
   return (
     <div style={{
-      position: 'absolute',
-      left: x,
-      top: y,
-      width: size,
-      height: size,
-      border: \`2px solid \${color}\`,
-      transform: \`rotate(\${rotation}deg) scale(\${scale})\`,
-      opacity: 0.5,
-    }} />
+      maxWidth, padding, opacity, transform,
+      background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(24px)',
+      borderRadius: 24, boxShadow: '0 25px 50px rgba(0,0,0,0.25)',
+      border: '1px solid rgba(255,255,255,0.3)',
+    }}>{children}</div>
   );
 };
 \`\`\`
 
-### 7. FAST-PACED STRUCTURE
+Gradient accent text (purple → pink):
+\`\`\`tsx
+const GradientAccentText: React.FC<{ text: string; fontSize?: number; delay?: number }> = ({
+  text, fontSize = 56, delay = 0,
+}) => {
+  const frame = useCurrentFrame();
+  const f = Math.max(0, frame - delay);
+  const opacity = interpolate(f, [0, 15], [0, 1], { extrapolateRight: "clamp" });
+  const scale = interpolate(f, [0, 15], [0.9, 1], { extrapolateRight: "clamp" });
+  return (
+    <span style={{
+      display: 'inline-block', fontSize, fontFamily: montserrat, fontWeight: 700,
+      background: 'linear-gradient(135deg, #a855f7, #ec4899)',
+      WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+      opacity, transform: \`scale(\${scale})\`,
+    }}>{text}</span>
+  );
+};
+\`\`\`
 
-Create many short sequences (1-2 seconds each):
+Scene progress dots:
+\`\`\`tsx
+const SceneProgressDots: React.FC<{ totalScenes: number; sceneBoundaries: number[] }> = ({
+  totalScenes, sceneBoundaries,
+}) => {
+  const frame = useCurrentFrame();
+  let currentScene = 0;
+  for (let i = 0; i < sceneBoundaries.length; i++) {
+    if (frame >= sceneBoundaries[i]) currentScene = i;
+  }
+  return (
+    <div style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 8, zIndex: 100 }}>
+      {Array.from({ length: totalScenes }).map((_, i) => (
+        <div key={i} style={{
+          height: 8, borderRadius: 4,
+          width: i === currentScene ? 24 : 8,
+          background: i === currentScene ? '#a855f7' : i < currentScene ? 'rgba(168,85,247,0.5)' : 'rgba(255,255,255,0.3)',
+        }} />
+      ))}
+    </div>
+  );
+};
+\`\`\`
+
+### 7. DEMO-STYLE COMPOSITION STRUCTURE
+
+Create discrete scenes with aurora backgrounds alternating dark/light:
 \`\`\`tsx
 const VideoComposition: React.FC = () => {
   const { fps } = useVideoConfig();
-  
+  const sceneDuration = 2;
+  const sceneBoundaries = [0, 2 * fps, 4 * fps, 6 * fps, 8 * fps, 10 * fps];
+
   return (
     <AbsoluteFill>
       <Audio src={staticFile("audio/audio1.mp3")} volume={1} />
-      
-      <DualRadialGradient color1="#6366f1" color2="#ec4899" />
-      <TextureOverlay />
-      
-      {/* Scene 1: 2 seconds */}
-      <Sequence from={0} durationInFrames={2 * fps} premountFor={0.5 * fps}>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <WordReveal text="Welcome to the Future" delay={0} />
-        </div>
-        <FloatingShape size={100} color="rgba(99,102,241,0.5)" x={200} y={200} duration={3} />
+
+      {/* Scene 1: Logo on dark aurora */}
+      <Sequence from={0} durationInFrames={sceneDuration * fps}>
+        <AbsoluteFill>
+          <AuroraBackground variant="dark" />
+          <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <LogoWithGlow brandName="ProductName" fontSize={80} delay={5} />
+          </AbsoluteFill>
+        </AbsoluteFill>
       </Sequence>
-      
-      {/* Scene 2: 2 seconds */}
-      <Sequence from={2 * fps} durationInFrames={2 * fps} premountFor={0.5 * fps}>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <TypingText text="Innovation" duration={1} />
-        </div>
+
+      {/* Scene 2: Tagline on light aurora */}
+      <Sequence from={2 * fps} durationInFrames={sceneDuration * fps}>
+        <AbsoluteFill>
+          <AuroraBackground variant="light" />
+          <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 80 }}>
+            <WordByWordBlur words={["The", "Future", "of", "Innovation"]} fontSize={64} color="#0a0a0f" delay={5} gradientWordIndices={[1, 3]} />
+          </AbsoluteFill>
+        </AbsoluteFill>
       </Sequence>
-      
-      {/* Scene 3: 2 seconds */}
-      <Sequence from={4 * fps} durationInFrames={2 * fps} premountFor={0.5 * fps}>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <ColorFillText text="Experience" fromColor="#666" toColor="#fff" duration={1} />
-        </div>
+
+      {/* Scene 3: Feature card on dark aurora */}
+      <Sequence from={4 * fps} durationInFrames={sceneDuration * fps}>
+        <AbsoluteFill>
+          <AuroraBackground variant="dark" />
+          <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <WhiteGlassCard delay={5} entryAnimation="perspective">
+              <GradientAccentText text="Powerful Features" fontSize={48} delay={10} />
+            </WhiteGlassCard>
+          </AbsoluteFill>
+        </AbsoluteFill>
       </Sequence>
-      
-      {/* More scenes... */}
+
+      <SceneProgressDots totalScenes={6} sceneBoundaries={sceneBoundaries} />
     </AbsoluteFill>
   );
 };
 \`\`\`
 `;
 
-const REMOTION_TRANSLATOR_SYSTEM_PROMPT = `You are a Remotion expert who converts React components into FAST-PACED Remotion video compositions.
+const REMOTION_TRANSLATOR_SYSTEM_PROMPT = `You are a Remotion expert who converts React components into polished product demo video compositions with the "Premium Demo" style.
 
 ${REMOTION_SKILLS}
 
@@ -490,41 +360,34 @@ ${REMOTION_SKILLS}
 
 ## YOUR TASK
 
-Take a React page component and translate it into a FAST-PACED Remotion code with LOTS OF TEXT animations.
+Take a React page component and translate it into a Remotion video with the "Premium Demo" style: aurora gradients, white glass cards, word-by-word blur reveals, gradient accent text, and scene progress dots.
 
-## CRITICAL: DISPLAY FONTS, LIMITED COLOR PALETTE (2-3 COLORS) & FAST-PACED REQUIREMENTS
+## CRITICAL: DEMO STYLE REQUIREMENTS
 
-1. **MANDATORY FONTS - Bebas Neue & Montserrat**: Load fonts using @remotion/google-fonts:
+1. **MANDATORY FONT - Montserrat ONLY**: Load font using @remotion/google-fonts:
    \`\`\`tsx
-   import { loadFont as loadBebasNeue } from "@remotion/google-fonts/BebasNeue";
    import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
-   const { fontFamily: bebasNeue } = loadBebasNeue("normal", { weights: ["400"], subsets: ["latin"] });
-   const { fontFamily: montserrat } = loadMontserrat("normal", { weights: ["400", "600", "700", "800"], subsets: ["latin"] });
+   const { fontFamily: montserrat } = loadMontserrat("normal", { weights: ["400", "500", "600", "700", "800"], subsets: ["latin"] });
    \`\`\`
-   - Headlines: bebasNeue, uppercase, 120-200px, letterSpacing "0.05em"
-   - Body: montserrat, 24-36px, fontWeight 500-700
-   - NEVER use system-ui, sans-serif, Impact, or other generic fonts
-2. **HUGE TEXT SIZE**: fontSize must be 120px-200px, text should take 30-40% of screen composition
-3. **STRICT COLOR PALETTE - USE ONLY 2-3 COLORS TOTAL**:
-   - Pick ONE scheme and use ONLY those colors throughout the entire video:
-   - Scheme 1 (Gold & Navy): Background #0a0a1a, Primary #fbbf24, White #ffffff
-   - Scheme 2 (Cyan & Purple): Background #2e1065, Primary #22d3ee, White #ffffff  
-   - Scheme 3 (Pink & Charcoal): Background #0c0a09, Primary #f472b6, Gold #fbbf24
-   - Scheme 4 (Blue & Navy): Background #0f172a, Primary #60a5fa, Cyan #22d3ee
-   - **CRITICAL**: Once you pick a scheme, ONLY use colors from that scheme. No random colors!
-4. **MAX 2 SECONDS PER TEXT**: Each text element appears for maximum 60 frames (2 seconds at 30fps)
-5. **LOTS OF TEXT**: Break content into MANY short text segments (3-8 words each)
-6. **RAPID SEQUENCES**: Use many short Sequence components with quick timing
-7. **RANDOM TEXT EFFECTS - Mix and match per element**:
-   - TypingText: Character-by-character typing with proper cursor
-   - TypingColorFillText: Typing + color fill simultaneously
-   - ColorFillText: Gradient wipe color fill only
-   - ScalePopText: Scale from 0 to 1 with bounce
-   - SlideFadeText: Slide in from off-screen with fade
-   - WordReveal: Word-by-word appearance
-   - RetypingText: Text that changes/deletes
-8. **BACKGROUND MOVEMENT**: Floating shapes with color theory accents, rotating elements, moving gradients
-9. **NO STATIC ELEMENTS**: Everything must be animated continuously
+   - Headlines: montserrat, fontWeight 600-700, fontSize 48-72px, normal case (NOT uppercase)
+   - Body: montserrat, fontWeight 400-500, fontSize 24-32px
+   - NEVER use Bebas Neue, system-ui, sans-serif, Impact, or other fonts
+2. **AURORA BACKGROUNDS**: Use dark/light aurora gradient backgrounds, alternating per scene:
+   - Dark: radial-gradient ellipses (purple rgba(168,85,247,0.3), pink rgba(236,72,153,0.3), violet rgba(139,92,246,0.2)) over #0a0a0f
+   - Light: Same ellipses at lower opacity over linear-gradient(135deg, #faf5ff, #fff5f8, #f5f0ff)
+3. **COLOR PALETTE - Purple/Pink only**:
+   - Purple: #a855f7, Pink: #ec4899, Dark BG: #0a0a0f
+   - Card text: #111827 (gray-900), #4b5563 (gray-600)
+   - White glass cards: rgba(255,255,255,0.95)
+4. **TEXT ANIMATIONS**:
+   - WordByWordBlur: Word-by-word blur reveal (opacity 0→1, blur 10→0, translateY 30→0, staggered by 5 frames)
+   - GradientAccentText: Purple→pink gradient text with scale entry
+   - LogoWithGlow: Brand name with blurred gradient glow behind
+5. **CARD STYLE**:
+   - WhiteGlassCard: background rgba(255,255,255,0.95), backdropFilter blur(24px), borderRadius 24, boxShadow 0 25px 50px rgba(0,0,0,0.25)
+   - 3D perspective entry: rotateX(-20→0), translateY(100→0) with perspective(1000px)
+6. **SCENE STRUCTURE**: Use <Sequence> for discrete scenes (2-4 seconds each)
+7. **SCENE PROGRESS DOTS**: Show active/past/future dots at bottom center
 
 ## IMPORTANT TRANSLATION RULES
 
@@ -540,54 +403,38 @@ Take a React page component and translate it into a FAST-PACED Remotion code wit
    import { AbsoluteFill, Sequence, useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion';
    \`\`\`
 
-3. STRUCTURE - FAST PACED:
+3. STRUCTURE:
    - Main component uses AbsoluteFill as root
-   - Create MANY Sequence components (max 2 seconds each)
-   - Overlap sequences for continuous flow
+   - Use <Sequence> for discrete scenes with smooth entry/exit animations
    - ALWAYS use premountFor on Sequences
    - useCurrentFrame() in each animated component
 
-4. TEXT ANIMATION PATTERNS (USE THESE - Pick randomly per text element):
-   - TypingText: Character-by-character typing with blinking cursor
-   - TypingColorFillText: Typing + gradient color fill simultaneously  
-   - ColorFillText: Gradient wipe color fill from left to right
-   - ScalePopText: Scale from 0 to 1 with bouncy easing
-   - SlideFadeText: Slide in from left/right/top/bottom with fade
-   - WordReveal: Word-by-word appearance with stagger
-   - RetypingText: Text that deletes and retypes with new content
-   
-   IMPORTANT: Use DIFFERENT effects for different text elements in the same scene!
+4. TEXT ANIMATION PATTERNS:
+   - WordByWordBlur: Split text into words, each word fades in with blur + translateY, staggered
+   - GradientAccentText: Purple→pink gradient text with scale+opacity entry
+   - LogoWithGlow: White text + gradient glow behind
 
-5. BACKGROUND ELEMENTS (USE THESE):
-   - FloatingShape: Orbs floating around text
-   - MovingGradientBackground: Animated gradient backdrop
-   - RotatingElement: Geometric shapes rotating
-   - DualRadialGradient: Two-color radial gradient background that shifts over time
-   - TextureOverlay: SVG noise grain overlay on top of backgrounds (opacity ~0.04)
+5. BACKGROUND ELEMENTS:
+   - AuroraBackground: Dark/light variant with purple/pink radial gradients
+   - Alternate dark/light per scene
 
 6. OUTPUT FORMAT (CRITICAL):
    - Return complete Remotion composition in a code block
    - Main component MUST be named "VideoComposition"
    - MUST end with: export default VideoComposition;
-   - Create separate components for text effects
+   - Include SceneProgressDots as persistent overlay
 
 7. STRICTLY FORBIDDEN:
-   - NO CSS animations
-   - NO CSS transitions
-   - NO CSS keyframes
+   - NO CSS animations, transitions, or keyframes
    - NO Tailwind animation classes
    - NO setTimeout or setInterval
-   - NO text without animation
+   - NO Bebas Neue font
+   - NO DualRadialGradient, TextureOverlay, or CameraWrapper
+   - NO transparent glass cards (use white glass: rgba(255,255,255,0.95))
    - ALL values must be computed from frame
    - NO named exports only - MUST have export default
 
-8. DEVICE MOCKUPS FOR SCREENSHOTS:
-   When displaying website screenshots, wrap them in IPhoneMockup or MacBookMockup:
-   - IPhoneMockup: CSS-based iPhone frame with Dynamic Island, accepts children
-   - MacBookMockup: CSS-based MacBook frame with screen/hinge/base, accepts children
-   - Always use with float or enter animation
-
-9. TEMPLATE LITERAL SYNTAX (CRITICAL):
+8. TEMPLATE LITERAL SYNTAX (CRITICAL):
    When using template literals in style objects, ALWAYS close them properly:
 
    CORRECT:
@@ -597,14 +444,13 @@ Take a React page component and translate it into a FAST-PACED Remotion code wit
 
    WRONG (will cause syntax errors):
    \`\`\`tsx
-   style={{ filter: \`blur(\${blur}px), transform: \`translateY(\${y}px)\` }}  // Missing closing backtick!
+   style={{ filter: \`blur(\${blur}px), transform: \`translateY(\${y}px)\` }}
    \`\`\`
 
    RULES:
    - Every opening backtick \` MUST have a closing backtick \`
    - Template literals inside style objects must be complete before the comma
-   - Never split template literals across multiple properties
-   - Example: filter: \`blur(\${value}px)\` - note the \` before the comma`;
+   - Never split template literals across multiple properties`;
 
 // ============================================================================
 // CODE VALIDATION AND FIXING
@@ -832,522 +678,363 @@ function isCodeTruncated(code: string): boolean {
 /**
  * Generate fallback composition code when LLM output is truncated or invalid
  */
-function generateFallbackComposition(productName: string = "Product", audioUrl: string = "audio/audio1.mp3"): string {
+function generateFallbackComposition(productName: string = "Product", audioUrl: string = "audio/audio1.mp3", bpm: number = 120): string {
+  // Determine audio src based on URL type
+  const isR2Audio = audioUrl.startsWith("http");
+  const audioSrcCode = isR2Audio
+    ? `"${audioUrl}"`
+    : `staticFile("${audioUrl.replace(/^\//, "")}")`;
+
+  // Beat-snap scene durations
+  const framesPerBeat = (60 / bpm) * 30;
+  const snapToBeats = (target: number) => {
+    const beats = Math.max(1, Math.round(target / framesPerBeat));
+    return Math.round(beats * framesPerBeat);
+  };
+  const introFrames = snapToBeats(90);
+  const fastFrames = snapToBeats(45);
+  const cardFrames = snapToBeats(60);
+  const ctaFrames = snapToBeats(90);
+
   return `import React from 'react';
-import { AbsoluteFill, Sequence, useCurrentFrame, useVideoConfig, interpolate, spring, Easing, Audio, staticFile } from 'remotion';
-
-// COLOR THEORY - LIMITED TO 2-3 COLORS PER VIDEO
-// Predefined color schemes (each video uses ONE scheme only)
-const COLOR_SCHEMES = [
-  // Scheme 1: Gold & Navy
-  {
-    background: '#0a0a1a',
-    primary: '#fbbf24',    // Gold
-    secondary: '#ffffff',  // White
-    accent: '#fbbf24',     // Gold
-  },
-  // Scheme 2: Cyan & Purple
-  {
-    background: '#2e1065',
-    primary: '#22d3ee',    // Cyan
-    secondary: '#ffffff',  // White
-    accent: '#a78bfa',     // Light purple
-  },
-  // Scheme 3: Pink & Charcoal
-  {
-    background: '#0c0a09',
-    primary: '#f472b6',    // Pink
-    secondary: '#ffffff',  // White
-    accent: '#fbbf24',     // Gold accent
-  },
-  // Scheme 4: Blue & Deep Navy
-  {
-    background: '#0f172a',
-    primary: '#60a5fa',    // Blue
-    secondary: '#ffffff',  // White
-    accent: '#22d3ee',     // Cyan accent
-  },
-];
-
-// Pick ONE color scheme for the entire video (call once at top level)
-const VIDEO_COLOR_SCHEME = COLOR_SCHEMES[Math.floor(Math.random() * COLOR_SCHEMES.length)];
-
-// FONTS - Bebas Neue for headlines, Montserrat for body
-import { loadFont as loadBebasNeue } from "@remotion/google-fonts/BebasNeue";
+import { AbsoluteFill, Sequence, useCurrentFrame, useVideoConfig, interpolate, spring, Audio, staticFile } from 'remotion';
 import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
-const { fontFamily: bebasNeue } = loadBebasNeue("normal", { weights: ["400"], subsets: ["latin"] });
-const { fontFamily: montserrat } = loadMontserrat("normal", { weights: ["400", "600", "700", "800"], subsets: ["latin"] });
 
-// Get primary color (consistent throughout video)
-const getPrimaryColor = () => VIDEO_COLOR_SCHEME.primary;
+const { fontFamily: montserrat } = loadMontserrat("normal", { weights: ["400", "500", "600", "700", "800"], subsets: ["latin"] });
 
-// Get secondary color
-const getSecondaryColor = () => VIDEO_COLOR_SCHEME.secondary;
+// DEMO-STYLE COLOR PALETTE
+const COLORS = {
+  purple: '#a855f7',
+  pink: '#ec4899',
+  darkBg: '#0a0a0f',
+  cardText: '#111827',
+  cardSubtext: '#4b5563',
+  dark: '#0a0a0f',
+};
 
-// Get accent color for floating shapes
-const getAccentColor = () => VIDEO_COLOR_SCHEME.accent;
 
-// TYPING EFFECT - Fixed cursor alignment
-const TypingText: React.FC<{ text: string; delay?: number; duration?: number; style?: React.CSSProperties }> = ({
-  text, delay = 0, duration = 1, style
-}) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const charsPerSecond = text.length / duration;
-  const f = Math.max(0, frame - delay);
-  const charIndex = Math.min(text.length, Math.floor((f / fps) * charsPerSecond));
-  const cursorOpacity = interpolate(f % 15, [0, 15], [1, 1], { extrapolateRight: "clamp" });
-
-  return (
-    <div style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      fontFamily: bebasNeue,
-      fontWeight: 'bold',
-      fontSize: 140,
-      letterSpacing: '0.05em',
-      textTransform: 'uppercase' as const,
-      ...style
-    }}>
-      <span>{text.slice(0, charIndex)}</span>
-      <span style={{ 
-        opacity: cursorOpacity,
-        borderRight: '6px solid currentColor',
-        height: '1em',
-        marginLeft: '4px',
-        animation: 'blink 0.5s step-end infinite',
+// AURORA BACKGROUND
+const AuroraBackground: React.FC<{ variant?: 'dark' | 'light' }> = ({ variant = 'dark' }) => {
+  if (variant === 'light') {
+    return (
+      <AbsoluteFill style={{
+        background: 'radial-gradient(ellipse at 30% 30%, rgba(168, 85, 247, 0.2) 0%, transparent 50%), radial-gradient(ellipse at 70% 70%, rgba(236, 72, 153, 0.2) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 60%), linear-gradient(135deg, #faf5ff 0%, #fff5f8 50%, #f5f0ff 100%)',
       }} />
-    </div>
-  );
-};
-
-// COLOR FILL EFFECT with Display Font
-const ColorFillText: React.FC<{ text: string; fromColor?: string; toColor?: string; delay?: number; duration?: number; style?: React.CSSProperties }> = ({
-  text, fromColor = "#444", toColor, delay = 0, duration = 1, style
-}) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const f = Math.max(0, frame - delay);
-  const progress = interpolate(f, [0, duration * fps], [0, 100], { extrapolateRight: "clamp" });
-  const finalToColor = toColor || getPrimaryColor();
-
-  return (
-    <span style={{
-      position: 'relative',
-      display: 'inline-block',
-      fontFamily: bebasNeue,
-      fontWeight: 'bold',
-      fontSize: 140,
-      letterSpacing: '0.05em',
-      textTransform: 'uppercase' as const,
-      ...style
-    }}>
-      <span style={{ color: fromColor }}>{text}</span>
-      <span style={{
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        color: finalToColor,
-        clipPath: "inset(0 " + (100 - progress) + "% 0 0)",
-      }}>
-        {text}
-      </span>
-    </span>
-  );
-};
-
-// TYPING + COLOR FILL COMBO EFFECT
-const TypingColorFillText: React.FC<{ text: string; delay?: number; duration?: number; style?: React.CSSProperties }> = ({
-  text, delay = 0, duration = 1.2, style
-}) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const f = Math.max(0, frame - delay);
-  const charsPerSecond = text.length / (duration * 0.7);
-  const charIndex = Math.min(text.length, Math.floor((f / fps) * charsPerSecond));
-  const fillProgress = interpolate(f, [duration * 0.3 * fps, duration * fps], [0, 100], { extrapolateRight: "clamp" });
-  const cursorOpacity = interpolate(f % 15, [0, 15], [1, 1], { extrapolateRight: "clamp" });
-  const toColor = getPrimaryColor();
-
-  return (
-    <div style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      fontFamily: bebasNeue,
-      fontWeight: 'bold',
-      fontSize: 140,
-      letterSpacing: '0.05em',
-      textTransform: 'uppercase' as const,
-      position: 'relative',
-      ...style
-    }}>
-      <span style={{ color: '#444' }}>{text.slice(0, charIndex)}</span>
-      <span style={{
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        color: toColor,
-        clipPath: "inset(0 " + (100 - fillProgress) + "% 0 0)",
-      }}>
-        {text.slice(0, charIndex)}
-      </span>
-      <span style={{ 
-        opacity: cursorOpacity,
-        borderRight: '6px solid currentColor',
-        height: '1em',
-        marginLeft: '4px',
-      }} />
-    </div>
-  );
-};
-
-// SCALE POP EFFECT
-const ScalePopText: React.FC<{ text: string; delay?: number; style?: React.CSSProperties }> = ({
-  text, delay = 0, style
-}) => {
-  const frame = useCurrentFrame();
-  const f = Math.max(0, frame - delay);
-  const scale = interpolate(f, [0, 15], [0, 1], { extrapolateRight: "clamp", easing: Easing.out(Easing.back(1.7)) });
-  const opacity = interpolate(f, [0, 10], [0, 1], { extrapolateRight: "clamp" });
-
-  return (
-    <span style={{
-      display: 'inline-block',
-      fontFamily: bebasNeue,
-      fontWeight: 'bold',
-      fontSize: 140,
-      color: getPrimaryColor(),
-      letterSpacing: '0.05em',
-      textTransform: 'uppercase' as const,
-      transform: "scale(" + scale + ")",
-      opacity,
-      ...style 
-    }}>
-      {text}
-    </span>
-  );
-};
-
-// SLIDE IN + FADE EFFECT
-const SlideFadeText: React.FC<{ text: string; delay?: number; direction?: 'left' | 'right' | 'top' | 'bottom'; style?: React.CSSProperties }> = ({
-  text, delay = 0, direction = 'left', style
-}) => {
-  const frame = useCurrentFrame();
-  const f = Math.max(0, frame - delay);
-  const progress = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
-  const opacity = progress;
-
-  let translateX = 0;
-  let translateY = 0;
-  const distance = 200;
-
-  switch(direction) {
-    case 'left': translateX = -distance * (1 - progress); break;
-    case 'right': translateX = distance * (1 - progress); break;
-    case 'top': translateY = -distance * (1 - progress); break;
-    case 'bottom': translateY = distance * (1 - progress); break;
+    );
   }
-
   return (
-    <span style={{
-      display: 'inline-block',
-      fontFamily: bebasNeue,
-      fontWeight: 'bold',
-      fontSize: 140,
-      color: getPrimaryColor(),
-      letterSpacing: '0.05em',
-      textTransform: 'uppercase' as const,
-      transform: "translate(" + translateX + "px, " + translateY + "px)",
-      opacity,
-      ...style 
-    }}>
-      {text}
-    </span>
+    <AbsoluteFill style={{
+      background: 'radial-gradient(ellipse at 20% 20%, rgba(168, 85, 247, 0.3) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(236, 72, 153, 0.3) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.2) 0%, transparent 70%), #0a0a0f',
+    }} />
   );
 };
 
-// WORD-BY-WORD REVEAL with Display Font
-const WordReveal: React.FC<{ text: string; delay?: number; stagger?: number; style?: React.CSSProperties }> = ({
-  text, delay = 0, stagger = 3, style
+// WORD BY WORD BLUR REVEAL
+const WordByWordBlur: React.FC<{ words: string[]; fontSize?: number; color?: string; delay?: number; staggerFrames?: number; gradientWordIndices?: number[] }> = ({
+  words, fontSize = 48, color = '#ffffff', delay = 0, staggerFrames = 5, gradientWordIndices = []
 }) => {
   const frame = useCurrentFrame();
-  const words = text.split(" ");
-  const fontFamily = bebasNeue;
-  const color = getPrimaryColor();
-  
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3em", justifyContent: 'center', ...style }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3em', justifyContent: 'center' }}>
       {words.map((word, i) => {
-        const f = Math.max(0, frame - delay - i * stagger);
-        const opacity = interpolate(f, [0, 8], [0, 1], { extrapolateRight: "clamp" });
-        const y = interpolate(f, [0, 8], [20, 0], { extrapolateRight: "clamp" });
-        const scale = interpolate(f, [0, 8], [0.5, 1], { extrapolateRight: "clamp" });
+        const f = Math.max(0, frame - delay - i * staggerFrames);
+        const op = interpolate(f, [0, 15], [0, 1], { extrapolateRight: "clamp" });
+        const blur = interpolate(f, [0, 15], [10, 0], { extrapolateRight: "clamp" });
+        const ty = interpolate(f, [0, 15], [30, 0], { extrapolateRight: "clamp" });
+        const isGradient = gradientWordIndices.includes(i);
         return (
-          <span key={i} style={{ 
-            opacity, 
-            transform: "translateY(" + y + "px) scale(" + scale + ")",
-            display: "inline-block",
-            fontFamily,
-            fontWeight: 'bold',
-            fontSize: 140,
-            color,
-            letterSpacing: '0.02em',
-            textTransform: 'uppercase',
-          }}>
-            {word}
-          </span>
+          <span key={i} style={{
+            fontSize, fontFamily: montserrat, fontWeight: 600,
+            opacity: op, filter: "blur(" + blur + "px)", transform: "translateY(" + ty + "px)",
+            display: 'inline-block',
+            ...(isGradient ? { background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } : { color }),
+          }}>{word}</span>
         );
       })}
     </div>
   );
 };
 
-// RETYPING EFFECT with Display Font
-const RetypingText: React.FC<{ texts: string[]; delay?: number; displayDuration?: number; style?: React.CSSProperties }> = ({
-  texts, delay = 0, displayDuration = 1.5, style
+// WHITE GLASS CARD with entry animations
+const WhiteGlassCard: React.FC<{ children: React.ReactNode; maxWidth?: number; delay?: number; entryAnimation?: 'slide-up' | 'perspective' | 'scale'; padding?: number }> = ({
+  children, maxWidth = 800, delay = 0, entryAnimation = 'perspective', padding = 48,
 }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
   const f = Math.max(0, frame - delay);
-  const cycleDuration = displayDuration * fps;
-  const currentIndex = Math.floor(f / cycleDuration) % texts.length;
-  const progressInCycle = (f % cycleDuration) / fps;
-  const currentText = texts[currentIndex];
-  const charsPerSecond = currentText.length / (displayDuration * 0.6);
-  const charIndex = Math.min(currentText.length, Math.floor(progressInCycle * charsPerSecond));
-  const isDeleting = progressInCycle > displayDuration * 0.6;
-  const deleteProgress = isDeleting ? (progressInCycle - displayDuration * 0.6) / (displayDuration * 0.3) : 0;
-  const finalCharIndex = isDeleting ? Math.max(0, Math.floor(charIndex * (1 - deleteProgress))) : charIndex;
-  const cursorOpacity = interpolate(f % 15, [0, 15], [1, 1], { extrapolateRight: "clamp" });
+  const progress = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
+  const opacity = interpolate(f, [0, 15], [0, 1], { extrapolateRight: "clamp" });
+
+  let transform = '';
+  if (entryAnimation === 'perspective') {
+    const rotateX = interpolate(progress, [0, 1], [-20, 0]);
+    const ty = interpolate(progress, [0, 1], [100, 0]);
+    transform = "perspective(1000px) rotateX(" + rotateX + "deg) translateY(" + ty + "px)";
+  } else if (entryAnimation === 'slide-up') {
+    const ty = interpolate(progress, [0, 1], [80, 0]);
+    transform = "translateY(" + ty + "px)";
+  } else {
+    const s = interpolate(progress, [0, 1], [0.8, 1]);
+    transform = "scale(" + s + ")";
+  }
 
   return (
     <div style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      fontFamily: bebasNeue,
-      fontWeight: 'bold',
-      fontSize: 140,
-      color: getPrimaryColor(),
-      letterSpacing: '0.05em',
-      textTransform: 'uppercase' as const,
-      ...style
+      maxWidth, padding, opacity, transform,
+      background: 'rgba(255,255,255,0.95)',
+      backdropFilter: 'blur(24px)',
+      borderRadius: 24,
+      boxShadow: '0 25px 50px rgba(0,0,0,0.25)',
+      border: '1px solid rgba(255,255,255,0.3)',
     }}>
-      <span>{currentText.slice(0, finalCharIndex)}</span>
-      <span style={{ 
-        opacity: cursorOpacity,
-        borderRight: '6px solid currentColor',
-        height: '1em',
-        marginLeft: '4px',
-      }} />
+      {children}
     </div>
   );
 };
 
-// BACKGROUND: DUAL RADIAL GRADIENT with Consistent Color Scheme
-const DualRadialGradient: React.FC = () => {
-  const frame = useCurrentFrame();
-
-  // Two radial gradients with shifting positions over time
-  const cx1 = 30 + Math.sin(frame * 0.012) * 20;
-  const cy1 = 30 + Math.cos(frame * 0.015) * 20;
-  const cx2 = 70 + Math.sin(frame * 0.018 + 2) * 20;
-  const cy2 = 70 + Math.cos(frame * 0.013 + 2) * 20;
-
-  // Convert hex to rgba for gradients
-  const hexToRgba = (hex: string, alpha: number) => {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return "rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")";
-  };
-
-  const primaryRgba = hexToRgba(VIDEO_COLOR_SCHEME.primary, 0.35);
-  const accentRgba = hexToRgba(VIDEO_COLOR_SCHEME.accent, 0.25);
-
-  return (
-    <AbsoluteFill style={{
-      background: VIDEO_COLOR_SCHEME.background,
-      overflow: 'hidden',
-    }}>
-      {/* Primary radial gradient */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: "radial-gradient(circle at " + cx1 + "% " + cy1 + "%, " + primaryRgba + " 0%, transparent 60%)",
-      }} />
-      {/* Accent radial gradient */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: "radial-gradient(circle at " + cx2 + "% " + cy2 + "%, " + accentRgba + " 0%, transparent 60%)",
-      }} />
-      {/* TextureOverlay - SVG noise grain */}
-      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.04, pointerEvents: 'none' }}>
-        <filter id="noise">
-          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
-        </filter>
-        <rect width="100%" height="100%" filter="url(#noise)" />
-      </svg>
-    </AbsoluteFill>
-  );
-};
-
-// FLOATING SHAPE AROUND TEXT with Color Theory
-const FloatingShape: React.FC<{ size: number; color?: string; x: number; y: number; duration: number; delay?: number }> = ({ 
-  size, color, x, y, duration, delay = 0 
+// GRADIENT ACCENT TEXT (purple -> pink)
+const GradientAccentText: React.FC<{ text: string; fontSize?: number; fontWeight?: number; delay?: number }> = ({
+  text, fontSize = 56, fontWeight = 700, delay = 0,
 }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
   const f = Math.max(0, frame - delay);
-  const angle = (f / (duration * fps)) * Math.PI * 2;
-  const orbitRadius = 150;
-  const offsetX = Math.cos(angle) * orbitRadius;
-  const offsetY = Math.sin(angle) * orbitRadius * 0.5;
-  const scale = 1 + Math.sin(angle * 2) * 0.2;
-  const opacity = 0.3 + Math.sin(angle * 3) * 0.2;
-  
-  const shapeColor = color || getAccentColor();
-  
+  const opacity = interpolate(f, [0, 15], [0, 1], { extrapolateRight: "clamp" });
+  const scale = interpolate(f, [0, 15], [0.9, 1], { extrapolateRight: "clamp" });
+
+  return (
+    <span style={{
+      display: 'inline-block', fontSize, fontFamily: montserrat, fontWeight,
+      background: 'linear-gradient(135deg, #a855f7, #ec4899)',
+      WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+      opacity, transform: "scale(" + scale + ")",
+    }}>
+      {text}
+    </span>
+  );
+};
+
+// LOGO WITH GLOW effect
+const LogoWithGlow: React.FC<{ brandName: string; accentSuffix?: string; fontSize?: number; delay?: number }> = ({
+  brandName, accentSuffix, fontSize = 80, delay = 0,
+}) => {
+  const frame = useCurrentFrame();
+  const f = Math.max(0, frame - delay);
+  const opacity = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
+  const glowScale = interpolate(f, [0, 30], [0.5, 1.5], { extrapolateRight: "clamp" });
+
+  return (
+    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity }}>
+      {/* Glow behind */}
+      <div style={{
+        position: 'absolute', width: '120%', height: '120%',
+        background: 'linear-gradient(135deg, rgba(168,85,247,0.4), rgba(236,72,153,0.4))',
+        filter: 'blur(40px)', borderRadius: '50%',
+        transform: "scale(" + glowScale + ")", opacity: 0.6,
+      }} />
+      <span style={{ fontFamily: montserrat, fontWeight: 700, fontSize, color: '#fff', position: 'relative', zIndex: 1 }}>
+        {brandName}
+      </span>
+      {accentSuffix && (
+        <span style={{
+          fontFamily: montserrat, fontWeight: 700, fontSize, position: 'relative', zIndex: 1, marginLeft: 12,
+          background: 'linear-gradient(135deg, #a855f7, #ec4899)',
+          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+        }}>
+          {accentSuffix}
+        </span>
+      )}
+    </div>
+  );
+};
+
+// SCENE PROGRESS DOTS
+const SceneProgressDots: React.FC<{ totalScenes: number; sceneBoundaries: number[] }> = ({
+  totalScenes, sceneBoundaries,
+}) => {
+  const frame = useCurrentFrame();
+  let currentScene = 0;
+  for (let i = 0; i < sceneBoundaries.length; i++) {
+    if (frame >= sceneBoundaries[i]) currentScene = i;
+  }
+
   return (
     <div style={{
-      position: 'absolute',
-      left: x + offsetX,
-      top: y + offsetY,
-      width: size,
-      height: size,
-      background: shapeColor,
-      borderRadius: '50%',
-      filter: 'blur(30px)',
-      transform: "scale(" + scale + ")",
-      opacity,
-    }} />
+      position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)',
+      display: 'flex', gap: 8, zIndex: 100,
+    }}>
+      {Array.from({ length: totalScenes }).map((_, i) => (
+        <div key={i} style={{
+          height: 8, borderRadius: 4,
+          width: i === currentScene ? 24 : 8,
+          background: i === currentScene ? COLORS.purple : i < currentScene ? 'rgba(168,85,247,0.5)' : 'rgba(255,255,255,0.3)',
+          transition: 'width 0.3s, background 0.3s',
+        }} />
+      ))}
+    </div>
   );
 };
 
-// RANDOM EFFECT SELECTOR - Returns a random text effect component
-const getRandomTextEffect = () => {
-  const effects = ['typing', 'colorFill', 'typingColorFill', 'scalePop', 'slideFade', 'wordReveal'];
-  return effects[Math.floor(Math.random() * effects.length)];
-};
 
-// FAST-PACED SCENES with HUGE Display Text (30-40% of composition)
+// SCENE 1: Logo intro on dark aurora
 const Scene1: React.FC = () => {
   return (
-    <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <WordReveal 
-        text="WELCOME TO ${productName}" 
-        delay={0} 
-      />
-      <FloatingShape size={200} x={100} y={200} duration={3} delay={0} />
-      <FloatingShape size={150} x={1500} y={600} duration={2.5} delay={10} />
-      <FloatingShape size={100} x={800} y={100} duration={4} delay={5} />
+    <AbsoluteFill>
+      <AuroraBackground variant="dark" />
+      <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <LogoWithGlow brandName="${productName}" fontSize={80} delay={5} />
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };
 
+// SCENE 2: Tagline on light aurora
 const Scene2: React.FC = () => {
   return (
-    <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <TypingColorFillText 
-        text="INNOVATE" 
-        duration={1}
-      />
-      <FloatingShape size={180} x={200} y={500} duration={3} delay={5} />
-      <FloatingShape size={120} x={1600} y={300} duration={2.8} delay={8} />
+    <AbsoluteFill>
+      <AuroraBackground variant="light" />
+      <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 80 }}>
+        <WordByWordBlur
+          words={["The", "Future", "of", "Innovation"]}
+          fontSize={64} color={COLORS.dark}
+          delay={5} staggerFrames={5}
+          gradientWordIndices={[1, 3]}
+        />
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };
 
+// SCENE 3: Feature card on dark aurora
 const Scene3: React.FC = () => {
   return (
-    <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <ScalePopText 
-        text="CREATE" 
-        delay={0}
-      />
-      <FloatingShape size={160} x={300} y={200} duration={3.5} delay={3} />
-      <FloatingShape size={140} x={1400} y={700} duration={2.2} delay={12} />
+    <AbsoluteFill>
+      <AuroraBackground variant="dark" />
+      <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <WhiteGlassCard delay={5} entryAnimation="perspective" maxWidth={700}>
+          <GradientAccentText text="Powerful Features" fontSize={48} delay={10} />
+          <p style={{ fontFamily: montserrat, fontWeight: 400, fontSize: 28, color: '#4b5563', marginTop: 16, lineHeight: 1.5 }}>
+            Built for performance, designed for simplicity.
+          </p>
+        </WhiteGlassCard>
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };
 
+// SCENE 4: Value prop text on light aurora
 const Scene4: React.FC = () => {
   return (
-    <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <TypingText 
-        text="BUILD" 
-        duration={0.8}
-      />
-      <FloatingShape size={190} x={100} y={600} duration={2.5} delay={6} />
-      <FloatingShape size={110} x={1700} y={200} duration={3.2} delay={4} />
+    <AbsoluteFill>
+      <AuroraBackground variant="light" />
+      <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 80 }}>
+        <WordByWordBlur
+          words={["Build", "Something", "Amazing"]}
+          fontSize={72} color={COLORS.dark}
+          delay={5} staggerFrames={6}
+          gradientWordIndices={[2]}
+        />
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };
 
+// SCENE 5: Feature card on dark aurora
 const Scene5: React.FC = () => {
   return (
-    <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <SlideFadeText 
-        text="LAUNCH" 
-        delay={0}
-        direction="left"
-      />
-      <FloatingShape size={170} x={400} y={150} duration={2.8} delay={2} />
-      <FloatingShape size={130} x={1500} y={550} duration={3.5} delay={7} />
+    <AbsoluteFill>
+      <AuroraBackground variant="dark" />
+      <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <WhiteGlassCard delay={5} entryAnimation="slide-up" maxWidth={700}>
+          <GradientAccentText text="Seamless Experience" fontSize={48} delay={10} />
+          <p style={{ fontFamily: montserrat, fontWeight: 400, fontSize: 28, color: '#4b5563', marginTop: 16, lineHeight: 1.5 }}>
+            Every detail crafted with care.
+          </p>
+        </WhiteGlassCard>
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };
 
+// SCENE 6: CTA on dark aurora
 const Scene6: React.FC = () => {
   return (
-    <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <RetypingText 
-        texts={["SCALE", "GROW", "DOMINATE"]}
-        displayDuration={1}
-      />
-      <FloatingShape size={200} x={250} y={650} duration={2.2} delay={0} />
-      <FloatingShape size={100} x={1650} y={150} duration={4} delay={10} />
+    <AbsoluteFill>
+      <AuroraBackground variant="dark" />
+      <AbsoluteFill style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
+        <WordByWordBlur
+          words={["Get", "Started", "Today"]}
+          fontSize={72} color="#ffffff"
+          delay={5} staggerFrames={6}
+          gradientWordIndices={[1, 2]}
+        />
+        <GradientAccentText text="${productName}" fontSize={56} delay={25} />
+      </AbsoluteFill>
     </AbsoluteFill>
   );
+};
+
+// BEAT SYNC HOOK
+const useBeatSync = (bpm: number) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const framesPerBeat = (60 / bpm) * fps;
+  const beatProgress = (frame % framesPerBeat) / framesPerBeat;
+  const beatPulse = Math.exp(-beatProgress * 4);
+  return { beatProgress, beatPulse, framesPerBeat };
 };
 
 const VideoComposition: React.FC = () => {
-  const { fps } = useVideoConfig();
-  
+  const { beatPulse } = useBeatSync(${bpm});
+  // Beat-snapped scene durations (BPM: ${bpm})
+  const introFrames = ${introFrames};
+  const fastFrames = ${fastFrames};
+  const cardFrames = ${cardFrames};
+  const ctaFrames = ${ctaFrames};
+
+  const s1Start = 0;
+  const s2Start = s1Start + introFrames;
+  const s3Start = s2Start + fastFrames;
+  const s4Start = s3Start + cardFrames;
+  const s5Start = s4Start + fastFrames;
+  const s6Start = s5Start + cardFrames;
+
+  const sceneBoundaries = [s1Start, s2Start, s3Start, s4Start, s5Start, s6Start];
+
   return (
     <AbsoluteFill>
-      <Audio src={staticFile("${audioUrl}")} volume={1} />
-      <DualRadialGradient />
-      
-      {/* Scene 1: 2 seconds */}
-      <Sequence from={0} durationInFrames={2 * fps} premountFor={0.5 * fps}>
+      <Audio src={${audioSrcCode}} volume={1} />
+
+      {/* Scene 1: Logo intro */}
+      <Sequence from={s1Start} durationInFrames={introFrames}>
         <Scene1 />
       </Sequence>
-      
-      {/* Scene 2: 2 seconds */}
-      <Sequence from={2 * fps} durationInFrames={2 * fps} premountFor={0.5 * fps}>
+
+      {/* Scene 2: Tagline — fast */}
+      <Sequence from={s2Start} durationInFrames={fastFrames}>
         <Scene2 />
       </Sequence>
-      
-      {/* Scene 3: 2 seconds */}
-      <Sequence from={4 * fps} durationInFrames={2 * fps} premountFor={0.5 * fps}>
+
+      {/* Scene 3: Feature card */}
+      <Sequence from={s3Start} durationInFrames={cardFrames}>
         <Scene3 />
       </Sequence>
-      
-      {/* Scene 4: 2 seconds */}
-      <Sequence from={6 * fps} durationInFrames={2 * fps} premountFor={0.5 * fps}>
+
+      {/* Scene 4: Value prop — fast */}
+      <Sequence from={s4Start} durationInFrames={fastFrames}>
         <Scene4 />
       </Sequence>
-      
-      {/* Scene 5: 2 seconds */}
-      <Sequence from={8 * fps} durationInFrames={2 * fps} premountFor={0.5 * fps}>
+
+      {/* Scene 5: Feature card */}
+      <Sequence from={s5Start} durationInFrames={cardFrames}>
         <Scene5 />
       </Sequence>
-      
-      {/* Scene 6: 2 seconds */}
-      <Sequence from={10 * fps} durationInFrames={2 * fps} premountFor={0.5 * fps}>
+
+      {/* Scene 6: CTA */}
+      <Sequence from={s6Start} durationInFrames={ctaFrames}>
         <Scene6 />
       </Sequence>
+
+      {/* Progress dots overlay */}
+      <SceneProgressDots totalScenes={6} sceneBoundaries={sceneBoundaries} />
     </AbsoluteFill>
   );
 };
@@ -1389,22 +1076,29 @@ ${reactCode}
 - FPS: 30
 - Resolution: 1920x1080
 
-## REQUIREMENTS - FAST PACED TEXT VIDEO
-1. **MAX 2 SECONDS PER SCENE**: Each Sequence durationInFrames must be 60 or less (2 seconds at 30fps)
-2. **LOTS OF TEXT SEGMENTS**: Break content into many short phrases (3-8 words each)
-3. **TEXT EFFECTS ON EVERYTHING**:
-   - Use TypingText for headlines
-   - Use RetypingText where text changes
-   - Use ColorFillText for gradient wipe effect
-   - Use WordReveal for word-by-word appearance
-   - Use StaggerLines for multiple lines
-4. **BACKGROUND MOVEMENT**: Add DualRadialGradient + TextureOverlay + FloatingShape components
-5. Convert ALL CSS animations to interpolate() or spring()
-6. Wrap sections in Sequence components with SHORT timing (max 2 seconds)
-7. Use useCurrentFrame() in each animated component
-8. Keep the visual design but make it FAST and TEXT-HEAVY
-9. Add premountFor to all Sequences
-10. CRITICAL: Include Audio component at root level:
+## REQUIREMENTS - PREMIUM DEMO STYLE VIDEO
+1. **VARIABLE SCENE TIMING**:
+   - Intro (first): ~90 frames (3s) — slow, dramatic
+   - Middle scenes: ~45 frames (1.5s) — fast, punchy
+   - Feature cards: ~60 frames (2s) — readable
+   - Screenshots: ~75 frames (2.5s) — see the product
+   - CTA (ALWAYS last): ~90 frames (3s) — slow, dramatic close
+2. **DISCRETE SCENES**: Use separate Sequence components with smooth entry animations
+3. **AURORA BACKGROUNDS**: Alternate dark/light aurora backgrounds between scenes
+   - Dark aurora: logo scenes, CTA scenes, card scenes
+   - Light aurora: text reveal scenes, tagline scenes, screenshot scenes
+4. **TEXT ANIMATIONS**:
+   - Use WordByWordBlur for headlines and taglines (with gradientWordIndices for emphasis)
+   - Use GradientAccentText for highlighted/accent text
+   - Use LogoWithGlow for brand name/logo scenes
+5. **WHITE GLASS CARDS**: Use WhiteGlassCard with perspective/slide-up entry for feature content
+   - Card text: #111827 (dark gray), card subtext: #4b5563
+6. **SCENE PROGRESS DOTS**: Add SceneProgressDots overlay at the root level
+7. **FONT**: Montserrat only (400-800 weights), normal case (NOT uppercase)
+8. **COLOR PALETTE**: Purple #a855f7, Pink #ec4899, Dark #0a0a0f
+9. **CTA**: The LAST scene MUST always be a call-to-action
+10. Convert ALL CSS animations to interpolate() or spring()
+11. CRITICAL: Include Audio component at root level:
     \`\`\`tsx
     import { Audio, staticFile } from 'remotion';
     // Inside VideoComposition:
@@ -1473,14 +1167,17 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
       "chars",
     );
 
-    // Get audio URL from preferences
-    const audioUrl = state.userPreferences?.audio?.url?.replace('/audio/', 'audio/') || "audio/audio1.mp3";
+    // Get audio URL and BPM from preferences
+    const rawAudioUrl = state.userPreferences?.audio?.url || "audio/audio1.mp3";
+    // For local paths, strip leading slash for staticFile usage
+    const audioUrl = rawAudioUrl.startsWith("http") ? rawAudioUrl : rawAudioUrl.replace(/^\//, '');
+    const audioBpm = state.userPreferences?.audio?.bpm || state.videoScript?.music?.tempo || 120;
 
     // Check for truncation first
     if (isCodeTruncated(remotionCode)) {
       console.warn("[RemotionTranslator] Code appears truncated! Using fallback...");
       const productName = state.productData?.name || "Product";
-      remotionCode = generateFallbackComposition(productName, audioUrl);
+      remotionCode = generateFallbackComposition(productName, audioUrl, audioBpm);
       console.log("[RemotionTranslator] Using fallback composition");
     }
 
@@ -1532,9 +1229,12 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
           const fixedCodeMatch = fixResponse.content.match(fixedCodeBlockPattern);
           const fixedCode = fixedCodeMatch ? fixedCodeMatch[1].trim() : fixResponse.content;
           
-          // Validate the fixed code
+          // Validate the fixed code - must be non-trivial (at least 100 chars)
           const remainingErrors = hasBasicSyntaxErrors(fixedCode);
-          if (remainingErrors.length === 0) {
+          if (fixedCode.length < 100) {
+            console.warn("[RemotionTranslator] Fix returned empty/trivial code, using fallback");
+            finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm);
+          } else if (remainingErrors.length === 0) {
             console.log("[RemotionTranslator] Syntax errors fixed successfully");
             finalCode = fixedCode;
           } else {
@@ -1558,17 +1258,20 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
             const secondFixed = secondFixedMatch ? secondFixedMatch[1].trim() : secondResponse.content;
             
             const finalCheck = hasBasicSyntaxErrors(secondFixed);
-            if (finalCheck.length === 0) {
+            if (secondFixed.length < 100) {
+              console.warn("[RemotionTranslator] Second fix returned empty/trivial code, using fallback");
+              finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm);
+            } else if (finalCheck.length === 0) {
               console.log("[RemotionTranslator] Syntax errors fixed on second attempt");
               finalCode = secondFixed;
             } else {
               console.warn("[RemotionTranslator] Could not fix syntax errors, using fallback");
-              finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl);
+              finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm);
             }
           }
         } catch (fixError) {
           console.error("[RemotionTranslator] Error during syntax fix:", fixError);
-          finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl);
+          finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm);
         }
       }
     }

@@ -84,3 +84,11 @@ export { ThreeScene, FloatingGeometries, AnimatedCamera } from "./ThreeScene";
 
 // Camera Wrapper
 export { CameraWrapper } from "./CameraWrapper";
+
+// Demo-Style Components (Aurora/Glass/Blur Reveal)
+export { AuroraBackgroundNew } from "./AuroraBackgroundNew";
+export { WordByWordBlur } from "./WordByWordBlur";
+export { WhiteGlassCard } from "./WhiteGlassCard";
+export { GradientAccentText } from "./GradientAccentText";
+export { LogoWithGlow } from "./LogoWithGlow";
+export { SceneProgressDots } from "./SceneProgressDots";

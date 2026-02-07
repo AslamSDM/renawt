@@ -103,7 +103,7 @@ async function scrollAndCapture(
     const element = await page.$(selector);
     if (element) {
       await element.scrollIntoView();
-      await page.waitForTimeout(500); // Wait for any animations
+      await new Promise(r => setTimeout(r, 1500)); // Wait for scroll animations and lazy-loaded content
       return await takeScreenshot(page, sessionId, section, description);
     }
   } catch (error) {
@@ -238,7 +238,7 @@ async function captureUIScreenshots(
       if (linkHost.includes(baseHost) || baseHost.includes(linkHost)) {
         console.log(`[Scraper] Visiting demo link: ${demoLink}`);
         await page.goto(demoLink, { waitUntil: "networkidle2", timeout: 15000 });
-        await page.waitForTimeout(1000);
+        await waitForPageReady(page);
 
         const uiScreenshot = await takeScreenshot(page, sessionId, "ui", "App/Dashboard UI screenshot");
         screenshots.push(uiScreenshot);
@@ -250,6 +250,71 @@ async function captureUIScreenshots(
   }
 
   return screenshots;
+}
+
+/**
+ * Wait for page to be visually ready (images loaded, spinners gone, content rendered)
+ */
+async function waitForPageReady(page: Page, timeoutMs: number = 10000): Promise<void> {
+  const start = Date.now();
+
+  // Wait for images in viewport to finish loading
+  try {
+    await page.evaluate(() => {
+      return new Promise<void>((resolve) => {
+        const images = Array.from(document.querySelectorAll('img'));
+        const visibleImages = images.filter(img => {
+          const rect = img.getBoundingClientRect();
+          return rect.top < window.innerHeight && rect.bottom > 0;
+        });
+
+        if (visibleImages.length === 0) {
+          resolve();
+          return;
+        }
+
+        let loaded = 0;
+        const total = visibleImages.length;
+        const check = () => { loaded++; if (loaded >= total) resolve(); };
+
+        visibleImages.forEach(img => {
+          if (img.complete && img.naturalWidth > 0) {
+            check();
+          } else {
+            img.addEventListener('load', check, { once: true });
+            img.addEventListener('error', check, { once: true });
+          }
+        });
+
+        // Safety timeout inside page context
+        setTimeout(resolve, 8000);
+      });
+    });
+  } catch {
+    // Evaluate can fail on some pages, continue anyway
+  }
+
+  // Wait for common loading indicators to disappear
+  const loadingSelectors = [
+    '[class*="loading"]', '[class*="spinner"]', '[class*="skeleton"]',
+    '[class*="placeholder"]', '[aria-busy="true"]',
+  ];
+  for (const selector of loadingSelectors) {
+    try {
+      await page.waitForSelector(selector, { hidden: true, timeout: 2000 });
+    } catch {
+      // Selector not found or already hidden, continue
+    }
+  }
+
+  // Ensure minimum wait of 2s for JS rendering, animations settling
+  const elapsed = Date.now() - start;
+  const remaining = Math.max(0, 2000 - elapsed);
+  if (remaining > 0) {
+    await new Promise(r => setTimeout(r, remaining));
+  }
+
+  console.log(`[Scraper] Page ready after ${Date.now() - start}ms`);
 }
 
 async function scrapeWebsite(url: string): Promise<ScrapeResult> {
@@ -271,8 +336,8 @@ async function scrapeWebsite(url: string): Promise<ScrapeResult> {
     console.log(`[Scraper] Navigating to: ${url}`);
     await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
 
-    // Wait for page to stabilize
-    await page.waitForTimeout(1000);
+    // Wait for page to be visually ready (images loaded, spinners gone)
+    await waitForPageReady(page);
 
     // Capture multiple screenshots for SaaS-style videos
     console.log("[Scraper] Capturing page screenshots...");
@@ -319,9 +384,11 @@ async function scrapeWebsite(url: string): Promise<ScrapeResult> {
           ?.getAttribute("content") || "";
 
       // Check for SaaS indicators
-      const hasDemoButton = !!document.querySelector('a[href*="demo"], button:contains("Demo"), a:contains("Try")');
+      const matchesText = (selector: string, text: string) =>
+        Array.from(document.querySelectorAll(selector)).some(el => el.textContent?.toLowerCase().includes(text.toLowerCase()));
+      const hasDemoButton = !!document.querySelector('a[href*="demo"]') || matchesText('button', 'Demo') || matchesText('a', 'Try');
       const hasPricing = !!document.querySelector('[class*="pricing"], [id*="pricing"]');
-      const hasSignup = !!document.querySelector('a[href*="signup"], a[href*="register"], button:contains("Sign up")');
+      const hasSignup = !!document.querySelector('a[href*="signup"], a[href*="register"]') || matchesText('button', 'Sign up');
 
       return {
         bodyText: bodyText.slice(0, 15000), // Limit text length

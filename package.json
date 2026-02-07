@@ -35,6 +35,7 @@
     "clsx": "^2.1.1",
     "dodopayments": "^2.18.0",
     "dodopayments-checkout": "^1.7.9",
+    "framer-motion": "^12.33.0",
     "lucide-react": "^0.563.0",
     "next": "16.1.6",
     "openai": "^6.17.0",

@@ -5,20 +5,22 @@ import {
 import { loadRemotionSkills, savePromptLog } from "./skills";
 import type { VideoGenerationStateType } from "./state";
 
-const CODE_GENERATOR_SYSTEM_PROMPT = `You are a PREMIUM Remotion developer creating CONTINUOUS MOTION videos with NO SCENE CUTS.
+const CODE_GENERATOR_SYSTEM_PROMPT = `You are a PREMIUM Remotion developer creating polished product demo videos with discrete scenes and smooth transitions.
 
-## CRITICAL: CONTINUOUS MOTION PHILOSOPHY
-Generate ONE CONTINUOUS composition where:
-- NO <Sequence> cuts or hard transitions
-- Elements FLOW in and out naturally using interpolate
-- Camera CONTINUOUSLY moves (zoom, pan, orbit)
-- Background CONSTANTLY morphs and pulses
-- Everything MOVES - nothing is static
+## VISUAL STYLE: "PREMIUM DEMO" (Aurora + Glass)
+Generate a composition with:
+- Discrete scenes using <Sequence> with smooth transitions
+- Aurora gradient backgrounds (dark purple/pink and light variants, alternating)
+- White glass morphism cards (rgba(255,255,255,0.95), backdrop-blur, rounded)
+- Word-by-word blur text reveals (opacity 0→1, blur 10→0, translateY 30→0)
+- Gradient accent text (purple #a855f7 → pink #ec4899)
+- Scene progress dots at bottom center
+- 3D perspective card entries
 
 ## CRITICAL RULES (MUST FOLLOW)
 1. NEVER use CSS transitions or @keyframes
 2. ALL animations use useCurrentFrame() + interpolate() or spring()
-3. DO NOT use <Sequence> for scene cuts - use staggered delays instead
+3. Use <Sequence> for discrete scenes with smooth entry/exit animations
 4. Use AbsoluteFill for full-screen positioning
 5. Always clamp: extrapolateRight: "clamp"
 6. Export default composition
@@ -30,6 +32,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
   AbsoluteFill,
+  Sequence,
   Audio,
   Img,
   interpolate,
@@ -37,46 +40,36 @@ import {
   Easing,
   staticFile,
 } from 'remotion';
-import { loadFont as loadBebasNeue } from "@remotion/google-fonts/BebasNeue";
 import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
 
-// Load fonts at module level
-const { fontFamily: bebasNeue } = loadBebasNeue("normal", { weights: ["400"], subsets: ["latin"] });
-const { fontFamily: montserrat } = loadMontserrat("normal", { weights: ["400", "600", "700", "800"], subsets: ["latin"] });
+const { fontFamily: montserrat } = loadMontserrat("normal", { weights: ["400", "500", "600", "700", "800"], subsets: ["latin"] });
 \`\`\`
 
 ## CRITICAL: TYPOGRAPHY & FONTS
-You MUST use Bebas Neue and Montserrat for all text:
-- Headlines: Use bebasNeue variable, fontSize: 96-200px, textTransform: "uppercase", letterSpacing: "0.05em"
-- Body text: Use montserrat variable, fontWeight: 500-700, fontSize: 24-36px
-- NEVER use system fonts like 'system-ui' or 'sans-serif'
-- Line height: 1.1 for headlines, 1.5 for body text
-- Headlines should be BIG and fill 30-40% of screen
+Use ONLY Montserrat for all text:
+- Headlines: Use montserrat variable, fontWeight: 600-700, fontSize: 48-72px, normal case (NOT uppercase)
+- Body text: Use montserrat variable, fontWeight: 400-500, fontSize: 24-32px
+- NEVER use Bebas Neue, system-ui, or sans-serif
+- Line height: 1.2 for headlines, 1.5 for body text
 
-## TEXT ANIMATION REQUIREMENTS
-You MUST include these animation components with continuous effects:
+## TEXT ANIMATION PATTERNS
 
-1. TypingText - Character-by-character typing with cursor:
-   const charsToShow = Math.floor(f / 2);
-   const displayText = text.slice(0, charsToShow);
-   Show cursor | when not complete
+1. WordByWordBlur - Word-by-word blur reveal (PRIMARY pattern):
+   Each word: opacity 0→1, blur 10px→0, translateY 30→0 over 15 frames, staggered by 5 frames
+   Specific words can have gradient text (purple→pink)
 
-2. BlurInText - Blur + scale animation using spring():
-   Use spring({ frame, fps, config: { damping: 15, stiffness: 100 } })
-   Scale from 0.8 to 1, blur from 20px to 0
+2. GradientAccentText - Purple→pink gradient text with scale entry:
+   background: linear-gradient(135deg, #a855f7, #ec4899), WebkitBackgroundClip: 'text'
+   Scale from 0.8→1 with spring, opacity 0→1
 
-3. WordReveal - Split text by spaces, animate each word:
-   words.map((word, i) => animate with delay based on i * 8 frames)
-   Use spring for scale effect
+3. LogoWithGlow - Brand name with blurred gradient glow behind:
+   White text + optional gradient suffix + animated glow (scale 0.5→1.5, blur 40px)
 
-4. BodyText - Clean fade-in with translateY
-
-## CRITICAL: WEBSITE SCREENSHOT USAGE
-You MUST include website screenshots in the video using the Img component:
+## WEBSITE SCREENSHOTS
+If screenshots are provided, display them using the Img component:
 - Use staticFile() to reference screenshots from the public/screenshots folder
-- Example: <Img src={staticFile("screenshots/hero-screenshot.png")} />
 - Animate screenshots with zoom, pan, fade effects using interpolate()
-- Show at least 2-3 different screenshot sections (hero, features, pricing, etc.)
+- Wrap in WhiteGlassCard for premium look
 
 ## AUDIO INTEGRATION (CRITICAL)
 ALWAYS include audio in the composition:
@@ -104,439 +97,258 @@ const useBeatSync = (bpm: number = 120) => {
 };
 \`\`\`
 
-## CONTINUOUS MOTION PATTERNS
+## DEMO-STYLE COMPONENT PATTERNS
 
-### Camera Wrapper (Zoom + Pan)
+### Aurora Background (dark/light variants)
 \`\`\`tsx
-const CameraWrapper: React.FC<{children: React.ReactNode, zoomRange?: [number, number], panX?: [number, number], panY?: [number, number]}> = ({children, zoomRange = [1, 1.15], panX = [0, 0], panY = [0, 0]}) => {
+const AuroraBackground: React.FC<{ variant?: 'dark' | 'light'; fadeIn?: boolean }> = ({ variant = 'dark', fadeIn = false }) => {
   const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
-  const scale = interpolate(frame, [0, durationInFrames], zoomRange, { extrapolateRight: 'clamp', easing: Easing.inOut(Easing.quad) });
-  const tx = interpolate(frame, [0, durationInFrames], panX, { extrapolateRight: 'clamp' });
-  const ty = interpolate(frame, [0, durationInFrames], panY, { extrapolateRight: 'clamp' });
-  return (
-    <AbsoluteFill style={{ transform: \`scale(\${scale}) translate(\${tx}px, \${ty}px)\`, transformOrigin: 'center center' }}>
-      {children}
-    </AbsoluteFill>
-  );
-};
-\`\`\`
+  const opacity = fadeIn ? interpolate(frame, [0, 15], [0, 1], { extrapolateRight: 'clamp' }) : 1;
 
-### Floating Element (enters, drifts, exits)
-\`\`\`tsx
-const FloatingElement: React.FC<{
-  children: React.ReactNode,
-  enterFrame: number,
-  exitFrame: number,
-  direction?: 'left' | 'right'
-}> = ({children, enterFrame, exitFrame, direction = 'left'}) => {
-  const frame = useCurrentFrame();
-  const { width } = useVideoConfig();
-
-  // Enter from side
-  const enterProgress = interpolate(frame, [enterFrame, enterFrame + 30], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
-
-  // Exit to opposite side
-  const exitProgress = interpolate(frame, [exitFrame, exitFrame + 30], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
-
-  // Continuous drift while visible
-  const drift = interpolate(frame, [enterFrame, exitFrame], [0, 100], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
-
-  const startX = direction === 'left' ? -width : width;
-  const endX = direction === 'left' ? width : -width;
-
-  const x = interpolate(enterProgress, [0, 1], [startX, 0]) +
-            interpolate(exitProgress, [0, 1], [0, endX]) +
-            drift * (direction === 'left' ? 1 : -1);
-
-  const opacity = enterProgress * (1 - exitProgress);
-
-  return (
-    <div style={{
-      position: 'absolute',
-      transform: \`translateX(\${x}px)\`,
-      opacity,
-    }}>
-      {children}
-    </div>
-  );
-};
-\`\`\`
-
-### Two-Color Radial Gradient Background
-\`\`\`tsx
-const DualRadialGradient: React.FC<{color1: string, color2: string, speed?: number}> = ({color1, color2, speed = 1}) => {
-  const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
-  const g1X = interpolate(frame, [0, durationInFrames], [25, 55], { extrapolateRight: 'clamp' }) + Math.sin(frame * 0.015 * speed) * 10;
-  const g1Y = interpolate(frame, [0, durationInFrames], [30, 50], { extrapolateRight: 'clamp' }) + Math.cos(frame * 0.012 * speed) * 12;
-  const g1Size = interpolate(frame, [0, durationInFrames], [40, 55], { extrapolateRight: 'clamp' });
-  const g2X = interpolate(frame, [0, durationInFrames], [70, 45], { extrapolateRight: 'clamp' }) + Math.sin(frame * 0.018 * speed + 2) * 10;
-  const g2Y = interpolate(frame, [0, durationInFrames], [65, 50], { extrapolateRight: 'clamp' }) + Math.cos(frame * 0.014 * speed + 1.5) * 12;
-  const g2Size = interpolate(frame, [0, durationInFrames], [35, 50], { extrapolateRight: 'clamp' });
-  return (
-    <AbsoluteFill style={{ background: '#050510', overflow: 'hidden' }}>
-      <AbsoluteFill style={{ background: \`radial-gradient(ellipse \${g1Size}% \${g1Size}% at \${g1X}% \${g1Y}%, \${color1}, transparent)\`, opacity: 0.45 + Math.sin(frame * 0.02 * speed) * 0.08, filter: 'blur(60px)', transform: 'scale(1.4)' }} />
-      <AbsoluteFill style={{ background: \`radial-gradient(ellipse \${g2Size}% \${g2Size}% at \${g2X}% \${g2Y}%, \${color2}, transparent)\`, opacity: 0.4 + Math.cos(frame * 0.025 * speed) * 0.08, filter: 'blur(60px)', transform: 'scale(1.4)' }} />
-    </AbsoluteFill>
-  );
-};
-\`\`\`
-
-### Abstract Texture Overlay (on top of background)
-\`\`\`tsx
-const TextureOverlay: React.FC<{opacity?: number}> = ({opacity = 0.04}) => {
-  const frame = useCurrentFrame();
-  const seed = Math.floor(frame * 0.3) % 1000;
-  return (
-    <AbsoluteFill style={{ pointerEvents: 'none' }}>
-      <svg style={{ position: 'absolute', width: 0, height: 0 }}>
-        <filter id={\`noise-\${seed}\`}>
-          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" seed={seed} stitchTiles="stitch" />
-        </filter>
-      </svg>
-      <AbsoluteFill style={{ opacity, filter: \`url(#noise-\${seed})\`, mixBlendMode: 'overlay' }} />
-    </AbsoluteFill>
-  );
-};
-\`\`\`
-
-### Device Mockups (for website screenshots)
-\`\`\`tsx
-const IPhoneMockup: React.FC<{children: React.ReactNode, delay?: number, width?: number}> = ({children, delay = 0, width = 300}) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const f = Math.max(0, frame - delay);
-  const height = width * 2.16;
-  const enterScale = spring({ frame: f, fps, from: 0.85, to: 1, config: { damping: 15 } });
-  const opacity = interpolate(f, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
-  const bobY = Math.sin(frame * 0.03) * 12;
-  return (
-    <div style={{ position: 'relative', width, height, opacity, transform: \`translateY(\${bobY}px) scale(\${enterScale})\` }}>
-      <div style={{ position: 'absolute', inset: 0, borderRadius: width * 0.14, background: 'linear-gradient(145deg, #2a2a2a, #1a1a1a)', boxShadow: '0 25px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)' }} />
-      <div style={{ position: 'absolute', top: width * 0.04, left: width * 0.04, right: width * 0.04, bottom: width * 0.04, borderRadius: width * 0.12, overflow: 'hidden', background: '#000' }}>
-        {children}
-        <div style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', width: width * 0.3, height: width * 0.08, borderRadius: width * 0.04, background: '#000', zIndex: 10 }} />
-        <div style={{ position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)', width: width * 0.35, height: 5, borderRadius: 2.5, background: 'rgba(255,255,255,0.3)', zIndex: 10 }} />
-      </div>
-    </div>
-  );
-};
-
-const MacBookMockup: React.FC<{children: React.ReactNode, delay?: number, width?: number}> = ({children, delay = 0, width = 800}) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const f = Math.max(0, frame - delay);
-  const screenHeight = width * 0.625;
-  const enterScale = spring({ frame: f, fps, from: 0.9, to: 1, config: { damping: 18 } });
-  const opacity = interpolate(f, [0, 25], [0, 1], { extrapolateRight: 'clamp' });
-  const enterY = interpolate(f, [0, 35], [50, 0], { extrapolateRight: 'clamp' });
-  return (
-    <div style={{ position: 'relative', width, opacity, transform: \`perspective(1500px) translateY(\${enterY}px) scale(\${enterScale})\` }}>
-      <div style={{ width: '100%', height: screenHeight, borderRadius: '12px 12px 0 0', background: 'linear-gradient(180deg, #2d2d2d, #1a1a1a)', padding: '24px 10px 10px 10px' }}>
-        <div style={{ width: '100%', height: '100%', borderRadius: 6, overflow: 'hidden', background: '#000' }}>{children}</div>
-      </div>
-      <div style={{ width: '100%', height: 4, background: 'linear-gradient(180deg, #333, #1a1a1a)' }} />
-      <div style={{ width: 'calc(100% + 20px)', marginLeft: -10, height: 14, borderRadius: '0 0 8px 8px', background: 'linear-gradient(180deg, #c0c0c0, #a8a8a8)' }} />
-    </div>
-  );
-};
-\`\`\`
-
-### Warping Text
-\`\`\`tsx
-const WarpingText: React.FC<{text: string, enterFrame: number, exitFrame: number}> = ({text, enterFrame, exitFrame}) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  const f = Math.max(0, frame - enterFrame);
-  const exitF = Math.max(0, frame - exitFrame);
-
-  // Enter animation
-  const opacity = interpolate(f, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
-  const blur = interpolate(f, [0, 20], [20, 0], { extrapolateRight: 'clamp' });
-  const scale = spring({ frame: f, fps, from: 0.8, to: 1, config: { damping: 12 } });
-
-  // Continuous subtle warp
-  const warpX = Math.sin(frame / 30) * 2;
-  const warpY = Math.cos(frame / 25) * 1;
-
-  // Exit animation
-  const exitOpacity = interpolate(exitF, [0, 15], [1, 0], { extrapolateRight: 'clamp' });
-  const exitScale = interpolate(exitF, [0, 15], [1, 1.2], { extrapolateRight: 'clamp' });
-
-  return (
-    <span style={{
-      display: 'inline-block',
-      opacity: opacity * exitOpacity,
-      filter: \`blur(\${blur}px)\`,
-      transform: \`scale(\${scale * exitScale}) translate(\${warpX}px, \${warpY}px)\`,
-    }}>
-      {text}
-    </span>
-  );
-};
-\`\`\`
-
-### Continuous Parallax Layers
-\`\`\`tsx
-const ParallaxLayer: React.FC<{children: React.ReactNode, speed: number, depth: number}> = ({children, speed, depth}) => {
-  const frame = useCurrentFrame();
-
-  // Continuous movement based on depth
-  const x = frame * speed * 0.5;
-  const y = Math.sin(frame / 100) * 10 * depth;
-  const scale = 1 + (depth * 0.1);
-  const opacity = 1 - (depth * 0.2);
-
+  if (variant === 'light') {
+    return (
+      <AbsoluteFill style={{
+        opacity,
+        background: \`
+          radial-gradient(ellipse at 30% 30%, rgba(168, 85, 247, 0.2) 0%, transparent 50%),
+          radial-gradient(ellipse at 70% 70%, rgba(236, 72, 153, 0.2) 0%, transparent 50%),
+          radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 60%),
+          linear-gradient(135deg, #faf5ff 0%, #fff5f8 50%, #f5f0ff 100%)
+        \`,
+      }} />
+    );
+  }
   return (
     <AbsoluteFill style={{
-      transform: \`translate(\${x}px, \${y}px) scale(\${scale})\`,
       opacity,
-    }}>
-      {children}
-    </AbsoluteFill>
+      background: \`
+        radial-gradient(ellipse at 20% 20%, rgba(168, 85, 247, 0.3) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(236, 72, 153, 0.3) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.2) 0%, transparent 70%),
+        #0a0a0f
+      \`,
+    }} />
   );
 };
 \`\`\`
 
-### Glowing Glass Card (floats continuously)
+### Word-by-Word Blur Reveal
 \`\`\`tsx
-const GlowingCard: React.FC<{children: React.ReactNode, enterFrame: number, exitFrame: number}> = ({children, enterFrame, exitFrame}) => {
+const WordByWordBlur: React.FC<{ words: string[]; fontSize?: number; fontFamily?: string; fontWeight?: number | string; color?: string; delay?: number; staggerFrames?: number; gradientWordIndices?: number[] }> = ({ words, fontSize = 48, fontFamily = montserrat, fontWeight = 600, color = '#ffffff', delay = 0, staggerFrames = 5, gradientWordIndices = [] }) => {
+  const frame = useCurrentFrame();
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3em', justifyContent: 'center' }}>
+      {words.map((word, i) => {
+        const f = Math.max(0, frame - delay - i * staggerFrames);
+        const op = interpolate(f, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
+        const blur = interpolate(f, [0, 15], [10, 0], { extrapolateRight: 'clamp' });
+        const ty = interpolate(f, [0, 15], [30, 0], { extrapolateRight: 'clamp' });
+        const isGradient = gradientWordIndices.includes(i);
+        return (
+          <span key={i} style={{
+            fontSize, fontFamily, fontWeight, opacity: op,
+            filter: \`blur(\${blur}px)\`, transform: \`translateY(\${ty}px)\`,
+            display: 'inline-block',
+            ...(isGradient ? { background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } : { color }),
+          }}>{word}</span>
+        );
+      })}
+    </div>
+  );
+};
+\`\`\`
+
+### White Glass Card
+\`\`\`tsx
+const WhiteGlassCard: React.FC<{ children: React.ReactNode; maxWidth?: number; delay?: number; entryAnimation?: 'slide-up' | 'perspective' | 'scale'; padding?: number }> = ({ children, maxWidth = 800, delay = 0, entryAnimation = 'slide-up', padding = 48 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-
-  const f = Math.max(0, frame - enterFrame);
-  const exitF = Math.max(0, frame - exitFrame);
-
-  // Floating bob motion
-  const bobY = Math.sin(frame / 20) * 5;
-  const bobX = Math.cos(frame / 25) * 3;
-
-  // Enter
-  const enterScale = spring({ frame: f, fps, from: 0.9, to: 1, config: { damping: 15 } });
-  const enterOpacity = interpolate(f, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
-
-  // Exit
-  const exitOpacity = interpolate(exitF, [0, 20], [1, 0], { extrapolateRight: 'clamp' });
-  const exitScale = interpolate(exitF, [0, 20], [1, 0.9], { extrapolateRight: 'clamp' });
-
-  // Pulsing glow
-  const glowIntensity = 0.3 + Math.sin(frame / 15) * 0.1;
-
+  const f = Math.max(0, frame - delay);
+  const opacity = interpolate(f, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
+  let transform = '';
+  if (entryAnimation === 'perspective') {
+    const rx = interpolate(f, [0, 30], [-20, 0], { extrapolateRight: 'clamp' });
+    const ty = interpolate(f, [0, 30], [100, 0], { extrapolateRight: 'clamp' });
+    transform = \`perspective(1000px) rotateX(\${rx}deg) translateY(\${ty}px)\`;
+  } else if (entryAnimation === 'scale') {
+    const s = spring({ frame: f, fps, from: 0.8, to: 1, config: { damping: 12, stiffness: 100 } });
+    transform = \`scale(\${s})\`;
+  } else {
+    const ty = interpolate(f, [0, 25], [60, 0], { extrapolateRight: 'clamp' });
+    const s = spring({ frame: f, fps, from: 0.95, to: 1, config: { damping: 15, stiffness: 100 } });
+    transform = \`translateY(\${ty}px) scale(\${s})\`;
+  }
   return (
     <div style={{
-      background: 'rgba(255, 255, 255, 0.08)',
-      backdropFilter: 'blur(20px)',
-      borderRadius: 24,
-      border: '1px solid rgba(255, 255, 255, 0.2)',
-      padding: 40,
-      opacity: enterOpacity * exitOpacity,
-      transform: \`scale(\${enterScale * exitScale}) translate(\${bobX}px, \${bobY}px)\`,
-      boxShadow: \`0 0 60px rgba(100, 150, 255, \${glowIntensity}), 0 20px 40px rgba(0,0,0,0.3)\`,
-    }}>
-      {children}
+      maxWidth, width: '100%',
+      background: 'rgba(255, 255, 255, 0.95)',
+      backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+      borderRadius: 24, boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
+      padding, opacity, transform, transformOrigin: 'center bottom',
+    }}>{children}</div>
+  );
+};
+\`\`\`
+
+### Gradient Accent Text
+\`\`\`tsx
+const GradientAccentText: React.FC<{ text: string; fontSize?: number; delay?: number }> = ({ text, fontSize = 64, delay = 0 }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const f = Math.max(0, frame - delay);
+  const scale = spring({ frame: f, fps, from: 0.8, to: 1, config: { damping: 15, stiffness: 100 } });
+  const opacity = interpolate(f, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
+  return (
+    <span style={{ fontSize, fontFamily: montserrat, fontWeight: 700, display: 'inline-block',
+      background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+      opacity, transform: \`scale(\${scale})\`,
+    }}>{text}</span>
+  );
+};
+\`\`\`
+
+### Logo With Glow
+\`\`\`tsx
+const LogoWithGlow: React.FC<{ brandName: string; fontSize?: number; delay?: number }> = ({ brandName, fontSize = 96, delay = 0 }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const f = Math.max(0, frame - delay);
+  const textOpacity = interpolate(f, [0, 25], [0, 1], { extrapolateRight: 'clamp' });
+  const textScale = spring({ frame: f, fps, from: 0.8, to: 1, config: { damping: 15, stiffness: 100 } });
+  const glowScale = interpolate(f, [0, 40], [0.5, 1.5], { extrapolateRight: 'clamp' });
+  const glowOpacity = interpolate(f, [0, 20, 40], [0, 0.6, 0.4], { extrapolateRight: 'clamp' });
+  return (
+    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ position: 'absolute', width: '120%', height: '200%', background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.6), rgba(236, 72, 153, 0.6))', filter: 'blur(40px)', borderRadius: '50%', opacity: glowOpacity, transform: \`scale(\${glowScale})\`, pointerEvents: 'none' }} />
+      <span style={{ position: 'relative', zIndex: 1, fontSize, fontFamily: montserrat, fontWeight: 700, color: '#ffffff', opacity: textOpacity, transform: \`scale(\${textScale})\`, display: 'inline-block' }}>{brandName}</span>
+    </div>
+  );
+};
+\`\`\`
+
+### Scene Progress Dots
+\`\`\`tsx
+const SceneProgressDots: React.FC<{ totalScenes: number; sceneBoundaries: number[] }> = ({ totalScenes, sceneBoundaries }) => {
+  const frame = useCurrentFrame();
+  let currentScene = 0;
+  for (let i = sceneBoundaries.length - 1; i >= 0; i--) {
+    if (frame >= sceneBoundaries[i]) { currentScene = i; break; }
+  }
+  return (
+    <div style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 8, zIndex: 100 }}>
+      {Array.from({ length: totalScenes }, (_, i) => (
+        <div key={i} style={{ width: i === currentScene ? 24 : 8, height: 8, borderRadius: 4, backgroundColor: i === currentScene ? '#a855f7' : i < currentScene ? 'rgba(168, 85, 247, 0.5)' : 'rgba(255, 255, 255, 0.3)' }} />
+      ))}
     </div>
   );
 };
 \`\`\`
 
 ## COMPOSITION STRUCTURE (CRITICAL)
-Instead of Sequences, use a timeline-based approach:
+Use <Sequence> for discrete scenes with VARIABLE TIMING:
+- Intro (first scene): ~90 frames (3s) — slow, dramatic
+- Middle scenes: ~45 frames (1.5s) — fast, punchy
+- Feature card scenes: ~60 frames (2s) — slightly longer for readability
+- Screenshot scenes: ~75 frames (2.5s) — enough to see the product
+- CTA (ALWAYS last scene): ~90 frames (3s) — slow, dramatic close
+
+Snap scene boundaries to beat timing when BPM is provided.
+
 \`\`\`tsx
 const ProductVideo: React.FC = () => {
-  const frame = useCurrentFrame();
-
-  // Define content timing (no hard cuts!)
-  const content = [
-    { text: "Headline", enterFrame: 0, exitFrame: 90 },
-    { text: "Feature 1", enterFrame: 60, exitFrame: 150 },
-    { text: "Feature 2", enterFrame: 120, exitFrame: 210 },
-    { text: "CTA", enterFrame: 180, exitFrame: 300 },
-  ];
-
   return (
-    <AbsoluteFill>
-      {/* Two-color radial gradient background */}
-      <DualRadialGradient color1="#667eea" color2="#764ba2" />
-      {/* Abstract texture overlay */}
-      <TextureOverlay opacity={0.04} />
-
-      {/* Camera zoom + pan */}
-      <CameraWrapper zoomRange={[1, 1.15]} panY={[0, -15]}>
-        {/* Content that flows in and out */}
-        {content.map((item, i) => (
-          <FloatingElement key={i} enterFrame={item.enterFrame} exitFrame={item.exitFrame}>
-            <WarpingText text={item.text} enterFrame={item.enterFrame} exitFrame={item.exitFrame} />
-          </FloatingElement>
-        ))}
-      </CameraWrapper>
+    <AbsoluteFill style={{ backgroundColor: '#0a0a0f' }}>
+      {/* Intro: 3s, slow reveal */}
+      <Sequence from={0} durationInFrames={90}>
+        <AbsoluteFill>
+          <AuroraBackground variant="dark" />
+          <LogoWithGlow brandName="Product" fontSize={72} delay={0} />
+        </AbsoluteFill>
+      </Sequence>
+      {/* Middle: 1.5s, fast */}
+      <Sequence from={90} durationInFrames={45}>
+        <AbsoluteFill>
+          <AuroraBackground variant="light" />
+          <WordByWordBlur words={["Build", "Something", "Amazing"]} fontSize={64} color="#0a0a0f" delay={0} staggerFrames={4} />
+        </AbsoluteFill>
+      </Sequence>
+      {/* Screenshot: 2.5s */}
+      <Sequence from={135} durationInFrames={75}>
+        <AbsoluteFill>
+          <AuroraBackground variant="light" />
+          <WhiteGlassCard entryAnimation="perspective" padding={16}>
+            <Img src={staticFile("screenshots/hero.png")} style={{ width: '100%', borderRadius: 12 }} />
+          </WhiteGlassCard>
+        </AbsoluteFill>
+      </Sequence>
+      {/* CTA: 3s, slow close - ALWAYS LAST */}
+      <Sequence from={210} durationInFrames={90}>
+        <AbsoluteFill>
+          <AuroraBackground variant="dark" />
+          <WordByWordBlur words={["Get", "Started", "Today"]} fontSize={64} color="#ffffff" delay={5} gradientWordIndices={[1, 2]} />
+        </AbsoluteFill>
+      </Sequence>
+      <SceneProgressDots totalScenes={4} sceneBoundaries={[0, 90, 135, 210]} />
     </AbsoluteFill>
   );
 };
 \`\`\`
 
+## SCREENSHOTS
+If screenshots are provided, display them using:
+\`\`\`tsx
+import { Img, staticFile } from 'remotion';
+// For local screenshots:
+<Img src={staticFile("screenshots/hero.png")} style={{ width: '100%', borderRadius: 12 }} />
+// For R2/remote URLs:
+<Img src="https://..." style={{ width: '100%', borderRadius: 12 }} />
+\`\`\`
+Wrap screenshots in WhiteGlassCard for a premium framed look.
+
 ## STYLE REQUIREMENTS
-- Background ALWAYS uses DualRadialGradient with 2 brand colors
-- TextureOverlay on top of background for premium grain effect
-- Beat-synced pulses and flickers
-- Headlines use bebasNeue (Bebas Neue), body uses montserrat - NEVER system-ui
-- Headlines should be BIG: 96-200px, uppercase, with letter-spacing 0.05em
-- Glow effects that breathe
-- Use IPhoneMockup or MacBookMockup when displaying website screenshots
-- CameraWrapper wraps all content for continuous zoom + pan
-- Use brand colors - NEVER plain black/white
+- Background uses AuroraBackground with dark/light alternation per scene
+- Text-heavy scenes on dark aurora, card scenes on light aurora
+- White glass cards (rgba(255,255,255,0.95)) instead of transparent glass
+- Word-by-word blur reveals for all text
+- Gradient accent text (purple→pink) for emphasis
+- Montserrat ONLY (never Bebas Neue, system-ui, or sans-serif)
+- Purple/pink color scheme: #a855f7, #ec4899, dark bg #0a0a0f
+- Card text: #111827 (gray-900), #4b5563 (gray-600)
+- 3D perspective card entries
+- Scene progress dots at bottom center
+- LAST SCENE MUST ALWAYS BE A CTA
 
 ## OUTPUT
 Generate COMPLETE TypeScript/TSX code. No markdown. Single file with export default.`;
 
 const CODE_TEMPLATE = `
-// Premium video template with modern animations
+// Premium Demo-Style video template
 import React from 'react';
 import {
   useCurrentFrame,
   useVideoConfig,
   AbsoluteFill,
   Sequence,
-  Img,
   interpolate,
   spring,
-  Easing,
 } from 'remotion';
-import { loadFont as loadBebasNeue } from "@remotion/google-fonts/BebasNeue";
 import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
 
-const { fontFamily: bebasNeue } = loadBebasNeue("normal", { weights: ["400"], subsets: ["latin"] });
-const { fontFamily: montserrat } = loadMontserrat("normal", { weights: ["400", "600", "700", "800"], subsets: ["latin"] });
-
-// Two-color radial gradient background
-const DualRadialGradient: React.FC<{color1: string, color2: string}> = ({color1, color2}) => {
-  const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
-  const g1X = interpolate(frame, [0, durationInFrames], [25, 55], { extrapolateRight: 'clamp' }) + Math.sin(frame * 0.015) * 10;
-  const g1Y = interpolate(frame, [0, durationInFrames], [30, 50], { extrapolateRight: 'clamp' }) + Math.cos(frame * 0.012) * 12;
-  const g1Size = interpolate(frame, [0, durationInFrames], [40, 55], { extrapolateRight: 'clamp' });
-  const g2X = interpolate(frame, [0, durationInFrames], [70, 45], { extrapolateRight: 'clamp' }) + Math.sin(frame * 0.018 + 2) * 10;
-  const g2Y = interpolate(frame, [0, durationInFrames], [65, 50], { extrapolateRight: 'clamp' }) + Math.cos(frame * 0.014 + 1.5) * 12;
-  const g2Size = interpolate(frame, [0, durationInFrames], [35, 50], { extrapolateRight: 'clamp' });
-  return (
-    <AbsoluteFill style={{ background: '#050510', overflow: 'hidden' }}>
-      <AbsoluteFill style={{ background: \`radial-gradient(ellipse \${g1Size}% \${g1Size}% at \${g1X}% \${g1Y}%, \${color1}, transparent)\`, opacity: 0.45 + Math.sin(frame * 0.02) * 0.08, filter: 'blur(60px)', transform: 'scale(1.4)' }} />
-      <AbsoluteFill style={{ background: \`radial-gradient(ellipse \${g2Size}% \${g2Size}% at \${g2X}% \${g2Y}%, \${color2}, transparent)\`, opacity: 0.4 + Math.cos(frame * 0.025) * 0.08, filter: 'blur(60px)', transform: 'scale(1.4)' }} />
-    </AbsoluteFill>
-  );
-};
-
-// Abstract texture overlay
-const TextureOverlay: React.FC = () => {
-  const frame = useCurrentFrame();
-  const seed = Math.floor(frame * 0.3) % 1000;
-  return (
-    <AbsoluteFill style={{ pointerEvents: 'none' }}>
-      <svg style={{ position: 'absolute', width: 0, height: 0 }}>
-        <filter id={\`n-\${seed}\`}>
-          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" seed={seed} stitchTiles="stitch" />
-        </filter>
-      </svg>
-      <AbsoluteFill style={{ opacity: 0.04, filter: \`url(#n-\${seed})\`, mixBlendMode: 'overlay' }} />
-    </AbsoluteFill>
-  );
-};
-
-// Blur-in text animation
-const BlurInText: React.FC<{text: string, fontSize?: number, delay?: number}> = ({text, fontSize = 72, delay = 0}) => {
-  const frame = useCurrentFrame();
-  const f = Math.max(0, frame - delay);
-  const opacity = interpolate(f, [0, 25], [0, 1], { extrapolateRight: 'clamp' });
-  const blur = interpolate(f, [0, 25], [15, 0], { extrapolateRight: 'clamp' });
-  const y = interpolate(f, [0, 25], [30, 0], { extrapolateRight: 'clamp' });
-  return (
-    <span style={{
-      fontSize,
-      fontFamily: bebasNeue,
-      fontWeight: 'bold',
-      color: '#ffffff',
-      opacity,
-      filter: \`blur(\${blur}px)\`,
-      transform: \`translateY(\${y}px)\`,
-      display: 'inline-block',
-      letterSpacing: '0.05em',
-      textTransform: 'uppercase',
-    }}>
-      {text}
-    </span>
-  );
-};
-
-// Camera wrapper
-const CameraWrapper: React.FC<{children: React.ReactNode}> = ({children}) => {
-  const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
-  const scale = interpolate(frame, [0, durationInFrames], [1, 1.15], { extrapolateRight: 'clamp', easing: Easing.inOut(Easing.quad) });
-  const ty = interpolate(frame, [0, durationInFrames], [0, -15], { extrapolateRight: 'clamp' });
-  return (
-    <AbsoluteFill style={{ transform: \`scale(\${scale}) translateY(\${ty}px)\`, transformOrigin: 'center center' }}>
-      {children}
-    </AbsoluteFill>
-  );
-};
-
-// Intro scene
-const IntroScene: React.FC<{headline: string, subtext?: string, primary: string, secondary: string}> = ({
-  headline, subtext, primary, secondary
-}) => {
-  const frame = useCurrentFrame();
-  const subtextOpacity = interpolate(frame, [15, 30], [0, 1], { extrapolateRight: 'clamp' });
-
-  return (
-    <AbsoluteFill>
-      <DualRadialGradient color1={primary} color2={secondary} />
-      <TextureOverlay />
-      <CameraWrapper>
-        <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{ textAlign: 'center', padding: '0 80px' }}>
-            <BlurInText text={headline} fontSize={140} />
-            {subtext && (
-              <p style={{
-                color: 'rgba(255,255,255,0.8)',
-                fontFamily: montserrat,
-                fontSize: 32,
-                fontWeight: 500,
-                marginTop: 24,
-                opacity: subtextOpacity,
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-              }}>
-                {subtext}
-              </p>
-            )}
-          </div>
-        </AbsoluteFill>
-      </CameraWrapper>
-    </AbsoluteFill>
-  );
-};
+const { fontFamily: montserrat } = loadMontserrat("normal", { weights: ["400", "500", "600", "700", "800"], subsets: ["latin"] });
 
 // Main composition
 const ProductVideo: React.FC = () => {
   return (
-    <AbsoluteFill style={{ background: '#050510' }}>
+    <AbsoluteFill style={{ backgroundColor: '#0a0a0f' }}>
       <Sequence from={0} durationInFrames={120}>
-        <IntroScene
-          headline="Your Product Name"
-          subtext="The future of innovation"
-          primary="#667eea"
-          secondary="#764ba2"
-        />
+        <AbsoluteFill style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'radial-gradient(ellipse at 20% 20%, rgba(168,85,247,0.3) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(236,72,153,0.3) 0%, transparent 50%), #0a0a0f',
+        }}>
+          <span style={{ fontSize: 72, fontFamily: montserrat, fontWeight: 700, color: '#ffffff' }}>
+            Your Product Name
+          </span>
+        </AbsoluteFill>
       </Sequence>
     </AbsoluteFill>
   );
@@ -563,8 +375,14 @@ export async function codeGeneratorNode(
 
     // Get audio configuration
     const audioConfig = state.userPreferences.audio;
-    const audioUrl = audioConfig?.url || "/audio/audio1.mp3";
+    const audioUrl = audioConfig?.url || "https://pub-52c4f36ed495483b84403a8cbd2d2ff3.r2.dev/hitslab-product-launch-advertising-commercial-music-301409.mp3";
     const audioBpm = audioConfig?.bpm || videoScript.music?.tempo || 120;
+
+    // Generate correct audio src code based on URL type
+    const isR2Audio = audioUrl.startsWith("http");
+    const audioSrcCode = isR2Audio
+      ? `"${audioUrl}"`
+      : `staticFile("${audioUrl.replace(/^\//, '')}")`;
 
     // Build a prompt emphasizing CONTINUOUS MOTION with no scene cuts
     const userPrompt = `Generate a CONTINUOUS MOTION Remotion composition with NO SCENE CUTS.
@@ -572,7 +390,7 @@ export async function codeGeneratorNode(
 ## CRITICAL: AUDIO SYNC
 You MUST include audio in the composition:
 \`\`\`tsx
-<Audio src={staticFile("${audioUrl.replace('/audio/', 'audio/')}")} volume={1} />
+<Audio src={${audioSrcCode}} volume={1} />
 \`\`\`
 
 ## CRITICAL: CONTINUOUS FLOW
@@ -622,7 +440,7 @@ import { Img${!isR2 ? ', staticFile' : ''} } from 'remotion';
 />
 \\\`\\\`\\\``;
   }
-  return `No screenshots are available. Do NOT use <Img> or staticFile("screenshots/...") — the file does not exist and will break the render. Use text-only scenes with DualRadialGradient backgrounds instead.`;
+  return `No screenshots are available. Do NOT use <Img> or staticFile("screenshots/...") — the file does not exist and will break the render. Use text-only scenes with AuroraBackground instead.`;
 })()}
 
 Apply animations to screenshots (ONLY if screenshots are available):
@@ -640,7 +458,7 @@ AUDIO CONFIG:
 ## MANDATORY: INCLUDE AUDIO COMPONENT
 At the root of your composition, include:
 \`\`\`tsx
-<Audio src={staticFile("${audioUrl.replace('/audio/', 'audio/')}")} volume={1} />
+<Audio src={${audioSrcCode}} volume={1} />
 \`\`\`
 
 ## MANDATORY: BEAT SYNC HOOK
@@ -658,58 +476,46 @@ const useBeatSync = (bpm: number = ${audioBpm}) => {
 };
 \`\`\`
 
-## MANDATORY CONTINUOUS MOTION PATTERNS:
+## MANDATORY DEMO-STYLE PATTERNS:
 
-### 1. BACKGROUND (Beat-Synced)
-- Use PulsingBackground with beat-synced flickers
-- Use useBeatSync() hook for pulse timing
-- Gradient blobs that continuously move
-- Grid overlay that pulses on beat
-- BPM: ${audioBpm}
+### 1. BACKGROUND
+- Use AuroraBackground with dark/light variant alternation per scene
+- Dark aurora: purple/pink radial gradients over #0a0a0f
+- Light aurora: purple/pink radial gradients over linear-gradient(135deg, #faf5ff, #fff5f8, #f5f0ff)
+- Even scenes: dark, odd scenes: light
 
-### 2. CAMERA
-- ContinuousZoom that scales from 1 to 1.3 throughout
-- Or continuous pan movement
-- Never static camera
+### 2. SCENE STRUCTURE & TIMING
+- Use <Sequence> for discrete scenes with smooth transitions
+- **Intro (first)**: ~90 frames (3s) — slow, dramatic LogoWithGlow on dark aurora
+- **Middle scenes**: ~45 frames (1.5s) — fast, punchy WordByWordBlur text reveals
+- **Feature cards**: ~60 frames (2s) — WhiteGlassCard on alternating aurora
+- **Screenshot scenes**: ~75 frames (2.5s) — product UI in WhiteGlassCard
+- **CTA (ALWAYS last)**: ~90 frames (3s) — slow, dramatic close with WordByWordBlur + GradientAccentText on dark aurora
+- Snap scene boundaries to beat timing (framesPerBeat = (60/BPM) * fps)
 
-### 3. CONTENT FLOW (NOT SCENE CUTS)
-- Each content item has enterFrame and exitFrame
-- Elements FloatingElement in from sides
-- Content overlaps - new enters before old exits
-- Use WarpingText for all headlines
+### 3. CARD STYLE
+- White glass cards: background rgba(255,255,255,0.95), backdropFilter blur(24px), borderRadius 24, boxShadow 0 25px 50px rgba(0,0,0,0.25)
+- 3D perspective entry: rotateX(-20→0), translateY(100→0) with perspective(1000px)
 
-### 4. ELEMENT MOTION (Beat-Synced)
-- Use beatPulse for scale pulsing on elements
-- Everything has subtle continuous motion (bob, drift, warp)
-- GlowingCard with pulsing glow synced to beat
-- ParallaxLayers for depth (background moves slower)
+### 4. TEXT ANIMATIONS
+- Word-by-word blur reveals (each word: opacity 0→1, blur 10→0, translateY 30→0, staggered by 5 frames)
+- Gradient accent text for emphasis (purple #a855f7 → pink #ec4899)
+- LogoWithGlow for brand names
 
-### 5. BEAT SYNC EFFECTS
-- Background pulses on each beat using beatPulse
-- Scale pulses: 1 + beatPulse * 0.03
-- Glow intensity: 0.3 + beatPulse * 0.2
-- Random flickers for energy
+### 5. STYLING
+- **COLORS**: Purple #a855f7, Pink #ec4899, Dark #0a0a0f
+- Card text: #111827 (gray-900), #4b5563 (gray-600)
+- White glass cards instead of transparent glass
+- Montserrat only — NO Bebas Neue
 
-### 6. STYLING
-- **COLORS**: primary="${productData?.colors?.primary || "#667eea"}", secondary="${productData?.colors?.secondary || "#764ba2"}"
-- Glassmorphic floating cards with glow
-- Large bold text with warp effects
-- Dark backgrounds with neon accents
-
-### 7. TIMING STRUCTURE
-Instead of Sequences, define content timeline:
-\`\`\`
-const timeline = [
-  { content: "intro", enterFrame: 0, exitFrame: 90 },
-  { content: "feature1", enterFrame: 60, exitFrame: 150 },
-  // Overlap for smooth flow
-];
-\`\`\`
+### 6. PROGRESS DOTS
+- SceneProgressDots at bottom center showing current scene
+- Active dot elongated (24px wide), purple; past dots light purple; future dots gray
 
 Total duration: ${videoScript.totalDuration} frames at 30fps
 
 OUTPUT: Complete TypeScript/TSX code ONLY. No markdown. No explanations. Just code.
-REMEMBER: Include <Audio src={staticFile("${audioUrl.replace('/audio/', 'audio/')}")} /> at the root!`;
+REMEMBER: Include <Audio src={${audioSrcCode}} /> at the root!`;
 
     // Load Remotion skills and add to system prompt
     console.log("[CodeGenerator] Loading Remotion skills...");

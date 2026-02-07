@@ -158,7 +158,7 @@ export async function runVideoGeneration(input: {
   description?: string | null;
   userPreferences: {
     style: "professional" | "playful" | "minimal" | "bold";
-    videoType?: "demo" | "creative" | "fast-paced" | "cinematic";
+    videoType?: "demo" | "creative" | "fast-paced" | "cinematic" | "product-demo";
   };
   projectId?: string;
 }) {
@@ -187,7 +187,7 @@ export async function* streamVideoGeneration(input: {
   description?: string | null;
   userPreferences: {
     style: "professional" | "playful" | "minimal" | "bold";
-    videoType?: "demo" | "creative" | "fast-paced" | "cinematic";
+    videoType?: "demo" | "creative" | "fast-paced" | "cinematic" | "product-demo";
     duration?: number;
     audio?: {
       url: string;

@@ -4,7 +4,7 @@
  * Runs the full video generation pipeline without database persistence.
  *
  * POST /api/creative/generate
- * Body: { description: string, style?: string, videoType?: string }
+ * Body: { description?: string, url?: string, style?: string, videoType?: string }
  *
  * Returns: Streaming events for each pipeline stage
  */
@@ -22,15 +22,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       description,
+      url,
       style = "professional",
       videoType = "creative",
       duration,
       audio,
     } = body;
 
-    if (!description) {
+    if (!description && !url) {
       return new Response(
-        JSON.stringify({ error: "Description is required" }),
+        JSON.stringify({ error: "URL or description is required" }),
         { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
         try {
           // Run the LangGraph workflow (no projectId = no DB persistence)
           const generator = streamVideoGeneration({
-            sourceUrl: null,
+            sourceUrl: url || null,
             description,
             userPreferences: {
               style: style as any,
@@ -325,7 +326,8 @@ export async function GET() {
       endpoint: "/api/creative/generate",
       method: "POST",
       body: {
-        description: "string (required) - What the video is about",
+        url: "string (optional) - Product URL to scrape",
+        description: "string (optional) - What the video is about (required if no url)",
         style: "string (optional) - professional, playful, minimal, bold",
         videoType: "string (optional) - demo, creative, fast-paced, cinematic",
         duration: "number (optional) - Video length in seconds (10-120)",

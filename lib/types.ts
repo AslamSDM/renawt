@@ -57,7 +57,7 @@ export interface VideoScene {
   id: string;
   startFrame: number;
   endFrame: number;
-  type: "intro" | "feature" | "testimonial" | "cta" | "transition" | "stats";
+  type: "intro" | "feature" | "testimonial" | "cta" | "transition" | "stats" | "screenshot" | "tagline" | "value-prop";
   content: {
     headline?: string;
     subtext?: string;
@@ -201,7 +201,7 @@ export interface UserPreferences {
   duration?: number;
   musicUrl?: string;
   musicBpm?: number;
-  videoType?: "demo" | "creative" | "fast-paced" | "cinematic";
+  videoType?: "demo" | "creative" | "fast-paced" | "cinematic" | "product-demo";
   audio?: AudioConfig; // Audio file configuration
 }
 

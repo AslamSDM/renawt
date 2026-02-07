@@ -50,7 +50,7 @@ const initialGenerationState: GenerationState = {
 const initialPreferences: UserPreferences = {
   style: "professional",
   audio: {
-    url: "/audio/audio1.mp3",
+    url: "https://pub-52c4f36ed495483b84403a8cbd2d2ff3.r2.dev/hitslab-product-launch-advertising-commercial-music-301409.mp3",
     bpm: 120,
     duration: 60,
     volume: 1,

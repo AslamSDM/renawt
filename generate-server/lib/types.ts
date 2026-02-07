@@ -69,7 +69,7 @@ export interface VideoScene {
   id: string;
   startFrame: number;
   endFrame: number;
-  type: "intro" | "feature" | "testimonial" | "cta" | "transition" | "stats";
+  type: "intro" | "feature" | "testimonial" | "cta" | "transition" | "stats" | "screenshot" | "tagline" | "value-prop";
   content: {
     headline?: string;
     subtext?: string;

@@ -1,46 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listAudioFiles, isR2Configured } from "@/lib/storage/r2";
+import musicMetadata from "@/music_metadata.json";
 
 /**
  * GET /api/audio
- * List all available audio files from R2
+ * List all available audio files — serves tracks from music_metadata.json (R2-hosted)
+ * plus any user-uploaded audio from R2
  */
 export async function GET() {
   try {
-    if (!isR2Configured()) {
-      // Return mock data if R2 is not configured
-      return NextResponse.json({
-        audio: [
-          {
-            key: "audio/audio1.mp3",
-            name: "Energetic Upbeat",
-            url: "/audio/audio1.mp3",
-            bpm: 128,
-            duration: 30,
-          },
-          {
-            key: "audio/audio2.mp3",
-            name: "Corporate Tech",
-            url: "/audio/audio2.mp3",
-            bpm: 120,
-            duration: 30,
-          },
-        ],
-        source: "local",
-      });
+    // Primary source: music_metadata.json tracks (hosted on R2)
+    const metadataTracks = musicMetadata.map((track) => ({
+      key: track.filename,
+      name: track.title + (track.artist ? ` — ${track.artist}` : ""),
+      url: track.url,
+      bpm: 120,
+      duration: undefined as number | undefined,
+      moods: track.moods,
+    }));
+
+    // Also include user-uploaded audio from R2 if configured
+    let userUploads: typeof metadataTracks = [];
+    if (isR2Configured()) {
+      try {
+        const r2Files = await listAudioFiles();
+        userUploads = r2Files.map((file) => ({
+          key: file.key,
+          name: file.name,
+          url: file.url,
+          bpm: file.bpm || 120,
+          duration: file.duration,
+          moods: [] as string[],
+        }));
+      } catch {
+        // R2 user uploads optional — don't fail
+      }
     }
 
-    const audioFiles = await listAudioFiles();
-    
     return NextResponse.json({
-      audio: audioFiles.map(file => ({
-        key: file.key,
-        name: file.name,
-        url: file.url,
-        bpm: file.bpm,
-        duration: file.duration,
-      })),
-      source: "r2",
+      audio: [...metadataTracks, ...userUploads],
+      source: "music_metadata",
     });
   } catch (error) {
     console.error("[API] Error listing audio:", error);
