@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   keywords: ["video creation", "AI video", "motion graphics", "explainer videos", "product videos"],
 };
 
+import { Providers } from "@/components/Providers";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -22,7 +24,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="antialiased">
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

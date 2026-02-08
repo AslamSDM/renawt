@@ -1,11 +1,21 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { DodoPayments } from "dodopayments-checkout";
 
 export default function ProductPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const { data: session, status } = useSession();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (status === 'unauthenticated') {
+            router.push('/api/auth/signin');
+        }
+    }, [status, router]);
 
     useEffect(() => {
         DodoPayments.Initialize({
@@ -21,6 +31,16 @@ export default function ProductPage() {
     }, []);
 
     const handleBuyStarter = async () => {
+        if (status === 'unauthenticated') {
+            router.push('/api/auth/signin');
+            return;
+        }
+
+        if (!session?.user?.id) {
+            setError('User session not found. Please log in again.');
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
         try {
@@ -30,8 +50,9 @@ export default function ProductPage() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    subscription: 'STARTER',
-                    userId: 'user_test_123', // Placeholder userId
+                    product: 'SUBSCRIPTION_STARTER',
+                    userId: session.user.id,
+                    quantity: 1
                 }),
             });
 

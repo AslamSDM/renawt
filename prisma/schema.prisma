@@ -57,10 +57,58 @@ model ProductImage {
   @@index([projectId])
 }
 
+model User {
+  id            String    @id @default(cuid())
+  email         String?   @unique
+  name          String?
+  image         String?
+  emailVerified DateTime?
+  creditBalance Int       @default(0)
+
+  subscription    Subscription?
+  creditPurchases CreditPurchase[]
+  accounts        Account[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
 model Subscription {
-  id           String @id @default(cuid())
-  userId       String @unique
-  subscription String
-  status       String
-  dodoSubId    String
+  id        String @id @default(cuid())
+  userId    String @unique
+  plan      String
+  status    String
+  dodoSubId String
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model CreditPurchase {
+  id             String   @id @default(cuid())
+  userId         String
+  amount         Int
+  dodoPurchaseId String
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model WebhookEvent {
+  id String @id
 }

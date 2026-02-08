@@ -2,7 +2,7 @@ import { spawn } from "child_process";
 import DodoPayments from 'dodopayments';
 
 import { config } from "dotenv";
-config({ path: ".env.local" });
+config({ path: ".env" });
 
 const dodoPaymentsApiKey = process.env.DODO_PAYMENTS_API_KEY;
 const dodoWebhookId = process.env.DODO_WEBHOOK_ID;
