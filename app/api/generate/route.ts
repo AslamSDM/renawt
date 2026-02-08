@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { streamVideoGeneration } from "@/lib/agents/graph";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { GenerateRequestSchema } from "@/lib/types";
 
 export const runtime = "nodejs";
