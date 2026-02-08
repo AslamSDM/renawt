@@ -160,12 +160,23 @@ export async function runVideoGeneration(input: {
     style: "professional" | "playful" | "minimal" | "bold";
     videoType?: "demo" | "creative" | "fast-paced" | "cinematic" | "product-demo";
   };
+  recordings?: Array<{
+    id: string;
+    videoUrl: string;
+    duration: number;
+    featureName: string;
+    description: string;
+    trimStart: number;
+    trimEnd: number;
+    mockupFrame?: "browser" | "macbook" | "minimal";
+  }>;
   projectId?: string;
 }) {
   const initialState = {
     sourceUrl: input.sourceUrl || null,
     description: input.description || null,
     userPreferences: input.userPreferences,
+    recordings: input.recordings || [],
     productData: null,
     videoScript: null,
     reactPageCode: null,
@@ -197,12 +208,23 @@ export async function* streamVideoGeneration(input: {
       startFrom?: number;
     };
   };
+  recordings?: Array<{
+    id: string;
+    videoUrl: string;
+    duration: number;
+    featureName: string;
+    description: string;
+    trimStart: number;
+    trimEnd: number;
+    mockupFrame?: "browser" | "macbook" | "minimal";
+  }>;
   projectId?: string;
 }) {
   const initialState = {
     sourceUrl: input.sourceUrl || null,
     description: input.description || null,
     userPreferences: input.userPreferences,
+    recordings: input.recordings || [],
     productData: null,
     videoScript: null,
     reactPageCode: null,

@@ -18,6 +18,24 @@ export const VideoGenerationState = Annotation.Root({
     default: () => ({ style: "professional" as const }),
   }),
 
+  // Recordings (screen recordings to include in video)
+  recordings: Annotation<Array<{
+    id: string;
+    videoUrl: string;
+    duration: number;
+    featureName: string;
+    description: string;
+    trimStart: number;
+    trimEnd: number;
+    mockupFrame?: "browser" | "macbook" | "minimal";
+    zoomPoints?: Array<{ time: number; x: number; y: number; scale: number; duration: number }>;
+    cursorStyle?: "mac" | "windows" | "hand-pointing" | "hand-pressing" | "touch-hand" | "finger-tap" | "hand-cursor";
+    cursorData?: Array<{ x: number; y: number; timestamp: number; type: string }>;
+  }>>({
+    reducer: (_, next) => next,
+    default: () => [],
+  }),
+
   // Agent outputs
   productData: Annotation<ProductData | null>({
     reducer: (_, next) => next,
@@ -73,6 +91,10 @@ export const VideoGenerationState = Annotation.Root({
     default: () => null,
   }),
   videoUrl: Annotation<string | null>({
+    reducer: (_, next) => next,
+    default: () => null,
+  }),
+  r2Key: Annotation<string | null>({
     reducer: (_, next) => next,
     default: () => null,
   }),

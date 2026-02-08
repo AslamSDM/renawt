@@ -300,7 +300,32 @@ const SceneProgressDots: React.FC<{ totalScenes: number; sceneBoundaries: number
 };
 \`\`\`
 
-### 7. DEMO-STYLE COMPOSITION STRUCTURE
+### 7. SCREEN RECORDING PLAYBACK
+
+For scenes with screen recordings, use the \`<Video>\` component from Remotion:
+\`\`\`tsx
+import { Video } from 'remotion';
+
+// Recording scene with feature label overlay
+const RecordingScene: React.FC<{ videoUrl: string; featureName: string }> = ({ videoUrl, featureName }) => {
+  const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
+  const labelOpacity = interpolate(frame, [0, 30, durationInFrames - 30, durationInFrames], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  return (
+    <AbsoluteFill style={{ backgroundColor: '#0a0a0f' }}>
+      <Video src={videoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+      <div style={{ position: 'absolute', bottom: 60, left: 0, right: 0, display: 'flex', justifyContent: 'center', opacity: labelOpacity, zIndex: 10 }}>
+        <div style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)', borderRadius: 12, padding: '12px 28px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'linear-gradient(135deg, #a855f7, #ec4899)' }} />
+          <span style={{ fontFamily: montserrat, fontWeight: 600, fontSize: 20, color: '#ffffff' }}>{featureName}</span>
+        </div>
+      </div>
+    </AbsoluteFill>
+  );
+};
+\`\`\`
+
+### 8. DEMO-STYLE COMPOSITION STRUCTURE
 
 Create discrete scenes with aurora backgrounds alternating dark/light:
 \`\`\`tsx
@@ -587,6 +612,17 @@ function validateAndFixCode(code: string): { code: string; issues: string[] } {
     }
   );
 
+  // Fix 10: Fix backtick appearing mid-interpolate call inside template literal
+  // Pattern: `translateY(${interpolate(f, [a, b], [c, d]`, { ... })}px)`
+  // Should be: `translateY(${interpolate(f, [a, b], [c, d], { ... })}px)`
+  fixedCode = fixedCode.replace(
+    /\$\{(interpolate\([^}]*?\])`\s*,\s*(\{[^}]*?\})\)/g,
+    (match, interpCall, config) => {
+      issues.push("Fixed: Backtick inside interpolate call in template literal");
+      return `\${${interpCall}, ${config})}`;
+    }
+  );
+
   if (issues.length > 0) {
     console.log("[CodeValidator] Fixed issues:", issues);
   }
@@ -678,7 +714,7 @@ function isCodeTruncated(code: string): boolean {
 /**
  * Generate fallback composition code when LLM output is truncated or invalid
  */
-function generateFallbackComposition(productName: string = "Product", audioUrl: string = "audio/audio1.mp3", bpm: number = 120): string {
+function generateFallbackComposition(productName: string = "Product", audioUrl: string = "audio/audio1.mp3", bpm: number = 120, recordings?: Array<{ id: string; videoUrl: string; duration: number; featureName: string; description: string }>): string {
   // Determine audio src based on URL type
   const isR2Audio = audioUrl.startsWith("http");
   const audioSrcCode = isR2Audio
@@ -696,8 +732,10 @@ function generateFallbackComposition(productName: string = "Product", audioUrl: 
   const cardFrames = snapToBeats(60);
   const ctaFrames = snapToBeats(90);
 
+  const hasRecordings = recordings && recordings.length > 0;
+
   return `import React from 'react';
-import { AbsoluteFill, Sequence, useCurrentFrame, useVideoConfig, interpolate, spring, Audio, staticFile } from 'remotion';
+import { AbsoluteFill, Sequence, useCurrentFrame, useVideoConfig, interpolate, spring, Audio,${hasRecordings ? ' Video,' : ''} staticFile } from 'remotion';
 import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
 
 const { fontFamily: montserrat } = loadMontserrat("normal", { weights: ["400", "500", "600", "700", "800"], subsets: ["latin"] });
@@ -972,6 +1010,29 @@ const Scene6: React.FC = () => {
   );
 };
 
+${hasRecordings ? recordings!.map((rec, i) => {
+  const isR2 = rec.videoUrl.startsWith("http");
+  const videoSrc = isR2 ? `"${rec.videoUrl}"` : `staticFile("${rec.videoUrl.replace(/^\//, "")}")`;
+  return `
+// RECORDING SCENE ${i + 1}: ${rec.featureName}
+const RecordingScene${i + 1}: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
+  const labelOpacity = interpolate(frame, [0, 30, durationInFrames - 30, durationInFrames], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  return (
+    <AbsoluteFill style={{ backgroundColor: '#0a0a0f' }}>
+      <Video src={${videoSrc}} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+      <div style={{ position: 'absolute', bottom: 60, left: 0, right: 0, display: 'flex', justifyContent: 'center', opacity: labelOpacity, zIndex: 10 }}>
+        <div style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)', borderRadius: 12, padding: '12px 28px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'linear-gradient(135deg, #a855f7, #ec4899)' }} />
+          <span style={{ fontFamily: montserrat, fontWeight: 600, fontSize: 20, color: '#ffffff' }}>${rec.featureName}</span>
+        </div>
+      </div>
+    </AbsoluteFill>
+  );
+};`;
+}).join('\n') : ''}
+
 // BEAT SYNC HOOK
 const useBeatSync = (bpm: number) => {
   const frame = useCurrentFrame();
@@ -995,9 +1056,17 @@ const VideoComposition: React.FC = () => {
   const s3Start = s2Start + fastFrames;
   const s4Start = s3Start + cardFrames;
   const s5Start = s4Start + fastFrames;
-  const s6Start = s5Start + cardFrames;
+  let nextStart = s5Start + cardFrames;
+${hasRecordings ? recordings!.map((rec, i) => {
+  const recFrames = Math.round(rec.duration * 30);
+  return `  const rec${i + 1}Start = nextStart;
+  const rec${i + 1}Frames = ${recFrames};
+  nextStart = rec${i + 1}Start + rec${i + 1}Frames;`;
+}).join('\n') : ''}
+  const s6Start = nextStart;
 
-  const sceneBoundaries = [s1Start, s2Start, s3Start, s4Start, s5Start, s6Start];
+  const sceneBoundaries = [s1Start, s2Start, s3Start, s4Start, s5Start, ${hasRecordings ? recordings!.map((_, i) => `rec${i + 1}Start`).join(', ') + ', ' : ''}s6Start];
+  const totalScenes = ${6 + (hasRecordings ? recordings!.length : 0)};
 
   return (
     <AbsoluteFill>
@@ -1028,13 +1097,18 @@ const VideoComposition: React.FC = () => {
         <Scene5 />
       </Sequence>
 
+${hasRecordings ? recordings!.map((rec, i) => `      {/* Recording: ${rec.featureName} */}
+      <Sequence from={rec${i + 1}Start} durationInFrames={rec${i + 1}Frames}>
+        <RecordingScene${i + 1} />
+      </Sequence>
+`).join('\n') : ''}
       {/* Scene 6: CTA */}
       <Sequence from={s6Start} durationInFrames={ctaFrames}>
         <Scene6 />
       </Sequence>
 
       {/* Progress dots overlay */}
-      <SceneProgressDots totalScenes={6} sceneBoundaries={sceneBoundaries} />
+      <SceneProgressDots totalScenes={totalScenes} sceneBoundaries={sceneBoundaries} />
     </AbsoluteFill>
   );
 };
@@ -1060,6 +1134,12 @@ export async function remotionTranslatorNode(
 
   const script = state.videoScript;
   const totalDuration = script?.totalDuration || 300;
+
+  // Get audio configuration for the prompt
+  const rawAudioUrl = state.userPreferences?.audio?.url || "audio/audio1.mp3";
+  const isR2Audio = rawAudioUrl.startsWith("http");
+  const audioSrcCode = isR2Audio ? `"${rawAudioUrl}"` : `staticFile("${rawAudioUrl.replace(/^\//, '')}")`;
+  const audioImportCode = isR2Audio ? "{ Audio }" : "{ Audio, staticFile }";
 
   const prompt = `${REMOTION_TRANSLATOR_SYSTEM_PROMPT}
 
@@ -1098,11 +1178,11 @@ ${reactCode}
 8. **COLOR PALETTE**: Purple #a855f7, Pink #ec4899, Dark #0a0a0f
 9. **CTA**: The LAST scene MUST always be a call-to-action
 10. Convert ALL CSS animations to interpolate() or spring()
-11. CRITICAL: Include Audio component at root level:
+11. CRITICAL: Include Audio component at root level with THIS EXACT audio:
     \`\`\`tsx
-    import { Audio, staticFile } from 'remotion';
+    import ${audioImportCode} from 'remotion';
     // Inside VideoComposition:
-    <Audio src={staticFile("audio/audio1.mp3")} volume={1} />
+    <Audio src=${audioSrcCode} volume={1} />
     \`\`\`
 
 ## MANDATORY: USE WEBSITE SCREENSHOT
@@ -1128,6 +1208,23 @@ ${screenshots.map((s: any) => {
 - Can be used as background with overlay, or as a featured element
 - Apply effects like: scale, blur, opacity changes using interpolate()
 - If no screenshot file exists, do NOT use <Img> — use text and gradient backgrounds instead
+
+## SCREEN RECORDINGS
+${(() => {
+  const recordings = state.recordings || [];
+  if (recordings.length > 0) {
+    return `Screen recordings are available. Include them as Video playback scenes:
+${recordings.map((r) => {
+  const isR2 = r.videoUrl.startsWith("http");
+  const src = isR2 ? `"${r.videoUrl}"` : `staticFile("${r.videoUrl.replace(/^\//, '')}")`;
+  return `- "${r.featureName}": <Video src={${src}} /> — ${r.duration}s, ${r.description}`;
+}).join('\n')}
+- Import Video from remotion: import { Video } from 'remotion';
+- Each recording scene should show the video with a feature label overlay
+- Duration per recording = recording duration × 30 frames`;
+  }
+  return `- No recordings available — skip Video usage`;
+})()}
 
 Output the complete Remotion composition code with FAST-PACED text animations. MUST include Audio component, text effects, and the website screenshot!`;
 
@@ -1173,11 +1270,13 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
     const audioUrl = rawAudioUrl.startsWith("http") ? rawAudioUrl : rawAudioUrl.replace(/^\//, '');
     const audioBpm = state.userPreferences?.audio?.bpm || state.videoScript?.music?.tempo || 120;
 
+    console.log(`[RemotionTranslator] Using audio: ${audioUrl} (BPM: ${audioBpm})`);
+
     // Check for truncation first
     if (isCodeTruncated(remotionCode)) {
       console.warn("[RemotionTranslator] Code appears truncated! Using fallback...");
       const productName = state.productData?.name || "Product";
-      remotionCode = generateFallbackComposition(productName, audioUrl, audioBpm);
+      remotionCode = generateFallbackComposition(productName, audioUrl, audioBpm, state.recordings);
       console.log("[RemotionTranslator] Using fallback composition");
     }
 
@@ -1233,7 +1332,7 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
           const remainingErrors = hasBasicSyntaxErrors(fixedCode);
           if (fixedCode.length < 100) {
             console.warn("[RemotionTranslator] Fix returned empty/trivial code, using fallback");
-            finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm);
+            finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm, state.recordings);
           } else if (remainingErrors.length === 0) {
             console.log("[RemotionTranslator] Syntax errors fixed successfully");
             finalCode = fixedCode;
@@ -1260,18 +1359,18 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
             const finalCheck = hasBasicSyntaxErrors(secondFixed);
             if (secondFixed.length < 100) {
               console.warn("[RemotionTranslator] Second fix returned empty/trivial code, using fallback");
-              finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm);
+              finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm, state.recordings);
             } else if (finalCheck.length === 0) {
               console.log("[RemotionTranslator] Syntax errors fixed on second attempt");
               finalCode = secondFixed;
             } else {
               console.warn("[RemotionTranslator] Could not fix syntax errors, using fallback");
-              finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm);
+              finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm, state.recordings);
             }
           }
         } catch (fixError) {
           console.error("[RemotionTranslator] Error during syntax fix:", fixError);
-          finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm);
+          finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm, state.recordings);
         }
       }
     }

@@ -52,12 +52,54 @@ export const ProductDataSchema = z.object({
   tone: z.enum(["professional", "playful", "minimal", "bold"]),
 });
 
+// Screen Recording Types
+export interface CursorEvent {
+  x: number;
+  y: number;
+  timestamp: number;
+  type: "move" | "click" | "input";
+}
+
+export interface ZoomPoint {
+  time: number;      // seconds from video start
+  x: number;         // normalized 0-1
+  y: number;
+  scale: number;     // 1.5 default
+  duration: number;  // seconds
+}
+
+export interface ScreenRecording {
+  id: string;
+  projectId: string;
+  videoUrl: string;
+  duration: number;
+  cursorData: CursorEvent[];
+  trimStart: number;
+  trimEnd: number;
+  zoomPoints: ZoomPoint[];
+  featureName: string;
+  description: string;
+  cursorStyle: "mac" | "windows" | "hand-pointing" | "hand-pressing" | "touch-hand" | "finger-tap" | "hand-cursor";
+  mockupFrame?: "browser" | "macbook" | "minimal";
+  createdAt: string;
+}
+
+export interface ProductImage {
+  id: string;
+  projectId: string;
+  url: string;
+  name: string;
+  width?: number;
+  height?: number;
+  createdAt: string;
+}
+
 // Video Script with scenes and timing
 export interface VideoScene {
   id: string;
   startFrame: number;
   endFrame: number;
-  type: "intro" | "feature" | "testimonial" | "cta" | "transition" | "stats" | "screenshot" | "tagline" | "value-prop";
+  type: "intro" | "feature" | "testimonial" | "cta" | "transition" | "stats" | "screenshot" | "tagline" | "value-prop" | "recording";
   content: {
     headline?: string;
     subtext?: string;
@@ -65,6 +107,14 @@ export interface VideoScene {
     icon?: string;
     stats?: Array<{ value: number; label: string; suffix?: string }>;
     features?: Array<{ icon: string; title: string; description: string }>;
+    // For recording scenes
+    recordingId?: string;
+    recordingVideoUrl?: string;
+    featureName?: string;
+    description?: string;
+    mockupFrame?: "browser" | "macbook" | "minimal";
+    // For screenshot scenes
+    screenshotUrl?: string;
   };
   animation: {
     enter:

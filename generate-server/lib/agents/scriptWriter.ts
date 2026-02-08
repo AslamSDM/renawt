@@ -36,8 +36,21 @@ Round scene durations to the nearest beat: 45 frames → 3 beats, 90 frames → 
 2. **Tagline Scene** (1.5s): Word-by-word blur reveal on light aurora
 3. **Value Prop Scenes** (1.5s each): Key messages with gradient accent words
 4. **Screenshot Scenes** (2.5s): Product UI screenshots in white glass cards (if available)
-5. **Feature Scenes** (2s): White glass cards with feature content
-6. **CTA Scene** (3s): ALWAYS the last scene — call-to-action with blur reveal + gradient text on dark aurora
+5. **Recording Scenes**: Screen recording playback with feature label overlay (if recordings provided)
+6. **Feature Scenes** (2s): White glass cards with feature content
+7. **CTA Scene** (3s): ALWAYS the last scene — call-to-action with blur reveal + gradient text on dark aurora
+
+## SCREEN RECORDINGS
+If screen recordings are provided, create "recording" type scenes for each:
+- Use type: "recording"
+- Set content.recordingId to the recording's id
+- Set content.recordingVideoUrl to the recording's videoUrl
+- Set content.featureName to the recording's featureName
+- Set content.headline to the recording's featureName
+- Set content.subtext to the recording's description
+- Duration = recording's actual duration in seconds × 30 frames
+- Place recording scenes in the middle of the video (after tagline, before CTA)
+- Recording scenes should showcase the product in action
 
 IMPORTANT: The LAST scene MUST always be type "cta" with a strong call-to-action.
 
@@ -179,6 +192,25 @@ For SaaS products, incorporate these screenshots into scenes:
 `;
     }
 
+    // Build recordings section if available
+    const recordings = state.recordings || [];
+    let recordingsSection = "";
+    if (recordings.length > 0) {
+      recordingsSection = `
+SCREEN RECORDINGS (include these as "recording" type scenes):
+${recordings.map((r, i) => `- Recording ${i + 1}: id="${r.id}", featureName="${r.featureName}", description="${r.description}", duration=${r.duration}s, videoUrl="${r.videoUrl}"`).join("\n")}
+
+For each recording, create a "recording" scene with:
+- type: "recording"
+- content.recordingId: the recording id
+- content.recordingVideoUrl: the recording videoUrl
+- content.featureName: the feature name
+- content.headline: the feature name
+- content.subtext: the description
+- Duration: recording duration × 30 frames
+`;
+    }
+
     const userMessage = `Create a video script for this product:
 
 Product Name: ${productData.name}
@@ -194,7 +226,7 @@ ${productData.testimonials ? `Testimonials:\n${productData.testimonials.map((t) 
 ${productData.pricing ? `Pricing:\n${productData.pricing.map((p) => `${p.tier}: ${p.price}`).join("\n")}` : ""}
 
 Available Images: ${productData.images.length > 0 ? productData.images.join(", ") : "None - use solid color backgrounds"}
-${screenshotsSection}
+${screenshotsSection}${recordingsSection}
 Brand Colors:
 - Primary: ${productData.colors.primary}
 - Secondary: ${productData.colors.secondary}
@@ -235,6 +267,51 @@ Return ONLY valid JSON.`;
       ...scene,
       id: scene.id || uuidv4(),
     }));
+
+    // =========================================================================
+    // RECORDING SCENE INJECTION: Ensure every recording appears as a scene
+    // =========================================================================
+    if (recordings.length > 0) {
+      const existingRecordingIds = new Set(
+        videoScript.scenes
+          .filter(s => s.type === "recording" || (s.content as any).recordingId)
+          .map(s => (s.content as any).recordingId)
+      );
+
+      const missingRecordings = recordings.filter(r => !existingRecordingIds.has(r.id));
+
+      if (missingRecordings.length > 0) {
+        console.log(`[ScriptWriter] Injecting ${missingRecordings.length} missing recording scene(s)`);
+        // Insert before the CTA (last scene)
+        const ctaIndex = videoScript.scenes.findIndex(s => s.type === "cta");
+        const insertAt = ctaIndex >= 0 ? ctaIndex : videoScript.scenes.length;
+
+        for (const rec of missingRecordings) {
+          const durationFrames = Math.round(rec.duration * 30);
+          videoScript.scenes.splice(insertAt, 0, {
+            id: `recording-${rec.id}`,
+            startFrame: 0,
+            endFrame: durationFrames,
+            type: "recording",
+            content: {
+              headline: rec.featureName,
+              subtext: rec.description,
+              recordingId: rec.id,
+              recordingVideoUrl: rec.videoUrl,
+              featureName: rec.featureName,
+              description: rec.description,
+              mockupFrame: (rec as any).mockupFrame || "minimal",
+            },
+            animation: { enter: "fade", exit: "fade" },
+            style: {
+              background: "#0a0a0f",
+              textColor: "#ffffff",
+              fontSize: "medium",
+            },
+          } as any);
+        }
+      }
+    }
 
     // =========================================================================
     // DURATION ENFORCEMENT: Ensure video meets target duration

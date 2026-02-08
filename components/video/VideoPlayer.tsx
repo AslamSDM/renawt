@@ -12,6 +12,7 @@ import {
   Audio,
 } from "remotion";
 import type { VideoScript, VideoScene } from "@/lib/types";
+import { RecordingScene } from "@/remotion/components/recording";
 
 interface VideoPlayerProps {
   script?: VideoScript;
@@ -199,9 +200,65 @@ const extractGradientColors = (
   return { primary: "#1E40AF", secondary: "#3B82F6" };
 };
 
+// Storage for recording data (fetched once and cached)
+const recordingCache: Map<string, any> = new Map();
+
 const PremiumSceneRenderer: React.FC<{ scene: VideoScene }> = ({ scene }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  const [recordingData, setRecordingData] = React.useState<any>(null);
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  // Fetch recording data if this is a recording scene
+  React.useEffect(() => {
+    if (scene.type === "recording" && scene.content.recordingId) {
+      const recordingId = scene.content.recordingId;
+      
+      // Check cache first
+      if (recordingCache.has(recordingId)) {
+        setRecordingData(recordingCache.get(recordingId));
+        return;
+      }
+
+      // Fetch from API
+      setIsLoading(true);
+      fetch(`/api/recordings/${recordingId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.recording) {
+            recordingCache.set(recordingId, data.recording);
+            setRecordingData(data.recording);
+          }
+        })
+        .catch(console.error)
+        .finally(() => setIsLoading(false));
+    }
+  }, [scene.type, scene.content.recordingId]);
+
+  // Render recording scene
+  if (scene.type === "recording") {
+    if (isLoading || !recordingData) {
+      return (
+        <AbsoluteFill style={{ backgroundColor: "#000", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ color: "#fff", fontSize: 24 }}>Loading recording...</div>
+        </AbsoluteFill>
+      );
+    }
+
+    return (
+      <RecordingScene
+        videoUrl={recordingData.videoUrl}
+        cursorData={JSON.parse(recordingData.cursorData)}
+        zoomPoints={JSON.parse(recordingData.zoomPoints)}
+        trimStart={recordingData.trimStart}
+        trimEnd={recordingData.trimEnd}
+        cursorStyle={recordingData.cursorStyle as "mac" | "windows" | "hand-pointing" | "hand-pressing" | "touch-hand" | "finger-tap" | "hand-cursor"}
+        featureName={scene.content.featureName || recordingData.featureName}
+        description={scene.content.description || recordingData.description}
+      />
+    );
+  }
+
   const colors = extractGradientColors(scene.style?.background || "");
 
   const headline = scene.content.headline || "";

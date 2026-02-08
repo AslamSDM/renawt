@@ -10,7 +10,9 @@
  */
 
 import { NextRequest } from "next/server";
-import { streamVideoGeneration } from "@/lib/agents/graph";
+import { scraperNode } from "@/lib/agents/scraper";
+import { scriptWriterNode } from "@/lib/agents/scriptWriter";
+import type { VideoGenerationStateType } from "@/lib/agents/state";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -27,6 +29,7 @@ export async function POST(request: NextRequest) {
       videoType = "creative",
       duration,
       audio,
+      recordings,
     } = body;
 
     if (!description && !url) {
@@ -39,15 +42,19 @@ export async function POST(request: NextRequest) {
     console.log(`[CreativeAPI] Generating for: "${description}"`);
     console.log(`[CreativeAPI] Style: ${style}, VideoType: ${videoType}, Duration: ${duration}s`);
 
-    // Create a streaming response
+    // Create a streaming response — runs scraper + scriptWriter only, stops for review
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
+        const send = (type: string, data: any) => {
+          controller.enqueue(encoder.encode(JSON.stringify({ type, data }) + "\n"));
+        };
+
         try {
-          // Run the LangGraph workflow (no projectId = no DB persistence)
-          const generator = streamVideoGeneration({
+          // Build initial state for direct node calls
+          let state: Partial<VideoGenerationStateType> = {
             sourceUrl: url || null,
-            description,
+            description: description || null,
             userPreferences: {
               style: style as any,
               videoType: videoType as any,
@@ -58,242 +65,55 @@ export async function POST(request: NextRequest) {
                 duration: audio.duration || 30,
               } : undefined,
             },
-            // No projectId - skip DB persistence
-          });
+            recordings: Array.isArray(recordings) ? recordings : [],
+            productData: null,
+            videoScript: null,
+            reactPageCode: null,
+            remotionCode: null,
+            currentStep: "scraping",
+            errors: [],
+            projectId: null,
+            renderAttempts: 0,
+            lastRenderError: null,
+            videoUrl: null,
+          };
 
-          for await (const chunk of generator) {
-            // Handle scraper output
-            if (chunk.scraper) {
-              const state = chunk.scraper;
-              if (state.productData) {
-                controller.enqueue(
-                  encoder.encode(
-                    JSON.stringify({
-                      type: "productData",
-                      data: state.productData,
-                    }) + "\n",
-                  ),
-                );
-              }
-              controller.enqueue(
-                encoder.encode(
-                  JSON.stringify({
-                    type: "status",
-                    data: { step: "scraping", message: "Analyzing product..." },
-                  }) + "\n",
-                ),
-              );
-            }
+          // Step 1: Scraper
+          send("status", { step: "scraping", message: "Analyzing product..." });
+          const scraperResult = await scraperNode(state as VideoGenerationStateType);
+          state = { ...state, ...scraperResult };
 
-            // Handle scriptWriter output
-            if (chunk.scriptWriter) {
-              const state = chunk.scriptWriter;
-              if (state.videoScript) {
-                controller.enqueue(
-                  encoder.encode(
-                    JSON.stringify({
-                      type: "videoScript",
-                      data: state.videoScript,
-                    }) + "\n",
-                  ),
-                );
-              }
-              controller.enqueue(
-                encoder.encode(
-                  JSON.stringify({
-                    type: "status",
-                    data: {
-                      step: "scripting",
-                      message: "Writing video script...",
-                    },
-                  }) + "\n",
-                ),
-              );
-            }
-
-            // // Handle demoScriptWriter output
-            // if (chunk.demoScriptWriter) {
-            //   const state = chunk.demoScriptWriter;
-            //   if (state.videoScript) {
-            //     controller.enqueue(
-            //       encoder.encode(
-            //         JSON.stringify({
-            //           type: "videoScript",
-            //           data: state.videoScript,
-            //         }) + "\n",
-            //       ),
-            //     );
-            //   }
-            //   controller.enqueue(
-            //     encoder.encode(
-            //       JSON.stringify({
-            //         type: "status",
-            //         data: {
-            //           step: "scripting",
-            //           message: "Writing demo script...",
-            //         },
-            //       }) + "\n",
-            //     ),
-            //   );
-            // }
-
-            // Handle reactPageGenerator output (Step 1)
-            if (chunk.reactPageGenerator) {
-              const state = chunk.reactPageGenerator;
-              if (state.reactPageCode) {
-                controller.enqueue(
-                  encoder.encode(
-                    JSON.stringify({
-                      type: "reactPageCode",
-                      data: state.reactPageCode,
-                    }) + "\n",
-                  ),
-                );
-              }
-              controller.enqueue(
-                encoder.encode(
-                  JSON.stringify({
-                    type: "status",
-                    data: {
-                      step: "generating",
-                      message: "Generating React page...",
-                    },
-                  }) + "\n",
-                ),
-              );
-            }
-
-            // Handle remotionTranslator output (Step 2)
-            if (chunk.remotionTranslator) {
-              const state = chunk.remotionTranslator;
-              if (state.remotionCode) {
-                controller.enqueue(
-                  encoder.encode(
-                    JSON.stringify({
-                      type: "remotionCode",
-                      data: state.remotionCode,
-                    }) + "\n",
-                  ),
-                );
-              }
-              controller.enqueue(
-                encoder.encode(
-                  JSON.stringify({
-                    type: "status",
-                    data: {
-                      step: "translating",
-                      message: "Translating to Remotion...",
-                    },
-                  }) + "\n",
-                ),
-              );
-            }
-
-            // Handle videoRenderer output (Step 3 - with retry loop)
-            if (chunk.videoRenderer) {
-              const state = chunk.videoRenderer;
-
-              // If video URL is available, rendering succeeded
-              if (state.videoUrl) {
-                controller.enqueue(
-                  encoder.encode(
-                    JSON.stringify({
-                      type: "videoUrl",
-                      data: state.videoUrl,
-                    }) + "\n",
-                  ),
-                );
-              }
-
-              // Report render status
-              controller.enqueue(
-                encoder.encode(
-                  JSON.stringify({
-                    type: "status",
-                    data: {
-                      step: "rendering",
-                      message: state.videoUrl
-                        ? "Video rendered successfully!"
-                        : `Rendering video (attempt ${state.renderAttempts})...`,
-                      attempts: state.renderAttempts,
-                    },
-                  }) + "\n",
-                ),
-              );
-            }
-
-            // Handle renderErrorFixer output (Step 4 - fixes render errors)
-            if (chunk.renderErrorFixer) {
-              const state = chunk.renderErrorFixer;
-
-              // If fixed code is available
-              if (state.remotionCode) {
-                controller.enqueue(
-                  encoder.encode(
-                    JSON.stringify({
-                      type: "remotionCode",
-                      data: state.remotionCode,
-                    }) + "\n",
-                  ),
-                );
-              }
-
-              controller.enqueue(
-                encoder.encode(
-                  JSON.stringify({
-                    type: "status",
-                    data: {
-                      step: "fixing",
-                      message: `Fixing render errors (attempt ${state.renderAttempts})...`,
-                      attempts: state.renderAttempts,
-                    },
-                  }) + "\n",
-                ),
-              );
-            }
-
-            // Handle errors
-            if (chunk.errorHandler) {
-              const state = chunk.errorHandler;
-              if (state.errors && state.errors.length > 0) {
-                controller.enqueue(
-                  encoder.encode(
-                    JSON.stringify({
-                      type: "error",
-                      data: { errors: state.errors },
-                    }) + "\n",
-                  ),
-                );
-              }
-            }
+          if (state.productData) {
+            send("productData", state.productData);
           }
 
-          // Send completion with video URL if available
-          controller.enqueue(
-            encoder.encode(
-              JSON.stringify({
-                type: "complete",
-                data: {
-                  success: true,
-                  message: "Video generation complete",
-                },
-              }) + "\n",
-            ),
-          );
+          if (state.currentStep === "error") {
+            send("error", { errors: state.errors });
+            send("complete", { success: false });
+            controller.close();
+            return;
+          }
+
+          // Step 2: Script Writer
+          send("status", { step: "scripting", message: "Writing video script..." });
+          const scriptResult = await scriptWriterNode(state as VideoGenerationStateType);
+          state = { ...state, ...scriptResult };
+
+          if (state.videoScript) {
+            send("videoScript", state.videoScript);
+          }
+
+          if (state.currentStep === "error") {
+            send("error", { errors: state.errors });
+          }
+
+          // Stop here — UI will review and then call /api/creative/continue
+          send("complete", { success: true, message: "Script ready for review" });
         } catch (error) {
           console.error("[CreativeAPI] Stream error:", error);
-          controller.enqueue(
-            encoder.encode(
-              JSON.stringify({
-                type: "error",
-                data: {
-                  errors: [
-                    error instanceof Error ? error.message : "Unknown error",
-                  ],
-                },
-              }) + "\n",
-            ),
-          );
+          send("error", {
+            errors: [error instanceof Error ? error.message : "Unknown error"],
+          });
         } finally {
           controller.close();
         }

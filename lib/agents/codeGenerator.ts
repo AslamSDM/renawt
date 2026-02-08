@@ -1,7 +1,4 @@
-import {
-  chatWithKimi,
-  CODE_GENERATOR_CONFIG,
-} from "./model";
+import { chatWithKimi, CODE_GENERATOR_CONFIG } from "./model";
 import { loadRemotionSkills, savePromptLog } from "./skills";
 import type { VideoGenerationStateType } from "./state";
 
@@ -67,7 +64,6 @@ Use ONLY Montserrat for all text:
 
 ## WEBSITE SCREENSHOTS
 If screenshots are provided, display them using the Img component:
-- Use staticFile() to reference screenshots from the public/screenshots folder
 - Animate screenshots with zoom, pan, fade effects using interpolate()
 - Wrap in WhiteGlassCard for premium look
 
@@ -375,14 +371,16 @@ export async function codeGeneratorNode(
 
     // Get audio configuration
     const audioConfig = state.userPreferences.audio;
-    const audioUrl = audioConfig?.url || "https://pub-52c4f36ed495483b84403a8cbd2d2ff3.r2.dev/hitslab-product-launch-advertising-commercial-music-301409.mp3";
+    const audioUrl =
+      audioConfig?.url ||
+      "https://pub-52c4f36ed495483b84403a8cbd2d2ff3.r2.dev/hitslab-product-launch-advertising-commercial-music-301409.mp3";
     const audioBpm = audioConfig?.bpm || videoScript.music?.tempo || 120;
 
     // Generate correct audio src code based on URL type
     const isR2Audio = audioUrl.startsWith("http");
     const audioSrcCode = isR2Audio
       ? `"${audioUrl}"`
-      : `staticFile("${audioUrl.replace(/^\//, '')}")`;
+      : `staticFile("${audioUrl.replace(/^\//, "")}")`;
 
     // Build a prompt emphasizing CONTINUOUS MOTION with no scene cuts
     const userPrompt = `Generate a CONTINUOUS MOTION Remotion composition with NO SCENE CUTS.
@@ -411,15 +409,20 @@ ${productData ? JSON.stringify(productData, null, 2) : "No product data"}
 ${(() => {
   const screenshots = productData && (productData as any).screenshots;
   if (screenshots && screenshots.length > 0) {
-    const heroShot = screenshots.find((s: any) => s.section === "hero") || screenshots[0];
+    const heroShot =
+      screenshots.find((s: any) => s.section === "hero") || screenshots[0];
     const isR2 = heroShot.url.startsWith("http");
-    const imgSrc = isR2 ? `"${heroShot.url}"` : `staticFile("${heroShot.url.replace(/^\//, '')}")`;
+    const imgSrc = isR2
+      ? `"${heroShot.url}"`
+      : `staticFile("${heroShot.url.replace(/^\//, "")}")`;
     return `The scraped website screenshots MUST be displayed in the video:
 Available screenshots:
-${screenshots.map((s: any) => {
-  const sIsR2 = s.url.startsWith("http");
-  return `- ${s.section}: ${sIsR2 ? `"${s.url}"` : `staticFile("${s.url.replace(/^\//, '')}")`} — ${s.description}`;
-}).join('\n')}
+${screenshots
+  .map((s: any) => {
+    const sIsR2 = s.url.startsWith("http");
+    return `- ${s.section}: ${sIsR2 ? `"${s.url}"` : `staticFile("${s.url.replace(/^\//, "")}")`} — ${s.description}`;
+  })
+  .join("\n")}
 
 USE AT LEAST 1-2 SCREENSHOTS in the video with these patterns:
 1. Hero screenshot: Show at start with zoom/pan effects
@@ -427,7 +430,7 @@ USE AT LEAST 1-2 SCREENSHOTS in the video with these patterns:
 
 Import and use screenshots like this:
 \\\`\\\`\\\`tsx
-import { Img${!isR2 ? ', staticFile' : ''} } from 'remotion';
+import { Img${!isR2 ? ", staticFile" : ""} } from 'remotion';
 
 <Img
   src={${imgSrc}}

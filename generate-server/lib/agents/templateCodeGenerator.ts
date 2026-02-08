@@ -14,16 +14,17 @@ import { savePromptLog } from "./skills";
 
 function getSceneType(
   scene: VideoScene,
-): "intro" | "feature" | "cta" | "testimonial" | "screenshot" {
+): "intro" | "feature" | "cta" | "testimonial" | "screenshot" | "recording" {
   const type = scene.type;
   if (type === "intro") return "intro";
   if (type === "cta") return "cta";
+  if (type === "recording") return "recording";
   if (type === "testimonial") return "testimonial";
   if (type === "screenshot" || scene.content.image) return "screenshot";
   return "feature";
 }
 
-function generateSceneComponent(scene: VideoScene, index: number, totalScenes: number): string {
+function generateSceneComponent(scene: VideoScene, index: number, totalScenes: number, recordings?: Array<{ id: string; videoUrl: string; zoomPoints?: Array<{ time: number; x: number; y: number; scale: number; duration: number }> }>): string {
   const sceneType = getSceneType(scene);
   const headline = scene.content.headline || "";
   const subtext = scene.content.subtext || "";
@@ -152,6 +153,123 @@ const ${componentName}: React.FC = () => {
 };`;
   }
 
+  // Recording scene - play back screen recording with mockup frame on aurora background
+  if (sceneType === "recording") {
+    const videoUrl = (scene.content as any).recordingVideoUrl || "";
+    const featureName = (scene.content as any).featureName || headline;
+    const mockupFrame = (scene.content as any).mockupFrame || "minimal";
+    const recordingId = (scene.content as any).recordingId || "";
+    const isR2Video = videoUrl.startsWith("http");
+    const videoSrc = isR2Video ? `"${videoUrl}"` : `staticFile("${videoUrl.replace(/^\//, "")}")`;
+
+    // Choose mockup wrapper based on mockupFrame type
+    let mockupOpen = "";
+    let mockupClose = "";
+    if (mockupFrame === "browser") {
+      mockupOpen = `<BrowserMockup>`;
+      mockupClose = `</BrowserMockup>`;
+    } else if (mockupFrame === "macbook") {
+      mockupOpen = `<MacBookMockup>`;
+      mockupClose = `</MacBookMockup>`;
+    } else {
+      mockupOpen = `<MinimalMockup>`;
+      mockupClose = `</MinimalMockup>`;
+    }
+
+    // Look up zoom points from recordings
+    const recording = recordings?.find(r => r.id === recordingId);
+    const zoomPoints = recording?.zoomPoints || [];
+
+    // Generate zoom interpolation code
+    let zoomCode = "";
+    let videoStyle = `style={{ width: '100%', height: '100%', objectFit: 'cover' }}`;
+    if (zoomPoints.length > 0) {
+      const zoomInputFrames = [0];
+      const zoomScaleValues = [1];
+      const zoomXValues = [0];
+      const zoomYValues = [0];
+      for (const zp of zoomPoints) {
+        const startFrame = Math.round(zp.time * 30);
+        const endFrame = Math.round((zp.time + zp.duration) * 30);
+        zoomInputFrames.push(startFrame);
+        zoomScaleValues.push(1);
+        zoomXValues.push(0);
+        zoomYValues.push(0);
+        zoomInputFrames.push(startFrame + 15);
+        zoomScaleValues.push(zp.scale);
+        zoomXValues.push(-(zp.x - 0.5) * 100 * (zp.scale - 1));
+        zoomYValues.push(-(zp.y - 0.5) * 100 * (zp.scale - 1));
+        zoomInputFrames.push(endFrame - 15);
+        zoomScaleValues.push(zp.scale);
+        zoomXValues.push(-(zp.x - 0.5) * 100 * (zp.scale - 1));
+        zoomYValues.push(-(zp.y - 0.5) * 100 * (zp.scale - 1));
+        zoomInputFrames.push(endFrame);
+        zoomScaleValues.push(1);
+        zoomXValues.push(0);
+        zoomYValues.push(0);
+      }
+      zoomCode = `
+  const zoomScale = interpolate(frame, ${JSON.stringify(zoomInputFrames)}, ${JSON.stringify(zoomScaleValues.map(v => Math.round(v * 100) / 100))}, { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const zoomX = interpolate(frame, ${JSON.stringify(zoomInputFrames)}, ${JSON.stringify(zoomXValues.map(v => Math.round(v * 10) / 10))}, { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const zoomY = interpolate(frame, ${JSON.stringify(zoomInputFrames)}, ${JSON.stringify(zoomYValues.map(v => Math.round(v * 10) / 10))}, { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });`;
+      videoStyle = "style={{ width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${zoomScale}) translate(${zoomX}%, ${zoomY}%)` }}";
+    }
+
+    return `
+const ${componentName}: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps, durationInFrames } = useVideoConfig();
+  // Scale-in animation for the mockup
+  const mockupScale = spring({ frame, fps, from: 0.85, to: 1, config: { damping: 15, stiffness: 100 } });
+  const mockupOpacity = interpolate(frame, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
+  // Label fade in over first 3 seconds, fade out in last 1 second
+  const labelOpacity = interpolate(frame, [0, 30, durationInFrames - 30, durationInFrames], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });${zoomCode}
+  return (
+    <AbsoluteFill style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <AuroraBackground variant="${auroraVariant}" />
+      <div style={{ position: 'relative', zIndex: 1, width: '85%', maxWidth: 1000, transform: \`scale(\${mockupScale})\`, opacity: mockupOpacity }}>
+        ${mockupOpen}
+          <Video src={${videoSrc}} ${videoStyle} />
+        ${mockupClose}
+      </div>
+      <div style={{
+        position: 'absolute',
+        bottom: 60,
+        left: 0,
+        right: 0,
+        display: 'flex',
+        justifyContent: 'center',
+        opacity: labelOpacity,
+        zIndex: 10,
+      }}>
+        <div style={{
+          background: 'rgba(0, 0, 0, 0.7)',
+          backdropFilter: 'blur(12px)',
+          borderRadius: 12,
+          padding: '12px 28px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+        }}>
+          <div style={{
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #a855f7, #ec4899)',
+          }} />
+          <span style={{
+            fontFamily: montserrat,
+            fontWeight: 600,
+            fontSize: 20,
+            color: '#ffffff',
+          }}>${featureName}</span>
+        </div>
+      </div>
+    </AbsoluteFill>
+  );
+};`;
+  }
+
   // Feature / testimonial scene
   if (features.length > 0) {
     // Card-based feature layout
@@ -247,7 +365,7 @@ interface BrandColors {
   accent: string;
 }
 
-function generateFullCode(videoScript: VideoScript, screenshots?: any[], audioUrl?: string, bpm?: number, targetDurationSeconds?: number, brandColors?: BrandColors): string {
+function generateFullCode(videoScript: VideoScript, screenshots?: any[], audioUrl?: string, bpm?: number, targetDurationSeconds?: number, brandColors?: BrandColors, recordings?: Array<{ id: string; videoUrl: string; zoomPoints?: Array<{ time: number; x: number; y: number; scale: number; duration: number }> }>): string {
   const scenes = videoScript.scenes;
   const effectiveBpm = bpm || 120;
   const framesPerBeat = (60 / effectiveBpm) * 30; // at 30fps
@@ -259,6 +377,9 @@ function generateFullCode(videoScript: VideoScript, screenshots?: any[], audioUr
 
   // Check if any scene uses screenshots/images
   const hasImages = scenes.some(s => s.content.image) || (screenshots && screenshots.length > 0);
+
+  // Check if any scene uses recordings
+  const hasRecordings = scenes.some(s => s.type === "recording");
 
   // Snap scene durations to beat boundaries
   let currentFrame = 0;
@@ -308,7 +429,7 @@ function generateFullCode(videoScript: VideoScript, screenshots?: any[], audioUr
 
   // Generate scene components
   const sceneComponents = scenes
-    .map((scene, i) => generateSceneComponent(scene, i, scenes.length))
+    .map((scene, i) => generateSceneComponent(scene, i, scenes.length, recordings))
     .join("\n");
 
   // Generate sequence renders
@@ -353,7 +474,7 @@ import {
   Sequence,
   Audio,
   interpolate,
-  spring,${hasImages ? `\n  Img,` : ""}
+  spring,${hasImages ? `\n  Img,` : ""}${hasRecordings ? `\n  Video,` : ""}
   staticFile,
 } from 'remotion';
 import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
@@ -433,7 +554,7 @@ const WordByWordBlur: React.FC<{
             filter: \`blur(\${blur}px)\`,
             transform: \`translateY(\${ty}px)\`,
             display: 'inline-block',
-            marginRight: i < words.length - 1 ? '0.3em' : 0,
+            marginRight: i < words.length - 1 ? '0.8em' : 0,
             ...(isGradient ? {
               background: 'linear-gradient(135deg, ${primary}, ${secondary})',
               WebkitBackgroundClip: 'text',
@@ -612,6 +733,46 @@ const ScaleIn: React.FC<{
 };
 
 // ============================================================================
+// DEVICE MOCKUP FRAMES
+// ============================================================================
+${hasRecordings ? `
+const BrowserMockup: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div style={{ borderRadius: 12, overflow: 'hidden', boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5)' }}>
+    <div style={{ background: '#2d2d2d', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ display: 'flex', gap: 6 }}>
+        <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff5f57' }} />
+        <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#febc2e' }} />
+        <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#28c840' }} />
+      </div>
+      <div style={{ flex: 1, marginLeft: 12 }}>
+        <div style={{ background: '#1e1e1e', borderRadius: 6, padding: '4px 12px', fontSize: 12, color: '#888', fontFamily: montserrat }}>
+          app.example.com
+        </div>
+      </div>
+    </div>
+    <div style={{ background: '#1e1e1e', aspectRatio: '16/9', overflow: 'hidden' }}>{children}</div>
+  </div>
+);
+
+const MacBookMockup: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div style={{ width: '100%', border: '2px solid #333', borderRadius: '12px 12px 0 0', overflow: 'hidden', background: '#1a1a1a' }}>
+      <div style={{ background: '#2d2d2d', padding: '6px 0', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#555' }} />
+      </div>
+      <div style={{ aspectRatio: '16/10', overflow: 'hidden' }}>{children}</div>
+    </div>
+    <div style={{ width: '110%', height: 14, background: 'linear-gradient(180deg, #555 0%, #333 100%)', borderRadius: '0 0 8px 8px' }} />
+  </div>
+);
+
+const MinimalMockup: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.1)' }}>
+    <div style={{ aspectRatio: '16/9', overflow: 'hidden' }}>{children}</div>
+  </div>
+);
+` : ''}
+// ============================================================================
 // SCENE PROGRESS DOTS
 // ============================================================================
 
@@ -784,7 +945,7 @@ export async function templateCodeGeneratorNode(
 
     const targetDurationSeconds = state.userPreferences?.duration || undefined;
     const colors = state.productData?.colors || undefined;
-    const generatedCode = generateFullCode(videoScript, screenshots, audioUrl, audioBpm, targetDurationSeconds, colors);
+    const generatedCode = generateFullCode(videoScript, screenshots, audioUrl, audioBpm, targetDurationSeconds, colors, state.recordings);
 
     console.log(
       `[TemplateCodeGenerator] Generated ${generatedCode.length} chars of code`,

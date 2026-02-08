@@ -2,9 +2,10 @@
 
 import React, { useEffect, useState, use } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { VideoPlayer } from "@/components/video/VideoPlayer";
 import { Button, Card, CardHeader, Spinner } from "@/components/ui";
-import type { ProductData, VideoScript } from "@/lib/types";
+import type { ProductData, VideoScript, ScreenRecording } from "@/lib/types";
 
 interface Project {
   id: string;
@@ -25,22 +26,34 @@ export default function StudioPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const router = useRouter();
   const [project, setProject] = useState<Project | null>(null);
+  const [recordings, setRecordings] = useState<ScreenRecording[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activePanel, setActivePanel] = useState<"scenes" | "code" | "data">(
+  const [activePanel, setActivePanel] = useState<"scenes" | "code" | "data" | "recordings">(
     "scenes",
   );
 
   useEffect(() => {
     async function fetchProject() {
       try {
-        const response = await fetch(`/api/projects/${id}`);
-        if (!response.ok) {
+        const [projectRes, recordingsRes] = await Promise.all([
+          fetch(`/api/projects/${id}`),
+          fetch(`/api/recordings?projectId=${id}`)
+        ]);
+        
+        if (!projectRes.ok) {
           throw new Error("Project not found");
         }
-        const data = await response.json();
-        setProject(data.project);
+        
+        const projectData = await projectRes.json();
+        setProject(projectData.project);
+        
+        if (recordingsRes.ok) {
+          const recordingsData = await recordingsRes.json();
+          setRecordings(recordingsData.recordings || []);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load project");
       } finally {
@@ -50,6 +63,61 @@ export default function StudioPage({
 
     fetchProject();
   }, [id]);
+
+  const handleAddRecordingToScript = async (recording: ScreenRecording) => {
+    if (!project?.script) return;
+
+    // Calculate frame positions (30fps)
+    const fps = 30;
+    const lastScene = project.script.scenes[project.script.scenes.length - 1];
+    const startFrame = lastScene ? lastScene.endFrame : 0;
+    const durationFrames = Math.round(recording.duration * fps);
+
+    // Create new recording scene
+    const recordingScene = {
+      id: `recording-${recording.id}`,
+      startFrame,
+      endFrame: startFrame + durationFrames,
+      type: "recording" as const,
+      content: {
+        recordingId: recording.id,
+        featureName: recording.featureName,
+        description: recording.description
+      },
+      animation: {
+        enter: "fade" as const,
+        exit: "fade" as const
+      },
+      style: {
+        background: "#000000",
+        textColor: "#ffffff",
+        fontSize: "medium" as const
+      }
+    };
+
+    // Update script with new scene
+    const updatedScript = {
+      ...project.script,
+      scenes: [...project.script.scenes, recordingScene],
+      totalDuration: startFrame + durationFrames
+    };
+
+    // Save to server
+    try {
+      const response = await fetch(`/api/projects/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ script: JSON.stringify(updatedScript) })
+      });
+
+      if (response.ok) {
+        setProject(prev => prev ? { ...prev, script: updatedScript } : null);
+        alert(`Added "${recording.featureName}" to video!`);
+      }
+    } catch (error) {
+      console.error("Failed to add recording:", error);
+    }
+  };
 
   if (loading) {
     return (
@@ -205,6 +273,21 @@ export default function StudioPage({
               >
                 Code
               </button>
+              <button
+                onClick={() => setActivePanel("recordings")}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  activePanel === "recordings"
+                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                    : "text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                }`}
+              >
+                Recordings
+                {recordings.length > 0 && (
+                  <span className="ml-2 text-xs bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded-full">
+                    {recordings.length}
+                  </span>
+                )}
+              </button>
             </div>
 
             {/* Scenes Panel */}
@@ -323,6 +406,80 @@ export default function StudioPage({
                 <pre className="p-4 text-xs text-gray-700 dark:text-gray-300 overflow-auto max-h-[500px] bg-gray-50 dark:bg-gray-800">
                   <code>{project.composition}</code>
                 </pre>
+              </Card>
+            )}
+
+            {/* Recordings Panel */}
+            {activePanel === "recordings" && (
+              <Card>
+                <div className="flex items-center justify-between mb-4">
+                  <CardHeader title="Screen Recordings" />
+                  <Link href={`/record?projectId=${id}`}>
+                    <Button size="sm">
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      Record New
+                    </Button>
+                  </Link>
+                </div>
+                
+                {recordings.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="text-4xl mb-4">📹</div>
+                    <h3 className="font-medium text-gray-900 dark:text-white mb-2">
+                      No Recordings Yet
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                      Record your screen to demonstrate product features.
+                    </p>
+                    <Link href={`/record?projectId=${id}`}>
+                      <Button size="sm">Start Recording</Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-[500px] overflow-y-auto">
+                    {recordings.map((recording) => (
+                      <div
+                        key={recording.id}
+                        className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase">
+                            Recording
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            {Math.round(recording.duration)}s
+                          </span>
+                        </div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          {recording.featureName}
+                        </p>
+                        {recording.description && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                            {recording.description}
+                          </p>
+                        )}
+                        <div className="flex gap-2 mt-3">
+                          <Link href={`/editor/recording/${recording.id}`} className="flex-1">
+                            <Button variant="secondary" size="sm" className="w-full">
+                              Edit
+                            </Button>
+                          </Link>
+                          {project.script && (
+                            <Button 
+                              size="sm" 
+                              className="flex-1"
+                              onClick={() => handleAddRecordingToScript(recording)}
+                            >
+                              Add to Video
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </Card>
             )}
 

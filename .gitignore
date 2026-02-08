@@ -47,3 +47,7 @@ prisma/dev.db-journal
 # remotion
 /out/
 *.mp4
+
+logs/
+.remotion-temp/
+

@@ -19,6 +19,42 @@ model Project {
   status      String   @default("DRAFT")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
+  recordings  ScreenRecording[]
+  images      ProductImage[]
+}
+
+model ScreenRecording {
+  id            String   @id @default(cuid())
+  projectId     String
+  videoUrl      String
+  duration      Float
+  cursorData    String   // JSON: [{x, y, timestamp, type: "move"|"click"|"input"}]
+  trimStart     Float    @default(0)     // Trim in seconds
+  trimEnd       Float    @default(0)     // 0 = no trim (use full duration)
+  zoomPoints    String   // JSON: [{time, x, y, scale, duration}]
+  featureName   String
+  description   String
+  cursorStyle   String   @default("mac") // mac, windows
+  createdAt     DateTime @default(now())
+  
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@index([projectId])
+}
+
+model ProductImage {
+  id          String   @id @default(cuid())
+  projectId   String
+  url         String
+  name        String
+  width       Int?
+  height      Int?
+  createdAt   DateTime @default(now())
+  
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@index([projectId])
 }
 
 model Subscription {

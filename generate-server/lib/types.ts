@@ -69,7 +69,7 @@ export interface VideoScene {
   id: string;
   startFrame: number;
   endFrame: number;
-  type: "intro" | "feature" | "testimonial" | "cta" | "transition" | "stats" | "screenshot" | "tagline" | "value-prop";
+  type: "intro" | "feature" | "testimonial" | "cta" | "transition" | "stats" | "screenshot" | "tagline" | "value-prop" | "recording";
   content: {
     headline?: string;
     subtext?: string;
@@ -77,6 +77,12 @@ export interface VideoScene {
     icon?: string;
     stats?: Array<{ value: number; label: string; suffix?: string }>;
     features?: Array<{ icon: string; title: string; description: string }>;
+    // For recording scenes
+    recordingId?: string;
+    recordingVideoUrl?: string;
+    featureName?: string;
+    description?: string;
+    mockupFrame?: "browser" | "macbook" | "minimal";
   };
   animation: {
     enter:
