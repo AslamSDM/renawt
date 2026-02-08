@@ -1,23 +1,59 @@
 import { prisma } from "@/lib/db/prisma";
 
-export async function upsertUserSubscription(
+export async function updateUserSubscription(
     userId: string,
-    subscription: string,
+    product: string,
     status: string,
     dodoSubId: string
 ) {
     return prisma.subscription.upsert({
         where: { userId: userId },
         update: {
-            subscription: subscription,
+            plan: product,
             status: status,
             dodoSubId: dodoSubId,
         },
         create: {
             userId: userId,
-            subscription: subscription,
+            plan: product,
             status: status,
             dodoSubId: dodoSubId,
+        },
+    });
+}
+
+export async function addCredits(
+    webhookEventId: string,
+    userId: string,
+    credits: number,
+) {
+    return await prisma.$transaction(async (tx) => {
+
+        // Leverage DB Lock to prevent idempotency issue
+        await tx.webhookEvent.create({
+            data: {
+                id: webhookEventId,
+            },
+        });
+
+        // add credits
+        await tx.user.update({
+            where: { id: userId },
+            data: {
+                creditBalance: { increment: credits },
+            },
+        });
+    });
+}
+
+export async function decreaseCredits(
+    userId: string,
+    credits: number,
+) {
+    return await prisma.user.update({
+        where: { id: userId },
+        data: {
+            creditBalance: { decrement: credits },
         },
     });
 }

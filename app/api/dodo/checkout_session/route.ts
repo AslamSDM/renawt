@@ -2,19 +2,20 @@ import { NextRequest } from "next/server";
 import { createCheckoutSession } from '@/lib/dodo';
 
 // const requestExample = {
-//   subscription: "STARTER",
 //   userId: "12345"
+//   product: "SUBSCRIPTION_STARTER",
+//   quantity: 1
 // }
 
 export async function POST(request: NextRequest) {
   try {
-    const { subscription, userId } = await request.json();
+    const { userId, product, quantity } = await request.json();
 
-    if (!subscription || !userId) {
+    if (!product || !userId || !quantity) {
       return new Response(JSON.stringify({ error: 'Missing subscription or userId' }), { status: 400 });
     }
 
-    const session = await createCheckoutSession(subscription, userId);
+    const session = await createCheckoutSession(userId, product, quantity);
 
     return new Response(JSON.stringify({ checkout_url: session.checkout_url }), { status: 200 });
   } catch (error) {

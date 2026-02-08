@@ -27,6 +27,7 @@ model User {
   name          String?
   image         String?
   emailVerified DateTime?
+  creditBalance Int       @default(0)
 
   subscription    Subscription?
   creditPurchases CreditPurchase[]
@@ -70,4 +71,8 @@ model CreditPurchase {
   createdAt      DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
+}
+
+model WebhookEvent {
+  id String @id
 }

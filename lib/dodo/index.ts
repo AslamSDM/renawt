@@ -1,26 +1,34 @@
 import { getDodoClient } from "./client";
+import { productToIdMap, Product } from "./subscription";
 
-const productIdMap: Record<string, string> = {
-    STARTER: "pdt_0NXgVkOCld7OPSxqFhJpX",
+export type Metadata = {
+    userId: string
+    product: Product
+    quantity: string
 }
 
 export async function createCheckoutSession(
-    subscription: string,
-    userId: string
+    userId: string,
+    product: Product,
+    quantity: number
 ) {
+
+    const metadata = {
+        userId,
+        product,
+        quantity: quantity.toString()
+    }
+
     try {
         const dodo = getDodoClient();
         const session = await dodo.checkoutSessions.create({
             product_cart: [
                 {
-                    product_id: productIdMap[subscription],
-                    quantity: 1
+                    product_id: productToIdMap[product],
+                    quantity: quantity
                 }
             ],
-            metadata: {
-                userId: userId,
-                subscription: subscription
-            },
+            metadata: metadata,
 
             // Where to redirect after successful payment
             return_url: 'https://yoursite.com/checkout/success',
