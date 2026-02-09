@@ -8,6 +8,17 @@ const nextConfig: NextConfig = {
     "esbuild",
   ],
 
+  // Configure external image domains
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "pub-d842b814c7c64f5caefc4f21e1f4ef6b.r2.dev",
+        pathname: "/**",
+      },
+    ],
+  },
+
   // Empty turbopack config to silence warning (Turbopack is default in Next 16)
   turbopack: {},
 

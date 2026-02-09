@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
       description,
       url,
       style = "professional",
+      templateStyle,
       videoType = "creative",
       duration,
       audio,
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`[CreativeAPI] Generating for: "${description}"`);
-    console.log(`[CreativeAPI] Style: ${style}, VideoType: ${videoType}, Duration: ${duration}s`);
+    console.log(`[CreativeAPI] Style: ${style}, Template: ${templateStyle}, VideoType: ${videoType}, Duration: ${duration}s`);
 
     // Create a streaming response — runs scraper + scriptWriter only, stops for review
     const encoder = new TextEncoder();
@@ -57,6 +58,7 @@ export async function POST(request: NextRequest) {
             description: description || null,
             userPreferences: {
               style: style as any,
+              templateStyle: templateStyle as any,
               videoType: videoType as any,
               duration: duration ? parseInt(duration) : undefined,
               audio: audio ? {
@@ -111,11 +113,20 @@ export async function POST(request: NextRequest) {
           send("complete", { success: true, message: "Script ready for review" });
         } catch (error) {
           console.error("[CreativeAPI] Stream error:", error);
-          send("error", {
-            errors: [error instanceof Error ? error.message : "Unknown error"],
-          });
+          try {
+            send("error", {
+              errors: [error instanceof Error ? error.message : "Unknown error"],
+            });
+            send("complete", { success: false });
+          } catch (sendError) {
+            console.error("[CreativeAPI] Failed to send error:", sendError);
+          }
         } finally {
-          controller.close();
+          try {
+            controller.close();
+          } catch (closeError) {
+            console.error("[CreativeAPI] Controller already closed:", closeError);
+          }
         }
       },
     });
@@ -149,6 +160,7 @@ export async function GET() {
         url: "string (optional) - Product URL to scrape",
         description: "string (optional) - What the video is about (required if no url)",
         style: "string (optional) - professional, playful, minimal, bold",
+        templateStyle: "string (optional) - aurora, floating-glass, blue-clean (auto-mapped from style if not provided)",
         videoType: "string (optional) - demo, creative, fast-paced, cinematic",
         duration: "number (optional) - Video length in seconds (10-120)",
         audio: "object (optional) - { url: string, bpm?: number, duration?: number }",

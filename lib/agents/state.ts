@@ -29,7 +29,7 @@ export const VideoGenerationState = Annotation.Root({
     trimEnd: number;
     mockupFrame?: "browser" | "macbook" | "minimal";
     zoomPoints?: Array<{ time: number; x: number; y: number; scale: number; duration: number }>;
-    cursorStyle?: "mac" | "windows" | "hand-pointing" | "hand-pressing" | "touch-hand" | "finger-tap" | "hand-cursor";
+    cursorStyle?: "normal" | "hand";
     cursorData?: Array<{ x: number; y: number; timestamp: number; type: string }>;
   }>>({
     reducer: (_, next) => next,

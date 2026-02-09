@@ -9,6 +9,7 @@ import {
 import type { ProductData } from "../types";
 import type { VideoGenerationStateType } from "./state";
 import { uploadScreenshotToR2, isR2Configured } from "../storage/r2";
+import { extractLogos } from "./logoAndScreenshotHelper";
 
 // Directory for storing screenshots (served statically)
 const SCREENSHOTS_DIR = path.join(process.cwd(), "public", "screenshots");
@@ -58,6 +59,7 @@ interface ScrapeResult {
   images: string[];
   title: string;
   screenshots: ScreenshotData[];
+  logos: Array<{ url: string; source: string; confidence: number }>;
 }
 
 /**
@@ -401,6 +403,10 @@ async function scrapeWebsite(url: string): Promise<ScrapeResult> {
       };
     });
 
+    // Extract logos from the page
+    const logos = await extractLogos(page, url);
+    console.log(`[Scraper] Extracted ${logos.length} logos`);
+
     return {
       text: `Title: ${content.title}
 Meta Description: ${content.metaDesc}
@@ -412,6 +418,7 @@ ${content.bodyText}`,
       images: content.images,
       title: content.title,
       screenshots,
+      logos,
     };
   } finally {
     await browser.close();
@@ -555,10 +562,10 @@ export async function scraperNode(
     }
 
     console.log(`[Scraper] Scraping URL: ${state.sourceUrl}`);
-    const { text, images, title, screenshots } = await scrapeWebsite(state.sourceUrl);
+    const { text, images, title, screenshots, logos } = await scrapeWebsite(state.sourceUrl);
 
     console.log(
-      `[Scraper] Scraped ${text.length} chars, ${images.length} images, ${screenshots.length} screenshots`,
+      `[Scraper] Scraped ${text.length} chars, ${images.length} images, ${screenshots.length} screenshots, ${logos.length} logos`,
     );
 
     // Get hero screenshot for visual analysis
@@ -656,11 +663,20 @@ Return ONLY valid JSON.`;
     }
 
     productData.screenshots = screenshots;
+    productData.logos = logos;
 
     // Log screenshot URLs for video usage
     console.log("[Scraper] Screenshots available for video:");
     for (const screenshot of screenshots) {
       console.log(`  - ${screenshot.section}: ${screenshot.url}`);
+    }
+
+    // Log logo URLs for video usage
+    if (logos.length > 0) {
+      console.log("[Scraper] Logos available for video:");
+      for (const logo of logos) {
+        console.log(`  - ${logo.source}: ${logo.url} (confidence: ${logo.confidence})`);
+      }
     }
 
     console.log("[Scraper] Extracted product name:", productData.name);

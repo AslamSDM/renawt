@@ -50,4 +50,9 @@ prisma/dev.db-journal
 
 logs/
 .remotion-temp/
+venv/
+app/public/screenshots
+eg/ 
+.ruff_cache
+
 

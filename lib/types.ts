@@ -12,6 +12,7 @@ export interface ProductData {
   colors: { primary: string; secondary: string; accent: string };
   tone: "professional" | "playful" | "minimal" | "bold";
   screenshotPath?: string; // Path to the website screenshot for video use
+  logos?: Array<{ url: string; source: string; confidence: number }>; // Extracted logos from website
 }
 
 export const ProductDataSchema = z.object({
@@ -79,9 +80,11 @@ export interface ScreenRecording {
   zoomPoints: ZoomPoint[];
   featureName: string;
   description: string;
-  cursorStyle: "mac" | "windows" | "hand-pointing" | "hand-pressing" | "touch-hand" | "finger-tap" | "hand-cursor";
+  cursorStyle: "normal" | "hand";
   mockupFrame?: "browser" | "macbook" | "minimal";
   createdAt: string;
+  cursorSource?: "javascript" | "cv_detection";  // Track how cursor was captured
+  processingStatus?: "pending" | "processing" | "complete" | "failed";  // For CV processing
 }
 
 export interface ProductImage {
@@ -248,6 +251,7 @@ export interface AudioConfig {
 // User Preferences for video generation
 export interface UserPreferences {
   style: "professional" | "playful" | "minimal" | "bold";
+  templateStyle?: "aurora" | "floating-glass" | "blue-clean";
   duration?: number;
   musicUrl?: string;
   musicBpm?: number;
@@ -257,6 +261,7 @@ export interface UserPreferences {
 
 export const UserPreferencesSchema = z.object({
   style: z.enum(["professional", "playful", "minimal", "bold"]),
+  templateStyle: z.enum(["aurora", "floating-glass", "blue-clean"]).optional(),
   duration: z.number().optional(),
   musicUrl: z.string().optional(),
   musicBpm: z.number().optional(),

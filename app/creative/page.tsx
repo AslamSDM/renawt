@@ -29,6 +29,8 @@ import {
   LayoutTemplate, Eye, EyeOff, Maximize2, ChevronLeft, ChevronRight
 } from "lucide-react";
 import { CursorTracker, detectZoomPoints } from "@/lib/recording/cursorTracker";
+import { CursorPreview, cursorStyleInfo } from "@/components/cursor/CursorPreview";
+import { ScreenshotSelector } from "@/components/screenshot/ScreenshotSelector";
 
 // Load Google Fonts
 const { fontFamily: interFont } = loadInter("normal", {
@@ -335,6 +337,22 @@ export default function CreativeStudioPage() {
   const [url, setUrl] = useState("");
   const [selectedAudio, setSelectedAudio] = useState<AudioFile | null>(null);
   
+  // Map style to template style
+  const getTemplateStyle = (selectedStyle: string): "aurora" | "floating-glass" | "blue-clean" => {
+    switch (selectedStyle) {
+      case "professional":
+        return "aurora";
+      case "playful":
+        return "blue-clean";
+      case "minimal":
+        return "floating-glass";
+      case "bold":
+        return "blue-clean";
+      default:
+        return "aurora";
+    }
+  };
+  
   // Processing states
   const [loading, setLoading] = useState(false);
   const [rendering, setRendering] = useState(false);
@@ -377,7 +395,19 @@ export default function CreativeStudioPage() {
   const [editTrimStart, setEditTrimStart] = useState(0);
   const [editTrimEnd, setEditTrimEnd] = useState(0);
   const [editMockupFrame, setEditMockupFrame] = useState<"browser" | "macbook" | "minimal">("minimal");
-  const [editCursorStyle, setEditCursorStyle] = useState<"mac" | "windows" | "hand-pointing" | "hand-pressing" | "touch-hand" | "finger-tap" | "hand-cursor">("hand-pointing");
+  const [editCursorStyle, setEditCursorStyle] = useState<"normal" | "hand">("hand");
+  
+  // CV Processing states
+  const [processingRecordings, setProcessingRecordings] = useState<Set<string>>(new Set());
+  const [recordingProgress, setRecordingProgress] = useState<Record<string, number>>({});
+  
+  // Screenshot & Logo states
+  const [scrapedScreenshots, setScrapedScreenshots] = useState<any[]>([]);
+  const [extractedLogos, setExtractedLogos] = useState<any[]>([]);
+  const [selectedScreenshots, setSelectedScreenshots] = useState<any[]>([]);
+  const [showScreenshotSelector, setShowScreenshotSelector] = useState(false);
+  const [isAnalyzingScreenshots, setIsAnalyzingScreenshots] = useState(false);
+  
   const [scriptChatInput, setScriptChatInput] = useState("");
   const [scriptChatLoading, setScriptChatLoading] = useState(false);
   const [scriptChatHistory, setScriptChatHistory] = useState<Array<{ role: "user" | "assistant"; text: string }>>([]);
@@ -400,6 +430,65 @@ export default function CreativeStudioPage() {
     logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [logs]);
 
+  // CV Processing Polling Effect
+  // Polls for cursor detection progress on recordings with CV source
+  useEffect(() => {
+    const pendingRecordings = recordings.filter(
+      r => r.cursorSource === "cv_detection" && 
+           (r.processingStatus === "pending" || r.processingStatus === "processing")
+    );
+
+    if (pendingRecordings.length === 0) return;
+
+    const interval = setInterval(async () => {
+      for (const recording of pendingRecordings) {
+        try {
+          const response = await fetch(`/api/recordings/${recording.id}/status`);
+          const data = await response.json();
+
+          if (data.status === "complete") {
+            // Update recording with CV-detected cursor data
+            setRecordings(prev => prev.map(r => {
+              if (r.id === recording.id) {
+                return {
+                  ...r,
+                  cursorData: data.cursorData || [],
+                  zoomPoints: data.zoomPoints || [],
+                  processingStatus: "complete",
+                };
+              }
+              return r;
+            }));
+            
+            // Remove from processing set
+            setProcessingRecordings(prev => {
+              const next = new Set(prev);
+              next.delete(recording.id);
+              return next;
+            });
+            
+            addLog(`CV cursor detection complete for ${recording.featureName}`, "success");
+          } else if (data.status === "failed") {
+            setRecordings(prev => prev.map(r => 
+              r.id === recording.id ? { ...r, processingStatus: "failed" } : r
+            ));
+            addLog(`CV cursor detection failed for ${recording.featureName}`, "error");
+          } else if (data.status === "processing") {
+            // Update progress
+            setRecordingProgress(prev => ({
+              ...prev,
+              [recording.id]: data.progress || 0
+            }));
+          }
+        } catch (err) {
+          console.error(`[Creative] Failed to check status for ${recording.id}:`, err);
+        }
+      }
+    }, 3000); // Poll every 3 seconds
+
+    return () => clearInterval(interval);
+  }, [recordings]);
+
   const handleGenerate = async () => {
     if (!description.trim() && !url.trim()) {
       setError("Please enter a URL or description");
@@ -418,7 +507,7 @@ export default function CreativeStudioPage() {
     setGenerationStatus("Initializing AI...");
 
     addLog(`Generating script for "${description}"...`);
-    addLog(`Style: ${style}, Type: ${videoType}`);
+    addLog(`Style: ${style} (${getTemplateStyle(style)}), Type: ${videoType}`);
 
     try {
       const response = await fetch("/api/creative/generate", {
@@ -427,13 +516,17 @@ export default function CreativeStudioPage() {
         body: JSON.stringify({
           description,
           style,
+          templateStyle: getTemplateStyle(style),
           videoType,
           duration,
           url: url.trim() || undefined,
           audio: selectedAudio ? { url: selectedAudio.url, bpm: selectedAudio.bpm, duration: selectedAudio.duration } : undefined,
           recordings: recordings.length > 0 ? recordings.map(r => ({
             id: r.id, videoUrl: r.videoUrl, duration: r.duration, featureName: r.featureName,
-            description: r.description, trimStart: r.trimStart, trimEnd: r.trimEnd, mockupFrame: r.mockupFrame || "minimal",
+            description: r.description, trimStart: r.trimStart, trimEnd: r.trimEnd, 
+            mockupFrame: r.mockupFrame || "minimal", zoomPoints: r.zoomPoints || [],
+            cursorStyle: r.cursorStyle || "hand", cursorData: r.cursorData || [],
+            cursorSource: r.cursorSource || "javascript",
           })) : undefined,
         }),
       });
@@ -481,6 +574,20 @@ export default function CreativeStudioPage() {
                 break;
               case "productData":
                 setProductData(event.data);
+                
+                // Extract screenshots and logos from product data
+                if (event.data.screenshots?.length > 0) {
+                  setScrapedScreenshots(event.data.screenshots);
+                  setSelectedScreenshots(event.data.screenshots); // Default select all
+                  setShowScreenshotSelector(true);
+                  addLog(`${event.data.screenshots.length} screenshots captured`, "success");
+                }
+                
+                if (event.data.logos?.length > 0) {
+                  setExtractedLogos(event.data.logos);
+                  addLog(`${event.data.logos.length} logos extracted`, "success");
+                }
+                
                 setGenerationProgress(35);
                 setGenerationStatus("Product data extracted");
                 addLog("Product data extracted", "success");
@@ -541,12 +648,14 @@ export default function CreativeStudioPage() {
         body: JSON.stringify({
           videoScript: editableScript,
           productData,
-          userPreferences: { style, videoType, duration, audio: selectedAudio ? { url: selectedAudio.url, bpm: selectedAudio.bpm, duration: selectedAudio.duration } : undefined },
+          userPreferences: { style, templateStyle: getTemplateStyle(style), videoType, duration, audio: selectedAudio ? { url: selectedAudio.url, bpm: selectedAudio.bpm, duration: selectedAudio.duration } : undefined },
           recordings: recordings.length > 0 ? recordings.map(r => ({
             id: r.id, videoUrl: r.videoUrl, duration: r.duration, featureName: r.featureName,
             description: r.description, trimStart: r.trimStart, trimEnd: r.trimEnd,
             mockupFrame: r.mockupFrame || "minimal", zoomPoints: r.zoomPoints || [],
-            cursorStyle: r.cursorStyle || "hand-pointing",
+            cursorStyle: r.cursorStyle || "hand",
+            cursorData: r.cursorData || [],
+            cursorSource: r.cursorSource || "javascript",
           })) : undefined,
         }),
       });
@@ -854,11 +963,17 @@ export default function CreativeStudioPage() {
           const data = await response.json();
           if (data.success) {
             addLog(`Recording saved: ${recordingFeatureName || "Feature Demo"}`, "success");
+            
+            // Check if CV processing was triggered (for external recordings)
+            const isExternalRecording = cursorData.length === 0;
+            
             const newRecording: ScreenRecording = {
               id: data.recordingId, projectId: "creative-session", videoUrl: data.videoUrl,
               duration: recordingTime, cursorData, zoomPoints, trimStart: 0, trimEnd: recordingTime,
               featureName: recordingFeatureName || "Feature Demo", description: recordingDescription || "",
               cursorStyle: editCursorStyle, mockupFrame: "minimal", createdAt: new Date().toISOString(),
+              cursorSource: isExternalRecording ? "cv_detection" : "javascript",
+              processingStatus: isExternalRecording ? (data.processingStatus || "pending") : "complete",
             };
             setEditingRecording(newRecording);
             setEditTrimStart(0);
@@ -1078,10 +1193,10 @@ export default function CreativeStudioPage() {
                       onChange={(e) => setStyle(e.target.value as any)}
                       className="w-full px-4 py-3 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none rounded-lg"
                     >
-                      <option value="professional">Professional</option>
-                      <option value="playful">Playful</option>
-                      <option value="minimal">Minimal</option>
-                      <option value="bold">Bold</option>
+                      <option value="professional">Professional (Aurora)</option>
+                      <option value="playful">Playful (Blue Clean)</option>
+                      <option value="minimal">Minimal (Floating Glass)</option>
+                      <option value="bold">Bold (Blue Clean)</option>
                     </select>
                   </div>
                   <div className="space-y-2">
@@ -1133,42 +1248,57 @@ export default function CreativeStudioPage() {
                     </button>
                   ) : (
                     <div className="space-y-3">
-                      {recordings.map((recording) => (
-                        <div key={recording.id} className="bg-white/5 border border-white/10 p-4 rounded-lg">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="w-2 h-2 rounded-full bg-purple-400" />
-                              <span className="text-sm">{recording.featureName}</span>
-                              <span className="text-xs text-gray-500">{formatTime(Math.round(recording.duration))}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => {
-                                  setEditingRecording(recording);
-                                  setEditTrimStart(recording.trimStart);
-                                  setEditTrimEnd(recording.trimEnd);
-                                  setEditMockupFrame(recording.mockupFrame || "minimal");
-                                  setEditCursorStyle(recording.cursorStyle || "hand-pointing");
-                                  setRecordingFeatureName(recording.featureName);
-                                  setRecordingDescription(recording.description);
-                                  setShowRecordingModal(true);
-                                }}
-                                className="text-gray-500 hover:text-white"
-                                title="Edit recording"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                              </button>
-                              <button
-                                onClick={() => setRecordings(prev => prev.filter(r => r.id !== recording.id))}
-                                className="text-gray-500 hover:text-white"
-                                title="Remove recording"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
+                      {recordings.map((recording) => {
+                        const isProcessing = recording.cursorSource === "cv_detection" && 
+                          (recording.processingStatus === "pending" || recording.processingStatus === "processing");
+                        const progress = recordingProgress[recording.id] || 0;
+                        
+                        return (
+                          <div key={recording.id} className="bg-white/5 border border-white/10 p-4 rounded-lg">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className={`w-2 h-2 rounded-full ${isProcessing ? 'bg-yellow-400 animate-pulse' : 'bg-purple-400'}`} />
+                                <span className="text-sm">{recording.featureName}</span>
+                                <span className="text-xs text-gray-500">{formatTime(Math.round(recording.duration))}</span>
+                                {isProcessing && (
+                                  <span className="text-xs text-yellow-400 flex items-center gap-1">
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                    CV processing {progress > 0 ? `${progress}%` : ''}
+                                  </span>
+                                )}
+                                {recording.cursorSource === "cv_detection" && recording.processingStatus === "complete" && (
+                                  <span className="text-xs text-green-400">✓ CV detected</span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => {
+                                    setEditingRecording(recording);
+                                    setEditTrimStart(recording.trimStart);
+                                    setEditTrimEnd(recording.trimEnd);
+                                    setEditMockupFrame(recording.mockupFrame || "minimal");
+                                    setEditCursorStyle(recording.cursorStyle || "hand");
+                                    setRecordingFeatureName(recording.featureName);
+                                    setRecordingDescription(recording.description);
+                                    setShowRecordingModal(true);
+                                  }}
+                                  className="text-gray-500 hover:text-white"
+                                  title="Edit recording"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                </button>
+                                <button
+                                  onClick={() => setRecordings(prev => prev.filter(r => r.id !== recording.id))}
+                                  className="text-gray-500 hover:text-white"
+                                  title="Remove recording"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                       <button
                         onClick={() => setShowRecordingModal(true)}
                         className="w-full py-2 text-sm text-gray-500 hover:text-white transition-colors"
@@ -1302,6 +1432,35 @@ export default function CreativeStudioPage() {
                   controls
                   loop
                 />
+              </div>
+            )}
+
+            {/* Screenshot & Logo Selection */}
+            {scrapedScreenshots.length > 0 && (
+              <div className="mb-8 bg-white/5 border border-white/10 rounded-xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-medium text-white flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5 text-purple-400" />
+                    Select Screenshots
+                  </h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowScreenshotSelector(!showScreenshotSelector)}
+                  >
+                    {showScreenshotSelector ? "Hide" : "Show"} Selector
+                  </Button>
+                </div>
+                
+                {showScreenshotSelector && (
+                  <ScreenshotSelector
+                    screenshots={scrapedScreenshots}
+                    logos={extractedLogos}
+                    onSelectionChange={setSelectedScreenshots}
+                    onAddMore={() => addLog("Capture more screenshots coming soon!", "info")}
+                    isAnalyzing={isAnalyzingScreenshots}
+                  />
+                )}
               </div>
             )}
 
@@ -1583,13 +1742,8 @@ export default function CreativeStudioPage() {
                   <label className="block text-xs tracking-widest text-gray-500 uppercase mb-3">Cursor Style</label>
                   <div className="grid grid-cols-4 gap-2">
                     {[
-                      { value: "hand-pointing", label: "👆 Pointing", desc: "Cartoon" },
-                      { value: "hand-cursor", label: "👆 Clean", desc: "Minimal" },
-                      { value: "hand-pressing", label: "👇 Pressing", desc: "Cartoon" },
-                      { value: "touch-hand", label: "👆 Touch", desc: "iOS Style" },
-                      { value: "finger-tap", label: "👆 Tap", desc: "Ring" },
-                      { value: "mac", label: "🖱️ Mac", desc: "Default" },
-                      { value: "windows", label: "🖱️ Windows", desc: "Default" },
+                      { value: "hand", label: "👆 Hand", desc: "Pointing" },
+                      { value: "normal", label: "🖱️ Normal", desc: "Arrow" },
                     ].map((cursor) => (
                       <button
                         key={cursor.value}
@@ -1606,6 +1760,31 @@ export default function CreativeStudioPage() {
                       </button>
                     ))}
                   </div>
+                  
+                  {/* Cursor Preview in Edit Mode */}
+                  <div className="mt-4 p-4 bg-white/5 rounded-lg border border-white/10">
+                    <label className="text-xs text-gray-500 mb-2 block">Preview</label>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1">
+                        <CursorPreview 
+                          cursorStyle={editCursorStyle} 
+                          size="lg" 
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <CursorPreview 
+                          cursorStyle={editCursorStyle} 
+                          isClick={true}
+                          size="lg" 
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500 mt-2 px-2">
+                      <span>Normal</span>
+                      <span>Clicking</span>
+                    </div>
+                  </div>
+                  
                   <p className="text-xs text-gray-500 mt-2">Click animations: Multi-ripple rings on click</p>
                 </div>
 
@@ -1657,13 +1836,8 @@ export default function CreativeStudioPage() {
                       <label className="block text-xs tracking-widest text-gray-500 uppercase mb-3">Cursor Style</label>
                       <div className="grid grid-cols-4 gap-2">
                         {[
-                          { value: "hand-pointing", label: "👆 Pointing", desc: "Cartoon" },
-                          { value: "hand-cursor", label: "👆 Clean", desc: "Minimal" },
-                          { value: "hand-pressing", label: "👇 Pressing", desc: "Cartoon" },
-                          { value: "touch-hand", label: "👆 Touch", desc: "iOS Style" },
-                          { value: "finger-tap", label: "👆 Tap", desc: "Ring" },
-                          { value: "mac", label: "🖱️ Mac", desc: "Default" },
-                          { value: "windows", label: "🖱️ Windows", desc: "Default" },
+                          { value: "hand", label: "👆 Hand", desc: "Pointing" },
+                          { value: "normal", label: "🖱️ Normal", desc: "Arrow" },
                         ].map((cursor) => (
                           <button
                             key={cursor.value}
@@ -1680,6 +1854,31 @@ export default function CreativeStudioPage() {
                           </button>
                         ))}
                       </div>
+                      
+                      {/* Cursor Preview */}
+                      <div className="mt-4 p-4 bg-white/5 rounded-lg border border-white/10">
+                        <label className="text-xs text-gray-500 mb-2 block">Preview</label>
+                        <div className="flex items-center gap-4">
+                          <div className="flex-1">
+                            <CursorPreview 
+                              cursorStyle={editCursorStyle} 
+                              size="lg" 
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <CursorPreview 
+                              cursorStyle={editCursorStyle} 
+                              isClick={true}
+                              size="lg" 
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-between text-xs text-gray-500 mt-2 px-2">
+                          <span>Normal</span>
+                          <span>Clicking</span>
+                        </div>
+                      </div>
+                      
                       <p className="text-xs text-gray-500 mt-2">Click animations: Multi-ripple rings on click</p>
                     </div>
                   </>

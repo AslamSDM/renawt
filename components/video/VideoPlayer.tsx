@@ -252,7 +252,7 @@ const PremiumSceneRenderer: React.FC<{ scene: VideoScene }> = ({ scene }) => {
         zoomPoints={JSON.parse(recordingData.zoomPoints)}
         trimStart={recordingData.trimStart}
         trimEnd={recordingData.trimEnd}
-        cursorStyle={recordingData.cursorStyle as "mac" | "windows" | "hand-pointing" | "hand-pressing" | "touch-hand" | "finger-tap" | "hand-cursor"}
+        cursorStyle={recordingData.cursorStyle as "normal" | "hand"}
         featureName={scene.content.featureName || recordingData.featureName}
         description={scene.content.description || recordingData.description}
       />

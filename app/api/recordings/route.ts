@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db/prisma";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { cvProcessor } from "@/lib/recording/cvProcessor";
 
 // R2 Configuration
 const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
     const featureName = formData.get("featureName") as string;
     const description = formData.get("description") as string;
     const duration = parseFloat(formData.get("duration") as string);
-    const cursorStyle = formData.get("cursorStyle") as string || "hand-pointing";
+    const cursorStyle = formData.get("cursorStyle") as string || "hand";
 
     // Validate required fields
     if (!video || !featureName) {
@@ -74,10 +75,19 @@ export async function POST(request: NextRequest) {
     // For creative sessions (no real project), skip DB persistence
     // The recording data lives in client-side React state
     if (effectiveProjectId === "creative-session") {
+      // Trigger CV cursor detection for external recordings (where JS tracking wasn't available)
+      // This processes the video to detect cursor positions using computer vision
+      cvProcessor.addJob(recordingId, videoUrl, effectiveProjectId).catch(err => {
+        console.warn("[API] CV processing failed to start:", err);
+        // Non-blocking: recording still succeeds even if CV processing fails
+      });
+
       return NextResponse.json({
         success: true,
         recordingId,
         videoUrl,
+        processingStatus: "pending",
+        message: "Upload complete. CV cursor detection processing in background.",
       });
     }
 
@@ -107,7 +117,7 @@ export async function POST(request: NextRequest) {
         trimEnd: 0,
         featureName,
         description: description || "",
-        cursorStyle: cursorStyle || "hand-pointing"
+        cursorStyle: cursorStyle || "hand"
       }
     });
 
