@@ -19,10 +19,11 @@ export const POST = async (req: NextRequest) => {
       onPaymentSucceeded: async (payload) => {
         const { userId, product, quantity } = payload.data.metadata as Metadata;
         const creditsToAdd = productToCreditMap[product] * parseInt(quantity);
+        const { payment_id } = payload.data;
 
         console.log(userId, product, quantity, creditsToAdd);
 
-        await addCredits(webhookEventId, userId, creditsToAdd);
+        await addCredits(webhookEventId, userId, creditsToAdd, payment_id);
         console.log("[+] Payment succeeded");
       },
       onSubscriptionUpdated: async (payload) => {
