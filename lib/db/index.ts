@@ -26,6 +26,7 @@ export async function addCredits(
     webhookEventId: string,
     userId: string,
     credits: number,
+    dodoPurchaseId: string,
 ) {
     return await prisma.$transaction(async (tx) => {
 
@@ -33,6 +34,15 @@ export async function addCredits(
         await tx.webhookEvent.create({
             data: {
                 id: webhookEventId,
+            },
+        });
+
+        // Record the purchase
+        await tx.creditPurchase.create({
+            data: {
+                userId,
+                amount: credits,
+                dodoPurchaseId,
             },
         });
 
