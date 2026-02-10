@@ -915,27 +915,23 @@ const SceneProgressDots: React.FC<{ totalScenes: number; sceneBoundaries: number
 // SCENE 1: Logo intro on dark aurora
 const Scene1: React.FC = () => {
   const frame = useCurrentFrame();
-  const entryProgress = interpolate(frame, [0, 20], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const entryScale = interpolate(frame, [0, 20], [0.8, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const entryOpacity = interpolate(frame, [0, 15], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const entryProgress = interpolate(frame, [0, 30], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const entryScale = interpolate(frame, [0, 30], [0.7, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const entryOpacity = interpolate(frame, [0, 20], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   
   return (
     <AbsoluteFill>
       <AuroraBackground variant="dark" />
-      <AbsoluteFill style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 32 }}>
+      <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         ${logoUrl ? `
-        {/* Logo Image */}
+        {/* Logo Image - Large and centered on background */}
         <div style={{ 
           transform: \`scale(\${entryScale})\`,
           opacity: entryOpacity,
-          filter: 'drop-shadow(0 0 40px rgba(168, 85, 247, 0.5))'
+          filter: 'drop-shadow(0 0 60px rgba(168, 85, 247, 0.6))'
         }}>
-          <Img src={${logoUrl}} style={{ width: 200, height: 'auto', maxHeight: 120, objectFit: 'contain' }} />
-        </div>
-        {/* Brand Name */}
-        <div style={{ opacity: entryOpacity, transform: \`translateY(\${(1 - entryProgress) * 20}px)\` }}>
-          <LogoWithGlow brandName="${productName}" fontSize={64} delay={10} />
-        </div>` : `<LogoWithGlow brandName="${productName}" fontSize={80} delay={5} />`}
+          <Img src={${logoUrl}} style={{ width: 500, height: 'auto', maxHeight: 300, objectFit: 'contain' }} />
+        </div>` : `<LogoWithGlow brandName="${productName}" fontSize={120} delay={5} />`}
       </AbsoluteFill>
     </AbsoluteFill>
   );

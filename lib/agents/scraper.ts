@@ -488,6 +488,17 @@ async function analyzeScreenshotForDesign(screenshotPath: string): Promise<{
 }> {
   console.log("[Scraper] Analyzing screenshot with Kimi Vision...");
 
+  // Check if OpenRouter API key is configured
+  if (!process.env.OPENROUTER_API_KEY) {
+    console.log("[Scraper] OpenRouter API key not configured, skipping screenshot analysis");
+    return {
+      designInsights: "",
+      colorPalette: [],
+      layoutStyle: "centered",
+      visualMood: "professional",
+    };
+  }
+
   const prompt = `Analyze this website screenshot for video production:
 
 1. DESIGN STYLE: What visual style does this website use? (minimal, bold, corporate, playful, tech, etc.)

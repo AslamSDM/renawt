@@ -16,6 +16,15 @@ const nextConfig: NextConfig = {
         hostname: "pub-d842b814c7c64f5caefc4f21e1f4ef6b.r2.dev",
         pathname: "/**",
       },
+      // Allow all hostnames for scraped logos and images
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "**",
+      },
     ],
   },
 
