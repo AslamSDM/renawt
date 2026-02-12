@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import Image from "next/image";
-import { Loader2, GripVertical, Check, X, Plus, Trash2, Sparkles } from "lucide-react";
+import { Loader2, GripVertical, Check, X, Upload, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 interface ScreenshotData {
@@ -24,22 +24,32 @@ interface ScreenshotSelectorProps {
   screenshots: ScreenshotData[];
   logos?: { url: string; source: string; confidence: number }[];
   onSelectionChange: (selected: ScreenshotData[]) => void;
-  onAddMore: () => void;
+  onUpload?: (screenshots: ScreenshotData[]) => void;
   isAnalyzing?: boolean;
+  projectId?: string;
 }
 
 export const ScreenshotSelector: React.FC<ScreenshotSelectorProps> = ({
   screenshots,
   logos = [],
   onSelectionChange,
-  onAddMore,
+  onUpload,
   isAnalyzing = false,
+  projectId,
 }) => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     new Set(screenshots.map((s) => s.name))
   );
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [orderedScreenshots, setOrderedScreenshots] = useState(screenshots);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync orderedScreenshots when screenshots prop changes (e.g. after upload)
+  React.useEffect(() => {
+    setOrderedScreenshots(screenshots);
+    setSelectedIds(new Set(screenshots.map((s) => s.name)));
+  }, [screenshots]);
 
   const toggleSelection = useCallback((name: string) => {
     setSelectedIds((prev) => {
@@ -49,11 +59,11 @@ export const ScreenshotSelector: React.FC<ScreenshotSelectorProps> = ({
       } else {
         next.add(name);
       }
-      
+
       // Notify parent of changes
       const selected = orderedScreenshots.filter((s) => next.has(s.name));
       onSelectionChange(selected);
-      
+
       return next;
     });
   }, [orderedScreenshots, onSelectionChange]);
@@ -68,12 +78,12 @@ export const ScreenshotSelector: React.FC<ScreenshotSelectorProps> = ({
       const newOrder = [...orderedScreenshots];
       const draggedIndex = newOrder.findIndex((s) => s.name === draggedItem);
       const targetIndex = newOrder.findIndex((s) => s.name === targetName);
-      
+
       if (draggedIndex !== -1 && targetIndex !== -1) {
         const [removed] = newOrder.splice(draggedIndex, 1);
         newOrder.splice(targetIndex, 0, removed);
         setOrderedScreenshots(newOrder);
-        
+
         // Update selection with new order
         const selected = newOrder.filter((s) => selectedIds.has(s.name));
         onSelectionChange(selected);
@@ -83,6 +93,43 @@ export const ScreenshotSelector: React.FC<ScreenshotSelectorProps> = ({
 
   const handleDragEnd = () => {
     setDraggedItem(null);
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !onUpload) return;
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      for (let i = 0; i < files.length; i++) {
+        formData.append("image", files[i]);
+      }
+      formData.append("projectId", projectId || "creative-session");
+      formData.append("section", "uploaded");
+
+      const res = await fetch("/api/screenshots", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const data = await res.json();
+      if (data.screenshots?.length) {
+        onUpload(data.screenshots);
+      }
+    } catch (err) {
+      console.error("[ScreenshotSelector] Upload failed:", err);
+    } finally {
+      setIsUploading(false);
+      // Reset input so the same file can be re-selected
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
   };
 
   return (
@@ -123,16 +170,37 @@ export const ScreenshotSelector: React.FC<ScreenshotSelectorProps> = ({
           <h4 className="text-sm font-medium text-white">
             Screenshots ({selectedIds.size}/{orderedScreenshots.length} selected)
           </h4>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onAddMore}
-            className="flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Capture More
-          </Button>
+          <div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleFileSelect}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              className="flex items-center gap-2"
+            >
+              {isUploading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Upload className="w-4 h-4" />
+              )}
+              {isUploading ? "Uploading..." : "Upload Screenshot"}
+            </Button>
+          </div>
         </div>
+
+        {orderedScreenshots.length === 0 && !isUploading && (
+          <div className="text-center py-8 text-white/40 text-sm">
+            No screenshots yet. Upload product screenshots to include in your video.
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {orderedScreenshots.map((screenshot) => {
@@ -176,7 +244,7 @@ export const ScreenshotSelector: React.FC<ScreenshotSelectorProps> = ({
                     fill
                     className="object-cover"
                   />
-                  
+
                   {/* Section Badge */}
                   <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/70 rounded text-xs text-white capitalize">
                     {screenshot.section}
@@ -192,7 +260,7 @@ export const ScreenshotSelector: React.FC<ScreenshotSelectorProps> = ({
                   {screenshot.analysis ? (
                     <div className="space-y-2 text-xs text-white/60">
                       <p className="line-clamp-2">{screenshot.analysis.description}</p>
-                      
+
                       {screenshot.analysis.suggestedCaptions.length > 0 && (
                         <div className="pt-2 border-t border-white/10">
                           <p className="font-medium text-white/80 mb-1">Suggested captions:</p>
@@ -220,11 +288,12 @@ export const ScreenshotSelector: React.FC<ScreenshotSelectorProps> = ({
       </div>
 
       {/* Tips */}
-      <div className="text-xs text-white/50 space-y-1">
-        <p>💡 Drag screenshots to reorder them</p>
-        <p>💡 Click the checkmark to select/deselect</p>
-        <p>💡 AI analysis helps generate better video scripts</p>
-      </div>
+      {orderedScreenshots.length > 0 && (
+        <div className="text-xs text-white/50 space-y-1">
+          <p>Drag screenshots to reorder them</p>
+          <p>Click the checkmark to select/deselect</p>
+        </div>
+      )}
     </div>
   );
 };

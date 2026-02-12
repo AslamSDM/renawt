@@ -27,19 +27,19 @@ export async function POST(request: NextRequest) {
         } = body;
 
         if (!message || !remotionCode) {
-          send("error", { errors: ["Message and remotionCode are required"] });
+          send("error", { errors: ["Message and video composition are required"] });
           controller.close();
           return;
         }
 
         send("status", { step: "editing", message: "Analyzing your request..." });
 
-        // Step 1: Apply chat-based edits to the Remotion code
-        const editPrompt = `You are a Remotion video editor. The user wants to modify their video via chat.
+        // Step 1: Apply chat-based edits to the video composition
+        const editPrompt = `You are a video editor. The user wants to modify their video via chat.
 
 USER REQUEST: "${message}"
 
-CURRENT REMOTION CODE:
+CURRENT VIDEO COMPOSITION:
 \`\`\`tsx
 ${remotionCode}
 \`\`\`
@@ -49,10 +49,10 @@ ${JSON.stringify(videoScript, null, 2)}
 
 INSTRUCTIONS:
 1. Analyze the user's request and determine what changes to make
-2. Modify the Remotion code to implement the requested changes
+2. Modify the video composition to implement the requested changes
 3. Keep all existing imports, types, and helper functions
 4. Only change what's necessary to fulfill the request
-5. Ensure the code remains valid TypeScript/React
+5. Ensure the composition remains valid TypeScript/React
 6. Maintain the same structure: imports → components → scenes → composition
 
 COMMON EDITS:
@@ -64,10 +64,10 @@ COMMON EDITS:
 - "add background" → Add gradient/aurora backgrounds
 - "change music" → Just acknowledge (music is handled separately)
 
-Return ONLY the complete modified Remotion code as a TypeScript code block.
+Return ONLY the complete modified video composition as a TypeScript code block.
 Do not include explanations or markdown outside the code block.`;
 
-        send("status", { step: "generating", message: "Applying edits to video code..." });
+        send("status", { step: "generating", message: "Applying your edits..." });
 
         const editResponse = await chatWithKimi([{ role: "user", content: editPrompt }], {
           temperature: 0.3,
@@ -82,7 +82,7 @@ Do not include explanations or markdown outside the code block.`;
           editedCode = codeBlockMatch[1].trim();
         }
 
-        send("status", { step: "validating", message: "Validating code..." });
+        send("status", { step: "validating", message: "Validating composition..." });
 
         // Step 2: Validate and fix syntax errors
         const { code: validatedCode, issues } = validateAndFixCode(editedCode);
@@ -100,7 +100,7 @@ Do not include explanations or markdown outside the code block.`;
           send("status", { step: "fixing", message: "Fixing syntax errors..." });
 
           // Try to fix with LLM
-          const fixPrompt = `Fix these syntax errors in the Remotion code:
+          const fixPrompt = `Fix these syntax errors in the video composition:
 
 ERRORS:
 ${syntaxErrors.join("\n")}
@@ -132,7 +132,7 @@ Return ONLY the fixed code. Ensure it's valid TypeScript/React with no syntax er
         }
 
         send("remotionCode", finalCode);
-        send("status", { step: "complete", message: "Code updated successfully!" });
+        send("status", { step: "complete", message: "Video composition updated!" });
         send("complete", { success: true });
 
       } catch (error) {

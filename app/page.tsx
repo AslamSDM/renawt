@@ -71,9 +71,9 @@ const FEATURES = [
     image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800&q=80"
   },
   {
-    title: "Remotion Engine",
-    subtitle: "Pro Rendering",
-    description: "Professional-grade rendering with React-based animation system",
+    title: "Pro Rendering",
+    subtitle: "Studio Quality",
+    description: "Professional-grade video rendering with smooth animations and transitions",
     image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=800&q=80"
   },
   {
@@ -145,7 +145,7 @@ export default function LandingPage() {
             </div>
             <div className="text-sm tracking-widest text-gray-500 uppercase mt-4 md:mt-0 text-right">
               <span className="block">Est. 2024</span>
-              <span className="block">Remotion Powered</span>
+              <span className="block">AI Powered</span>
             </div>
           </div>
 
@@ -178,9 +178,8 @@ export default function LandingPage() {
 
           {/* Description */}
           <p className="max-w-xl text-gray-500 leading-relaxed mb-12">
-            The world&apos;s first AI-powered video generation platform combining 
-            Remotion engine with intelligent scripting. Transform your ideas 
-            into professional motion graphics, product launches, and explainer content.
+            The world&apos;s first AI-powered video generation platform with intelligent scripting.
+            Transform your ideas into professional motion graphics, product launches, and explainer content.
           </p>
 
           {/* CTA */}

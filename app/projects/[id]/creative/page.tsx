@@ -30,7 +30,7 @@ import {
   ArrowLeft, Save, Edit2, Clock
 } from "lucide-react";
 import { CursorTracker, detectZoomPoints } from "@/lib/recording/cursorTracker";
-import { CursorPreview, cursorStyleInfo } from "@/components/cursor/CursorPreview";
+
 import { ScreenshotSelector } from "@/components/screenshot/ScreenshotSelector";
 
 // Load Google Fonts
@@ -431,7 +431,6 @@ export default function ProjectCreativePage() {
   const [scrapedScreenshots, setScrapedScreenshots] = useState<any[]>([]);
   const [extractedLogos, setExtractedLogos] = useState<any[]>([]);
   const [selectedScreenshots, setSelectedScreenshots] = useState<any[]>([]);
-  const [showScreenshotSelector, setShowScreenshotSelector] = useState(false);
   const [isAnalyzingScreenshots, setIsAnalyzingScreenshots] = useState(false);
 
   const [scriptChatInput, setScriptChatInput] = useState("");
@@ -439,7 +438,6 @@ export default function ProjectCreativePage() {
   const [scriptChatHistory, setScriptChatHistory] = useState<Array<{ role: "user" | "assistant"; text: string }>>([]);
 
   // Post-render editing states
-  const [isEditingVideo, setIsEditingVideo] = useState(false);
   const [videoEditInput, setVideoEditInput] = useState("");
   const [videoEditLoading, setVideoEditLoading] = useState(false);
   const [videoEditHistory, setVideoEditHistory] = useState<Array<{ role: "user" | "assistant"; text: string }>>([]);
@@ -757,7 +755,6 @@ export default function ProjectCreativePage() {
                 if (event.data.screenshots?.length > 0) {
                   setScrapedScreenshots(event.data.screenshots);
                   setSelectedScreenshots(event.data.screenshots); // Default select all
-                  setShowScreenshotSelector(true);
                   addLog(`${event.data.screenshots.length} screenshots captured`, "success");
                 }
 
@@ -780,7 +777,7 @@ export default function ProjectCreativePage() {
                 break;
               case "remotionCode":
                 setRemotionCode(event.data);
-                addLog("Remotion code generated", "success");
+                addLog("Video composition ready", "success");
                 break;
               case "videoUrl":
                 setRenderedVideoUrl(event.data);
@@ -816,7 +813,7 @@ export default function ProjectCreativePage() {
     setScript(editableScript);
     setGenerationProgress(0);
     setGenerationStatus("Initializing video generation...");
-    addLog("Starting code generation and rendering...");
+    addLog("Starting video production...");
 
     try {
       const response = await fetch("/api/creative/continue", {
@@ -865,7 +862,7 @@ export default function ProjectCreativePage() {
                 const message = (event.data.message || event.data.step || "").toLowerCase();
                 if (message.includes("generating code") || message.includes("creating")) {
                   setGenerationProgress(25);
-                  setGenerationStatus("Generating code...");
+                  setGenerationStatus("Preparing video composition...");
                 } else if (message.includes("rendering") || message.includes("processing")) {
                   setGenerationProgress(60);
                   setGenerationStatus("Rendering video...");
@@ -878,8 +875,8 @@ export default function ProjectCreativePage() {
                 setRemotionCode(event.data);
                 await saveProject({ composition: event.data, status: "GENERATING" });
                 setGenerationProgress(50);
-                setGenerationStatus("Code generated, preparing to render...");
-                addLog("Remotion code generated", "success");
+                setGenerationStatus("Composition ready, rendering video...");
+                addLog("Video composition ready", "success");
                 break;
               case "videoUrl":
                 setRenderedVideoUrl(event.data);
@@ -915,6 +912,107 @@ export default function ProjectCreativePage() {
     }
   }, [editableScript, productData, style, videoType, duration, selectedAudio, recordings, projectId]);
 
+  // Re-render video after editing
+  const handleReRender = useCallback(async () => {
+    if (!remotionCode) return;
+
+    setLoading(true);
+    setGenerationProgress(0);
+    setGenerationStatus("Applying changes and re-rendering...");
+    addLog("Updating video with your changes...");
+
+    try {
+      const response = await fetch("/api/creative/render", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          remotionCode,
+          projectId,
+          audio: selectedAudio ? { url: selectedAudio.url, bpm: selectedAudio.bpm, duration: selectedAudio.duration } : undefined,
+          durationInFrames: editableScript?.totalDuration || 300,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Re-render API request failed");
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No response body");
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const event = JSON.parse(line);
+            switch (event.type) {
+              case "status":
+                setGenerationStatus(event.data.message || "Rendering...");
+                if (event.data.progress) setGenerationProgress(event.data.progress);
+                break;
+              case "videoUrl":
+                const newVideoUrl = event.data;
+                setRenderedVideoUrl(newVideoUrl);
+                setRenderVersion(Date.now());
+                await saveProject({ audioUrl: newVideoUrl, status: "READY" });
+
+                const newVersion: VideoVersion = {
+                  id: `v-${Date.now()}`,
+                  versionNumber: versions.length + 1,
+                  timestamp: Date.now(),
+                  editMessage: videoEditHistory[videoEditHistory.length - 1]?.text || "Manual re-render",
+                  remotionCode: remotionCode || "",
+                  videoUrl: newVideoUrl,
+                  isActive: true,
+                };
+
+                const updatedVersions = versions.map(v => ({ ...v, isActive: false }));
+                updatedVersions.push(newVersion);
+                setVersions(updatedVersions);
+                setCurrentVersionId(newVersion.id);
+
+                await saveProject({ versions: updatedVersions });
+
+                try {
+                  await fetch("/api/versions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ projectId, versions: updatedVersions }),
+                  });
+                } catch (err) {
+                  console.warn("Failed to save versions to R2:", err);
+                }
+
+                setGenerationProgress(100);
+                setGenerationStatus("Re-render complete!");
+                addLog("Video re-rendered successfully!", "success");
+                break;
+              case "error":
+                setError(event.data.errors?.join(", ") || "Unknown error");
+                addLog(event.data.errors?.[0] || "Render error occurred", "error");
+                break;
+            }
+          } catch (e) {
+            console.warn("Failed to parse event:", line);
+          }
+        }
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setError(message);
+      addLog(message, "error");
+    } finally {
+      setLoading(false);
+    }
+  }, [remotionCode, projectId, selectedAudio, editableScript, versions, videoEditHistory]);
+
   // Post-render video editing via chat
   const handleVideoEdit = useCallback(async () => {
     if (!videoEditInput.trim() || !remotionCode || videoEditLoading) return;
@@ -922,7 +1020,6 @@ export default function ProjectCreativePage() {
     const message = videoEditInput.trim();
     setVideoEditInput("");
     setVideoEditLoading(true);
-    setIsEditingVideo(true);
     setEditProgress(10);
     setEditStatus("Analyzing edit request...");
     setVideoEditHistory(prev => [...prev, { role: "user", text: message }]);
@@ -991,8 +1088,8 @@ export default function ProjectCreativePage() {
                 break;
               case "complete":
                 if (event.data.success && newRemotionCode) {
-                  setVideoEditHistory(prev => [...prev, { role: "assistant", text: "Video code updated! Click 'Re-render Video' to apply changes." }]);
-                  addLog("Video code edited successfully", "success");
+                  setVideoEditHistory(prev => [...prev, { role: "assistant", text: "Applying changes and re-rendering..." }]);
+                  addLog("Changes applied, updating video...", "success");
                 } else {
                   setVideoEditHistory(prev => [...prev, { role: "assistant", text: "Edit completed with issues. Please try a different request." }]);
                 }
@@ -1003,6 +1100,10 @@ export default function ProjectCreativePage() {
           }
         }
       }
+      // Auto-render after successful edit
+      if (newRemotionCode) {
+        setTimeout(() => handleReRender(), 500);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       setError(message);
@@ -1010,9 +1111,8 @@ export default function ProjectCreativePage() {
       setVideoEditHistory(prev => [...prev, { role: "assistant", text: `Error: ${message}` }]);
     } finally {
       setVideoEditLoading(false);
-      setIsEditingVideo(false);
     }
-  }, [videoEditInput, remotionCode, editableScript, productData, style, videoType, duration, selectedAudio, recordings, projectId, videoEditLoading]);
+  }, [videoEditInput, remotionCode, editableScript, productData, style, videoType, duration, selectedAudio, recordings, projectId, videoEditLoading, handleReRender]);
 
   // Switch to a specific version
   const switchToVersion = useCallback(async (version: VideoVersion) => {
@@ -1038,114 +1138,9 @@ export default function ProjectCreativePage() {
     addLog(`Switched to version ${version.versionNumber}`, "success");
   }, [versions]);
 
-  // Re-render video after editing
-  const handleReRender = useCallback(async () => {
-    if (!remotionCode) return;
-
-    setLoading(true);
-    setGenerationProgress(0);
-    setGenerationStatus("Re-rendering video with edits...");
-    addLog("Starting re-render with edited code...");
-
-    try {
-      const response = await fetch("/api/creative/render", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          remotionCode,
-          projectId,
-          audio: selectedAudio ? { url: selectedAudio.url, bpm: selectedAudio.bpm, duration: selectedAudio.duration } : undefined,
-          durationInFrames: editableScript?.totalDuration || 300,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Re-render API request failed");
-
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error("No response body");
-
-      const decoder = new TextDecoder();
-      let buffer = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          try {
-            const event = JSON.parse(line);
-            switch (event.type) {
-              case "status":
-                setGenerationStatus(event.data.message || "Rendering...");
-                if (event.data.progress) setGenerationProgress(event.data.progress);
-                break;
-              case "videoUrl":
-                const newVideoUrl = event.data;
-                setRenderedVideoUrl(newVideoUrl);
-                setRenderVersion(Date.now()); // Force video element to reload
-                await saveProject({ audioUrl: newVideoUrl, status: "READY" });
-                
-                // Save as new version
-                const newVersion: VideoVersion = {
-                  id: `v-${Date.now()}`,
-                  versionNumber: versions.length + 1,
-                  timestamp: Date.now(),
-                  editMessage: videoEditHistory[videoEditHistory.length - 1]?.text || "Manual re-render",
-                  remotionCode: remotionCode || "",
-                  videoUrl: newVideoUrl,
-                  isActive: true,
-                };
-                
-                // Mark previous version as inactive
-                const updatedVersions = versions.map(v => ({ ...v, isActive: false }));
-                updatedVersions.push(newVersion);
-                setVersions(updatedVersions);
-                setCurrentVersionId(newVersion.id);
-                
-                // Save versions to project
-                await saveProject({ versions: updatedVersions });
-                
-                // Also save versions to R2 for persistence
-                try {
-                  await fetch("/api/versions", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ projectId, versions: updatedVersions }),
-                  });
-                } catch (err) {
-                  console.warn("Failed to save versions to R2:", err);
-                }
-                
-                setGenerationProgress(100);
-                setGenerationStatus("Re-render complete!");
-                addLog("Video re-rendered successfully!", "success");
-                break;
-              case "error":
-                setError(event.data.errors?.join(", ") || "Unknown error");
-                addLog(event.data.errors?.[0] || "Render error occurred", "error");
-                break;
-            }
-          } catch (e) {
-            console.warn("Failed to parse event:", line);
-          }
-        }
-      }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      setError(message);
-      addLog(message, "error");
-    } finally {
-      setLoading(false);
-    }
-  }, [remotionCode, projectId, selectedAudio, editableScript, versions, videoEditHistory]);
-
   const handleRender = async () => {
     if (!remotionCode) {
-      setError("No Remotion code available. Generate first!");
+      setError("No video composition available. Generate a video first!");
       return;
     }
     setRendering(true);
@@ -1975,33 +1970,30 @@ export default function ProjectCreativePage() {
                 )}
 
                 {/* Screenshot & Logo Selection */}
-                {scrapedScreenshots.length > 0 && (
-                  <div className="mb-8 bg-white/5 border border-white/10 rounded-xl p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-medium text-white flex items-center gap-2">
-                        <ImageIcon className="w-5 h-5 text-purple-400" />
-                        Select Screenshots
-                      </h3>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShowScreenshotSelector(!showScreenshotSelector)}
-                      >
-                        {showScreenshotSelector ? "Hide" : "Show"} Selector
-                      </Button>
-                    </div>
-
-                    {showScreenshotSelector && (
-                      <ScreenshotSelector
-                        screenshots={scrapedScreenshots}
-                        logos={extractedLogos}
-                        onSelectionChange={setSelectedScreenshots}
-                        onAddMore={() => addLog("Capture more screenshots coming soon!", "info")}
-                        isAnalyzing={isAnalyzingScreenshots}
-                      />
-                    )}
+                <div className="mb-8 bg-white/5 border border-white/10 rounded-xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium text-white flex items-center gap-2">
+                      <ImageIcon className="w-5 h-5 text-purple-400" />
+                      Screenshots
+                    </h3>
                   </div>
-                )}
+
+                  <ScreenshotSelector
+                    screenshots={scrapedScreenshots}
+                    logos={extractedLogos}
+                    onSelectionChange={setSelectedScreenshots}
+                    onUpload={(uploaded) => {
+                      setScrapedScreenshots((prev) => [...prev, ...uploaded]);
+                      setSelectedScreenshots((prev) => [...prev, ...uploaded]);
+                      setProductData((prev: any) => ({
+                        ...prev,
+                        screenshots: [...(prev?.screenshots || []), ...uploaded],
+                      }));
+                    }}
+                    isAnalyzing={isAnalyzingScreenshots}
+                    projectId={projectId}
+                  />
+                </div>
 
                 {/* Scenes Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2209,7 +2201,7 @@ export default function ProjectCreativePage() {
 
             {renderedVideoUrl ? (
               <div className="grid lg:grid-cols-3 gap-8">
-                {/* Video Preview - Takes up 2 columns */}
+                {/* Video Preview + Edit Chat - Takes up 2 columns */}
                 <div className="lg:col-span-2 space-y-6">
                   <div className="aspect-video bg-black rounded-xl overflow-hidden border border-white/10">
                     <video
@@ -2231,34 +2223,20 @@ export default function ProjectCreativePage() {
                       </a>
                     </Button>
 
-                    {remotionCode && (
-                      <Button
-                        variant="outline"
-                        size="lg"
-                        className="rounded-lg"
-                        onClick={() => setIsEditingVideo(!isEditingVideo)}
-                      >
-                        <Edit2 className="w-5 h-5" />
-                        <span className="ml-2">{isEditingVideo ? "Hide Editor" : "Edit Video"}</span>
-                      </Button>
-                    )}
-
                     <Button variant="outline" size="lg" className="rounded-lg" onClick={() => router.push('/projects')}>
                       Back to Projects
                     </Button>
                   </div>
 
                   {/* Edit Progress */}
-                  {isEditingVideo && editProgress > 0 && editProgress < 100 && (
+                  {editProgress > 0 && editProgress < 100 && (
                     <div className="bg-white/5 border border-white/10 rounded-lg p-4">
                       <ProgressBar progress={editProgress} status={editStatus} />
                     </div>
                   )}
-                </div>
 
-                {/* Edit Chat Interface - Takes up 1 column */}
-                {isEditingVideo && (
-                  <div className="space-y-4">
+                  {/* Edit Chat - Always visible */}
+                  {remotionCode && (
                     <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                       <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
                         <Edit2 className="w-5 h-5" />
@@ -2296,132 +2274,125 @@ export default function ProjectCreativePage() {
                           className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm resize-none"
                           disabled={videoEditLoading}
                         />
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={handleVideoEdit}
-                            disabled={videoEditLoading || !videoEditInput.trim()}
-                            className="flex-1"
-                          >
-                            {videoEditLoading ? (
-                              <span className="flex items-center gap-2">
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                Editing...
-                              </span>
-                            ) : (
-                              <span className="flex items-center gap-2">
-                                <Send className="w-4 h-4" />
-                                Apply Edit
-                              </span>
-                            )}
-                          </Button>
-
-                          {remotionCode && editProgress === 100 && !videoEditLoading && (
-                            <Button
-                              onClick={handleReRender}
-                              disabled={loading}
-                              variant="outline"
-                            >
-                              {loading ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <span className="flex items-center gap-2">
-                                  <Video className="w-4 h-4" />
-                                  Re-render
-                                </span>
-                              )}
-                            </Button>
+                        <Button
+                          onClick={handleVideoEdit}
+                          disabled={videoEditLoading || !videoEditInput.trim()}
+                          className="w-full"
+                        >
+                          {videoEditLoading ? (
+                            <span className="flex items-center gap-2">
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Editing...
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-2">
+                              <Send className="w-4 h-4" />
+                              Apply Edit
+                            </span>
                           )}
-                        </div>
+                        </Button>
                       </div>
-                    </div>
 
-                    {/* Quick Edit Suggestions */}
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                      <h4 className="text-sm font-medium mb-3 text-gray-400">Quick Edits</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {[
-                          "Make it faster",
-                          "Change colors to blue",
-                          "Add more zoom",
-                          "Make text bigger",
-                          "Add background effects",
-                          "Slow down intro"
-                        ].map((suggestion) => (
-                          <button
-                            key={suggestion}
-                            onClick={() => setVideoEditInput(suggestion)}
-                            className="px-3 py-1.5 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-colors"
-                          >
-                            {suggestion}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Version History Sidebar */}
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-sm font-medium flex items-center gap-2">
-                          <Clock className="w-4 h-4" />
-                          Version History
-                        </h4>
-                        <span className="text-xs text-gray-500">{versions.length} version{versions.length !== 1 ? 's' : ''}</span>
-                      </div>
-                      
-                      {versions.length === 0 ? (
-                        <p className="text-sm text-gray-500 text-center py-4">No versions yet. Edit and re-render to create versions.</p>
-                      ) : (
-                        <div className="space-y-2 max-h-80 overflow-y-auto">
-                          {[...versions].reverse().map((version) => (
-                            <div
-                              key={version.id}
-                              className={`p-3 rounded-lg border transition-all cursor-pointer ${
-                                version.id === currentVersionId
-                                  ? 'bg-purple-500/20 border-purple-500/50'
-                                  : 'bg-white/5 border-white/10 hover:bg-white/10'
-                              }`}
-                              onClick={() => switchToVersion(version)}
+                      {/* Quick Edit Suggestions */}
+                      <div className="mt-4 pt-4 border-t border-white/10">
+                        <h4 className="text-sm font-medium mb-3 text-gray-400">Quick Edits</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            "Make it faster",
+                            "Change colors to blue",
+                            "Add more zoom",
+                            "Make text bigger",
+                            "Add background effects",
+                            "Slow down intro"
+                          ].map((suggestion) => (
+                            <button
+                              key={suggestion}
+                              onClick={() => setVideoEditInput(suggestion)}
+                              className="px-3 py-1.5 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-colors"
                             >
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm font-medium">
-                                  Version {version.versionNumber}
-                                  {version.id === currentVersionId && (
-                                    <span className="ml-2 text-xs text-purple-400">(current)</span>
-                                  )}
-                                </span>
-                                <span className="text-xs text-gray-500">
-                                  {new Date(version.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                                </span>
-                              </div>
-                              <p className="text-xs text-gray-400 truncate">{version.editMessage}</p>
-                              {version.videoUrl && (
-                                <div className="mt-2 flex gap-2">
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      switchToVersion(version);
-                                    }}
-                                    className="text-xs px-2 py-1 bg-white/10 hover:bg-white/20 rounded transition-colors"
-                                  >
-                                    View
-                                  </button>
-                                  <a
-                                    href={version.videoUrl}
-                                    download
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="text-xs px-2 py-1 bg-white/10 hover:bg-white/20 rounded transition-colors"
-                                  >
-                                    Download
-                                  </a>
-                                </div>
-                              )}
-                            </div>
+                              {suggestion}
+                            </button>
                           ))}
                         </div>
-                      )}
+                      </div>
                     </div>
+                  )}
+                </div>
+
+                {/* Version History Sidebar - Always visible */}
+                <div className="space-y-4">
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-sm font-medium flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        Version History
+                      </h4>
+                      <span className="text-xs text-gray-500">{versions.length} version{versions.length !== 1 ? 's' : ''}</span>
+                    </div>
+
+                    {versions.length === 0 ? (
+                      <p className="text-sm text-gray-500 text-center py-4">No versions yet. Edit the video to create versions.</p>
+                    ) : (
+                      <div className="space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto">
+                        {[...versions].reverse().map((version) => (
+                          <div
+                            key={version.id}
+                            className={`p-3 rounded-lg border transition-all ${
+                              version.id === currentVersionId
+                                ? 'bg-purple-500/20 border-purple-500/50'
+                                : 'bg-white/5 border-white/10 hover:bg-white/10'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-sm font-medium">
+                                Version {version.versionNumber}
+                                {version.id === currentVersionId && (
+                                  <span className="ml-2 text-xs text-purple-400">(current)</span>
+                                )}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {new Date(version.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-400 truncate mb-2">{version.editMessage}</p>
+
+                            {/* Inline video player */}
+                            {version.videoUrl && (
+                              <div className="mb-2 rounded overflow-hidden border border-white/10">
+                                <video
+                                  src={version.videoUrl}
+                                  controls
+                                  preload="metadata"
+                                  className="w-full aspect-video bg-black"
+                                />
+                              </div>
+                            )}
+
+                            {version.videoUrl && (
+                              <div className="flex gap-2">
+                                {version.id !== currentVersionId && (
+                                  <button
+                                    onClick={() => switchToVersion(version)}
+                                    className="text-xs px-2 py-1 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 rounded transition-colors"
+                                  >
+                                    Use this version
+                                  </button>
+                                )}
+                                <a
+                                  href={version.videoUrl}
+                                  download
+                                  className="text-xs px-2 py-1 bg-white/10 hover:bg-white/20 rounded transition-colors"
+                                >
+                                  Download
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             ) : (
               <div className="text-center py-24">
@@ -2477,57 +2448,6 @@ export default function ProjectCreativePage() {
                   </div>
                 </div>
 
-                {/* Cursor Style Selector in Edit Mode */}
-                <div>
-                  <label className="block text-xs tracking-widest text-gray-500 uppercase mb-3">Cursor Style</label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {[
-                      { value: "hand", label: "👆 Hand", desc: "Pointing" },
-                      { value: "normal", label: "🖱️ Normal", desc: "Arrow" },
-                    ].map((cursor) => (
-                      <button
-                        key={cursor.value}
-                        onClick={() => setEditCursorStyle(cursor.value as any)}
-                        className={`flex flex-col items-center gap-1 p-3 rounded-lg border transition-all ${
-                          editCursorStyle === cursor.value
-                            ? "bg-white/10 border-white/30 text-white"
-                            : "bg-white/5 border-white/10 text-gray-400 hover:border-white/20"
-                        }`}
-                      >
-                        <span className="text-lg">{cursor.label.split(" ")[0]}</span>
-                        <span className="text-xs font-medium">{cursor.label.split(" ")[1]}</span>
-                        <span className="text-[10px] text-gray-500">{cursor.desc}</span>
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Cursor Preview in Edit Mode */}
-                  <div className="mt-4 p-4 bg-white/5 rounded-lg border border-white/10">
-                    <label className="text-xs text-gray-500 mb-2 block">Preview</label>
-                    <div className="flex items-center gap-4">
-                      <div className="flex-1">
-                        <CursorPreview
-                          cursorStyle={editCursorStyle}
-                          size="lg"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <CursorPreview
-                          cursorStyle={editCursorStyle}
-                          isClick={true}
-                          size="lg"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex justify-between text-xs text-gray-500 mt-2 px-2">
-                      <span>Normal</span>
-                      <span>Clicking</span>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-gray-500 mt-2">Click animations: Multi-ripple rings on click</p>
-                </div>
-
                 <Button onClick={handleSaveRecordingEdit} className="w-full rounded-lg" size="lg">
                   Save Recording
                 </Button>
@@ -2571,56 +2491,6 @@ export default function ProjectCreativePage() {
                       </button>
                     </div>
 
-                    {/* Cursor Style Selector */}
-                    <div className="mb-6">
-                      <label className="block text-xs tracking-widest text-gray-500 uppercase mb-3">Cursor Style</label>
-                      <div className="grid grid-cols-4 gap-2">
-                        {[
-                          { value: "hand", label: "👆 Hand", desc: "Pointing" },
-                          { value: "normal", label: "🖱️ Normal", desc: "Arrow" },
-                        ].map((cursor) => (
-                          <button
-                            key={cursor.value}
-                            onClick={() => setEditCursorStyle(cursor.value as any)}
-                            className={`flex flex-col items-center gap-1 p-3 rounded-lg border transition-all ${
-                              editCursorStyle === cursor.value
-                                ? "bg-white/10 border-white/30 text-white"
-                                : "bg-white/5 border-white/10 text-gray-400 hover:border-white/20"
-                            }`}
-                          >
-                            <span className="text-lg">{cursor.label.split(" ")[0]}</span>
-                            <span className="text-xs font-medium">{cursor.label.split(" ")[1]}</span>
-                            <span className="text-[10px] text-gray-500">{cursor.desc}</span>
-                          </button>
-                        ))}
-                      </div>
-
-                      {/* Cursor Preview */}
-                      <div className="mt-4 p-4 bg-white/5 rounded-lg border border-white/10">
-                        <label className="text-xs text-gray-500 mb-2 block">Preview</label>
-                        <div className="flex items-center gap-4">
-                          <div className="flex-1">
-                            <CursorPreview
-                              cursorStyle={editCursorStyle}
-                              size="lg"
-                            />
-                          </div>
-                          <div className="flex-1">
-                            <CursorPreview
-                              cursorStyle={editCursorStyle}
-                              isClick={true}
-                              size="lg"
-                            />
-                          </div>
-                        </div>
-                        <div className="flex justify-between text-xs text-gray-500 mt-2 px-2">
-                          <span>Normal</span>
-                          <span>Clicking</span>
-                        </div>
-                      </div>
-
-                      <p className="text-xs text-gray-500 mt-2">Click animations: Multi-ripple rings on click</p>
-                    </div>
                   </>
                 )}
 

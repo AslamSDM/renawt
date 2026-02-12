@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
         const { remotionCode, projectId, audio, durationInFrames } = body;
 
         if (!remotionCode) {
-          send("error", { errors: ["Remotion code is required"] });
+          send("error", { errors: ["Video composition is required"] });
           controller.close();
           return;
         }

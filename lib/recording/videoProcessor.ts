@@ -141,14 +141,16 @@ class VideoProcessor {
       console.log(`[VideoProcessor] Downloading ${job.videoUrl}...`);
       const response = await fetch(job.videoUrl);
       if (!response.ok) {
-        throw new Error(`Download failed: ${response.status}`);
+        throw new Error(`Download failed: ${response.status} ${response.statusText}`);
       }
       const buffer = await response.arrayBuffer();
       await writeFile(tempVideoPath, Buffer.from(buffer));
+      const downloadSize = buffer.byteLength;
+      console.log(`[VideoProcessor] Downloaded to ${tempVideoPath} (${(downloadSize / 1024 / 1024).toFixed(2)} MB)`);
       job.progress = 20;
 
       // 2. Call Python CV service /process endpoint
-      console.log(`[VideoProcessor] Calling CV service /process...`);
+      console.log(`[VideoProcessor] Calling CV service at ${CV_SERVICE_URL}/process with cursor_style=${job.cursorStyle}, ${job.cursorData.length} cursor points, ${job.zoomPoints.length} zoom points`);
       const processResponse = await fetch(`${CV_SERVICE_URL}/process`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -167,12 +169,12 @@ class VideoProcessor {
       }
 
       const result = await processResponse.json();
-      console.log(`[VideoProcessor] CV processing done: ${result.message}`);
+      console.log(`[VideoProcessor] CV processing done: ${result.message || JSON.stringify(result)}`);
       job.progress = 70;
 
       // 3. Upload processed video to R2
-      console.log(`[VideoProcessor] Uploading processed video to R2...`);
       const processedBuffer = await readFile(tempOutputPath);
+      console.log(`[VideoProcessor] Uploading processed video to R2 (${(processedBuffer.byteLength / 1024 / 1024).toFixed(2)} MB)...`);
       const r2Key = `recordings/${job.projectId}/${job.recordingId}_processed.mp4`;
       const r2Client = getR2Client();
 
@@ -198,7 +200,8 @@ class VideoProcessor {
       job.completedAt = new Date();
       job.progress = 100;
 
-      console.log(`[VideoProcessor] Complete: ${processedUrl}`);
+      const elapsed = ((job.completedAt.getTime() - (job.startedAt?.getTime() || 0)) / 1000).toFixed(1);
+      console.log(`[VideoProcessor] Complete: ${processedUrl} (${elapsed}s elapsed)`);
     } finally {
       // Clean up temp files
       for (const f of [tempVideoPath, tempOutputPath]) {
