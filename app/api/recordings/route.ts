@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { cvProcessor } from "@/lib/recording/cvProcessor";
+import { videoProcessor } from "@/lib/recording/videoProcessor";
 
 // R2 Configuration
 const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
@@ -75,19 +76,27 @@ export async function POST(request: NextRequest) {
     // For creative sessions (no real project), skip DB persistence
     // The recording data lives in client-side React state
     if (effectiveProjectId === "creative-session") {
-      // Trigger CV cursor detection for external recordings (where JS tracking wasn't available)
-      // This processes the video to detect cursor positions using computer vision
-      cvProcessor.addJob(recordingId, videoUrl, effectiveProjectId).catch(err => {
-        console.warn("[API] CV processing failed to start:", err);
-        // Non-blocking: recording still succeeds even if CV processing fails
-      });
+      const parsedCursorData = cursorData ? JSON.parse(cursorData) : [];
+      const parsedZoomPoints = zoomPoints ? JSON.parse(zoomPoints) : [];
+
+      if (parsedCursorData.length > 0) {
+        // JS-tracked cursor data available — go straight to video processing
+        videoProcessor
+          .processRecording(recordingId, videoUrl, parsedCursorData, parsedZoomPoints, cursorStyle || "hand", effectiveProjectId)
+          .catch((err) => console.warn("[API] Video processing failed to start:", err));
+      } else {
+        // No cursor data — run CV detection first (which chains to video processing)
+        cvProcessor.addJob(recordingId, videoUrl, effectiveProjectId).catch((err) => {
+          console.warn("[API] CV processing failed to start:", err);
+        });
+      }
 
       return NextResponse.json({
         success: true,
         recordingId,
         videoUrl,
         processingStatus: "pending",
-        message: "Upload complete. CV cursor detection processing in background.",
+        message: "Upload complete. Video processing in background.",
       });
     }
 
@@ -117,14 +126,46 @@ export async function POST(request: NextRequest) {
         trimEnd: 0,
         featureName,
         description: description || "",
-        cursorStyle: cursorStyle || "hand"
+        cursorStyle: cursorStyle || "hand",
+        processingStatus: "pending",
       }
     });
+
+    // Queue video processing in background
+    const parsedCursorData = cursorData ? JSON.parse(cursorData) : [];
+    const parsedZoomPoints = zoomPoints ? JSON.parse(zoomPoints) : [];
+
+    if (parsedCursorData.length > 0) {
+      // JS-tracked cursor data available — go straight to video processing
+      videoProcessor
+        .processRecording(recording.id, videoUrl, parsedCursorData, parsedZoomPoints, cursorStyle || "hand", effectiveProjectId)
+        .then(async (processedUrl) => {
+          if (processedUrl) {
+            await prisma.screenRecording.update({
+              where: { id: recording.id },
+              data: { processedVideoUrl: processedUrl, processingStatus: "complete" },
+            });
+          }
+        })
+        .catch((err) => {
+          console.warn("[API] Video processing failed:", err);
+          prisma.screenRecording.update({
+            where: { id: recording.id },
+            data: { processingStatus: "failed" },
+          }).catch(() => {});
+        });
+    } else {
+      // No cursor data — run CV detection first (which chains to video processing)
+      cvProcessor.addJob(recording.id, videoUrl, effectiveProjectId).catch((err) => {
+        console.warn("[API] CV processing failed to start:", err);
+      });
+    }
 
     return NextResponse.json({
       success: true,
       recordingId: recording.id,
-      videoUrl: recording.videoUrl
+      videoUrl: recording.videoUrl,
+      processingStatus: "pending",
     });
 
   } catch (error) {

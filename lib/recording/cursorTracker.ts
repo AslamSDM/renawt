@@ -200,10 +200,14 @@ export function detectZoomPoints(events: CursorEvent[]): Array<{
 
       if (hasRapidMovement) continue;
 
+      // Normalize coordinates to 0-1 range
+      // Use window dimensions in browser, fallback to 1920x1080 on server
+      const viewW = typeof window !== "undefined" ? window.innerWidth : 1920;
+      const viewH = typeof window !== "undefined" ? window.innerHeight : 1080;
       zooms.push({
         time: event.timestamp / 1000, // Convert to seconds
-        x: event.x / window.innerWidth, // Normalize to 0-1
-        y: event.y / window.innerHeight,
+        x: event.x / viewW,
+        y: event.y / viewH,
         scale: 1.5,
         duration: 2 // 2 seconds
       });

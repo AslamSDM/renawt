@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Separator } from "@/components/ui/separator";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 
 const TYPING_TEXTS = [
   "motion graphics",
@@ -117,7 +119,6 @@ const VIDEO_TYPES = [
 
 export default function LandingPage() {
   const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
   return (
@@ -130,48 +131,8 @@ export default function LandingPage() {
         }}
       />
 
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-40 px-6 py-6 flex items-center justify-between">
-        <Link href="/" className="text-xl font-light tracking-[0.2em] uppercase">
-          Remawt
-        </Link>
-        
-        <div className="hidden md:flex items-center gap-8 text-sm tracking-wider">
-          <Link href="/creative" className="hover:text-gray-400 transition-colors uppercase">Studio</Link>
-          <Link href="/pricing" className="hover:text-gray-400 transition-colors uppercase">Pricing</Link>
-          <button 
-            onClick={() => router.push('/creative')}
-            className="px-6 py-2 border border-white hover:bg-white hover:text-black transition-all uppercase text-xs tracking-widest"
-          >
-            Start
-          </button>
-        </div>
-
-        <button 
-          className="md:hidden"
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
-          {menuOpen ? (
-            <img src="https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=32&h=32&fit=crop" alt="Close" className="w-6 h-6 invert" />
-          ) : (
-            <img src="https://images.unsplash.com/photo-1611532736381-143b08317b74?w=32&h=32&fit=crop" alt="Menu" className="w-6 h-6 invert" />
-          )}
-        </button>
-      </nav>
-
-      {/* Mobile Menu */}
-      {menuOpen && (
-        <div className="fixed inset-0 bg-black z-30 flex flex-col items-center justify-center gap-8 md:hidden">
-          <Link href="/creative" className="text-2xl tracking-wider uppercase" onClick={() => setMenuOpen(false)}>Studio</Link>
-          <Link href="/pricing" className="text-2xl tracking-wider uppercase" onClick={() => setMenuOpen(false)}>Pricing</Link>
-          <button 
-            onClick={() => {router.push('/creative'); setMenuOpen(false);}}
-            className="px-8 py-3 border border-white text-lg tracking-wider uppercase"
-          >
-            Start Creating
-          </button>
-        </div>
-      )}
+      {/* Navigation with Logo */}
+      <Navbar transparent={true} />
 
       {/* Hero Section - Bruegel Style */}
       <section className="min-h-screen flex flex-col justify-center px-6 md:px-12 pt-24">
@@ -225,7 +186,7 @@ export default function LandingPage() {
           {/* CTA */}
           <div className="flex flex-col sm:flex-row gap-4">
             <button 
-              onClick={() => router.push('/creative')}
+              onClick={() => router.push('/projects')}
               className="group flex items-center gap-4 text-lg tracking-wider uppercase hover:text-gray-400 transition-colors"
             >
               <span>Start Creating</span>
@@ -243,7 +204,7 @@ export default function LandingPage() {
               <div 
                 key={i} 
                 className="bg-[#0a0a0a] p-8 group hover:bg-white/5 transition-colors cursor-pointer"
-                onClick={() => router.push('/creative')}
+                onClick={() => router.push('/projects')}
               >
                 <div className="aspect-[4/5] mb-6 overflow-hidden">
                   <img 
@@ -378,7 +339,7 @@ export default function LandingPage() {
             No experience required.
           </p>
           <button 
-            onClick={() => router.push('/creative')}
+            onClick={() => router.push('/projects')}
             className="px-12 py-4 border border-white text-lg tracking-wider uppercase hover:bg-white hover:text-black transition-all"
           >
             Start For Free
@@ -386,33 +347,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer - Minimal */}
-      <footer className="py-12 px-6 md:px-12 border-t border-white/10">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-            <div>
-              <h4 className="text-lg font-light tracking-[0.2em] uppercase mb-2">Remawt</h4>
-              <p className="text-xs text-gray-600 tracking-wider">AI-Powered Video Production</p>
-            </div>
-            
-            <div className="flex gap-8 text-xs tracking-wider text-gray-600">
-              <Link href="/creative" className="hover:text-white transition-colors uppercase">Studio</Link>
-              <Link href="/pricing" className="hover:text-white transition-colors uppercase">Pricing</Link>
-              <span className="hover:text-white transition-colors cursor-pointer uppercase">About</span>
-              <span className="hover:text-white transition-colors cursor-pointer uppercase">Privacy</span>
-            </div>
-          </div>
-          
-          <div className="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-xs text-gray-700 tracking-wider">
-              © 2024 REMAWT. ALL RIGHTS RESERVED.
-            </p>
-            <p className="text-xs text-gray-700 tracking-wider">
-              POWERED BY REMOTION
-            </p>
-          </div>
-        </div>
-      </footer>
+      {/* Footer with Logo */}
+      <Footer />
     </div>
   );
 }

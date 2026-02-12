@@ -42,6 +42,9 @@ export async function PATCH(
 
     const updateData: Record<string, unknown> = {};
 
+    if (body.name !== undefined) {
+      updateData.name = body.name;
+    }
     if (body.productData !== undefined) {
       updateData.productData = JSON.stringify(body.productData);
     }

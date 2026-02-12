@@ -5,6 +5,7 @@
 
 import { detectCursorWithCV, checkCVServiceHealth } from "@/lib/agents/cvCursorBridge";
 import { detectZoomPoints } from "@/lib/recording/cursorTracker";
+import { videoProcessor } from "@/lib/recording/videoProcessor";
 import { writeFile, mkdir, readFile, unlink } from "fs/promises";
 import { existsSync } from "fs";
 import { join } from "path";
@@ -217,6 +218,37 @@ class CVProcessor {
       console.log(
         `[CV Processor] ✓ Completed ${job.recordingId}: ${cursorData.length} cursors, ${zoomPoints.length} zooms`
       );
+
+      // Chain: queue for video processing (cursor replacement + zoom bake-in)
+      if (cursorData.length > 0) {
+        console.log(`[CV Processor] Chaining video processing for ${job.recordingId}...`);
+        videoProcessor
+          .processRecording(
+            job.recordingId,
+            job.videoUrl,
+            cursorData,
+            zoomPoints,
+            "normal", // CV-detected recordings use normal cursor
+            job.projectId
+          )
+          .then(async (processedUrl) => {
+            if (processedUrl) {
+              // Update DB if this is a persisted recording
+              try {
+                const { prisma } = await import("@/lib/db/prisma");
+                await prisma.screenRecording.update({
+                  where: { id: job.recordingId },
+                  data: { processedVideoUrl: processedUrl, processingStatus: "complete" },
+                });
+              } catch {
+                // May not be a DB-persisted recording (creative-session), that's fine
+              }
+            }
+          })
+          .catch((err) => {
+            console.warn(`[CV Processor] Video processing chain failed:`, err);
+          });
+      }
 
       // Clean up temp video
       try {

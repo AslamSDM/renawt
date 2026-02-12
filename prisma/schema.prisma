@@ -10,6 +10,7 @@ datasource db {
 model Project {
   id          String   @id @default(cuid())
   userId      String?
+  name        String?
   sourceUrl   String?
   description String?
   productData String?
@@ -25,21 +26,23 @@ model Project {
 }
 
 model ScreenRecording {
-  id            String   @id @default(cuid())
-  projectId     String
-  videoUrl      String
-  duration      Float
-  cursorData    String   // JSON: [{x, y, timestamp, type: "move"|"click"|"input"}]
-  trimStart     Float    @default(0)     // Trim in seconds
-  trimEnd       Float    @default(0)     // 0 = no trim (use full duration)
-  zoomPoints    String   // JSON: [{time, x, y, scale, duration}]
-  featureName   String
-  description   String
-  cursorStyle   String   @default("mac") // mac, windows
-  createdAt     DateTime @default(now())
-  
-  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  
+  id                String   @id @default(cuid())
+  projectId         String
+  videoUrl          String
+  duration          Float
+  cursorData        String   // JSON: [{x, y, timestamp, type: "move"|"click"|"input"}]
+  trimStart         Float    @default(0)     // Trim in seconds
+  trimEnd           Float    @default(0)     // 0 = no trim (use full duration)
+  zoomPoints        String   // JSON: [{time, x, y, scale, duration}]
+  featureName       String
+  description       String
+  cursorStyle       String   @default("mac") // mac, windows
+  processedVideoUrl String?  // URL of processed video (cursor replaced, zooms baked in)
+  processingStatus  String   @default("pending") // pending | processing | complete | failed
+  createdAt         DateTime @default(now())
+
+  project           Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
   @@index([projectId])
 }
 

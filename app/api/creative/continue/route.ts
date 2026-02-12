@@ -1,14 +1,15 @@
 /**
- * CONTINUE GENERATION API - Runs pipeline from approved script onward
+ * CONTINUE GENERATION API - Project-Based with Persistence
  *
  * POST /api/creative/continue
- * Body: { videoScript, productData, userPreferences, recordings? }
+ * Body: { videoScript, productData, userPreferences, projectId, recordings? }
  *
- * Runs: reactPageGenerator → remotionTranslator → videoRenderer (with error fix loop)
- * Returns: Streaming events for each pipeline stage
+ * Runs: reactPageGenerator → remotionTranslator → videoRenderer
+ * Returns: Streaming events and persists composition and videoUrl to database
  */
 
 import { NextRequest } from "next/server";
+import { prisma } from "@/lib/db/prisma";
 import { reactPageGeneratorNode } from "@/lib/agents/reactPageGenerator";
 import { remotionTranslatorNode } from "@/lib/agents/remotionTranslator";
 import { videoRendererNode } from "@/lib/agents/videoRenderer";
@@ -19,7 +20,7 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
-  console.log("[ContinueAPI] Starting from approved script...");
+  console.log("[ContinueAPI] Starting from approved script with persistence...");
 
   try {
     const body = await request.json();
@@ -28,7 +29,15 @@ export async function POST(request: NextRequest) {
       productData,
       userPreferences = { style: "professional" },
       recordings,
+      projectId,
     } = body;
+
+    if (!projectId) {
+      return new Response(
+        JSON.stringify({ error: "projectId is required" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
 
     if (!videoScript) {
       return new Response(
@@ -37,22 +46,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Update project status to GENERATING
+    await prisma.project.update({
+      where: { id: projectId },
+      data: { status: "GENERATING" },
+    });
+
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
         let closed = false;
         const send = (type: string, data: any) => {
           if (closed) return;
-          controller.enqueue(
-            encoder.encode(JSON.stringify({ type, data }) + "\n"),
-          );
+          controller.enqueue(encoder.encode(JSON.stringify({ type, data }) + "\n"));
         };
         const close = () => {
           if (!closed) { closed = true; controller.close(); }
         };
 
         try {
-          // Build initial state
           let state: Partial<VideoGenerationStateType> = {
             sourceUrl: null,
             description: null,
@@ -64,7 +76,7 @@ export async function POST(request: NextRequest) {
             remotionCode: null,
             currentStep: "generating",
             errors: [],
-            projectId: null,
+            projectId,
             renderAttempts: 0,
             lastRenderError: null,
             videoUrl: null,
@@ -82,6 +94,10 @@ export async function POST(request: NextRequest) {
 
           if (state.currentStep === "error") {
             send("error", { errors: state.errors });
+            await prisma.project.update({
+              where: { id: projectId },
+              data: { status: "DRAFT" },
+            });
             close();
             return;
           }
@@ -94,10 +110,28 @@ export async function POST(request: NextRequest) {
           if (translatorResult.remotionCode) {
             send("remotionCode", translatorResult.remotionCode);
             send("status", { step: "translating", message: "Remotion code generated" });
+            
+            // Persist composition to database
+            try {
+              await prisma.project.update({
+                where: { id: projectId },
+                data: { 
+                  composition: translatorResult.remotionCode,
+                  status: "GENERATING",
+                },
+              });
+              console.log("[ContinueAPI] Saved composition to database");
+            } catch (dbError) {
+              console.error("[ContinueAPI] Failed to save composition:", dbError);
+            }
           }
 
           if (state.currentStep === "error") {
             send("error", { errors: state.errors });
+            await prisma.project.update({
+              where: { id: projectId },
+              data: { status: "DRAFT" },
+            });
             close();
             return;
           }
@@ -117,6 +151,20 @@ export async function POST(request: NextRequest) {
             if (state.videoUrl) {
               send("videoUrl", state.videoUrl);
               send("status", { step: "complete", message: "Video rendered!" });
+              
+              // Persist video URL to database
+              try {
+                await prisma.project.update({
+                  where: { id: projectId },
+                  data: { 
+                    audioUrl: state.videoUrl,
+                    status: "READY",
+                  },
+                });
+                console.log("[ContinueAPI] Saved video URL to database");
+              } catch (dbError) {
+                console.error("[ContinueAPI] Failed to save video URL:", dbError);
+              }
               break;
             }
 
@@ -126,9 +174,23 @@ export async function POST(request: NextRequest) {
               state = { ...state, ...fixResult };
               if (fixResult.remotionCode) {
                 send("remotionCode", fixResult.remotionCode);
+                
+                // Update composition after fix
+                try {
+                  await prisma.project.update({
+                    where: { id: projectId },
+                    data: { composition: fixResult.remotionCode },
+                  });
+                } catch (dbError) {
+                  console.error("[ContinueAPI] Failed to update composition:", dbError);
+                }
               }
             } else if (state.currentStep === "error") {
               send("error", { errors: state.errors });
+              await prisma.project.update({
+                where: { id: projectId },
+                data: { status: "DRAFT" },
+              });
               break;
             }
           }
@@ -139,6 +201,16 @@ export async function POST(request: NextRequest) {
           send("error", {
             errors: [error instanceof Error ? error.message : "Unknown error"],
           });
+          
+          // Reset project status on error
+          try {
+            await prisma.project.update({
+              where: { id: projectId },
+              data: { status: "DRAFT" },
+            });
+          } catch (dbError) {
+            console.error("[ContinueAPI] Failed to reset project status:", dbError);
+          }
         } finally {
           close();
         }
@@ -162,4 +234,24 @@ export async function POST(request: NextRequest) {
       { status: 500, headers: { "Content-Type": "application/json" } },
     );
   }
+}
+
+// GET for testing
+export async function GET() {
+  return new Response(
+    JSON.stringify({
+      endpoint: "/api/creative/continue",
+      method: "POST",
+      body: {
+        projectId: "string (required) - Project ID to save data to",
+        videoScript: "object (required) - The approved video script",
+        productData: "object (optional) - Product data from scraper",
+        userPreferences: "object (optional) - Style, duration, etc.",
+        recordings: "array (optional) - Screen recordings data",
+      },
+      returns: "Streaming events: remotionCode, videoUrl, status, error, complete",
+      persistence: "Composition and video URL are automatically saved to the project",
+    }),
+    { headers: { "Content-Type": "application/json" } },
+  );
 }

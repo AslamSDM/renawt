@@ -1,34 +1,49 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cvProcessor } from "@/lib/recording/cvProcessor";
+import { videoProcessor } from "@/lib/recording/videoProcessor";
+import { prisma } from "@/lib/db/prisma";
 
 /**
  * GET /api/recordings/[id]/status
- * Get CV processing status for a recording
+ * Get processing status for a recording (checks in-memory queues + DB)
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const recordingId = params.id;
+    const { id: recordingId } = await params;
 
-    // Check in-memory queue first
-    const job = cvProcessor.getJobStatus(recordingId);
+    // Check in-memory video processing status
+    const videoJob = videoProcessor.getJobStatus(recordingId);
+    const processedVideoUrl = videoProcessor.getProcessedVideoUrl(recordingId);
 
-    if (job) {
+    // Check in-memory CV detection status
+    const cvJob = cvProcessor.getJobStatus(recordingId);
+
+    if (cvJob || videoJob) {
       return NextResponse.json({
         recordingId,
-        status: job.status,
-        progress: job.progress || 0,
-        cursorCount: job.cursorData?.length || 0,
-        zoomPointCount: job.zoomPoints?.length || 0,
-        error: job.error,
-        startedAt: job.startedAt?.toISOString(),
-        completedAt: job.completedAt?.toISOString(),
+        cvStatus: cvJob?.status || "complete",
+        cvProgress: cvJob?.progress || 100,
+        cursorCount: cvJob?.cursorData?.length || 0,
+        zoomPointCount: cvJob?.zoomPoints?.length || 0,
+        videoStatus: videoJob?.status || "not_started",
+        videoProgress: videoJob?.progress || 0,
+        processedVideoUrl: processedVideoUrl || null,
+        status: videoJob?.status === "complete"
+          ? "complete"
+          : videoJob?.status || cvJob?.status || "pending",
+        progress: videoJob
+          ? Math.round((cvJob?.progress || 100) * 0.4 + (videoJob.progress || 0) * 0.6)
+          : cvJob?.progress || 0,
+        error: videoJob?.error || cvJob?.error,
+        startedAt: cvJob?.startedAt?.toISOString(),
+        completedAt: videoJob?.completedAt?.toISOString() || cvJob?.completedAt?.toISOString(),
       });
     }
 
-    // Check if we have saved data from a previous run
+    // Check if we have saved data from a previous CV run
     const savedData = await cvProcessor.loadSavedData(recordingId);
     if (savedData) {
       return NextResponse.json({
@@ -37,11 +52,38 @@ export async function GET(
         progress: 100,
         cursorCount: savedData.cursorData.length,
         zoomPointCount: savedData.zoomPoints.length,
+        processedVideoUrl: processedVideoUrl || null,
         source: savedData.source,
       });
     }
 
-    // Recording not found in queue or saved data
+    // Check the database as last resort (recording may have been processed before server restart)
+    try {
+      const dbRecording = await prisma.screenRecording.findUnique({
+        where: { id: recordingId },
+        select: { processedVideoUrl: true, processingStatus: true },
+      });
+      if (dbRecording?.processedVideoUrl) {
+        return NextResponse.json({
+          recordingId,
+          status: "complete",
+          progress: 100,
+          processedVideoUrl: dbRecording.processedVideoUrl,
+        });
+      }
+      if (dbRecording?.processingStatus === "complete") {
+        return NextResponse.json({
+          recordingId,
+          status: "complete",
+          progress: 100,
+          processedVideoUrl: null,
+        });
+      }
+    } catch {
+      // DB lookup failed, continue to not_found
+    }
+
+    // Recording not found in any source
     return NextResponse.json({
       recordingId,
       status: "not_found",
@@ -63,10 +105,10 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const recordingId = params.id;
+    const { id: recordingId } = await params;
     const { searchParams } = new URL(request.url);
     const action = searchParams.get("action");
 

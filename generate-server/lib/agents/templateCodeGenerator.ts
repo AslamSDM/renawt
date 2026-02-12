@@ -24,7 +24,7 @@ function getSceneType(
   return "feature";
 }
 
-function generateSceneComponent(scene: VideoScene, index: number, totalScenes: number, recordings?: Array<{ id: string; videoUrl: string; zoomPoints?: Array<{ time: number; x: number; y: number; scale: number; duration: number }> }>): string {
+function generateSceneComponent(scene: VideoScene, index: number, totalScenes: number, recordings?: Array<{ id: string; videoUrl: string; processedVideoUrl?: string; zoomPoints?: Array<{ time: number; x: number; y: number; scale: number; duration: number }> }>): string {
   const sceneType = getSceneType(scene);
   const headline = scene.content.headline || "";
   const subtext = scene.content.subtext || "";
@@ -110,7 +110,7 @@ const ${componentName}: React.FC = () => {
 };`;
   }
 
-  // Screenshot scene - show product UI in a glass card
+  // Screenshot scene - show product UI with 3D perspective
   if (sceneType === "screenshot" && scene.content.image) {
     const imgUrl = scene.content.image;
     const isR2 = imgUrl.startsWith("http");
@@ -119,6 +119,18 @@ const ${componentName}: React.FC = () => {
 const ${componentName}: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  // 3D entry animation
+  const entryProgress = spring({ frame, fps, config: { damping: 18, stiffness: 80 } });
+  const rotY = interpolate(entryProgress, [0, 1], [-15, 5], { extrapolateRight: 'clamp' });
+  const rotX = interpolate(entryProgress, [0, 1], [8, 3], { extrapolateRight: 'clamp' });
+  const entryScale = interpolate(entryProgress, [0, 1], [0.85, 1], { extrapolateRight: 'clamp' });
+  const entryOpacity = interpolate(frame, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
+  // Subtle continuous floating tilt
+  const floatY = Math.sin(frame * 0.03) * 2;
+  const floatX = Math.cos(frame * 0.02) * 1.5;
+  // Dynamic shadow based on tilt
+  const shadowX = -(rotY + floatY) * 1.5;
+  const shadowY = (rotX + floatX) * 2 + 25;
   return (
     <AbsoluteFill style={{
       display: 'flex',
@@ -138,27 +150,44 @@ const ${componentName}: React.FC = () => {
           delay={0}
           staggerFrames={4}
         />` : ""}
-        <WhiteGlassCard delay={${headlineWords.length > 0 ? 10 : 0}} maxWidth={900} entryAnimation="perspective" padding={16}>
-          <Img src={${imgSrc}} style={{
-            width: '100%',
-            height: 'auto',
-            maxHeight: 500,
-            objectFit: 'cover',
-            borderRadius: 12,
-          }} />
-        </WhiteGlassCard>
+        <div style={{ perspective: '1200px', perspectiveOrigin: 'center center' }}>
+          <div style={{
+            transform: \`rotateY(\${rotY + floatY}deg) rotateX(\${rotX + floatX}deg) scale(\${entryScale})\`,
+            transformStyle: 'preserve-3d',
+            opacity: entryOpacity,
+            borderRadius: 20,
+            overflow: 'hidden',
+            boxShadow: \`\${shadowX}px \${shadowY}px 60px rgba(0,0,0,0.4)\`,
+          }}>
+            <Img src={${imgSrc}} style={{
+              width: '100%',
+              height: 'auto',
+              maxWidth: 900,
+              maxHeight: 500,
+              objectFit: 'cover',
+              borderRadius: 20,
+              display: 'block',
+            }} />
+          </div>
+        </div>
       </div>
     </AbsoluteFill>
   );
 };`;
   }
 
-  // Recording scene - play back screen recording with mockup frame on aurora background
+  // Recording scene - play back screen recording with 3D mockup on aurora background
   if (sceneType === "recording") {
-    const videoUrl = (scene.content as any).recordingVideoUrl || "";
+    const recordingId = (scene.content as any).recordingId || "";
     const featureName = (scene.content as any).featureName || headline;
     const mockupFrame = (scene.content as any).mockupFrame || "minimal";
-    const recordingId = (scene.content as any).recordingId || "";
+
+    // Look up recording — prefer processedVideoUrl (cursor/zoom baked in)
+    const recording = recordings?.find(r => r.id === recordingId);
+    const hasProcessedVideo = !!(recording?.processedVideoUrl);
+    const videoUrl = hasProcessedVideo
+      ? recording!.processedVideoUrl!
+      : ((scene.content as any).recordingVideoUrl || "");
     const isR2Video = videoUrl.startsWith("http");
     const videoSrc = isR2Video ? `"${videoUrl}"` : `staticFile("${videoUrl.replace(/^\//, "")}")`;
 
@@ -176,61 +205,77 @@ const ${componentName}: React.FC = () => {
       mockupClose = `</MinimalMockup>`;
     }
 
-    // Look up zoom points from recordings
-    const recording = recordings?.find(r => r.id === recordingId);
-    const zoomPoints = recording?.zoomPoints || [];
-
-    // Generate zoom interpolation code
+    // Only generate zoom interpolation if we DON'T have a processed video (zoom is already baked in)
     let zoomCode = "";
     let videoStyle = `style={{ width: '100%', height: '100%', objectFit: 'cover' }}`;
-    if (zoomPoints.length > 0) {
-      const zoomInputFrames = [0];
-      const zoomScaleValues = [1];
-      const zoomXValues = [0];
-      const zoomYValues = [0];
-      for (const zp of zoomPoints) {
-        const startFrame = Math.round(zp.time * 30);
-        const endFrame = Math.round((zp.time + zp.duration) * 30);
-        zoomInputFrames.push(startFrame);
-        zoomScaleValues.push(1);
-        zoomXValues.push(0);
-        zoomYValues.push(0);
-        zoomInputFrames.push(startFrame + 15);
-        zoomScaleValues.push(zp.scale);
-        zoomXValues.push(-(zp.x - 0.5) * 100 * (zp.scale - 1));
-        zoomYValues.push(-(zp.y - 0.5) * 100 * (zp.scale - 1));
-        zoomInputFrames.push(endFrame - 15);
-        zoomScaleValues.push(zp.scale);
-        zoomXValues.push(-(zp.x - 0.5) * 100 * (zp.scale - 1));
-        zoomYValues.push(-(zp.y - 0.5) * 100 * (zp.scale - 1));
-        zoomInputFrames.push(endFrame);
-        zoomScaleValues.push(1);
-        zoomXValues.push(0);
-        zoomYValues.push(0);
-      }
-      zoomCode = `
+    if (!hasProcessedVideo) {
+      const zoomPoints = recording?.zoomPoints || [];
+      if (zoomPoints.length > 0) {
+        const zoomInputFrames = [0];
+        const zoomScaleValues = [1];
+        const zoomXValues = [0];
+        const zoomYValues = [0];
+        for (const zp of zoomPoints) {
+          const startFrame = Math.round(zp.time * 30);
+          const endFrame = Math.round((zp.time + zp.duration) * 30);
+          zoomInputFrames.push(startFrame);
+          zoomScaleValues.push(1);
+          zoomXValues.push(0);
+          zoomYValues.push(0);
+          zoomInputFrames.push(startFrame + 15);
+          zoomScaleValues.push(zp.scale);
+          zoomXValues.push(-(zp.x - 0.5) * 100 * (zp.scale - 1));
+          zoomYValues.push(-(zp.y - 0.5) * 100 * (zp.scale - 1));
+          zoomInputFrames.push(endFrame - 15);
+          zoomScaleValues.push(zp.scale);
+          zoomXValues.push(-(zp.x - 0.5) * 100 * (zp.scale - 1));
+          zoomYValues.push(-(zp.y - 0.5) * 100 * (zp.scale - 1));
+          zoomInputFrames.push(endFrame);
+          zoomScaleValues.push(1);
+          zoomXValues.push(0);
+          zoomYValues.push(0);
+        }
+        zoomCode = `
   const zoomScale = interpolate(frame, ${JSON.stringify(zoomInputFrames)}, ${JSON.stringify(zoomScaleValues.map(v => Math.round(v * 100) / 100))}, { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   const zoomX = interpolate(frame, ${JSON.stringify(zoomInputFrames)}, ${JSON.stringify(zoomXValues.map(v => Math.round(v * 10) / 10))}, { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   const zoomY = interpolate(frame, ${JSON.stringify(zoomInputFrames)}, ${JSON.stringify(zoomYValues.map(v => Math.round(v * 10) / 10))}, { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });`;
-      videoStyle = "style={{ width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${zoomScale}) translate(${zoomX}%, ${zoomY}%)` }}";
+        videoStyle = "style={{ width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${zoomScale}) translate(${zoomX}%, ${zoomY}%)` }}";
+      }
     }
 
     return `
 const ${componentName}: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
-  // Scale-in animation for the mockup
-  const mockupScale = spring({ frame, fps, from: 0.85, to: 1, config: { damping: 15, stiffness: 100 } });
+  // 3D entry animation — device mockup floats into view at an angle
+  const entryProgress = spring({ frame, fps, config: { damping: 16, stiffness: 70 } });
+  const entryRotX = interpolate(entryProgress, [0, 1], [12, 3], { extrapolateRight: 'clamp' });
+  const entryRotY = interpolate(entryProgress, [0, 1], [-8, 5], { extrapolateRight: 'clamp' });
+  const entryScale = interpolate(entryProgress, [0, 1], [0.8, 1], { extrapolateRight: 'clamp' });
   const mockupOpacity = interpolate(frame, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
+  // Subtle oscillating tilt throughout the scene
+  const floatRotY = Math.sin(frame * 0.02) * 3;
+  const floatRotX = Math.cos(frame * 0.015) * 1.5;
+  // Dynamic shadow that shifts with perspective
+  const shadowX = -(entryRotY + floatRotY) * 2;
+  const shadowY = (entryRotX + floatRotX) * 2.5 + 30;
   // Label fade in over first 3 seconds, fade out in last 1 second
   const labelOpacity = interpolate(frame, [0, 30, durationInFrames - 30, durationInFrames], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });${zoomCode}
   return (
     <AbsoluteFill style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       <AuroraBackground variant="${auroraVariant}" />
-      <div style={{ position: 'relative', zIndex: 1, width: '85%', maxWidth: 1000, transform: \`scale(\${mockupScale})\`, opacity: mockupOpacity }}>
-        ${mockupOpen}
-          <Video src={${videoSrc}} ${videoStyle} />
-        ${mockupClose}
+      <div style={{ perspective: '1500px', perspectiveOrigin: 'center center', position: 'relative', zIndex: 1, width: '85%', maxWidth: 1000 }}>
+        <div style={{
+          transform: \`rotateX(\${entryRotX + floatRotX}deg) rotateY(\${entryRotY + floatRotY}deg) scale(\${entryScale})\`,
+          transformStyle: 'preserve-3d',
+          opacity: mockupOpacity,
+          boxShadow: \`\${shadowX}px \${shadowY}px 80px rgba(0,0,0,0.5)\`,
+          borderRadius: 16,
+        }}>
+          ${mockupOpen}
+            <Video src={${videoSrc}} ${videoStyle} />
+          ${mockupClose}
+        </div>
       </div>
       <div style={{
         position: 'absolute',
@@ -365,7 +410,7 @@ interface BrandColors {
   accent: string;
 }
 
-function generateFullCode(videoScript: VideoScript, screenshots?: any[], audioUrl?: string, bpm?: number, targetDurationSeconds?: number, brandColors?: BrandColors, recordings?: Array<{ id: string; videoUrl: string; zoomPoints?: Array<{ time: number; x: number; y: number; scale: number; duration: number }> }>): string {
+function generateFullCode(videoScript: VideoScript, screenshots?: any[], audioUrl?: string, bpm?: number, targetDurationSeconds?: number, brandColors?: BrandColors, recordings?: Array<{ id: string; videoUrl: string; processedVideoUrl?: string; zoomPoints?: Array<{ time: number; x: number; y: number; scale: number; duration: number }> }>): string {
   const scenes = videoScript.scenes;
   const effectiveBpm = bpm || 120;
   const framesPerBeat = (60 / effectiveBpm) * 30; // at 30fps

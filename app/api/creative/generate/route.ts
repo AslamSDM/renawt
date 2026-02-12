@@ -1,15 +1,16 @@
 /**
- * CREATIVE GENERATION API - Uses LangGraph Workflow (No DB)
+ * CREATIVE GENERATION API - Project-Based with Persistence
  *
- * Runs the full video generation pipeline without database persistence.
+ * Runs the video generation pipeline and persists data to the database.
  *
  * POST /api/creative/generate
- * Body: { description?: string, url?: string, style?: string, videoType?: string }
+ * Body: { description?: string, url?: string, style?: string, videoType?: string, projectId: string }
  *
  * Returns: Streaming events for each pipeline stage
  */
 
 import { NextRequest } from "next/server";
+import { prisma } from "@/lib/db/prisma";
 import { scraperNode } from "@/lib/agents/scraper";
 import { scriptWriterNode } from "@/lib/agents/scriptWriter";
 import type { VideoGenerationStateType } from "@/lib/agents/state";
@@ -18,7 +19,7 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
-  console.log("[CreativeAPI] Starting LangGraph workflow...");
+  console.log("[CreativeAPI] Starting LangGraph workflow with persistence...");
 
   try {
     const body = await request.json();
@@ -31,7 +32,15 @@ export async function POST(request: NextRequest) {
       duration,
       audio,
       recordings,
+      projectId,
     } = body;
+
+    if (!projectId) {
+      return new Response(
+        JSON.stringify({ error: "projectId is required" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
 
     if (!description && !url) {
       return new Response(
@@ -40,10 +49,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`[CreativeAPI] Generating for: "${description}"`);
-    console.log(`[CreativeAPI] Style: ${style}, Template: ${templateStyle}, VideoType: ${videoType}, Duration: ${duration}s`);
+    console.log(`[CreativeAPI] Generating for project ${projectId}: "${description}"`);
+    console.log(`[CreativeAPI] Style: ${style}, VideoType: ${videoType}, Duration: ${duration}s`);
 
-    // Create a streaming response — runs scraper + scriptWriter only, stops for review
+    // Update project status to GENERATING
+    await prisma.project.update({
+      where: { id: projectId },
+      data: { status: "GENERATING" },
+    });
+
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
@@ -52,7 +66,6 @@ export async function POST(request: NextRequest) {
         };
 
         try {
-          // Build initial state for direct node calls
           let state: Partial<VideoGenerationStateType> = {
             sourceUrl: url || null,
             description: description || null,
@@ -74,7 +87,7 @@ export async function POST(request: NextRequest) {
             remotionCode: null,
             currentStep: "scraping",
             errors: [],
-            projectId: null,
+            projectId,
             renderAttempts: 0,
             lastRenderError: null,
             videoUrl: null,
@@ -87,10 +100,28 @@ export async function POST(request: NextRequest) {
 
           if (state.productData) {
             send("productData", state.productData);
+            
+            // Persist productData to database
+            try {
+              await prisma.project.update({
+                where: { id: projectId },
+                data: { 
+                  productData: JSON.stringify(state.productData),
+                  sourceUrl: url || state.sourceUrl,
+                },
+              });
+              console.log("[CreativeAPI] Saved productData to database");
+            } catch (dbError) {
+              console.error("[CreativeAPI] Failed to save productData:", dbError);
+            }
           }
 
           if (state.currentStep === "error") {
             send("error", { errors: state.errors });
+            await prisma.project.update({
+              where: { id: projectId },
+              data: { status: "DRAFT" },
+            });
             send("complete", { success: false });
             controller.close();
             return;
@@ -103,13 +134,31 @@ export async function POST(request: NextRequest) {
 
           if (state.videoScript) {
             send("videoScript", state.videoScript);
+            
+            // Persist script to database
+            try {
+              await prisma.project.update({
+                where: { id: projectId },
+                data: { 
+                  script: JSON.stringify(state.videoScript),
+                  description: description || state.description,
+                  status: "DRAFT",
+                },
+              });
+              console.log("[CreativeAPI] Saved script to database");
+            } catch (dbError) {
+              console.error("[CreativeAPI] Failed to save script:", dbError);
+            }
           }
 
           if (state.currentStep === "error") {
             send("error", { errors: state.errors });
+            await prisma.project.update({
+              where: { id: projectId },
+              data: { status: "DRAFT" },
+            });
           }
 
-          // Stop here — UI will review and then call /api/creative/continue
           send("complete", { success: true, message: "Script ready for review" });
         } catch (error) {
           console.error("[CreativeAPI] Stream error:", error);
@@ -118,6 +167,12 @@ export async function POST(request: NextRequest) {
               errors: [error instanceof Error ? error.message : "Unknown error"],
             });
             send("complete", { success: false });
+            
+            // Reset project status on error
+            await prisma.project.update({
+              where: { id: projectId },
+              data: { status: "DRAFT" },
+            });
           } catch (sendError) {
             console.error("[CreativeAPI] Failed to send error:", sendError);
           }
@@ -157,24 +212,18 @@ export async function GET() {
       endpoint: "/api/creative/generate",
       method: "POST",
       body: {
+        projectId: "string (required) - Project ID to save data to",
         url: "string (optional) - Product URL to scrape",
         description: "string (optional) - What the video is about (required if no url)",
         style: "string (optional) - professional, playful, minimal, bold",
-        templateStyle: "string (optional) - aurora, floating-glass, blue-clean (auto-mapped from style if not provided)",
+        templateStyle: "string (optional) - aurora, floating-glass, blue-clean",
         videoType: "string (optional) - demo, creative, fast-paced, cinematic",
         duration: "number (optional) - Video length in seconds (10-120)",
         audio: "object (optional) - { url: string, bpm?: number, duration?: number }",
+        recordings: "array (optional) - Screen recordings data",
       },
-      returns:
-        "Streaming events: productData, videoScript, reactPageCode, remotionCode, videoUrl, status, error, complete",
-      workflow: [
-        "scraper: Analyzes input/product",
-        "scriptWriter/demoScriptWriter: Creates video script",
-        "reactPageGenerator: Generates React page component",
-        "remotionTranslator: Converts React to Remotion code",
-        "videoRenderer: Renders video (retries up to 3 times)",
-        "renderErrorFixer: Fixes render errors automatically",
-      ],
+      returns: "Streaming events: productData, videoScript, status, error, complete",
+      persistence: "Product data and script are automatically saved to the project",
     }),
     { headers: { "Content-Type": "application/json" } },
   );

@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
+import React from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import { Check, Menu, X, ArrowRight } from "lucide-react";
 
 const PRICING_PLANS = [
@@ -94,7 +95,6 @@ const FAQS = [
 
 export default function PricingPage() {
   const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-white selection:text-black">
@@ -106,34 +106,8 @@ export default function PricingPage() {
         }}
       />
 
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-40 px-6 py-6 flex items-center justify-between">
-        <Link href="/" className="text-xl font-light tracking-[0.2em] uppercase">
-          Remawt
-        </Link>
-        
-        <div className="hidden md:flex items-center gap-8 text-sm tracking-wider">
-          <Link href="/" className="hover:text-gray-400 transition-colors uppercase">Home</Link>
-          <Link href="/creative" className="hover:text-gray-400 transition-colors uppercase">Studio</Link>
-          <span className="text-gray-400 uppercase">Pricing</span>
-        </div>
-
-        <button 
-          className="md:hidden"
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
-          {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
-      </nav>
-
-      {/* Mobile Menu */}
-      {menuOpen && (
-        <div className="fixed inset-0 bg-black z-30 flex flex-col items-center justify-center gap-8 md:hidden">
-          <Link href="/" className="text-2xl tracking-wider uppercase" onClick={() => setMenuOpen(false)}>Home</Link>
-          <Link href="/creative" className="text-2xl tracking-wider uppercase" onClick={() => setMenuOpen(false)}>Studio</Link>
-          <span className="text-2xl tracking-wider uppercase text-gray-400">Pricing</span>
-        </div>
-      )}
+      {/* Navigation with Logo */}
+      <Navbar />
 
       {/* Hero Section */}
       <section className="pt-32 pb-16 px-6 md:px-12 border-b border-white/10">
@@ -283,7 +257,7 @@ export default function PricingPage() {
             No experience required.
           </p>
           <Button 
-            onClick={() => router.push('/creative')}
+            onClick={() => router.push('/projects')}
             className="px-12 py-4 text-lg tracking-wider uppercase rounded-none"
             size="lg"
           >
@@ -293,32 +267,8 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-white/10 py-12 px-6 md:px-12">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
-            <div>
-              <h4 className="text-lg font-light tracking-[0.2em] uppercase mb-2">Remawt</h4>
-              <p className="text-xs text-gray-600 tracking-wider">AI-Powered Video Production</p>
-            </div>
-            
-            <div className="flex gap-8 text-xs tracking-wider text-gray-600">
-              <Link href="/" className="hover:text-white transition-colors uppercase">Home</Link>
-              <Link href="/creative" className="hover:text-white transition-colors uppercase">Studio</Link>
-              <span className="text-gray-400 uppercase">Pricing</span>
-            </div>
-          </div>
-          
-          <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-xs text-gray-700 tracking-wider">
-              © 2024 REMAWT. ALL RIGHTS RESERVED.
-            </p>
-            <p className="text-xs text-gray-700 tracking-wider">
-              POWERED BY REMOTION
-            </p>
-          </div>
-        </div>
-      </footer>
+      {/* Footer with Logo */}
+      <Footer />
     </div>
   );
 }

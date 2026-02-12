@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
 
     const project = await prisma.project.create({
       data: {
+        name: body.name,
         sourceUrl: body.sourceUrl,
         description: body.description,
         productData: body.productData ? JSON.stringify(body.productData) : null,

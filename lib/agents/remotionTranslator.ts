@@ -484,7 +484,7 @@ Take a React page component and translate it into a Remotion video with the "Pre
 /**
  * Validates and fixes common syntax errors in LLM-generated code
  */
-function validateAndFixCode(code: string): { code: string; issues: string[] } {
+export function validateAndFixCode(code: string): { code: string; issues: string[] } {
   const issues: string[] = [];
   let fixedCode = code;
 
@@ -633,7 +633,7 @@ function validateAndFixCode(code: string): { code: string; issues: string[] } {
 /**
  * Basic TypeScript syntax validation
  */
-function hasBasicSyntaxErrors(code: string): string[] {
+export function hasBasicSyntaxErrors(code: string): string[] {
   const errors: string[] = [];
 
   // Check for balanced braces

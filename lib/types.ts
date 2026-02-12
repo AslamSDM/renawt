@@ -85,6 +85,7 @@ export interface ScreenRecording {
   createdAt: string;
   cursorSource?: "javascript" | "cv_detection";  // Track how cursor was captured
   processingStatus?: "pending" | "processing" | "complete" | "failed";  // For CV processing
+  processedVideoUrl?: string;  // URL of processed video (cursor replaced, zooms baked in)
 }
 
 export interface ProductImage {
