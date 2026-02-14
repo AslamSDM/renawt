@@ -14,14 +14,26 @@ import { prisma } from "@/lib/db/prisma";
 import { scraperNode } from "@/lib/agents/scraper";
 import { scriptWriterNode } from "@/lib/agents/scriptWriter";
 import type { VideoGenerationStateType } from "@/lib/agents/state";
+import { auth } from "@/auth";
+import { checkAndDeductCredits } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
+
+const SCRIPT_GEN_COST = 1;
 
 export async function POST(request: NextRequest) {
   console.log("[CreativeAPI] Starting LangGraph workflow with persistence...");
 
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return new Response(
+        JSON.stringify({ error: "Authentication required" }),
+        { status: 401, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
     const body = await request.json();
     const {
       description,
@@ -47,6 +59,19 @@ export async function POST(request: NextRequest) {
         JSON.stringify({ error: "URL or description is required" }),
         { status: 400, headers: { "Content-Type": "application/json" } },
       );
+    }
+
+    // Check and deduct credits
+    try {
+      await checkAndDeductCredits(session.user.id, SCRIPT_GEN_COST);
+    } catch (e) {
+      if (e instanceof Error && e.message === "INSUFFICIENT_CREDITS") {
+        return new Response(
+          JSON.stringify({ error: "Insufficient credits", required: SCRIPT_GEN_COST, balance: session.user.creditBalance }),
+          { status: 402, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      throw e;
     }
 
     console.log(`[CreativeAPI] Generating for project ${projectId}: "${description}"`);

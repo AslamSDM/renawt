@@ -13,7 +13,7 @@ if (!hasAuthConfig) {
     console.warn("[Auth] Please set AUTH_SECRET, AUTH_GOOGLE_ID, and AUTH_GOOGLE_SECRET in your .env file");
 }
 
-export const { handlers, auth } = NextAuth({
+export const { handlers, auth, signIn, signOut } = NextAuth({
     adapter: PrismaAdapter(prisma),
     secret: process.env.AUTH_SECRET || "fallback-secret-key-for-development-only",
     session: { strategy: "jwt" },
@@ -24,9 +24,41 @@ export const { handlers, auth } = NextAuth({
         }),
     ] : [],
     callbacks: {
+        authorized({ auth, request }) {
+            const isLoggedIn = !!auth?.user;
+            const { pathname } = request.nextUrl;
+            const protectedPaths = ["/projects", "/creative", "/profile"];
+            const isProtected = protectedPaths.some(p => pathname.startsWith(p));
+
+            if (isProtected && !isLoggedIn) {
+                return false; // Redirects to signIn page
+            }
+            return true;
+        },
+        async jwt({ token, user, trigger }) {
+            if (user) {
+                token.id = user.id!;
+            }
+            // Refresh credit balance on every token refresh
+            if (token.sub) {
+                try {
+                    const dbUser = await prisma.user.findUnique({
+                        where: { id: token.sub },
+                        select: { creditBalance: true },
+                    });
+                    if (dbUser) {
+                        token.creditBalance = dbUser.creditBalance;
+                    }
+                } catch {
+                    // DB unavailable — keep stale value
+                }
+            }
+            return token;
+        },
         async session({ session, token }) {
             if (session.user && token.sub) {
                 session.user.id = token.sub;
+                session.user.creditBalance = token.creditBalance ?? 0;
             }
             return session;
         },

@@ -49,6 +49,12 @@ const nextConfig: NextConfig = {
       type: "asset/source",
     });
 
+    // Exclude eg directory from bundling
+    config.watchOptions = {
+      ...config.watchOptions,
+      ignored: [...(config.watchOptions?.ignored || []), "**/eg/**"],
+    };
+
     return config;
   },
 };

@@ -41,7 +41,7 @@ export default function RecordingEditorPage({
   // Editor state
   const [featureName, setFeatureName] = useState("");
   const [description, setDescription] = useState("");
-  const [cursorStyle, setCursorStyle] = useState<"normal" | "hand">("hand");
+  const [cursorStyle, setCursorStyle] = useState<"mac" | "windows">("mac");
   const [trimStart, setTrimStart] = useState(0);
   const [trimEnd, setTrimEnd] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -66,7 +66,7 @@ export default function RecordingEditorPage({
         setZoomPoints(JSON.parse(rec.zoomPoints) as ZoomPoint[]);
         setFeatureName(rec.featureName);
         setDescription(rec.description);
-        setCursorStyle(rec.cursorStyle as "normal" | "hand");
+        setCursorStyle(rec.cursorStyle as "mac" | "windows");
         setTrimStart(rec.trimStart);
         setTrimEnd(rec.trimEnd || rec.duration);
         

@@ -41,5 +41,5 @@ export const POST = async (req: NextRequest) => {
         );
       },
     })(req)
-    : () => NextResponse.json({ error: "Webhook not configured" }, { status: 503 });
+    : NextResponse.json({ error: "Webhook not configured" }, { status: 503 });
 }

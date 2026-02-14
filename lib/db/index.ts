@@ -67,3 +67,17 @@ export async function decreaseCredits(
         },
     });
 }
+
+export async function checkAndDeductCredits(userId: string, amount: number) {
+    return await prisma.$transaction(async (tx) => {
+        const user = await tx.user.findUnique({ where: { id: userId } });
+        if (!user || user.creditBalance < amount) {
+            throw new Error("INSUFFICIENT_CREDITS");
+        }
+        const updated = await tx.user.update({
+            where: { id: userId },
+            data: { creditBalance: { decrement: amount } },
+        });
+        return updated.creditBalance;
+    });
+}

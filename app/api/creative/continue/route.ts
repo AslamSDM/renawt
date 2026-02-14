@@ -15,14 +15,26 @@ import { remotionTranslatorNode } from "@/lib/agents/remotionTranslator";
 import { videoRendererNode } from "@/lib/agents/videoRenderer";
 import { renderErrorFixerNode } from "@/lib/agents/renderErrorFixer";
 import type { VideoGenerationStateType } from "@/lib/agents/state";
+import { auth } from "@/auth";
+import { checkAndDeductCredits } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
+
+const CONTINUE_COST = 4;
 
 export async function POST(request: NextRequest) {
   console.log("[ContinueAPI] Starting from approved script with persistence...");
 
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return new Response(
+        JSON.stringify({ error: "Authentication required" }),
+        { status: 401, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
     const body = await request.json();
     const {
       videoScript,
@@ -44,6 +56,19 @@ export async function POST(request: NextRequest) {
         JSON.stringify({ error: "videoScript is required" }),
         { status: 400, headers: { "Content-Type": "application/json" } },
       );
+    }
+
+    // Check and deduct credits
+    try {
+      await checkAndDeductCredits(session.user.id, CONTINUE_COST);
+    } catch (e) {
+      if (e instanceof Error && e.message === "INSUFFICIENT_CREDITS") {
+        return new Response(
+          JSON.stringify({ error: "Insufficient credits", required: CONTINUE_COST, balance: session.user.creditBalance }),
+          { status: 402, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      throw e;
     }
 
     // Update project status to GENERATING

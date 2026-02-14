@@ -10,9 +10,13 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { chatWithKimi } from "@/lib/agents/model";
+import { auth } from "@/auth";
+import { checkAndDeductCredits } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
+
+const EDIT_SCRIPT_COST = 1;
 
 const EDIT_SCRIPT_SYSTEM_PROMPT = `You are a video script editor. You receive a video script (JSON) and a user's edit instruction.
 Apply the requested changes and return the COMPLETE updated script as valid JSON.
@@ -34,6 +38,24 @@ Return ONLY the updated JSON. No markdown fences, no explanation.`;
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+
+    // Check and deduct credits
+    try {
+      await checkAndDeductCredits(session.user.id, EDIT_SCRIPT_COST);
+    } catch (e) {
+      if (e instanceof Error && e.message === "INSUFFICIENT_CREDITS") {
+        return NextResponse.json(
+          { error: "Insufficient credits", required: EDIT_SCRIPT_COST, balance: session.user.creditBalance },
+          { status: 402 },
+        );
+      }
+      throw e;
+    }
+
     const body = await request.json();
     const { message, videoScript, productData } = body;
 

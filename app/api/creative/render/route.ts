@@ -1,13 +1,38 @@
 import { NextRequest } from "next/server";
 import { renderVideo } from "@/lib/render/ssrRenderer";
+import { auth } from "@/auth";
+import { checkAndDeductCredits } from "@/lib/db";
+
+const RENDER_COST = 4;
 
 /**
  * POST /api/creative/render
  * Render a video from Remotion code
  */
 export async function POST(request: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return new Response(
+      JSON.stringify({ error: "Authentication required" }),
+      { status: 401, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  // Check and deduct credits before starting stream
+  try {
+    await checkAndDeductCredits(session.user.id, RENDER_COST);
+  } catch (e) {
+    if (e instanceof Error && e.message === "INSUFFICIENT_CREDITS") {
+      return new Response(
+        JSON.stringify({ error: "Insufficient credits", required: RENDER_COST, balance: session.user.creditBalance }),
+        { status: 402, headers: { "Content-Type": "application/json" } },
+      );
+    }
+    throw e;
+  }
+
   const encoder = new TextEncoder();
-  
+
   const stream = new ReadableStream({
     async start(controller) {
       const send = (type: string, data: any) => {

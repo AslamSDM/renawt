@@ -2,12 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { streamVideoGeneration } from "@/lib/agents/graph";
 import { prisma } from "@/lib/db/prisma";
 import { GenerateRequestSchema } from "@/lib/types";
+import { auth } from "@/auth";
+import { checkAndDeductCredits } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes max for video generation
 
+const FULL_PIPELINE_COST = 5; // 1 script + 4 render
+
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+
     const body = await request.json();
 
     // Validate request
@@ -28,9 +37,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check and deduct credits
+    try {
+      await checkAndDeductCredits(session.user.id, FULL_PIPELINE_COST);
+    } catch (e) {
+      if (e instanceof Error && e.message === "INSUFFICIENT_CREDITS") {
+        return NextResponse.json(
+          { error: "Insufficient credits", required: FULL_PIPELINE_COST, balance: session.user.creditBalance },
+          { status: 402 }
+        );
+      }
+      throw e;
+    }
+
     // Create project in database
     const project = await prisma.project.create({
       data: {
+        userId: session.user.id,
         sourceUrl: url,
         description,
         status: "GENERATING",

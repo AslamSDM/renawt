@@ -1,14 +1,39 @@
 import { NextRequest } from "next/server";
 import { chatWithKimi } from "@/lib/agents/model";
 import { hasBasicSyntaxErrors, validateAndFixCode } from "@/lib/agents/remotionTranslator";
+import { auth } from "@/auth";
+import { checkAndDeductCredits } from "@/lib/db";
+
+const EDIT_VIDEO_COST = 1;
 
 /**
  * POST /api/creative/edit-video
  * Edit a rendered video via chat and re-render
  */
 export async function POST(request: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return new Response(
+      JSON.stringify({ error: "Authentication required" }),
+      { status: 401, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  // Check and deduct credits before starting stream
+  try {
+    await checkAndDeductCredits(session.user.id, EDIT_VIDEO_COST);
+  } catch (e) {
+    if (e instanceof Error && e.message === "INSUFFICIENT_CREDITS") {
+      return new Response(
+        JSON.stringify({ error: "Insufficient credits", required: EDIT_VIDEO_COST, balance: session.user.creditBalance }),
+        { status: 402, headers: { "Content-Type": "application/json" } },
+      );
+    }
+    throw e;
+  }
+
   const encoder = new TextEncoder();
-  
+
   const stream = new ReadableStream({
     async start(controller) {
       const send = (type: string, data: any) => {
@@ -17,13 +42,13 @@ export async function POST(request: NextRequest) {
 
       try {
         const body = await request.json();
-        const { 
-          message, 
-          remotionCode, 
-          videoScript, 
+        const {
+          message,
+          remotionCode,
+          videoScript,
           productData,
           userPreferences,
-          recordings 
+          recordings
         } = body;
 
         if (!message || !remotionCode) {
