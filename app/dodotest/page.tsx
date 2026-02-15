@@ -20,7 +20,7 @@ export default function ProductPage() {
     useEffect(() => {
         DodoPayments.Initialize({
             mode: "test",
-            displayType: "inline",
+            displayType: "overlay",
             onEvent: (event) => {
                 if (event.event_type === "checkout.breakdown") {
                     const breakdown = event.data?.message;
@@ -65,7 +65,8 @@ export default function ProductPage() {
 
             DodoPayments.Checkout.open({
                 checkoutUrl: data.checkout_url,
-                elementId: "dodo-inline-checkout"
+                // elementId: "dodo-inline-checkout",
+
             });
 
         } catch (err) {

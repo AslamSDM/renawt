@@ -1,66 +1,15 @@
 "use client";
 
-import React from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Check, CreditCard, Zap, ArrowRight, Coins } from "lucide-react";
+import { Check, ArrowRight, Coins } from "lucide-react";
+import { subscriptionPlans } from "@/lib/dodo/subscription";
+import CheckoutButton from "./_components/CheckoutButton";
 
 // Credit packages - based on the credit system implementation
-const CREDIT_PACKAGES = [
-  {
-    name: "Starter",
-    credits: 100,
-    price: "20",
-    description: "Perfect for trying out the platform",
-    features: [
-      "100 video credits",
-      "720p & 1080p exports",
-      "All templates included",
-      "Standard rendering",
-      "No expiration",
-    ],
-    cta: "Buy Credits",
-    popular: false,
-  },
-  {
-    name: "Creator",
-    credits: 500,
-    price: "39",
-    description: "Best value for regular creators",
-    features: [
-      "500 video credits",
-      "Up to 4K exports",
-      "All templates + custom",
-      "Priority rendering",
-      "No expiration",
-      "API access",
-    ],
-    cta: "Buy Credits",
-    popular: true,
-  },
-  {
-    name: "Studio",
-    credits: 2000,
-    price: "149",
-    description: "For agencies and high-volume creators",
-    features: [
-      "2000 video credits",
-      "Up to 4K exports",
-      "All templates + custom",
-      "Fastest rendering",
-      "No expiration",
-      "API access",
-      "Dedicated support",
-    ],
-    cta: "Buy Credits",
-    popular: false,
-  },
-];
 
 // Cost per video breakdown
 const COST_BREAKDOWN = [
@@ -102,7 +51,7 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-white selection:text-black">
       {/* Film Grain Overlay */}
-      <div 
+      <div
         className="fixed inset-0 pointer-events-none z-50 opacity-[0.04]"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
@@ -137,9 +86,9 @@ export default function PricingPage() {
       <section className="py-24 px-6 md:px-12 border-b border-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-px bg-white/10">
-            {CREDIT_PACKAGES.map((pkg) => (
+            {subscriptionPlans.map((pkg) => (
               <Card
-                key={pkg.name}
+                key={pkg.title}
                 className={`bg-[#0a0a0a] border-0 rounded-none ${pkg.popular ? 'relative' : ''}`}
               >
                 {pkg.popular && (
@@ -147,28 +96,28 @@ export default function PricingPage() {
                     Most Popular
                   </div>
                 )}
-                
+
                 <CardHeader className={`${pkg.popular ? 'pt-16' : ''} pb-8`}>
                   <div className="flex items-center gap-2 text-xs text-gray-600 tracking-widest uppercase mb-6">
                     <Coins className="w-4 h-4" />
                     <span>One-time purchase</span>
                   </div>
-                  
+
                   <div className="flex items-baseline gap-2 mb-4">
                     <span className="text-6xl font-light">${pkg.price}</span>
                   </div>
-                  
+
                   <CardTitle className="text-2xl font-light tracking-wide">
-                    {pkg.name}
+                    {pkg.title}
                   </CardTitle>
                   <div className="mt-2">
-                    <span className="text-3xl font-light text-white">{pkg.credits}</span>
+                    <span className="text-3xl font-light text-white">{pkg.creditsPerCycle}</span>
                     <span className="text-sm text-gray-500 ml-2">credits</span>
                   </div>
                   <p className="text-sm text-gray-500 mt-2">{pkg.description}</p>
                 </CardHeader>
 
-                <CardContent className="space-y-6">
+                <CardContent className="flex flex-col justify-between space-y-6 h-full">
                   <ul className="space-y-4">
                     {pkg.features.map((feature, i) => (
                       <li key={i} className="flex items-center gap-3 text-sm">
@@ -178,13 +127,12 @@ export default function PricingPage() {
                     ))}
                   </ul>
 
-                  <Button 
-                    className="w-full rounded-none"
-                    variant={pkg.popular ? "default" : "outline"}
-                    size="lg"
-                  >
-                    {pkg.cta}
-                  </Button>
+                  <CheckoutButton
+                    text={pkg.cta}
+                    isPopular={pkg.popular}
+                    product={pkg}
+                    quantity={1}
+                  />
                 </CardContent>
               </Card>
             ))}
@@ -268,7 +216,7 @@ export default function PricingPage() {
             Each video costs just 1 credit.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
+            <Button
               onClick={() => router.push('/creative')}
               className="px-12 py-4 text-lg tracking-wider uppercase rounded-none"
               size="lg"
@@ -276,7 +224,7 @@ export default function PricingPage() {
               Start Creating
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
-            <Button 
+            <Button
               onClick={() => router.push('/projects')}
               className="px-12 py-4 text-lg tracking-wider uppercase rounded-none"
               variant="outline"

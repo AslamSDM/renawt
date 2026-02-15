@@ -11,7 +11,7 @@ import { Footer } from "@/components/Footer";
 
 const TYPING_TEXTS = [
   "motion graphics",
-  "Product launch videos", 
+  "Product launch videos",
   "info videos",
   "explainer videos"
 ];
@@ -24,7 +24,7 @@ const TypewriterText = () => {
 
   useEffect(() => {
     const text = TYPING_TEXTS[currentTextIndex];
-    
+
     if (isPaused) {
       const pauseTimer = setTimeout(() => {
         setIsPaused(false);
@@ -124,7 +124,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-white selection:text-black">
       {/* Film Grain Overlay */}
-      <div 
+      <div
         className="fixed inset-0 pointer-events-none z-50 opacity-[0.04]"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
@@ -184,7 +184,7 @@ export default function LandingPage() {
 
           {/* CTA */}
           <div className="flex flex-col sm:flex-row gap-4">
-            <button 
+            <button
               onClick={() => router.push('/projects')}
               className="group flex items-center gap-4 text-lg tracking-wider uppercase hover:text-gray-400 transition-colors"
             >
@@ -200,14 +200,14 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/10">
             {VIDEO_TYPES.map((type, i) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className="bg-[#0a0a0a] p-8 group hover:bg-white/5 transition-colors cursor-pointer"
                 onClick={() => router.push('/projects')}
               >
                 <div className="aspect-[4/5] mb-6 overflow-hidden">
-                  <img 
-                    src={type.image} 
+                  <img
+                    src={type.image}
                     alt={type.title}
                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
                   />
@@ -231,14 +231,14 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-2 gap-px bg-white/10">
             {FEATURES.map((feature, i) => (
-              <Card 
-                key={i} 
+              <Card
+                key={i}
                 className="bg-[#0a0a0a] border-0 rounded-none group hover:bg-white/5 transition-colors"
               >
                 <CardContent className="p-8 md:p-12">
                   <div className="aspect-video mb-8 overflow-hidden">
-                    <img 
-                      src={feature.image} 
+                    <img
+                      src={feature.image}
                       alt={feature.title}
                       className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
                     />
@@ -272,8 +272,8 @@ export default function LandingPage() {
             ].map((item, i) => (
               <div key={i} className="border-t border-white/20 pt-8">
                 <div className="w-16 h-16 mb-6 overflow-hidden rounded-full">
-                  <img 
-                    src={item.image} 
+                  <img
+                    src={item.image}
                     alt={item.title}
                     className="w-full h-full object-cover grayscale"
                   />
@@ -297,11 +297,11 @@ export default function LandingPage() {
                 Experience the Process
               </h2>
               <p className="text-gray-500 leading-relaxed mb-8">
-                Listen to how our AI transforms simple descriptions into 
+                Listen to how our AI transforms simple descriptions into
                 cinematic video content. From script to screen in minutes.
               </p>
-              
-              <button 
+
+              <button
                 onClick={() => setIsPlaying(!isPlaying)}
                 className="flex items-center gap-4 text-sm tracking-wider uppercase hover:text-gray-400 transition-colors"
               >
@@ -317,8 +317,8 @@ export default function LandingPage() {
             </div>
 
             <div className="aspect-video bg-white/5 flex items-center justify-center border border-white/10 overflow-hidden">
-              <img 
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Vincent_van_Gogh_-_Almond_blossom_-_Google_Art_Project.jpg/640px-Vincent_van_Gogh_-_Almond_blossom_-_Google_Art_Project.jpg" 
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Vincent_van_Gogh_-_Almond_blossom_-_Google_Art_Project.jpg/640px-Vincent_van_Gogh_-_Almond_blossom_-_Google_Art_Project.jpg"
                 alt="Video Preview"
                 className="w-full h-full object-cover"
               />
@@ -334,10 +334,10 @@ export default function LandingPage() {
             Ready to Create?
           </h2>
           <p className="text-gray-500 max-w-xl mx-auto mb-12">
-            Join thousands of creators producing professional videos with AI. 
+            Join thousands of creators producing professional videos with AI.
             No experience required.
           </p>
-          <button 
+          <button
             onClick={() => router.push('/projects')}
             className="px-12 py-4 border border-white text-lg tracking-wider uppercase hover:bg-white hover:text-black transition-all"
           >
