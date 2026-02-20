@@ -32,7 +32,6 @@ async function startBrowser() {
             args: [
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
-                "--disable-dev-shm-usage",
                 "--disable-gpu",
                 "--disable-software-rasterizer",
                 "--disable-features=IsolateOrigins,site-per-process,Translate,OptimizationHints",

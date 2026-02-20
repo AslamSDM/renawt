@@ -4,3 +4,5 @@ dist
 .dockerignore
 Dockerfile
 docker-compose.yaml
+scripts
+*.log
