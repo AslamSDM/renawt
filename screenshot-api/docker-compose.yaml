@@ -1,0 +1,17 @@
+
+
+services:
+  screenshot-api:
+    build: .
+    image: screenshot-api
+    container_name: screenshot-api
+    ports:
+      - "4001:4001"
+    shm_size: "1gb"
+    deploy:
+      resources:
+        limits:
+          memory: 700M
+          cpus: "1.0"
+    restart: unless-stopped
+
