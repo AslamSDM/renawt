@@ -5,7 +5,7 @@ import { scriptWriterNode } from "./scriptWriter";
 import { demoScriptWriterNode } from "./demoScriptWriter";
 // Two-step code generation: React page first, then Remotion translation
 import { reactPageGeneratorNode } from "./reactPageGenerator";
-import { remotionTranslatorNode } from "./remotionTranslator";
+import { remotionTranslatorNode, generateFallbackComposition } from "./remotionTranslator";
 // Video rendering with error fixing
 import { videoRendererNode } from "./videoRenderer";
 import { renderErrorFixerNode } from "./renderErrorFixer";
@@ -26,13 +26,58 @@ function shouldContinue(
   return "scriptWriter";
 }
 
+/**
+ * Template short-circuit: if video type is "creative" or "fast-paced" and
+ * we have product data, skip LLM-based reactPageGenerator + remotionTranslator
+ * and use the deterministic fallback composition directly.
+ * This saves 20-35s by eliminating 2-3 LLM calls.
+ */
 function shouldGenerateReactPage(
   state: VideoGenerationStateType,
-): "reactPageGenerator" | "error" {
+): "reactPageGenerator" | "templateShortCircuit" | "error" {
   if (state.currentStep === "error" || state.errors.length > 0) {
     return "error";
   }
+
+  // Use template short-circuit for creative/fast-paced videos with product data
+  const videoType = state.userPreferences.videoType;
+  const useTemplate = process.env.ENABLE_TEMPLATE_SHORTCIRCUIT === "true";
+
+  if (useTemplate && state.productData && (videoType === "creative" || videoType === "fast-paced")) {
+    console.log("[Graph] Template short-circuit: skipping reactPageGenerator + remotionTranslator");
+    return "templateShortCircuit";
+  }
+
   return "reactPageGenerator";
+}
+
+/**
+ * Template short-circuit node: generates Remotion code directly from product data
+ * without going through reactPageGenerator + remotionTranslator LLM calls.
+ */
+async function templateShortCircuitNode(
+  state: VideoGenerationStateType,
+): Promise<Partial<VideoGenerationStateType>> {
+  console.log("[TemplateShortCircuit] Generating composition from template...");
+
+  const productName = state.productData?.name || "Product";
+  const audio = state.userPreferences.audio;
+  const audioUrl = audio?.url || "audio/audio1.mp3";
+  const audioBpm = audio?.bpm || 120;
+
+  const remotionCode = generateFallbackComposition(
+    productName,
+    audioUrl,
+    audioBpm,
+    state.recordings,
+  );
+
+  console.log(`[TemplateShortCircuit] Generated ${remotionCode.length} chars of Remotion code`);
+
+  return {
+    remotionCode,
+    currentStep: "complete",
+  };
 }
 
 function shouldTranslateToRemotion(
@@ -96,6 +141,7 @@ const workflow = new StateGraph(VideoGenerationState)
   .addNode("scraper", scraperNode)
   .addNode("scriptWriter", scriptWriterNode)
   .addNode("demoScriptWriter", demoScriptWriterNode)
+  .addNode("templateShortCircuit", templateShortCircuitNode) // Template path (skips LLM)
   .addNode("reactPageGenerator", reactPageGeneratorNode) // Step 1: Generate React page
   .addNode("remotionTranslator", remotionTranslatorNode) // Step 2: Translate to Remotion
   .addNode("videoRenderer", videoRendererNode) // Step 3: Render video
@@ -112,13 +158,21 @@ const workflow = new StateGraph(VideoGenerationState)
     error: "errorHandler",
   })
 
-  // After script writing, go to React page generator
+  // After script writing, go to React page generator OR template short-circuit
   .addConditionalEdges("scriptWriter", shouldGenerateReactPage, {
     reactPageGenerator: "reactPageGenerator",
+    templateShortCircuit: "templateShortCircuit",
     error: "errorHandler",
   })
   .addConditionalEdges("demoScriptWriter", shouldGenerateReactPage, {
     reactPageGenerator: "reactPageGenerator",
+    templateShortCircuit: "templateShortCircuit",
+    error: "errorHandler",
+  })
+
+  // Template short-circuit goes directly to video renderer
+  .addConditionalEdges("templateShortCircuit", shouldRenderVideo, {
+    videoRenderer: "videoRenderer",
     error: "errorHandler",
   })
 

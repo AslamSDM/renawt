@@ -7,7 +7,7 @@
  * Enhanced with Remotion Best Practices from .agent/skills/remotion/
  */
 
-import { chatWithKimi } from "./model";
+import { chatWithKimi, chatWithFastModel } from "./model";
 import type { VideoGenerationStateType } from "./state";
 
 // ============================================================================
@@ -484,7 +484,7 @@ Take a React page component and translate it into a Remotion video with the "Pre
 /**
  * Validates and fixes common syntax errors in LLM-generated code
  */
-function validateAndFixCode(code: string): { code: string; issues: string[] } {
+export function validateAndFixCode(code: string): { code: string; issues: string[] } {
   const issues: string[] = [];
   let fixedCode = code;
 
@@ -633,7 +633,7 @@ function validateAndFixCode(code: string): { code: string; issues: string[] } {
 /**
  * Basic TypeScript syntax validation
  */
-function hasBasicSyntaxErrors(code: string): string[] {
+export function hasBasicSyntaxErrors(code: string): string[] {
   const errors: string[] = [];
 
   // Check for balanced braces
@@ -714,7 +714,7 @@ function isCodeTruncated(code: string): boolean {
 /**
  * Generate fallback composition code when LLM output is truncated or invalid
  */
-function generateFallbackComposition(productName: string = "Product", audioUrl: string = "audio/audio1.mp3", bpm: number = 120, recordings?: Array<{ id: string; videoUrl: string; duration: number; featureName: string; description: string }>): string {
+export function generateFallbackComposition(productName: string = "Product", audioUrl: string = "audio/audio1.mp3", bpm: number = 120, recordings?: Array<{ id: string; videoUrl: string; duration: number; featureName: string; description: string }>): string {
   // Determine audio src based on URL type
   const isR2Audio = audioUrl.startsWith("http");
   const audioSrcCode = isR2Audio
@@ -1335,8 +1335,8 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
           "7. MUST end with: export default VideoComposition;";
 
         try {
-          const fixResponse = await chatWithKimi([{ role: "user", content: fixPrompt }], {
-            temperature: 0.3,
+          const fixResponse = await chatWithFastModel([{ role: "user", content: fixPrompt }], {
+            temperature: 0.2,
             maxTokens: 16000,
           });
           
@@ -1363,7 +1363,7 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
               backtickChar + backtickChar + backtickChar + "\n\n" +
               "Return ONLY valid TypeScript/React code with ALL errors fixed. Ensure perfect syntax.";
             
-            const secondResponse = await chatWithKimi([{ role: "user", content: secondFixPrompt }], {
+            const secondResponse = await chatWithFastModel([{ role: "user", content: secondFixPrompt }], {
               temperature: 0.2,
               maxTokens: 16000,
             });

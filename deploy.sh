@@ -2,253 +2,213 @@
 set -euo pipefail
 
 # ============================================================
-# Remawt VPS Deployment Script
-# Deploys: Next.js app + Generate Server + PostgreSQL + Caddy
-# Tested on: Ubuntu 22.04 / 24.04
+# Remawt Backend Deploy — run from your LOCAL machine
+# Syncs files to VPS via rsync, then sets up everything over SSH.
+# No git required on the server.
+#
+# Usage:
+#   ./deploy.sh user@your-vps-ip --setup    # first time
+#   ./deploy.sh user@your-vps-ip            # subsequent deploys
 # ============================================================
 
-# --- Configuration ---
-APP_NAME="remawt"
-APP_DIR="/opt/$APP_NAME"
-APP_USER="remawt"
-REPO_URL=""  # Set your git repo URL here
-BRANCH="main"
-DOMAIN=""  # Set your domain here (e.g., remawt.com)
-NEXTJS_PORT=3000
-GENERATE_SERVER_PORT=3001
-NODE_VERSION="20"
+REMOTE="${1:-}"
+MODE="${2:---update}"
+APP_DIR="/opt/remawt"
 
-# Colors
-RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
-
 log()  { echo -e "${GREEN}[+]${NC} $1"; }
 warn() { echo -e "${YELLOW}[!]${NC} $1"; }
-err()  { echo -e "${RED}[x]${NC} $1"; exit 1; }
 
-# --- Parse arguments ---
-SKIP_DEPS=false
-SKIP_CADDY=false
-UPDATE_ONLY=false
-
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    --repo)       REPO_URL="$2"; shift 2 ;;
-    --domain)     DOMAIN="$2"; shift 2 ;;
-    --skip-deps)  SKIP_DEPS=true; shift ;;
-    --skip-caddy) SKIP_CADDY=true; shift ;;
-    --update)     UPDATE_ONLY=true; shift ;;
-    --help)
-      echo "Usage: ./deploy.sh [OPTIONS]"
-      echo ""
-      echo "Options:"
-      echo "  --repo URL        Git repository URL (required on first run)"
-      echo "  --domain DOMAIN   Domain name for Caddy (auto-SSL)"
-      echo "  --skip-deps       Skip system dependency installation"
-      echo "  --skip-caddy      Skip Caddy configuration"
-      echo "  --update          Only pull latest code and rebuild (skip system setup)"
-      echo "  --help            Show this help"
-      exit 0
-      ;;
-    *) err "Unknown option: $1" ;;
-  esac
-done
-
-# --- Quick update mode ---
-if [ "$UPDATE_ONLY" = true ]; then
-  log "Running quick update..."
-  cd "$APP_DIR"
-
-  git pull origin "$BRANCH"
-
-  log "Installing dependencies..."
-  pnpm install --frozen-lockfile
-
-  log "Running database migrations..."
-  npx prisma migrate deploy
-
-  log "Building Next.js app..."
-  pnpm build
-
-  log "Building generate-server..."
-  cd generate-server
-  pnpm install --frozen-lockfile
-  pnpm build
-  cd ..
-
-  log "Restarting services..."
-  sudo systemctl restart remawt-next
-  sudo systemctl restart remawt-generate
-
-  log "Update complete!"
-  exit 0
-fi
-
-# --- Pre-flight checks ---
-if [ "$(id -u)" -ne 0 ]; then
-  err "This script must be run as root (use sudo)"
-fi
-
-if [ -z "$REPO_URL" ] && [ ! -d "$APP_DIR/.git" ]; then
-  err "Please provide --repo URL on first deployment"
+if [ -z "$REMOTE" ]; then
+  echo "Usage: ./deploy.sh user@vps-ip [--setup|--update]"
+  echo ""
+  echo "  --setup   First-time deploy (installs Docker, Node, PostgreSQL, etc.)"
+  echo "  --update  Subsequent deploys (default — sync, rebuild, restart)"
+  echo ""
+  echo "Examples:"
+  echo "  ./deploy.sh root@65.109.6.92 --setup"
+  echo "  ./deploy.sh root@65.109.6.92"
+  exit 1
 fi
 
 # ============================================================
-# 1. System Dependencies
+# Step 1: Sync files to server
 # ============================================================
-if [ "$SKIP_DEPS" = false ]; then
-  log "Updating system packages..."
+log "Syncing project files to $REMOTE:$APP_DIR ..."
+
+ssh "$REMOTE" "mkdir -p $APP_DIR"
+
+rsync -avz --progress \
+  --exclude 'node_modules' \
+  --exclude '.next' \
+  --exclude 'dist' \
+  --exclude '.git' \
+  --exclude 'venv' \
+  --exclude '.remotion-temp' \
+  --exclude 'public/renders' \
+  --exclude 'public/screenshots' \
+  --exclude 'logs' \
+  --exclude '*.mp4' \
+  --exclude '.env' \
+  --exclude 'generate-server/.env' \
+  --exclude 'generate-server/node_modules' \
+  --exclude 'generate-server/dist' \
+  --exclude 'services/scraper-service/node_modules' \
+  --exclude 'services/scraper-service/dist' \
+  --exclude 'services/render-service/node_modules' \
+  --exclude 'services/render-service/dist' \
+  ./ "$REMOTE:$APP_DIR/"
+
+log "Files synced."
+
+# ============================================================
+# Step 2: Upload and run remote script
+# ============================================================
+log "Running $MODE on server..."
+
+# Write the remote script to a temp file
+REMOTE_SCRIPT=$(mktemp)
+cat > "$REMOTE_SCRIPT" << 'ENDSCRIPT'
+#!/bin/bash
+set -euo pipefail
+
+MODE="$1"
+APP_DIR="/opt/remawt"
+GENERATE_SERVER_PORT=3001
+SCRAPER_PORT=4001
+RENDER_PORT=4002
+NODE_VERSION="20"
+APP_USER="remawt"
+APP_NAME="remawt"
+
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+log()  { echo -e "${GREEN}[+]${NC} $1"; }
+warn() { echo -e "${YELLOW}[!]${NC} $1"; }
+
+cd "$APP_DIR"
+
+# ==========================================================
+# FIRST-TIME SETUP
+# ==========================================================
+if [ "$MODE" = "--setup" ]; then
+  log "Running first-time setup..."
+
   apt-get update -qq
-  apt-get upgrade -y -qq
-
-  log "Installing system dependencies..."
   apt-get install -y -qq \
-    curl wget git build-essential \
+    curl wget build-essential \
     postgresql postgresql-contrib \
-    debian-keyring debian-archive-keyring apt-transport-https \
     libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 \
     libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 \
     libxrandr2 libgbm1 libpango-1.0-0 libcairo2 \
     libasound2t64 libxshmfence1 fonts-liberation \
     xdg-utils
 
-  # Caddy
-  if ! command -v caddy &>/dev/null; then
-    log "Installing Caddy..."
-    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list
-    apt-get update -qq
-    apt-get install -y -qq caddy
+  # Docker
+  if ! command -v docker &>/dev/null; then
+    log "Installing Docker..."
+    curl -fsSL https://get.docker.com | bash
+    systemctl enable docker
+    systemctl start docker
   fi
-  log "Caddy $(caddy version) installed"
+  log "Docker ready"
 
-  # Node.js (NodeSource)
-  if ! command -v node &>/dev/null || [[ "$(node -v)" != v${NODE_VERSION}* ]]; then
+  if ! docker compose version &>/dev/null; then
+    apt-get install -y -qq docker-compose-plugin
+  fi
+
+  # Node.js
+  if ! command -v node &>/dev/null; then
     log "Installing Node.js ${NODE_VERSION}..."
     curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
     apt-get install -y -qq nodejs
   fi
-  log "Node.js $(node -v) installed"
+  log "Node.js $(node -v) ready"
 
   # pnpm
   if ! command -v pnpm &>/dev/null; then
-    log "Installing pnpm..."
     npm install -g pnpm
   fi
-  log "pnpm $(pnpm -v) installed"
-fi
+  log "pnpm ready"
 
-# ============================================================
-# 2. Create app user
-# ============================================================
-if ! id "$APP_USER" &>/dev/null; then
-  log "Creating user: $APP_USER"
-  useradd -r -m -s /bin/bash "$APP_USER"
-fi
-
-# ============================================================
-# 3. PostgreSQL Setup
-# ============================================================
-log "Setting up PostgreSQL..."
-sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='$APP_USER'" | grep -q 1 || {
-  DB_PASS=$(openssl rand -base64 24)
-  sudo -u postgres psql -c "CREATE USER $APP_USER WITH PASSWORD '$DB_PASS';"
-  sudo -u postgres psql -c "CREATE DATABASE $APP_NAME OWNER $APP_USER;"
-  log "Database created. Password: $DB_PASS"
-  warn "SAVE THIS PASSWORD - you'll need it for DATABASE_URL"
-  echo "DATABASE_URL=\"postgresql://$APP_USER:$DB_PASS@localhost:5432/$APP_NAME?schema=public\"" > /tmp/remawt-db-url.txt
-  log "Database URL saved to /tmp/remawt-db-url.txt"
-}
-
-# ============================================================
-# 4. Clone / Pull Repository
-# ============================================================
-if [ ! -d "$APP_DIR" ]; then
-  log "Cloning repository..."
-  git clone "$REPO_URL" "$APP_DIR"
-else
-  log "Pulling latest changes..."
-  cd "$APP_DIR"
-  git pull origin "$BRANCH"
-fi
-
-chown -R "$APP_USER:$APP_USER" "$APP_DIR"
-cd "$APP_DIR"
-
-# ============================================================
-# 5. Environment Files
-# ============================================================
-if [ ! -f "$APP_DIR/.env" ]; then
-  warn "No .env file found. Creating from .env.example..."
-  cp "$APP_DIR/.env.example" "$APP_DIR/.env"
-  if [ -f /tmp/remawt-db-url.txt ]; then
-    DB_URL=$(cat /tmp/remawt-db-url.txt)
-    sed -i "s|DATABASE_URL=.*|$DB_URL|" "$APP_DIR/.env"
+  # App user
+  if ! id "$APP_USER" &>/dev/null; then
+    useradd -r -m -s /bin/bash "$APP_USER"
   fi
-  warn "Edit $APP_DIR/.env with your actual secrets before starting the app!"
-fi
+  usermod -aG docker "$APP_USER" 2>/dev/null || true
 
-if [ ! -f "$APP_DIR/generate-server/.env" ]; then
-  warn "No generate-server .env file found. Creating from .env.example..."
-  cp "$APP_DIR/generate-server/.env.example" "$APP_DIR/generate-server/.env"
-  warn "Edit $APP_DIR/generate-server/.env with your actual API keys!"
-fi
+  # PostgreSQL
+  log "Setting up PostgreSQL..."
+  systemctl start postgresql || true
+  sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='$APP_USER'" | grep -q 1 || {
+    DB_PASS=$(openssl rand -base64 24)
+    sudo -u postgres psql -c "CREATE USER $APP_USER WITH PASSWORD '$DB_PASS';"
+    sudo -u postgres psql -c "CREATE DATABASE $APP_NAME OWNER $APP_USER;"
+    echo "DATABASE_URL=\"postgresql://$APP_USER:$DB_PASS@localhost:5432/$APP_NAME?schema=public\"" > /tmp/remawt-db-url.txt
+    log "Database created. URL saved to /tmp/remawt-db-url.txt"
+    warn "Password: $DB_PASS — SAVE THIS"
+  }
 
-# ============================================================
-# 6. Install Dependencies & Build
-# ============================================================
-log "Installing main app dependencies..."
-sudo -u "$APP_USER" bash -c "cd $APP_DIR && pnpm install --frozen-lockfile"
+  # .env file
+  if [ ! -f "$APP_DIR/generate-server/.env" ]; then
+    log "Creating generate-server/.env template..."
+    cat > "$APP_DIR/generate-server/.env" << 'ENVEOF'
+# OpenRouter
+OPENROUTER_API_KEY=
+OPENROUTER_MODEL=moonshotai/kimi-k2.5
+FAST_MODEL=google/gemini-2.0-flash-001
 
-log "Running Prisma migrations..."
-sudo -u "$APP_USER" bash -c "cd $APP_DIR && npx prisma migrate deploy"
+# Google AI (optional)
+GOOGLE_AI_API_KEY=
+USE_GEMINI=false
 
-log "Building Next.js app..."
-sudo -u "$APP_USER" bash -c "cd $APP_DIR && pnpm build"
+# Anthropic (optional)
+ANTHROPIC_API_KEY=
 
-log "Installing generate-server dependencies..."
-sudo -u "$APP_USER" bash -c "cd $APP_DIR/generate-server && pnpm install --frozen-lockfile"
+# R2 Storage
+R2_ACCOUNT_ID=
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_BUCKET_NAME=remawt-videos
+R2_PUBLIC_URL=
 
-log "Building generate-server..."
-sudo -u "$APP_USER" bash -c "cd $APP_DIR/generate-server && pnpm build"
+# Database
+DATABASE_URL=postgresql://remawt:CHANGE_ME@localhost:5432/remawt?schema=public
 
-# ============================================================
-# 7. Systemd Services
-# ============================================================
-log "Creating systemd services..."
+# Redis
+REDIS_URL=redis://localhost:6379
 
-cat > /etc/systemd/system/remawt-next.service << 'EOF'
-[Unit]
-Description=Remawt Next.js App
-After=network.target postgresql.service
+# Microservices
+SCRAPER_SERVICE_URL=http://localhost:4001
+RENDER_SERVICE_URL=http://localhost:4002
 
-[Service]
-Type=simple
-User=remawt
-Group=remawt
-WorkingDirectory=/opt/remawt
-ExecStart=/usr/bin/pnpm start
-Restart=on-failure
-RestartSec=10
-Environment=NODE_ENV=production
-Environment=PORT=3000
-EnvironmentFile=/opt/remawt/.env
+# Server
+PORT=3001
 
-# Hardening
-NoNewPrivileges=true
-ProtectSystem=strict
-ReadWritePaths=/opt/remawt
+# API Key (shared with Vercel frontend)
+API_KEY=
 
-[Install]
-WantedBy=multi-user.target
-EOF
+# AI Speed
+ENABLE_TEMPLATE_SHORTCIRCUIT=false
+ENVEOF
 
-cat > /etc/systemd/system/remawt-generate.service << 'EOF'
+    if [ -f /tmp/remawt-db-url.txt ]; then
+      DB_URL=$(cat /tmp/remawt-db-url.txt)
+      sed -i "s|DATABASE_URL=.*|$DB_URL|" "$APP_DIR/generate-server/.env"
+    fi
+    warn ">>> EDIT $APP_DIR/generate-server/.env WITH YOUR API KEYS <<<"
+  fi
+
+  # Systemd service
+  log "Creating systemd service..."
+  cat > /etc/systemd/system/remawt-generate.service << 'SVCEOF'
 [Unit]
 Description=Remawt Generate Server
-After=network.target postgresql.service
+After=network.target postgresql.service docker.service
+Wants=docker.service
 
 [Service]
 Type=simple
@@ -260,130 +220,101 @@ Restart=on-failure
 RestartSec=10
 Environment=NODE_ENV=production
 EnvironmentFile=/opt/remawt/generate-server/.env
-
-# Hardening
 NoNewPrivileges=true
 ProtectSystem=strict
 ReadWritePaths=/opt/remawt
 
 [Install]
 WantedBy=multi-user.target
-EOF
+SVCEOF
 
-systemctl daemon-reload
-systemctl enable remawt-next remawt-generate
+  systemctl daemon-reload
+  systemctl enable remawt-generate
 
-# ============================================================
-# 8. Caddy Configuration
-# ============================================================
-if [ "$SKIP_CADDY" = false ] && [ -n "$DOMAIN" ]; then
-  log "Configuring Caddy for $DOMAIN..."
+  # Firewall
+  if command -v ufw &>/dev/null; then
+    log "Configuring firewall..."
+    ufw allow OpenSSH
+    ufw allow 3001/tcp
+    ufw --force enable
+  fi
 
-  cat > /etc/caddy/Caddyfile << CADDYFILE
-$DOMAIN {
-    # Generate server API (SSE streaming)
-    handle /api/creative/generate {
-        reverse_proxy localhost:$GENERATE_SERVER_PORT {
-            flush_interval -1
-            transport http {
-                read_timeout 300s
-            }
-        }
-    }
-
-    # Generate server health check
-    handle /api/generate-health {
-        rewrite * /health
-        reverse_proxy localhost:$GENERATE_SERVER_PORT
-    }
-
-    # Rendered videos from generate server
-    handle /renders/* {
-        reverse_proxy localhost:$GENERATE_SERVER_PORT
-    }
-
-    # Screenshots from generate server
-    handle /screenshots/* {
-        reverse_proxy localhost:$GENERATE_SERVER_PORT
-    }
-
-    # Everything else goes to Next.js
-    handle {
-        reverse_proxy localhost:$NEXTJS_PORT
-    }
-
-    # Request body size limit (for uploads)
-    request_body {
-        max_size 100MB
-    }
-
-    # Logging
-    log {
-        output file /var/log/caddy/$APP_NAME.log
-    }
-}
-CADDYFILE
-
-  mkdir -p /var/log/caddy
-
-  # Validate and reload
-  caddy validate --config /etc/caddy/Caddyfile
-  systemctl enable caddy
-  systemctl reload caddy || systemctl start caddy
-  log "Caddy configured (SSL is automatic)"
-
-elif [ "$SKIP_CADDY" = false ]; then
-  warn "No --domain provided. Skipping Caddy setup."
-  warn "The app will be available on ports $NEXTJS_PORT and $GENERATE_SERVER_PORT directly."
+  log "First-time setup complete."
 fi
 
-# ============================================================
-# 9. Firewall
-# ============================================================
-if command -v ufw &>/dev/null; then
-  log "Configuring firewall..."
-  ufw allow OpenSSH
-  ufw allow 80/tcp
-  ufw allow 443/tcp
-  ufw --force enable
-fi
+# ==========================================================
+# BUILD & DEPLOY (runs on both --setup and --update)
+# ==========================================================
+log "Setting file ownership..."
+chown -R "$APP_USER:$APP_USER" "$APP_DIR"
 
-# ============================================================
-# 10. Start Services
-# ============================================================
-log "Starting services..."
-systemctl start remawt-next
-systemctl start remawt-generate
+log "Installing generate-server dependencies..."
+sudo -u "$APP_USER" bash -c "cd $APP_DIR/generate-server && pnpm install"
 
-# ============================================================
-# Done
-# ============================================================
-echo ""
-echo "=========================================="
-log "Deployment complete!"
-echo "=========================================="
-echo ""
-echo "Services:"
-echo "  Next.js:          systemctl status remawt-next"
-echo "  Generate Server:  systemctl status remawt-generate"
-echo "  Caddy:            systemctl status caddy"
-echo ""
-echo "Logs:"
-echo "  Next.js:          journalctl -u remawt-next -f"
-echo "  Generate Server:  journalctl -u remawt-generate -f"
-echo "  Caddy:            journalctl -u caddy -f"
-echo "  Caddy access:     tail -f /var/log/caddy/$APP_NAME.log"
-echo ""
-echo "Quick update (pull + rebuild + restart):"
-echo "  sudo ./deploy.sh --update"
-echo ""
-if [ -n "$DOMAIN" ]; then
-  echo "URL: https://$DOMAIN (SSL automatic via Caddy)"
+log "Running Prisma migrations..."
+sudo -u "$APP_USER" bash -c "cd $APP_DIR && npx prisma migrate deploy" 2>/dev/null || warn "Prisma migrate skipped"
+
+log "Building generate-server..."
+sudo -u "$APP_USER" bash -c "cd $APP_DIR/generate-server && pnpm build"
+
+# Docker microservices
+if command -v docker &>/dev/null; then
+  log "Starting Docker microservices..."
+  cd "$APP_DIR"
+  docker compose up -d --build
+
+  log "Waiting for services..."
+  sleep 8
+
+  curl -sf http://localhost:4001/health > /dev/null 2>&1 \
+    && log "Scraper: healthy" || warn "Scraper: starting..."
+  curl -sf http://localhost:4002/health > /dev/null 2>&1 \
+    && log "Render: healthy" || warn "Render: starting..."
+  docker compose exec -T redis redis-cli ping 2>/dev/null | grep -q PONG \
+    && log "Redis: healthy" || warn "Redis: starting..."
 else
-  echo "URL: http://<your-vps-ip>:$NEXTJS_PORT"
+  warn "Docker not available — microservices skipped"
 fi
+
+# Restart generate server
+log "Restarting generate-server..."
+systemctl restart remawt-generate
+sleep 2
+
+if systemctl is-active --quiet remawt-generate; then
+  log "Generate server: running"
+else
+  warn "Generate server failed to start!"
+  warn "Check: journalctl -u remawt-generate -n 50"
+fi
+
+# Done
+VPS_IP=$(curl -sf https://ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
+
 echo ""
-warn "IMPORTANT: Make sure to edit these files with your actual secrets:"
-echo "  $APP_DIR/.env"
-echo "  $APP_DIR/generate-server/.env"
+echo "=========================================="
+log "Deploy complete!"
+echo "=========================================="
 echo ""
+echo "API:  http://$VPS_IP:3001"
+echo "Test: curl http://$VPS_IP:3001/health"
+echo ""
+echo "Commands:"
+echo "  journalctl -u remawt-generate -f      # server logs"
+echo "  docker compose ps                      # microservices"
+echo "  docker compose logs -f scraper-service"
+echo "  docker compose logs -f render-service"
+echo "  sudo systemctl restart remawt-generate"
+echo ""
+echo "Config: $APP_DIR/generate-server/.env"
+
+# Cleanup
+rm -f /tmp/remawt-deploy.sh
+ENDSCRIPT
+
+# Upload and execute
+scp -q "$REMOTE_SCRIPT" "$REMOTE:/tmp/remawt-deploy.sh"
+rm -f "$REMOTE_SCRIPT"
+ssh "$REMOTE" "chmod +x /tmp/remawt-deploy.sh && /tmp/remawt-deploy.sh $MODE"
+
+log "Done!"

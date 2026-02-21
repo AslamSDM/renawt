@@ -156,6 +156,49 @@ export const CODE_GENERATOR_CONFIG: ModelConfig = {
   temperature: 0.3,
   maxTokens: 8000,
 };
+export const FAST_FIX_CONFIG: ModelConfig = { temperature: 0.2, maxTokens: 16000 };
+
+// ============================================
+// Fast Model (Gemini 2.0 Flash via OpenRouter)
+// ============================================
+
+const FAST_MODEL = process.env.FAST_MODEL || "google/gemini-2.0-flash-001";
+
+/**
+ * Fast model for quick fixes (syntax errors, render error fixing).
+ * Uses Gemini 2.0 Flash via OpenRouter for ~3-5x faster responses than Kimi K2.5.
+ */
+export async function chatWithFastModel(
+  messages: ChatMessage[],
+  config: ModelConfig = {},
+): Promise<ChatResponse> {
+  const { temperature = 0.2, maxTokens } = config;
+  const client = getOpenRouterClient();
+
+  console.log("[FastModel] Calling API...");
+  console.log("[FastModel] Model:", FAST_MODEL);
+
+  try {
+    const completion = await client.chat.completions.create({
+      model: FAST_MODEL,
+      messages: messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      })),
+      temperature,
+      max_tokens: maxTokens,
+    });
+
+    const content = completion.choices[0]?.message?.content || "";
+    console.log("[FastModel] Response received, length:", content.length);
+
+    return { content };
+  } catch (error) {
+    console.error("[FastModel] API Error, falling back to Kimi:", error);
+    // Fallback to Kimi K2.5 if fast model fails
+    return chatWithKimi(messages, config);
+  }
+}
 
 // ============================================
 // OpenRouter Integration (Kimi K2.5 via OpenRouter)
