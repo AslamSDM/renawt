@@ -46,6 +46,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "remotion": "^4.0.416",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "three": "^0.182.0",
     "uuid": "^13.0.0",

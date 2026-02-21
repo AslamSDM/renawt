@@ -734,6 +734,11 @@ function generateFallbackComposition(productName: string = "Product", audioUrl: 
 
   const hasRecordings = recordings && recordings.length > 0;
 
+  // Beat-relative timing values for scene animations
+  const halfBeat = Math.round(framesPerBeat * 0.5);
+  const quarterBeat = Math.round(framesPerBeat * 0.25);
+  const sixteenthBeat = Math.round(framesPerBeat / 4);
+
   return `import React from 'react';
 import { AbsoluteFill, Sequence, useCurrentFrame, useVideoConfig, interpolate, spring, Audio,${hasRecordings ? ' Video,' : ''} staticFile } from 'remotion';
 import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
@@ -885,8 +890,8 @@ const LogoWithGlow: React.FC<{ brandName: string; accentSuffix?: string; fontSiz
 };
 
 // SCENE PROGRESS DOTS
-const SceneProgressDots: React.FC<{ totalScenes: number; sceneBoundaries: number[] }> = ({
-  totalScenes, sceneBoundaries,
+const SceneProgressDots: React.FC<{ totalScenes: number; sceneBoundaries: number[]; beatPulse?: number }> = ({
+  totalScenes, sceneBoundaries, beatPulse = 0,
 }) => {
   const frame = useCurrentFrame();
   let currentScene = 0;
@@ -899,14 +904,18 @@ const SceneProgressDots: React.FC<{ totalScenes: number; sceneBoundaries: number
       position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)',
       display: 'flex', gap: 8, zIndex: 100,
     }}>
-      {Array.from({ length: totalScenes }).map((_, i) => (
-        <div key={i} style={{
-          height: 8, borderRadius: 4,
-          width: i === currentScene ? 24 : 8,
-          background: i === currentScene ? COLORS.purple : i < currentScene ? 'rgba(168,85,247,0.5)' : 'rgba(255,255,255,0.3)',
-          transition: 'width 0.3s, background 0.3s',
-        }} />
-      ))}
+      {Array.from({ length: totalScenes }).map((_, i) => {
+        const isActive = i === currentScene;
+        const dotScale = isActive ? 1 + beatPulse * 0.15 : 1;
+        return (
+          <div key={i} style={{
+            height: 8, borderRadius: 4,
+            width: isActive ? 24 : 8,
+            background: isActive ? COLORS.purple : i < currentScene ? 'rgba(168,85,247,0.5)' : 'rgba(255,255,255,0.3)',
+            transform: "scale(" + dotScale + ")",
+          }} />
+        );
+      })}
     </div>
   );
 };
@@ -915,23 +924,24 @@ const SceneProgressDots: React.FC<{ totalScenes: number; sceneBoundaries: number
 // SCENE 1: Logo intro on dark aurora
 const Scene1: React.FC = () => {
   const frame = useCurrentFrame();
+  const { beatPulse } = useBeatSync(${bpm});
   const entryProgress = interpolate(frame, [0, 30], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   const entryScale = interpolate(frame, [0, 30], [0.7, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   const entryOpacity = interpolate(frame, [0, 20], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  
+
   return (
     <AbsoluteFill>
       <AuroraBackground variant="dark" />
       <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         ${logoUrl ? `
         {/* Logo Image - Large and centered on background */}
-        <div style={{ 
-          transform: \`scale(\${entryScale})\`,
+        <div style={{
+          transform: \`scale(\${entryScale * (1 + beatPulse * 0.015)})\`,
           opacity: entryOpacity,
           filter: 'drop-shadow(0 0 60px rgba(168, 85, 247, 0.6))'
         }}>
           <Img src={${logoUrl}} style={{ width: 500, height: 'auto', maxHeight: 300, objectFit: 'contain' }} />
-        </div>` : `<LogoWithGlow brandName="${productName}" fontSize={120} delay={5} />`}
+        </div>` : `<LogoWithGlow brandName="${productName}" fontSize={120} delay={${halfBeat}} />`}
       </AbsoluteFill>
     </AbsoluteFill>
   );
@@ -939,14 +949,15 @@ const Scene1: React.FC = () => {
 
 // SCENE 2: Tagline on light aurora
 const Scene2: React.FC = () => {
+  const { beatPulse } = useBeatSync(${bpm});
   return (
     <AbsoluteFill>
       <AuroraBackground variant="light" />
-      <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 80 }}>
+      <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 80, transform: "scale(" + (1 + beatPulse * 0.01) + ")" }}>
         <WordByWordBlur
           words={["The", "Future", "of", "Innovation"]}
           fontSize={64} color={COLORS.dark}
-          delay={5} staggerFrames={5}
+          delay={${halfBeat}} staggerFrames={${sixteenthBeat}}
           gradientWordIndices={[1, 3]}
         />
       </AbsoluteFill>
@@ -956,12 +967,15 @@ const Scene2: React.FC = () => {
 
 // SCENE 3: Feature card on dark aurora
 const Scene3: React.FC = () => {
+  const { beatPulse } = useBeatSync(${bpm});
   return (
     <AbsoluteFill>
       <AuroraBackground variant="dark" />
       <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <WhiteGlassCard delay={5} entryAnimation="perspective" maxWidth={700}>
-          <GradientAccentText text="Powerful Features" fontSize={48} delay={10} />
+        <WhiteGlassCard delay={${halfBeat}} entryAnimation="perspective" maxWidth={700}>
+          <div style={{ transform: "scale(" + (1 + beatPulse * 0.015) + ")" }}>
+            <GradientAccentText text="Powerful Features" fontSize={48} delay={${Math.round(framesPerBeat)}} />
+          </div>
           <p style={{ fontFamily: montserrat, fontWeight: 400, fontSize: 28, color: '#4b5563', marginTop: 16, lineHeight: 1.5 }}>
             Built for performance, designed for simplicity.
           </p>
@@ -973,14 +987,15 @@ const Scene3: React.FC = () => {
 
 // SCENE 4: Value prop text on light aurora
 const Scene4: React.FC = () => {
+  const { beatPulse } = useBeatSync(${bpm});
   return (
     <AbsoluteFill>
       <AuroraBackground variant="light" />
-      <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 80 }}>
+      <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 80, transform: "scale(" + (1 + beatPulse * 0.01) + ")" }}>
         <WordByWordBlur
           words={["Build", "Something", "Amazing"]}
           fontSize={72} color={COLORS.dark}
-          delay={5} staggerFrames={6}
+          delay={${halfBeat}} staggerFrames={${sixteenthBeat}}
           gradientWordIndices={[2]}
         />
       </AbsoluteFill>
@@ -990,12 +1005,15 @@ const Scene4: React.FC = () => {
 
 // SCENE 5: Feature card on dark aurora
 const Scene5: React.FC = () => {
+  const { beatPulse } = useBeatSync(${bpm});
   return (
     <AbsoluteFill>
       <AuroraBackground variant="dark" />
       <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <WhiteGlassCard delay={5} entryAnimation="slide-up" maxWidth={700}>
-          <GradientAccentText text="Seamless Experience" fontSize={48} delay={10} />
+        <WhiteGlassCard delay={${halfBeat}} entryAnimation="slide-up" maxWidth={700}>
+          <div style={{ transform: "scale(" + (1 + beatPulse * 0.015) + ")" }}>
+            <GradientAccentText text="Seamless Experience" fontSize={48} delay={${Math.round(framesPerBeat)}} />
+          </div>
           <p style={{ fontFamily: montserrat, fontWeight: 400, fontSize: 28, color: '#4b5563', marginTop: 16, lineHeight: 1.5 }}>
             Every detail crafted with care.
           </p>
@@ -1007,17 +1025,18 @@ const Scene5: React.FC = () => {
 
 // SCENE 6: CTA on dark aurora
 const Scene6: React.FC = () => {
+  const { beatPulse } = useBeatSync(${bpm});
   return (
     <AbsoluteFill>
       <AuroraBackground variant="dark" />
-      <AbsoluteFill style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
+      <AbsoluteFill style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24, transform: "scale(" + (1 + beatPulse * 0.01) + ")" }}>
         <WordByWordBlur
           words={["Get", "Started", "Today"]}
           fontSize={72} color="#ffffff"
-          delay={5} staggerFrames={6}
+          delay={${halfBeat}} staggerFrames={${sixteenthBeat}}
           gradientWordIndices={[1, 2]}
         />
-        <GradientAccentText text="${productName}" fontSize={56} delay={25} />
+        <GradientAccentText text="${productName}" fontSize={56} delay={${Math.round(framesPerBeat * 1.5)}} />
       </AbsoluteFill>
     </AbsoluteFill>
   );
@@ -1204,13 +1223,14 @@ ${hasRecordings ? recordings!.map((rec, i) => {
 const RecordingScene${i + 1}: React.FC = () => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
+  const { beatPulse } = useBeatSync(${bpm});
   ${zoomCode}
-  
-  // Entry animation
-  const entryProgress = interpolate(frame, [0, 20], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const entryScale = interpolate(frame, [0, 20], [0.85, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const entryOpacity = interpolate(frame, [0, 15], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  
+
+  // Entry animation — aligned to half-beat
+  const entryProgress = interpolate(frame, [0, ${halfBeat}], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const entryScale = interpolate(frame, [0, ${halfBeat}], [0.85, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const entryOpacity = interpolate(frame, [0, ${quarterBeat}], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+
   // Label animation
   const labelOpacity = interpolate(frame, [0, 30, durationInFrames - 30, durationInFrames], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   
@@ -1237,11 +1257,10 @@ const RecordingScene${i + 1}: React.FC = () => {
         opacity: 0.5
       }} />
       
-      {/* Recording Container with 3D effect */}
+      {/* Recording Container with 3D effect + beat pulse */}
       <div style={{
-        transform: \`scale(\${entryScale})\`,
+        transform: \`scale(\${entryScale * (1 + beatPulse * 0.008)})\`,
         opacity: entryOpacity,
-        transition: 'none'
       }}>
         ${mockupCode}
       </div>
@@ -1361,7 +1380,7 @@ ${hasRecordings ? recordings!.map((rec, i) => `      {/* Recording: ${rec.featur
       </Sequence>
 
       {/* Progress dots overlay */}
-      <SceneProgressDots totalScenes={totalScenes} sceneBoundaries={sceneBoundaries} />
+      <SceneProgressDots totalScenes={totalScenes} sceneBoundaries={sceneBoundaries} beatPulse={beatPulse} />
     </AbsoluteFill>
   );
 };

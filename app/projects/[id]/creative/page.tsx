@@ -30,6 +30,7 @@ import {
   ArrowLeft, Save, Edit2, Clock
 } from "lucide-react";
 import { CursorTracker, detectZoomPoints } from "@/lib/recording/cursorTracker";
+import { toast } from "sonner";
 
 import { ScreenshotSelector } from "@/components/screenshot/ScreenshotSelector";
 
@@ -368,7 +369,6 @@ export default function ProjectCreativePage() {
   const [loading, setLoading] = useState(false);
   const [rendering, setRendering] = useState(false);
   const [renderProgress, setRenderProgress] = useState(0);
-  const [error, setError] = useState<string | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
 
   // Data states
@@ -665,12 +665,11 @@ export default function ProjectCreativePage() {
 
   const handleGenerate = async () => {
     if (!description.trim() && !url.trim()) {
-      setError("Please enter a URL or description");
+      toast.error("Please enter a URL or description");
       return;
     }
 
     setLoading(true);
-    setError(null);
     setLogs([]);
     setScript(null);
     setRemotionCode(null);
@@ -706,7 +705,13 @@ export default function ProjectCreativePage() {
         }),
       });
 
-      if (!response.ok) throw new Error("API request failed");
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        if (response.status === 402) {
+          throw new Error(errData.error || "Insufficient credits");
+        }
+        throw new Error(errData.error || "API request failed");
+      }
       setGenerationProgress(15);
       setGenerationStatus("Processing request...");
 
@@ -784,7 +789,7 @@ export default function ProjectCreativePage() {
                 addLog("Video rendered successfully!", "success");
                 break;
               case "error":
-                setError(event.data.errors?.join(", ") || "Unknown error");
+                toast.error(event.data.errors?.join(", ") || "Unknown error");
                 addLog(event.data.errors?.[0] || "Error occurred", "error");
                 break;
               case "complete":
@@ -798,7 +803,7 @@ export default function ProjectCreativePage() {
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
-      setError(message);
+      toast.error(message);
       addLog(message, "error");
     } finally {
       setLoading(false);
@@ -887,7 +892,7 @@ export default function ProjectCreativePage() {
                 addLog("Video rendered successfully!", "success");
                 break;
               case "error":
-                setError(event.data.errors?.join(", ") || "Unknown error");
+                toast.error(event.data.errors?.join(", ") || "Unknown error");
                 addLog(event.data.errors?.[0] || "Error occurred", "error");
                 break;
               case "complete":
@@ -903,7 +908,7 @@ export default function ProjectCreativePage() {
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
-      setError(message);
+      toast.error(message);
       addLog(message, "error");
     } finally {
       setLoading(false);
@@ -995,7 +1000,7 @@ export default function ProjectCreativePage() {
                 addLog("Video re-rendered successfully!", "success");
                 break;
               case "error":
-                setError(event.data.errors?.join(", ") || "Unknown error");
+                toast.error(event.data.errors?.join(", ") || "Unknown error");
                 addLog(event.data.errors?.[0] || "Render error occurred", "error");
                 break;
             }
@@ -1006,7 +1011,7 @@ export default function ProjectCreativePage() {
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
-      setError(message);
+      toast.error(message);
       addLog(message, "error");
     } finally {
       setLoading(false);
@@ -1083,7 +1088,7 @@ export default function ProjectCreativePage() {
                 setEditProgress(100);
                 break;
               case "error":
-                setError(event.data.errors?.join(", ") || "Unknown error");
+                toast.error(event.data.errors?.join(", ") || "Unknown error");
                 addLog(event.data.errors?.[0] || "Edit error occurred", "error");
                 break;
               case "complete":
@@ -1106,7 +1111,7 @@ export default function ProjectCreativePage() {
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
-      setError(message);
+      toast.error(message);
       addLog(message, "error");
       setVideoEditHistory(prev => [...prev, { role: "assistant", text: `Error: ${message}` }]);
     } finally {
@@ -1140,13 +1145,12 @@ export default function ProjectCreativePage() {
 
   const handleRender = async () => {
     if (!remotionCode) {
-      setError("No video composition available. Generate a video first!");
+      toast.error("No video composition available. Generate a video first!");
       return;
     }
     setRendering(true);
     setRenderProgress(5);
     setGenerationStatus("Initializing render...");
-    setError(null);
     addLog("Starting render...");
 
     let progressStage = 0;
@@ -1190,7 +1194,7 @@ export default function ProjectCreativePage() {
     } catch (err) {
       clearInterval(progressInterval);
       const message = err instanceof Error ? err.message : "Render failed";
-      setError(message);
+      toast.error(message);
       addLog(`Render error: ${message}`, "error");
     } finally {
       setRendering(false);
@@ -1792,6 +1796,8 @@ export default function ProjectCreativePage() {
                     <ProgressBar progress={generationProgress} status={generationStatus} />
                   </div>
                 )}
+
+
 
                 {/* Generate Button */}
                 <Button

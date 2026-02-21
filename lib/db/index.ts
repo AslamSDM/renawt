@@ -69,6 +69,9 @@ export async function decreaseCredits(
 }
 
 export async function checkAndDeductCredits(userId: string, amount: number) {
+    if (process.env.DISABLE_CREDIT_CHECK === "true") {
+        return 999;
+    }
     return await prisma.$transaction(async (tx) => {
         const user = await tx.user.findUnique({ where: { id: userId } });
         if (!user || user.creditBalance < amount) {
