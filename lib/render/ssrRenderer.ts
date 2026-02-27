@@ -3,6 +3,7 @@
  *
  * Writes generated Remotion code to file, bundles, and renders to video.
  * Uses Remotion's programmatic API for server-side rendering.
+ * Uploads rendered videos to Cloudflare R2.
  */
 
 import { bundle } from "@remotion/bundler";
@@ -10,6 +11,7 @@ import { renderMedia, selectComposition } from "@remotion/renderer";
 import { writeFileSync, mkdirSync, existsSync, unlinkSync } from "fs";
 import { join } from "path";
 import { randomUUID } from "crypto";
+import { uploadVideoToR2, isR2Configured } from "../storage/r2";
 
 // Output directory for rendered videos
 const OUTPUT_DIR = join(process.cwd(), "public", "renders");
@@ -32,11 +34,22 @@ export interface RenderOptions {
   durationInFrames: number;
 }
 
+export interface RenderOptions {
+  remotionCode: string;
+  outputFormat?: "mp4" | "webm";
+  width?: number;
+  height?: number;
+  fps?: number;
+  durationInFrames: number;
+  projectId?: string; // For R2 organization
+}
+
 export interface RenderResult {
   success: boolean;
   videoUrl?: string;
   error?: string;
   renderTime?: number;
+  r2Key?: string;
 }
 
 /**
@@ -158,6 +171,7 @@ export async function renderVideo(
       height = 1080,
       fps = 30,
       durationInFrames,
+      projectId,
     } = options;
 
     // Create temp files
@@ -212,9 +226,37 @@ export async function renderVideo(
     const renderTime = Date.now() - startTime;
     console.log(`[SSR] Render complete in ${renderTime}ms`);
 
+    // Upload to R2 if configured
+    const serverBase = process.env.PUBLIC_URL || `http://localhost:${process.env.PORT || 3001}`;
+    let finalVideoUrl = `${serverBase}/renders/${outputFileName}`;
+    let r2Key: string | undefined;
+    
+    if (isR2Configured()) {
+      console.log(`[SSR] Uploading to R2...`);
+      const uploadResult = await uploadVideoToR2(outputPath, projectId);
+      
+      if (uploadResult.success && uploadResult.url) {
+        console.log(`[SSR] Uploaded to R2: ${uploadResult.url}`);
+        finalVideoUrl = uploadResult.url;
+        r2Key = uploadResult.key;
+        
+        // Optionally delete local file after successful R2 upload
+        try {
+          unlinkSync(outputPath);
+          console.log(`[SSR] Local file cleaned up`);
+        } catch (e) {
+          console.warn(`[SSR] Could not clean up local file:`, e);
+        }
+      } else {
+        console.error(`[SSR] R2 upload failed: ${uploadResult.error}`);
+      }
+    } else {
+      console.log(`[SSR] R2 not configured, using local storage`);
+    }
+
     return {
       success: true,
-      videoUrl: `/renders/${outputFileName}`,
+      videoUrl: finalVideoUrl,
       renderTime,
     };
   } catch (error) {

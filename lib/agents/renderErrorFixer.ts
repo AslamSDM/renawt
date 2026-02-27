@@ -5,7 +5,7 @@
  * Analyzes the error and asks the LLM to fix the code.
  */
 
-import { chatWithKimi } from "./model";
+import { chatWithFastModel } from "./model";
 import type { VideoGenerationStateType } from "./state";
 
 const RENDER_ERROR_FIXER_SYSTEM_PROMPT = `You are a Remotion and TypeScript expert who fixes rendering errors.
@@ -171,9 +171,9 @@ ${remotionCode}
 Output the fixed Remotion code in a TypeScript code block.`;
 
   try {
-    console.log("[RenderErrorFixer] Calling Kimi K2.5 to fix errors...");
-    const response = await chatWithKimi([{ role: "user", content: prompt }], {
-      temperature: 0.3,
+    console.log("[RenderErrorFixer] Calling fast model to fix errors...");
+    const response = await chatWithFastModel([{ role: "user", content: prompt }], {
+      temperature: 0.2,
       maxTokens: 16000,
     });
 

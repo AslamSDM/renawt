@@ -6,7 +6,7 @@
  * The output can be previewed as a static page before conversion to Remotion.
  */
 
-import { chatWithKimi } from "./model";
+import { chatWithGeminiPro } from "./model";
 import type { VideoGenerationStateType } from "./state";
 import type { VideoScene } from "../types";
 
@@ -45,38 +45,6 @@ Scheme 4 - Blue & Navy (Professional):
 - Secondary: #22d3ee (cyan accent)
 
 **CRITICAL**: Choose ONE scheme and ONLY use colors from that scheme. Do NOT mix colors from different schemes!
-
-## TEMPLATE STYLES - ADAPT BASED ON TEMPLATE_STYLE:
-The TEMPLATE_STYLE parameter determines the overall visual aesthetic:
-
-**aurora** (Default - Elegant Gradients):
-- Use aurora gradient backgrounds (purples, pinks, soft colors)
-- White glass morphism cards floating in space
-- Word-by-word blur text reveals
-- Gradient accent text with glow effects
-- 3D perspective card entries
-- Scene progress dots at bottom
-- Elegant, dreamy, premium feel
-
-**floating-glass** (Dark - Modern Tech):
-- Dark gradient backgrounds (deep navy/black with purple/violet accents)
-- Floating glass morphism UI cards with blur effects
-- Typewriter text animations with cursor
-- Product mockup components floating in 3D space
-- Fade transitions between scenes
-- Progress rings and checkmark animations
-- Modern, tech-forward, sleek aesthetic
-
-**blue-clean** (Clean - Corporate SaaS):
-- Clean white backgrounds with subtle gray borders
-- Blue accent color (#3b82f6) for highlights and buttons
-- Floating UI mockup cards with subtle shadows
-- Ticket/chat interface mockups, loading spinners
-- Progress indicator dots
-- Corporate, SaaS, professional feel
-- Light, airy, minimal design
-
-ADAPT your color scheme, animations, and visual elements to match the requested TEMPLATE_STYLE!
 
 ## CRITICAL: FAST-PACED TEXT (MAX 2 SECONDS PER TEXT)
 - Each text element appears for MAX 2 seconds (≈60 frames at 30fps)
@@ -263,16 +231,6 @@ export async function reactPageGeneratorNode(
   const productName =
     state.productData?.name || script.scenes[0]?.content.headline || "Product";
 
-  // Get logo information if available
-  const logos = state.productData?.logos || [];
-  const bestLogo = logos.length > 0 
-    ? logos.sort((a, b) => b.confidence - a.confidence)[0] 
-    : null;
-  
-  const logoInfo = bestLogo 
-    ? `\nLOGO: ${bestLogo.url} (source: ${bestLogo.source}, confidence: ${bestLogo.confidence})` 
-    : "\nLOGO: No logo extracted - use text-based brand name instead";
-
   const prompt = `${REACT_PAGE_SYSTEM_PROMPT}
 
 ---
@@ -281,8 +239,7 @@ Create a TEXT-HEAVY, FAST-PACED React page for this video script:
 
 PRODUCT: ${productName}
 STYLE: ${state.userPreferences.style}
-TEMPLATE_STYLE: ${state.userPreferences.templateStyle || "aurora"}
-TOTAL DURATION: ${script.totalDuration} frames (${Math.round(script.totalDuration / 30)}s)${logoInfo}
+TOTAL DURATION: ${script.totalDuration} frames (${Math.round(script.totalDuration / 30)}s)
 
 SCENES:
 ${sceneDescriptions}
@@ -300,8 +257,8 @@ Create a stunning single-page React component with:
 Make it look like a high-energy kinetic typography video!`;
 
   try {
-    console.log("[ReactPageGenerator] Calling Kimi K2.5...");
-    const response = await chatWithKimi([{ role: "user", content: prompt }], {
+    console.log("[ReactPageGenerator] Calling Gemini Pro...");
+    const response = await chatWithGeminiPro([{ role: "user", content: prompt }], {
       temperature: 0.7,
       maxTokens: 8000,
     });

@@ -1,5 +1,5 @@
 import {
-  chatWithKimi,
+  chatWithGeminiFlash,
   SCRIPT_WRITER_CONFIG,
 } from "./model";
 import type { VideoScript } from "../types";
@@ -118,8 +118,8 @@ async function callModel(
   systemPrompt: string,
   userMessage: string,
 ): Promise<string> {
-  console.log("[ScriptWriter] Calling Kimi K2.5...");
-  const response = await chatWithKimi(
+  console.log("[ScriptWriter] Calling Gemini Flash...");
+  const response = await chatWithGeminiFlash(
     [
       { role: "system", content: systemPrompt },
       { role: "user", content: userMessage },

@@ -7,7 +7,7 @@
  * Enhanced with Remotion Best Practices from .agent/skills/remotion/
  */
 
-import { chatWithKimi } from "./model";
+import { chatWithGeminiPro, chatWithFastModel } from "./model";
 import type { VideoGenerationStateType } from "./state";
 
 // ============================================================================
@@ -336,7 +336,7 @@ const VideoComposition: React.FC = () => {
 
   return (
     <AbsoluteFill>
-      <Audio src={staticFile("audio/audio1.mp3")} volume={1} />
+      <Audio src={/* audio src provided at generation time */} volume={1} />
 
       {/* Scene 1: Logo on dark aurora */}
       <Sequence from={0} durationInFrames={sceneDuration * fps}>
@@ -714,7 +714,7 @@ function isCodeTruncated(code: string): boolean {
 /**
  * Generate fallback composition code when LLM output is truncated or invalid
  */
-function generateFallbackComposition(productName: string = "Product", audioUrl: string = "audio/audio1.mp3", bpm: number = 120, recordings?: Array<{ id: string; videoUrl: string; duration: number; featureName: string; description: string; mockupFrame?: "browser" | "macbook" | "minimal"; zoomPoints?: Array<{ time: number; x: number; y: number; scale: number; duration: number }>; }>, logoUrl?: string): string {
+export function generateFallbackComposition(productName: string = "Product", audioUrl: string = "audio/audio1.mp3", bpm: number = 120, recordings?: Array<{ id: string; videoUrl: string; duration: number; featureName: string; description: string }>): string {
   // Determine audio src based on URL type
   const isR2Audio = audioUrl.startsWith("http");
   const audioSrcCode = isR2Audio
@@ -923,25 +923,12 @@ const SceneProgressDots: React.FC<{ totalScenes: number; sceneBoundaries: number
 
 // SCENE 1: Logo intro on dark aurora
 const Scene1: React.FC = () => {
-  const frame = useCurrentFrame();
   const { beatPulse } = useBeatSync(${bpm});
-  const entryProgress = interpolate(frame, [0, 30], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const entryScale = interpolate(frame, [0, 30], [0.7, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const entryOpacity = interpolate(frame, [0, 20], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-
   return (
     <AbsoluteFill>
       <AuroraBackground variant="dark" />
-      <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        ${logoUrl ? `
-        {/* Logo Image - Large and centered on background */}
-        <div style={{
-          transform: \`scale(\${entryScale * (1 + beatPulse * 0.015)})\`,
-          opacity: entryOpacity,
-          filter: 'drop-shadow(0 0 60px rgba(168, 85, 247, 0.6))'
-        }}>
-          <Img src={${logoUrl}} style={{ width: 500, height: 'auto', maxHeight: 300, objectFit: 'contain' }} />
-        </div>` : `<LogoWithGlow brandName="${productName}" fontSize={120} delay={${halfBeat}} />`}
+      <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', transform: "scale(" + (1 + beatPulse * 0.015) + ")" }}>
+        <LogoWithGlow brandName="${productName}" fontSize={80} delay={${halfBeat}} />
       </AbsoluteFill>
     </AbsoluteFill>
   );
@@ -1045,259 +1032,24 @@ const Scene6: React.FC = () => {
 ${hasRecordings ? recordings!.map((rec, i) => {
   const isR2 = rec.videoUrl.startsWith("http");
   const videoSrc = isR2 ? `"${rec.videoUrl}"` : `staticFile("${rec.videoUrl.replace(/^\//, "")}")`;
-  
-  // Generate zoom points interpolation if available
-  const zoomPoints = rec.zoomPoints || [];
-  let zoomCode = '';
-  if (zoomPoints.length > 0) {
-    const zoomInputFrames = [0];
-    const zoomScaleValues = [1];
-    const zoomXValues = [0];
-    const zoomYValues = [0];
-    
-    for (const zp of zoomPoints) {
-      const startFrame = Math.round(zp.time * 30);
-      const endFrame = Math.round((zp.time + zp.duration) * 30);
-      
-      zoomInputFrames.push(startFrame);
-      zoomScaleValues.push(1);
-      zoomXValues.push(0);
-      zoomYValues.push(0);
-      
-      zoomInputFrames.push(startFrame + 15);
-      zoomScaleValues.push(zp.scale);
-      zoomXValues.push(-(zp.x - 0.5) * 100 * (zp.scale - 1));
-      zoomYValues.push(-(zp.y - 0.5) * 100 * (zp.scale - 1));
-      
-      zoomInputFrames.push(endFrame - 15);
-      zoomScaleValues.push(zp.scale);
-      zoomXValues.push(-(zp.x - 0.5) * 100 * (zp.scale - 1));
-      zoomYValues.push(-(zp.y - 0.5) * 100 * (zp.scale - 1));
-      
-      zoomInputFrames.push(endFrame);
-      zoomScaleValues.push(1);
-      zoomXValues.push(0);
-      zoomYValues.push(0);
-    }
-    
-    zoomCode = `
-  // Zoom interpolation based on zoom points
-  const zoomScale = interpolate(frame, ${JSON.stringify(zoomInputFrames)}, ${JSON.stringify(zoomScaleValues)}, { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const zoomX = interpolate(frame, ${JSON.stringify(zoomInputFrames)}, ${JSON.stringify(zoomXValues)}, { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const zoomY = interpolate(frame, ${JSON.stringify(zoomInputFrames)}, ${JSON.stringify(zoomYValues)}, { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });`;
-  }
-  
-  // Choose mockup frame style
-  const mockupFrame = rec.mockupFrame || 'minimal';
-  let mockupCode = '';
-  
-  if (mockupFrame === 'browser') {
-    mockupCode = `
-      {/* Browser Mockup Frame */}
-      <div style={{ 
-        width: '90%', 
-        maxWidth: 1200, 
-        borderRadius: 12, 
-        overflow: 'hidden', 
-        boxShadow: '0 25px 80px rgba(0,0,0,0.5)',
-        border: '1px solid rgba(255,255,255,0.1)',
-        background: '#1e1e1e'
-      }}>
-        {/* Browser Header */}
-        <div style={{ 
-          background: '#2d2d2d', 
-          padding: '12px 16px', 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: 8,
-          borderBottom: '1px solid rgba(255,255,255,0.1)'
-        }}>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff5f57' }} />
-            <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#febc2e' }} />
-            <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#28c840' }} />
-          </div>
-          <div style={{ flex: 1, marginLeft: 12 }}>
-            <div style={{ 
-              background: '#1e1e1e', 
-              borderRadius: 6, 
-              padding: '6px 12px', 
-              fontSize: 12, 
-              color: '#888', 
-              fontFamily: montserrat 
-            }}>
-              app.example.com
-            </div>
-          </div>
-        </div>
-        {/* Video Content */}
-        <div style={{ position: 'relative', aspectRatio: '16/10', overflow: 'hidden' }}>
-          <Video 
-            src=${videoSrc} 
-            style={{ 
-              width: '100%', 
-              height: '100%', 
-              objectFit: 'cover',
-              transform: \`scale(\${zoomScale}) translate(\${zoomX}%, \${zoomY}%)\`
-            }} 
-          />
-        </div>
-      </div>`;
-  } else if (mockupFrame === 'macbook') {
-    mockupCode = `
-      {/* MacBook Mockup Frame */}
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center',
-        transform: 'perspective(1000px) rotateX(5deg)',
-        transformStyle: 'preserve-3d'
-      }}>
-        {/* Screen */}
-        <div style={{ 
-          width: 800, 
-          border: '2px solid #333', 
-          borderRadius: '12px 12px 0 0', 
-          overflow: 'hidden', 
-          background: '#1a1a1a',
-          boxShadow: '0 -10px 40px rgba(0,0,0,0.5)'
-        }}>
-          <div style={{ 
-            background: '#2d2d2d', 
-            padding: '8px 0', 
-            display: 'flex', 
-            justifyContent: 'center' 
-          }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#555' }} />
-          </div>
-          <div style={{ aspectRatio: '16/10', overflow: 'hidden' }}>
-            <Video 
-              src=${videoSrc} 
-              style={{ 
-                width: '100%', 
-                height: '100%', 
-                objectFit: 'cover',
-                transform: \`scale(\${zoomScale}) translate(\${zoomX}%, \${zoomY}%)\`
-              }} 
-            />
-          </div>
-        </div>
-        {/* MacBook Base */}
-        <div style={{ 
-          width: '110%', 
-          height: 14, 
-          background: 'linear-gradient(180deg, #555 0%, #333 100%)', 
-          borderRadius: '0 0 8px 8px',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
-        }} />
-      </div>`;
-  } else {
-    // Minimal mockup
-    mockupCode = `
-      {/* Minimal Mockup Frame */}
-      <div style={{ 
-        width: '85%', 
-        maxWidth: 1100,
-        borderRadius: 16, 
-        overflow: 'hidden', 
-        boxShadow: '0 25px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1)',
-        transform: \`perspective(1200px) rotateX(2deg) rotateY(-1deg)\`,
-        transformStyle: 'preserve-3d'
-      }}>
-        <div style={{ position: 'relative', aspectRatio: '16/9' }}>
-          <Video 
-            src=${videoSrc} 
-            style={{ 
-              width: '100%', 
-              height: '100%', 
-              objectFit: 'cover',
-              transform: \`scale(\${zoomScale}) translate(\${zoomX}%, \${zoomY}%)\`
-            }} 
-          />
-        </div>
-      </div>`;
-  }
-  
   return `
 // RECORDING SCENE ${i + 1}: ${rec.featureName}
 const RecordingScene${i + 1}: React.FC = () => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
   const { beatPulse } = useBeatSync(${bpm});
-  ${zoomCode}
-
-  // Entry animation — aligned to half-beat
-  const entryProgress = interpolate(frame, [0, ${halfBeat}], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   const entryScale = interpolate(frame, [0, ${halfBeat}], [0.85, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   const entryOpacity = interpolate(frame, [0, ${quarterBeat}], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-
-  // Label animation
   const labelOpacity = interpolate(frame, [0, 30, durationInFrames - 30, durationInFrames], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  
   return (
-    <AbsoluteFill style={{ 
-      backgroundColor: '#0a0a0f',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      perspective: '1200px'
-    }}>
-      {/* Background glow */}
-      <div style={{
-        position: 'absolute',
-        width: 800,
-        height: 400,
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%)',
-        filter: 'blur(60px)',
-        opacity: 0.5
-      }} />
-      
-      {/* Recording Container with 3D effect + beat pulse */}
-      <div style={{
-        transform: \`scale(\${entryScale * (1 + beatPulse * 0.008)})\`,
-        opacity: entryOpacity,
-      }}>
-        ${mockupCode}
+    <AbsoluteFill style={{ backgroundColor: '#0a0a0f' }}>
+      <div style={{ width: '100%', height: '100%', transform: "scale(" + (entryScale * (1 + beatPulse * 0.008)) + ")", opacity: entryOpacity }}>
+        <Video src={${videoSrc}} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
       </div>
-      
-      {/* Feature Label */}
-      <div style={{ 
-        position: 'absolute', 
-        bottom: 60, 
-        left: 0, 
-        right: 0, 
-        display: 'flex', 
-        justifyContent: 'center', 
-        opacity: labelOpacity, 
-        zIndex: 10 
-      }}>
-        <div style={{ 
-          background: 'rgba(0,0,0,0.7)', 
-          backdropFilter: 'blur(12px)', 
-          borderRadius: 12, 
-          padding: '12px 28px', 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: 12,
-          border: '1px solid rgba(255,255,255,0.1)'
-        }}>
-          <div style={{ 
-            width: 8, 
-            height: 8, 
-            borderRadius: '50%', 
-            background: 'linear-gradient(135deg, #a855f7, #ec4899)' 
-          }} />
-          <span style={{ 
-            fontFamily: montserrat, 
-            fontWeight: 600, 
-            fontSize: 20, 
-            color: '#ffffff' 
-          }}>${rec.featureName}</span>
+      <div style={{ position: 'absolute', bottom: 60, left: 0, right: 0, display: 'flex', justifyContent: 'center', opacity: labelOpacity, zIndex: 10 }}>
+        <div style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)', borderRadius: 12, padding: '12px 28px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'linear-gradient(135deg, #a855f7, #ec4899)' }} />
+          <span style={{ fontFamily: montserrat, fontWeight: 600, fontSize: 20, color: '#ffffff' }}>${rec.featureName}</span>
         </div>
       </div>
     </AbsoluteFill>
@@ -1407,11 +1159,14 @@ export async function remotionTranslatorNode(
   const script = state.videoScript;
   const totalDuration = script?.totalDuration || 300;
 
-  // Get audio configuration for the prompt
-  const rawAudioUrl = state.userPreferences?.audio?.url || "audio/audio1.mp3";
-  const isR2Audio = rawAudioUrl.startsWith("http");
-  const audioSrcCode = isR2Audio ? `"${rawAudioUrl}"` : `staticFile("${rawAudioUrl.replace(/^\//, '')}")`;
-  const audioImportCode = isR2Audio ? "{ Audio }" : "{ Audio, staticFile }";
+  // Compute audio source early so it can be injected into the prompt
+  const rawAudioUrl = state.userPreferences?.audio?.url || "";
+  const audioUrl = rawAudioUrl.startsWith("http") ? rawAudioUrl : rawAudioUrl.replace(/^\//, '');
+  const isR2Audio = audioUrl.startsWith("http");
+  const audioSrcCode = audioUrl
+    ? (isR2Audio ? `"${audioUrl}"` : `staticFile("${audioUrl}")`)
+    : `staticFile("audio/audio1.mp3")`;
+  const audioBpm = state.userPreferences?.audio?.bpm || state.videoScript?.music?.tempo || 120;
 
   const prompt = `${REMOTION_TRANSLATOR_SYSTEM_PROMPT}
 
@@ -1428,49 +1183,7 @@ ${reactCode}
 - FPS: 30
 - Resolution: 1920x1080
 
-## TEMPLATE STYLE: ${state.userPreferences.templateStyle || "aurora"}
-
-## REQUIREMENTS - ADAPT TO TEMPLATE STYLE
-
-${state.userPreferences.templateStyle === "blue-clean" ? `**BLUE-CLEAN TEMPLATE SPECIFICATIONS:**
-1. **BACKGROUNDS**: Clean white (#ffffff) backgrounds throughout
-   - Light scenes: White bg with subtle gray borders
-   - Use soft shadows instead of glows
-2. **COLOR PALETTE**: Blue #3b82f6, Dark gray #111827, Light gray #4b5563, White #ffffff
-3. **UI MOCKUPS**: Floating card components with:
-   - White backgrounds
-   - Gray borders (1px solid #e5e7eb)
-   - Soft shadows (0 10px 40px rgba(0,0,0,0.1))
-   - Rounded corners (12px border-radius)
-   - Mock menu items, chat interfaces, ticket lists
-4. **TEXT ANIMATIONS**: Typewriter effect with cursor blink
-5. **FONT**: Inter (400-700 weights)
-6. **PROGRESS**: Progress indicator dots at bottom (blue for active)` : state.userPreferences.templateStyle === "floating-glass" ? `**FLOATING-GLASS TEMPLATE SPECIFICATIONS:**
-1. **BACKGROUNDS**: Dark gradient backgrounds
-   - Deep navy/black with purple/violet accents
-   - Radial gradient glows
-2. **COLOR PALETTE**: Purple #8b5cf6, Violet #a78bfa, Dark #0a0a0f
-3. **UI MOCKUPS**: Glass morphism cards with:
-   - Semi-transparent backgrounds (rgba(255,255,255,0.1))
-   - Backdrop blur effects
-   - Subtle borders (rgba(255,255,255,0.1))
-   - Stronger shadows
-4. **TEXT ANIMATIONS**: Typewriter effect with cursor
-5. **FONT**: Inter (400-700 weights)
-6. **PROGRESS**: Progress rings and checkmarks` : `**AURORA TEMPLATE SPECIFICATIONS (DEFAULT):**
-1. **BACKGROUNDS**: Aurora gradient backgrounds
-   - Dark aurora: logo scenes, CTA scenes, card scenes (purples/pinks on dark)
-   - Light aurora: text reveal scenes, tagline scenes, screenshot scenes
-2. **COLOR PALETTE**: Purple #a855f7, Pink #ec4899, Dark #0a0a0f
-3. **UI CARDS**: White glass morphism cards
-   - White backgrounds with blur
-   - Purple/pink glows
-   - 3D perspective entries
-4. **TEXT ANIMATIONS**: WordByWordBlur for headlines, GradientAccentText for accents
-5. **FONT**: Montserrat (400-800 weights)
-6. **PROGRESS**: SceneProgressDots overlay at root level`}
-
-**COMMON REQUIREMENTS FOR ALL TEMPLATES:**
+## REQUIREMENTS - PREMIUM DEMO STYLE VIDEO
 1. **VARIABLE SCENE TIMING**:
    - Intro (first): ~90 frames (3s) — slow, dramatic
    - Middle scenes: ~45 frames (1.5s) — fast, punchy
@@ -1478,14 +1191,27 @@ ${state.userPreferences.templateStyle === "blue-clean" ? `**BLUE-CLEAN TEMPLATE 
    - Screenshots: ~75 frames (2.5s) — see the product
    - CTA (ALWAYS last): ~90 frames (3s) — slow, dramatic close
 2. **DISCRETE SCENES**: Use separate Sequence components with smooth entry animations
-3. **CTA**: The LAST scene MUST always be a call-to-action
-4. Convert ALL CSS animations to interpolate() or spring()
-11. CRITICAL: Include Audio component at root level with THIS EXACT audio:
+3. **AURORA BACKGROUNDS**: Alternate dark/light aurora backgrounds between scenes
+   - Dark aurora: logo scenes, CTA scenes, card scenes
+   - Light aurora: text reveal scenes, tagline scenes, screenshot scenes
+4. **TEXT ANIMATIONS**:
+   - Use WordByWordBlur for headlines and taglines (with gradientWordIndices for emphasis)
+   - Use GradientAccentText for highlighted/accent text
+   - Use LogoWithGlow for brand name/logo scenes
+5. **WHITE GLASS CARDS**: Use WhiteGlassCard with perspective/slide-up entry for feature content
+   - Card text: #111827 (dark gray), card subtext: #4b5563
+6. **SCENE PROGRESS DOTS**: Add SceneProgressDots overlay at the root level
+7. **FONT**: Montserrat only (400-800 weights), normal case (NOT uppercase)
+8. **COLOR PALETTE**: Purple #a855f7, Pink #ec4899, Dark #0a0a0f
+9. **CTA**: The LAST scene MUST always be a call-to-action
+10. Convert ALL CSS animations to interpolate() or spring()
+11. CRITICAL: Include Audio component at root level with the EXACT src provided:
     \`\`\`tsx
-    import ${audioImportCode} from 'remotion';
+    import { Audio${!isR2Audio ? ', staticFile' : ''} } from 'remotion';
     // Inside VideoComposition:
-    <Audio src=${audioSrcCode} volume={1} />
+    <Audio src={${audioSrcCode}} volume={1} />
     \`\`\`
+    DO NOT use staticFile("audio/audio1.mp3") — use the exact audio source shown above.
 
 ## MANDATORY: USE WEBSITE SCREENSHOT
 The website screenshot MUST be displayed in the video:
@@ -1511,27 +1237,6 @@ ${screenshots.map((s: any) => {
 - Apply effects like: scale, blur, opacity changes using interpolate()
 - If no screenshot file exists, do NOT use <Img> — use text and gradient backgrounds instead
 
-## LOGO USAGE
-${(() => {
-  const logos = (state.productData as any)?.logos || [];
-  if (logos.length > 0) {
-    const bestLogo = logos.sort((a: any, b: any) => b.confidence - a.confidence)[0];
-    const isR2 = bestLogo.url.startsWith("http");
-    const logoSrc = isR2 ? `"${bestLogo.url}"` : `staticFile("${bestLogo.url.replace(/^\//, '')}")`;
-    return `LOGO AVAILABLE — USE IN VIDEO:
-- Best logo: ${bestLogo.url} (confidence: ${bestLogo.confidence}, source: ${bestLogo.source})
-- Import: import { Img${!isR2 ? ', staticFile' : ''} } from 'remotion';
-- Usage: <Img src={${logoSrc}} style={{ width: 120, height: 'auto' }} />
-- Display logo prominently in intro scene
-- Animate with scale, opacity, or glow effects
-- Can be used as brand identifier throughout video`;
-  }
-  return `NO LOGO EXTRACTED — USE TEXT INSTEAD:
-- No logo image available
-- Use product name as text in intro scene
-- Apply text animations (LogoWithGlow component)`;
-})()}
-
 ## SCREEN RECORDINGS
 ${(() => {
   const recordings = state.recordings || [];
@@ -1552,8 +1257,8 @@ ${recordings.map((r) => {
 Output the complete Remotion composition code with FAST-PACED text animations. MUST include Audio component, text effects, and the website screenshot!`;
 
   try {
-    console.log("[RemotionTranslator] Calling Kimi K2.5...");
-    const response = await chatWithKimi([{ role: "user", content: prompt }], {
+    console.log("[RemotionTranslator] Calling Gemini Pro...");
+    const response = await chatWithGeminiPro([{ role: "user", content: prompt }], {
       temperature: 0.5,
       maxTokens: 16000, // Increased to prevent truncation
     });
@@ -1587,25 +1292,20 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
       "chars",
     );
 
-    // Get audio URL and BPM from preferences
-    const rawAudioUrl = state.userPreferences?.audio?.url || "audio/audio1.mp3";
-    // For local paths, strip leading slash for staticFile usage
-    const audioUrl = rawAudioUrl.startsWith("http") ? rawAudioUrl : rawAudioUrl.replace(/^\//, '');
-    const audioBpm = state.userPreferences?.audio?.bpm || state.videoScript?.music?.tempo || 120;
-
-    console.log(`[RemotionTranslator] Using audio: ${audioUrl} (BPM: ${audioBpm})`);
-    
-    // Get best logo URL if available
-    const logos = (state.productData as any)?.logos || [];
-    const bestLogo = logos.length > 0 ? logos.sort((a: any, b: any) => b.confidence - a.confidence)[0] : null;
-    const logoUrl = bestLogo ? (bestLogo.url.startsWith("http") ? `"${bestLogo.url}"` : `staticFile("${bestLogo.url.replace(/^\//, '')}")`) : undefined;
-
     // Check for truncation first
     if (isCodeTruncated(remotionCode)) {
       console.warn("[RemotionTranslator] Code appears truncated! Using fallback...");
       const productName = state.productData?.name || "Product";
-      remotionCode = generateFallbackComposition(productName, audioUrl, audioBpm, state.recordings, logoUrl);
+      remotionCode = generateFallbackComposition(productName, audioUrl, audioBpm, state.recordings);
       console.log("[RemotionTranslator] Using fallback composition");
+    }
+
+    // Replace any hardcoded audio paths the LLM may have used
+    if (audioUrl) {
+      remotionCode = remotionCode.replace(
+        /staticFile\(["']audio\/audio1\.mp3["']\)/g,
+        audioSrcCode,
+      );
     }
 
     // Validate and fix common syntax errors
@@ -1647,8 +1347,8 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
           "7. MUST end with: export default VideoComposition;";
 
         try {
-          const fixResponse = await chatWithKimi([{ role: "user", content: fixPrompt }], {
-            temperature: 0.3,
+          const fixResponse = await chatWithFastModel([{ role: "user", content: fixPrompt }], {
+            temperature: 0.2,
             maxTokens: 16000,
           });
           
@@ -1660,7 +1360,7 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
           const remainingErrors = hasBasicSyntaxErrors(fixedCode);
           if (fixedCode.length < 100) {
             console.warn("[RemotionTranslator] Fix returned empty/trivial code, using fallback");
-            finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm, state.recordings, logoUrl);
+            finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm, state.recordings);
           } else if (remainingErrors.length === 0) {
             console.log("[RemotionTranslator] Syntax errors fixed successfully");
             finalCode = fixedCode;
@@ -1675,7 +1375,7 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
               backtickChar + backtickChar + backtickChar + "\n\n" +
               "Return ONLY valid TypeScript/React code with ALL errors fixed. Ensure perfect syntax.";
             
-            const secondResponse = await chatWithKimi([{ role: "user", content: secondFixPrompt }], {
+            const secondResponse = await chatWithFastModel([{ role: "user", content: secondFixPrompt }], {
               temperature: 0.2,
               maxTokens: 16000,
             });
@@ -1687,18 +1387,18 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
             const finalCheck = hasBasicSyntaxErrors(secondFixed);
             if (secondFixed.length < 100) {
               console.warn("[RemotionTranslator] Second fix returned empty/trivial code, using fallback");
-              finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm, state.recordings, logoUrl);
+              finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm, state.recordings);
             } else if (finalCheck.length === 0) {
               console.log("[RemotionTranslator] Syntax errors fixed on second attempt");
               finalCode = secondFixed;
             } else {
               console.warn("[RemotionTranslator] Could not fix syntax errors, using fallback");
-              finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm, state.recordings, logoUrl);
+              finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm, state.recordings);
             }
           }
         } catch (fixError) {
           console.error("[RemotionTranslator] Error during syntax fix:", fixError);
-          finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm, state.recordings, logoUrl);
+          finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm, state.recordings);
         }
       }
     }

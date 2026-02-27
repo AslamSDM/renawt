@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Project {
@@ -21,9 +21,9 @@ model Project {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  user        User?    @relation(fields: [userId], references: [id])
-  recordings  ScreenRecording[]
-  images      ProductImage[]
+  user       User?             @relation(fields: [userId], references: [id])
+  recordings ScreenRecording[]
+  images     ProductImage[]
 
   @@index([userId])
 }
@@ -33,33 +33,33 @@ model ScreenRecording {
   projectId         String
   videoUrl          String
   duration          Float
-  cursorData        String   // JSON: [{x, y, timestamp, type: "move"|"click"|"input"}]
-  trimStart         Float    @default(0)     // Trim in seconds
-  trimEnd           Float    @default(0)     // 0 = no trim (use full duration)
-  zoomPoints        String   // JSON: [{time, x, y, scale, duration}]
+  cursorData        String // JSON: [{x, y, timestamp, type: "move"|"click"|"input"}]
+  trimStart         Float    @default(0) // Trim in seconds
+  trimEnd           Float    @default(0) // 0 = no trim (use full duration)
+  zoomPoints        String // JSON: [{time, x, y, scale, duration}]
   featureName       String
   description       String
   cursorStyle       String   @default("mac") // mac, windows
-  processedVideoUrl String?  // URL of processed video (cursor replaced, zooms baked in)
+  processedVideoUrl String? // URL of processed video (cursor replaced, zooms baked in)
   processingStatus  String   @default("pending") // pending | processing | complete | failed
   createdAt         DateTime @default(now())
 
-  project           Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
 }
 
 model ProductImage {
-  id          String   @id @default(cuid())
-  projectId   String
-  url         String
-  name        String
-  width       Int?
-  height      Int?
-  createdAt   DateTime @default(now())
-  
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  
+  id        String   @id @default(cuid())
+  projectId String
+  url       String
+  name      String
+  width     Int?
+  height    Int?
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
   @@index([projectId])
 }
 

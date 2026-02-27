@@ -156,6 +156,147 @@ export const CODE_GENERATOR_CONFIG: ModelConfig = {
   temperature: 0.3,
   maxTokens: 8000,
 };
+export const FAST_FIX_CONFIG: ModelConfig = { temperature: 0.2, maxTokens: 16000 };
+
+// ============================================
+// Gemini Flash (Google AI SDK) — fast, cheap
+// ============================================
+const GEMINI_FLASH_MODEL = process.env.GEMINI_FLASH_MODEL || "gemini-2.0-flash";
+
+export async function chatWithGeminiFlash(
+  messages: ChatMessage[],
+  config: ModelConfig = {},
+): Promise<ChatResponse> {
+  const { temperature = 0.7, maxTokens } = config;
+  const client = getGeminiClient();
+
+  console.log("[GeminiFlash] Calling Google AI Studio...");
+  console.log("[GeminiFlash] Model:", GEMINI_FLASH_MODEL);
+
+  const model = client.getGenerativeModel({
+    model: GEMINI_FLASH_MODEL,
+    generationConfig: {
+      temperature,
+      maxOutputTokens: maxTokens,
+    },
+  });
+
+  const systemMessage = messages.find((m) => m.role === "system");
+  const otherMessages = messages.filter((m) => m.role !== "system");
+
+  let fullPrompt = "";
+  if (systemMessage) {
+    fullPrompt = `${systemMessage.content}\n\n---\n\n`;
+  }
+  for (const msg of otherMessages) {
+    if (msg.role === "user") {
+      fullPrompt += msg.content;
+    } else if (msg.role === "assistant") {
+      fullPrompt += `\n\nAssistant: ${msg.content}\n\nUser: `;
+    }
+  }
+
+  try {
+    const result = await model.generateContent(fullPrompt);
+    const text = result.response.text();
+    console.log("[GeminiFlash] Response length:", text?.length || 0);
+    return { content: text || "" };
+  } catch (error) {
+    console.error("[GeminiFlash] API Error, falling back to Kimi:", error);
+    return chatWithKimi(messages, config);
+  }
+}
+
+// ============================================
+// Gemini Pro (Google AI SDK) — smart, for code gen
+// ============================================
+const GEMINI_PRO_MODEL = process.env.GEMINI_PRO_MODEL || "gemini-2.5-pro-preview-06-05";
+
+export async function chatWithGeminiPro(
+  messages: ChatMessage[],
+  config: ModelConfig = {},
+): Promise<ChatResponse> {
+  const { temperature = 0.7, maxTokens } = config;
+  const client = getGeminiClient();
+
+  console.log("[GeminiPro] Calling Google AI Studio...");
+  console.log("[GeminiPro] Model:", GEMINI_PRO_MODEL);
+
+  const model = client.getGenerativeModel({
+    model: GEMINI_PRO_MODEL,
+    generationConfig: {
+      temperature,
+      maxOutputTokens: maxTokens,
+    },
+  });
+
+  const systemMessage = messages.find((m) => m.role === "system");
+  const otherMessages = messages.filter((m) => m.role !== "system");
+
+  let fullPrompt = "";
+  if (systemMessage) {
+    fullPrompt = `${systemMessage.content}\n\n---\n\n`;
+  }
+  for (const msg of otherMessages) {
+    if (msg.role === "user") {
+      fullPrompt += msg.content;
+    } else if (msg.role === "assistant") {
+      fullPrompt += `\n\nAssistant: ${msg.content}\n\nUser: `;
+    }
+  }
+
+  try {
+    const result = await model.generateContent(fullPrompt);
+    const text = result.response.text();
+    console.log("[GeminiPro] Response length:", text?.length || 0);
+    return { content: text || "" };
+  } catch (error) {
+    console.error("[GeminiPro] API Error, falling back to Kimi:", error);
+    return chatWithKimi(messages, config);
+  }
+}
+
+// ============================================
+// Fast Model (Gemini 2.0 Flash via OpenRouter)
+// ============================================
+
+const FAST_MODEL = process.env.FAST_MODEL || "google/gemini-2.0-flash-001";
+
+/**
+ * Fast model for quick fixes (syntax errors, render error fixing).
+ * Uses Gemini 2.0 Flash via OpenRouter for ~3-5x faster responses than Kimi K2.5.
+ */
+export async function chatWithFastModel(
+  messages: ChatMessage[],
+  config: ModelConfig = {},
+): Promise<ChatResponse> {
+  const { temperature = 0.2, maxTokens } = config;
+  const client = getOpenRouterClient();
+
+  console.log("[FastModel] Calling API...");
+  console.log("[FastModel] Model:", FAST_MODEL);
+
+  try {
+    const completion = await client.chat.completions.create({
+      model: FAST_MODEL,
+      messages: messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      })),
+      temperature,
+      max_tokens: maxTokens,
+    });
+
+    const content = completion.choices[0]?.message?.content || "";
+    console.log("[FastModel] Response received, length:", content.length);
+
+    return { content };
+  } catch (error) {
+    console.error("[FastModel] API Error, falling back to Kimi:", error);
+    // Fallback to Kimi K2.5 if fast model fails
+    return chatWithKimi(messages, config);
+  }
+}
 
 // ============================================
 // OpenRouter Integration (Kimi K2.5 via OpenRouter)
