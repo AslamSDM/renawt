@@ -16,18 +16,50 @@ import {
 import { loadFont as loadInter } from "@remotion/google-fonts/Inter";
 import { loadFont as loadPoppins } from "@remotion/google-fonts/Poppins";
 import { loadFont as loadRoboto } from "@remotion/google-fonts/Roboto";
-import type { VideoScript, VideoScene, ScreenRecording, ZoomPoint } from "@/lib/types";
+import type {
+  VideoScript,
+  VideoScene,
+  ScreenRecording,
+  ZoomPoint,
+} from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AudioSelector, AudioFile } from "@/components/audio/AudioSelector";
 import {
-  Download, Copy, Loader2, Menu, X, Video, Monitor, Upload,
-  Laptop, Globe, Minus, Plus, ChevronUp, ChevronDown, Trash2,
-  GripVertical, Send, Play, Pause, Image as ImageIcon,
-  LayoutTemplate, Eye, EyeOff, Maximize2, ChevronLeft, ChevronRight,
-  ArrowLeft, Save, Edit2, Clock
+  Download,
+  Copy,
+  Loader2,
+  Menu,
+  X,
+  Video,
+  Monitor,
+  Upload,
+  Laptop,
+  Globe,
+  Minus,
+  Plus,
+  ChevronUp,
+  ChevronDown,
+  Trash2,
+  GripVertical,
+  Send,
+  Play,
+  Pause,
+  Image as ImageIcon,
+  LayoutTemplate,
+  Eye,
+  EyeOff,
+  Maximize2,
+  ChevronLeft,
+  ChevronRight,
+  ArrowLeft,
+  Save,
+  Edit2,
+  Clock,
+  History,
+  Film,
 } from "lucide-react";
 import { CursorTracker, detectZoomPoints } from "@/lib/recording/cursorTracker";
 import { toast } from "sonner";
@@ -51,11 +83,11 @@ const { fontFamily: robotoFont } = loadRoboto("normal", {
 });
 
 // Progress Bar Component
-const ProgressBar: React.FC<{ progress: number; status: string; showPercentage?: boolean }> = ({
-  progress,
-  status,
-  showPercentage = true
-}) => {
+const ProgressBar: React.FC<{
+  progress: number;
+  status: string;
+  showPercentage?: boolean;
+}> = ({ progress, status, showPercentage = true }) => {
   return (
     <div className="w-full space-y-2">
       <div className="flex items-center justify-between">
@@ -90,19 +122,31 @@ const TypingText: React.FC<{
   color = "#ffffff",
   fontFamily = poppinsFont,
   speed = 2,
-  cursor = true
+  cursor = true,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const f = Math.max(0, frame - delay);
   const charsToShow = Math.floor(f / speed);
   const displayText = text.slice(0, Math.min(charsToShow, text.length));
-  const cursorVisible = cursor && (frame % fps < fps / 2);
+  const cursorVisible = cursor && frame % fps < fps / 2;
 
   return (
-    <span style={{ fontSize, fontWeight: 700, fontFamily, color, lineHeight: 1.1, letterSpacing: "-0.02em", display: "inline-block" }}>
+    <span
+      style={{
+        fontSize,
+        fontWeight: 700,
+        fontFamily,
+        color,
+        lineHeight: 1.1,
+        letterSpacing: "-0.02em",
+        display: "inline-block",
+      }}
+    >
       {displayText}
-      {cursorVisible && charsToShow < text.length && <span style={{ opacity: 0.8 }}>|</span>}
+      {cursorVisible && charsToShow < text.length && (
+        <span style={{ opacity: 0.8 }}>|</span>
+      )}
     </span>
   );
 };
@@ -118,19 +162,39 @@ const BlurInText: React.FC<{
   fontSize = 96,
   delay = 0,
   color = "#ffffff",
-  fontFamily = poppinsFont
+  fontFamily = poppinsFont,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const f = Math.max(0, frame - delay);
-  const scale = spring({ frame: f, fps, config: { damping: 15, stiffness: 100 }, from: 0.8, to: 1 });
-  const opacity = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
+  const scale = spring({
+    frame: f,
+    fps,
+    config: { damping: 15, stiffness: 100 },
+    from: 0.8,
+    to: 1,
+  });
+  const opacity = interpolate(f, [0, 20], [0, 1], {
+    extrapolateRight: "clamp",
+  });
   const blur = interpolate(f, [0, 20], [20, 0], { extrapolateRight: "clamp" });
   const y = interpolate(f, [0, 20], [40, 0], { extrapolateRight: "clamp" });
 
   return (
-    <span style={{ fontSize, fontWeight: 800, fontFamily, color, opacity, filter: `blur(${blur}px)`,
-      transform: `translateY(${y}px) scale(${scale})`, display: "inline-block", lineHeight: 1.1, letterSpacing: "-0.03em" }}>
+    <span
+      style={{
+        fontSize,
+        fontWeight: 800,
+        fontFamily,
+        color,
+        opacity,
+        filter: `blur(${blur}px)`,
+        transform: `translateY(${y}px) scale(${scale})`,
+        display: "inline-block",
+        lineHeight: 1.1,
+        letterSpacing: "-0.03em",
+      }}
+    >
       {text}
     </span>
   );
@@ -149,21 +213,50 @@ const WordReveal: React.FC<{
   delay = 0,
   color = "#ffffff",
   fontFamily = interFont,
-  staggerDelay = 8
+  staggerDelay = 8,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const words = text.split(" ");
 
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4em", justifyContent: "center", fontSize, fontFamily, color, lineHeight: 1.3, fontWeight: 600 }}>
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "0.4em",
+        justifyContent: "center",
+        fontSize,
+        fontFamily,
+        color,
+        lineHeight: 1.3,
+        fontWeight: 600,
+      }}
+    >
       {words.map((word, i) => {
         const f = Math.max(0, frame - delay - i * staggerDelay);
-        const opacity = interpolate(f, [0, 15], [0, 1], { extrapolateRight: "clamp" });
-        const y = interpolate(f, [0, 15], [30, 0], { extrapolateRight: "clamp" });
-        const scale = spring({ frame: f, fps, config: { damping: 12, stiffness: 150 }, from: 0.5, to: 1 });
+        const opacity = interpolate(f, [0, 15], [0, 1], {
+          extrapolateRight: "clamp",
+        });
+        const y = interpolate(f, [0, 15], [30, 0], {
+          extrapolateRight: "clamp",
+        });
+        const scale = spring({
+          frame: f,
+          fps,
+          config: { damping: 12, stiffness: 150 },
+          from: 0.5,
+          to: 1,
+        });
         return (
-          <span key={i} style={{ opacity, transform: `translateY(${y}px) scale(${scale})`, display: "inline-block" }}>
+          <span
+            key={i}
+            style={{
+              opacity,
+              transform: `translateY(${y}px) scale(${scale})`,
+              display: "inline-block",
+            }}
+          >
             {word}
           </span>
         );
@@ -183,34 +276,67 @@ const BodyText: React.FC<{
   fontSize = 28,
   delay = 0,
   color = "#e0e0e0",
-  fontFamily = interFont
+  fontFamily = interFont,
 }) => {
   const frame = useCurrentFrame();
   const f = Math.max(0, frame - delay);
-  const opacity = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
+  const opacity = interpolate(f, [0, 20], [0, 1], {
+    extrapolateRight: "clamp",
+  });
   const y = interpolate(f, [0, 20], [20, 0], { extrapolateRight: "clamp" });
 
   return (
-    <p style={{ fontSize, fontFamily, color, opacity, transform: `translateY(${y}px)`, lineHeight: 1.5, fontWeight: 400, letterSpacing: "0.01em", margin: 0 }}>
+    <p
+      style={{
+        fontSize,
+        fontFamily,
+        color,
+        opacity,
+        transform: `translateY(${y}px)`,
+        lineHeight: 1.5,
+        fontWeight: 400,
+        letterSpacing: "0.01em",
+        margin: 0,
+      }}
+    >
       {text}
     </p>
   );
 };
 
-const GradientBackground: React.FC<{ colors: string[]; animated?: boolean }> = ({ colors, animated = true }) => {
+const GradientBackground: React.FC<{
+  colors: string[];
+  animated?: boolean;
+}> = ({ colors, animated = true }) => {
   const frame = useCurrentFrame();
   const angle = animated ? interpolate(frame, [0, 300], [0, 360]) : 45;
-  return <AbsoluteFill style={{ background: `linear-gradient(${angle}deg, ${colors.join(", ")})` }} />;
+  return (
+    <AbsoluteFill
+      style={{
+        background: `linear-gradient(${angle}deg, ${colors.join(", ")})`,
+      }}
+    />
+  );
 };
 
 // Scene Preview Component - Shows rough video preview
-const ScenePreview: React.FC<{ scene: VideoScene; isActive?: boolean }> = ({ scene, isActive }) => {
+const ScenePreview: React.FC<{ scene: VideoScene; isActive?: boolean }> = ({
+  scene,
+  isActive,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const sceneDuration = scene.endFrame - scene.startFrame;
   const isLastScene = frame > sceneDuration - 30;
-  const fadeIn = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: "clamp" });
-  const fadeOut = interpolate(frame, [sceneDuration - 20, sceneDuration], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const fadeIn = interpolate(frame, [0, 15], [0, 1], {
+    extrapolateRight: "clamp",
+  });
+  const fadeOut = interpolate(
+    frame,
+    [sceneDuration - 20, sceneDuration],
+    [1, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
   const opacity = Math.min(fadeIn, fadeOut);
   const isIntro = scene.type === "intro";
   const isCTA = scene.type === "cta";
@@ -220,36 +346,85 @@ const ScenePreview: React.FC<{ scene: VideoScene; isActive?: boolean }> = ({ sce
   const hasScreenshot = scene.content.screenshotUrl;
 
   return (
-    <AbsoluteFill style={{ opacity, backgroundColor: scene.style.background || "#0a0a0a" }}>
-      <div style={{
-        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-        padding: "60px 100px", textAlign: "center", gap: "32px", height: "100%"
-      }}>
+    <AbsoluteFill
+      style={{ opacity, backgroundColor: scene.style.background || "#0a0a0a" }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "60px 100px",
+          textAlign: "center",
+          gap: "32px",
+          height: "100%",
+        }}
+      >
         {/* Scene Type Badge */}
-        <div style={{
-          padding: "6px 12px", borderRadius: "4px", background: "rgba(255,255,255,0.1)",
-          fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.1em",
-          color: scene.style.textColor || "#ffffff"
-        }}>
+        <div
+          style={{
+            padding: "6px 12px",
+            borderRadius: "4px",
+            background: "rgba(255,255,255,0.1)",
+            fontSize: "12px",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+            color: scene.style.textColor || "#ffffff",
+          }}
+        >
           {scene.type}
         </div>
 
         {/* Screenshot Preview */}
         {hasScreenshot && (
-          <div style={{ maxWidth: "600px", borderRadius: "12px", overflow: "hidden", boxShadow: "0 20px 40px rgba(0,0,0,0.5)" }}>
-            <img src={scene.content.screenshotUrl} alt="Screenshot" style={{ width: "100%", height: "auto" }} />
+          <div
+            style={{
+              maxWidth: "600px",
+              borderRadius: "12px",
+              overflow: "hidden",
+              boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
+            }}
+          >
+            <img
+              src={scene.content.screenshotUrl}
+              alt="Screenshot"
+              style={{ width: "100%", height: "auto" }}
+            />
           </div>
         )}
 
         {/* Recording Preview Placeholder */}
         {hasRecording && !hasScreenshot && (
-          <div style={{
-            width: "600px", height: "340px", background: "#1a1a2e", borderRadius: "12px",
-            display: "flex", alignItems: "center", justifyContent: "center", border: "2px dashed rgba(255,255,255,0.2)"
-          }}>
-            <div style={{ textAlign: "center", color: scene.style.textColor || "#ffffff" }}>
-              <Video style={{ width: "48px", height: "48px", margin: "0 auto 16px", opacity: 0.5 }} />
-              <p style={{ fontSize: "14px", opacity: 0.7 }}>Recording: {scene.content.headline}</p>
+          <div
+            style={{
+              width: "600px",
+              height: "340px",
+              background: "#1a1a2e",
+              borderRadius: "12px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "2px dashed rgba(255,255,255,0.2)",
+            }}
+          >
+            <div
+              style={{
+                textAlign: "center",
+                color: scene.style.textColor || "#ffffff",
+              }}
+            >
+              <Video
+                style={{
+                  width: "48px",
+                  height: "48px",
+                  margin: "0 auto 16px",
+                  opacity: 0.5,
+                }}
+              />
+              <p style={{ fontSize: "14px", opacity: 0.7 }}>
+                Recording: {scene.content.headline}
+              </p>
             </div>
           </div>
         )}
@@ -258,17 +433,39 @@ const ScenePreview: React.FC<{ scene: VideoScene; isActive?: boolean }> = ({ sce
         {scene.content.headline && (
           <div style={{ maxWidth: "900px" }}>
             {isIntro ? (
-              <BlurInText text={scene.content.headline} fontSize={72} delay={10} color={scene.style.textColor || "#ffffff"} />
+              <BlurInText
+                text={scene.content.headline}
+                fontSize={72}
+                delay={10}
+                color={scene.style.textColor || "#ffffff"}
+              />
             ) : (
-              <WordReveal text={scene.content.headline} fontSize={48} delay={8} color={scene.style.textColor || "#ffffff"} staggerDelay={6} />
+              <WordReveal
+                text={scene.content.headline}
+                fontSize={48}
+                delay={8}
+                color={scene.style.textColor || "#ffffff"}
+                staggerDelay={6}
+              />
             )}
           </div>
         )}
 
         {/* Subtext */}
         {scene.content.subtext && (
-          <div style={{ marginTop: "16px", maxWidth: "700px", opacity: isLastScene ? 0.5 : 1 }}>
-            <BodyText text={scene.content.subtext} fontSize={24} delay={isIntro ? 30 : 20} color={scene.style.textColor || "#e0e0e0"} />
+          <div
+            style={{
+              marginTop: "16px",
+              maxWidth: "700px",
+              opacity: isLastScene ? 0.5 : 1,
+            }}
+          >
+            <BodyText
+              text={scene.content.subtext}
+              fontSize={24}
+              delay={isIntro ? 30 : 20}
+              color={scene.style.textColor || "#e0e0e0"}
+            />
           </div>
         )}
       </div>
@@ -291,12 +488,19 @@ const SingleScenePlayer: React.FC<{ scene: VideoScene }> = ({ scene }) => {
   );
 };
 
-const DynamicComposition: React.FC<{ script: VideoScript; audioUrl?: string | null }> = ({ script, audioUrl }) => {
+const DynamicComposition: React.FC<{
+  script: VideoScript;
+  audioUrl?: string | null;
+}> = ({ script, audioUrl }) => {
   return (
     <AbsoluteFill style={{ backgroundColor: "#0a0a0a" }}>
       {audioUrl && <Audio src={audioUrl} volume={0.8} />}
       {script.scenes.map((scene) => (
-        <Sequence key={scene.id} from={scene.startFrame} durationInFrames={scene.endFrame - scene.startFrame}>
+        <Sequence
+          key={scene.id}
+          from={scene.startFrame}
+          durationInFrames={scene.endFrame - scene.startFrame}
+        >
           <ScenePreview scene={scene} />
         </Sequence>
       ))}
@@ -308,20 +512,62 @@ const PlaceholderComposition: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const scale = spring({ frame, fps, config: { damping: 12, stiffness: 100 } });
-  const opacity = interpolate(frame, [0, 25], [0, 1], { extrapolateRight: "clamp" });
+  const opacity = interpolate(frame, [0, 25], [0, 1], {
+    extrapolateRight: "clamp",
+  });
   const floatY = Math.sin(frame * 0.05) * 5;
 
   return (
-    <AbsoluteFill style={{ backgroundColor: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ opacity, transform: `scale(${scale}) translateY(${floatY}px)`, textAlign: "center", maxWidth: "800px", padding: "40px" }}>
-        <div style={{ fontSize: "80px", marginBottom: "40px", opacity: interpolate(frame, [10, 30], [0, 1], { extrapolateRight: "clamp" }) }}>
+    <AbsoluteFill
+      style={{
+        backgroundColor: "#0a0a0a",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        style={{
+          opacity,
+          transform: `scale(${scale}) translateY(${floatY}px)`,
+          textAlign: "center",
+          maxWidth: "800px",
+          padding: "40px",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "80px",
+            marginBottom: "40px",
+            opacity: interpolate(frame, [10, 30], [0, 1], {
+              extrapolateRight: "clamp",
+            }),
+          }}
+        >
           🎬
         </div>
         <div style={{ marginBottom: "24px" }}>
-          <TypingText text="Your Video Awaits" fontSize={72} delay={20} color="#ffffff" speed={3} cursor={true} />
+          <TypingText
+            text="Your Video Awaits"
+            fontSize={72}
+            delay={20}
+            color="#ffffff"
+            speed={3}
+            cursor={true}
+          />
         </div>
-        <div style={{ opacity: interpolate(frame, [50, 70], [0, 1], { extrapolateRight: "clamp" }) }}>
-          <BodyText text="Enter a description to begin production" fontSize={24} color="#666666" />
+        <div
+          style={{
+            opacity: interpolate(frame, [50, 70], [0, 1], {
+              extrapolateRight: "clamp",
+            }),
+          }}
+        >
+          <BodyText
+            text="Enter a description to begin production"
+            fontSize={24}
+            color="#666666"
+          />
         </div>
       </div>
     </AbsoluteFill>
@@ -343,14 +589,25 @@ export default function ProjectCreativePage() {
 
   // Input states
   const [description, setDescription] = useState("");
-  const [style, setStyle] = useState<"professional" | "playful" | "minimal" | "bold">("professional");
-  const [videoType, setVideoType] = useState<"demo" | "creative" | "fast-paced" | "cinematic" | "product-demo">("creative");
+  const [style, setStyle] = useState<
+    "professional" | "playful" | "minimal" | "bold"
+  >("professional");
+  const [videoType, setVideoType] = useState<
+    | "demo"
+    | "creative"
+    | "fast-paced"
+    | "cinematic"
+    | "product-demo"
+    | "freestyle"
+  >("creative");
   const [duration, setDuration] = useState<number>(38);
   const [url, setUrl] = useState("");
   const [selectedAudio, setSelectedAudio] = useState<AudioFile | null>(null);
 
   // Map style to template style
-  const getTemplateStyle = (selectedStyle: string): "aurora" | "floating-glass" | "blue-clean" => {
+  const getTemplateStyle = (
+    selectedStyle: string,
+  ): "aurora" | "floating-glass" | "blue-clean" => {
     switch (selectedStyle) {
       case "professional":
         return "aurora";
@@ -373,7 +630,9 @@ export default function ProjectCreativePage() {
 
   // Data states
   const [script, setScript] = useState<VideoScript | null>(null);
-  const [editableScript, setEditableScript] = useState<VideoScript | null>(null);
+  const [editableScript, setEditableScript] = useState<VideoScript | null>(
+    null,
+  );
   const [productData, setProductData] = useState<any>(null);
   const [remotionCode, setRemotionCode] = useState<string | null>(null);
   const [renderedVideoUrl, setRenderedVideoUrl] = useState<string | null>(null);
@@ -392,10 +651,13 @@ export default function ProjectCreativePage() {
   }
   const [versions, setVersions] = useState<VideoVersion[]>([]);
   const [showVersionSidebar, setShowVersionSidebar] = useState(false);
+  const [showGenerationsSidebar, setShowGenerationsSidebar] = useState(false);
   const [currentVersionId, setCurrentVersionId] = useState<string | null>(null);
 
   // UI states
-  const [activeTab, setActiveTab] = useState<"input" | "script" | "preview">("input");
+  const [activeTab, setActiveTab] = useState<
+    "input" | "script" | "preview" | "logs"
+  >("input");
   const [showFullPreview, setShowFullPreview] = useState(false);
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -412,20 +674,31 @@ export default function ProjectCreativePage() {
   const [showRecordingModal, setShowRecordingModal] = useState(false);
   const [recordingFeatureName, setRecordingFeatureName] = useState("");
   const [recordingDescription, setRecordingDescription] = useState("");
-  const [recordingMode, setRecordingMode] = useState<"record" | "upload">("record");
+  const [recordingMode, setRecordingMode] = useState<"record" | "upload">(
+    "record",
+  );
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
   // Editor states
-  const [editingRecording, setEditingRecording] = useState<ScreenRecording | null>(null);
+  const [editingRecording, setEditingRecording] =
+    useState<ScreenRecording | null>(null);
   const [editTrimStart, setEditTrimStart] = useState(0);
   const [editTrimEnd, setEditTrimEnd] = useState(0);
-  const [editMockupFrame, setEditMockupFrame] = useState<"browser" | "macbook" | "minimal">("minimal");
-  const [editCursorStyle, setEditCursorStyle] = useState<"normal" | "hand">("hand");
+  const [editMockupFrame, setEditMockupFrame] = useState<
+    "browser" | "macbook" | "minimal"
+  >("minimal");
+  const [editCursorStyle, setEditCursorStyle] = useState<"normal" | "hand">(
+    "hand",
+  );
 
   // CV Processing states
-  const [processingRecordings, setProcessingRecordings] = useState<Set<string>>(new Set());
-  const [recordingProgress, setRecordingProgress] = useState<Record<string, number>>({});
+  const [processingRecordings, setProcessingRecordings] = useState<Set<string>>(
+    new Set(),
+  );
+  const [recordingProgress, setRecordingProgress] = useState<
+    Record<string, number>
+  >({});
 
   // Screenshot & Logo states
   const [scrapedScreenshots, setScrapedScreenshots] = useState<any[]>([]);
@@ -435,14 +708,23 @@ export default function ProjectCreativePage() {
 
   const [scriptChatInput, setScriptChatInput] = useState("");
   const [scriptChatLoading, setScriptChatLoading] = useState(false);
-  const [scriptChatHistory, setScriptChatHistory] = useState<Array<{ role: "user" | "assistant"; text: string }>>([]);
+  const [scriptChatHistory, setScriptChatHistory] = useState<
+    Array<{ role: "user" | "assistant"; text: string }>
+  >([]);
 
   // Post-render editing states
   const [videoEditInput, setVideoEditInput] = useState("");
   const [videoEditLoading, setVideoEditLoading] = useState(false);
-  const [videoEditHistory, setVideoEditHistory] = useState<Array<{ role: "user" | "assistant"; text: string }>>([]);
+  const [videoEditHistory, setVideoEditHistory] = useState<
+    Array<{ role: "user" | "assistant"; text: string }>
+  >([]);
   const [editProgress, setEditProgress] = useState(0);
   const [editStatus, setEditStatus] = useState("");
+
+  // Scene text editing state (local, for immediate UI feedback before debounce)
+  const [pendingSceneText, setPendingSceneText] = useState<
+    Record<string, { headline?: string; subtext?: string }>
+  >({});
 
   // Refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -452,10 +734,17 @@ export default function ProjectCreativePage() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const logsEndRef = useRef<HTMLDivElement>(null);
   const editVideoRef = useRef<HTMLVideoElement>(null);
+  const sceneDebounceRef = useRef<Record<string, NodeJS.Timeout>>({});
 
-  const addLog = (message: string, type: "info" | "success" | "error" = "info") => {
+  const addLog = (
+    message: string,
+    type: "info" | "success" | "error" = "info",
+  ) => {
     const prefix = type === "success" ? "✓" : type === "error" ? "✗" : "→";
-    setLogs((prev) => [...prev, `[${new Date().toLocaleTimeString()}] ${prefix} ${message}`]);
+    setLogs((prev) => [
+      ...prev,
+      `[${new Date().toLocaleTimeString()}] ${prefix} ${message}`,
+    ]);
   };
 
   useEffect(() => {
@@ -473,7 +762,8 @@ export default function ProjectCreativePage() {
   // Unified polling for recording processing status (CV detection + video processing)
   useEffect(() => {
     const pendingRecordings = recordings.filter(
-      (r) => r.processingStatus === "pending" || r.processingStatus === "processing"
+      (r) =>
+        r.processingStatus === "pending" || r.processingStatus === "processing",
     );
     if (pendingRecordings.length === 0) return;
 
@@ -489,8 +779,8 @@ export default function ProjectCreativePage() {
             // Stop polling by marking as complete
             setRecordings((prev) =>
               prev.map((r) =>
-                r.id === rec.id ? { ...r, processingStatus: "complete" } : r
-              )
+                r.id === rec.id ? { ...r, processingStatus: "complete" } : r,
+              ),
             );
             continue;
           }
@@ -499,9 +789,13 @@ export default function ProjectCreativePage() {
             setRecordings((prev) =>
               prev.map((r) =>
                 r.id === rec.id
-                  ? { ...r, processedVideoUrl: data.processedVideoUrl, processingStatus: "complete" }
-                  : r
-              )
+                  ? {
+                      ...r,
+                      processedVideoUrl: data.processedVideoUrl,
+                      processingStatus: "complete",
+                    }
+                  : r,
+              ),
             );
             setProcessingRecordings((prev) => {
               const next = new Set(prev);
@@ -519,8 +813,8 @@ export default function ProjectCreativePage() {
                       zoomPoints: data.zoomPoints || r.zoomPoints,
                       processingStatus: "complete",
                     }
-                  : r
-              )
+                  : r,
+              ),
             );
             setProcessingRecordings((prev) => {
               const next = new Set(prev);
@@ -531,8 +825,8 @@ export default function ProjectCreativePage() {
           } else if (data.status === "failed") {
             setRecordings((prev) =>
               prev.map((r) =>
-                r.id === rec.id ? { ...r, processingStatus: "failed" } : r
-              )
+                r.id === rec.id ? { ...r, processingStatus: "failed" } : r,
+              ),
             );
             addLog(`Processing failed for ${rec.featureName}`, "error");
           } else if (data.status === "processing") {
@@ -542,7 +836,10 @@ export default function ProjectCreativePage() {
             }));
           }
         } catch (err) {
-          console.error(`[Creative] Failed to check status for ${rec.id}:`, err);
+          console.error(
+            `[Creative] Failed to check status for ${rec.id}:`,
+            err,
+          );
         }
       }
     }, 4000);
@@ -588,13 +885,17 @@ export default function ProjectCreativePage() {
       } else {
         // Try to load from R2 if not in project
         try {
-          const versionsResponse = await fetch(`/api/versions?projectId=${projectId}`);
+          const versionsResponse = await fetch(
+            `/api/versions?projectId=${projectId}`,
+          );
           if (versionsResponse.ok) {
             const versionsData = await versionsResponse.json();
             if (versionsData.versions && versionsData.versions.length > 0) {
               setVersions(versionsData.versions);
               // Find the active version
-              const activeVersion = versionsData.versions.find((v: VideoVersion) => v.isActive);
+              const activeVersion = versionsData.versions.find(
+                (v: VideoVersion) => v.isActive,
+              );
               if (activeVersion) {
                 setCurrentVersionId(activeVersion.id);
               }
@@ -622,12 +923,46 @@ export default function ProjectCreativePage() {
         // and the polling effect will check status and handle "not_found".
         const loaded = (data.recordings || []).map((r: any) => ({
           ...r,
-          processingStatus: r.processedVideoUrl ? "complete" : r.processingStatus,
+          processingStatus: r.processedVideoUrl
+            ? "complete"
+            : r.processingStatus,
         }));
         setRecordings(loaded);
       }
     } catch (err) {
       console.error("Failed to load recordings:", err);
+    }
+  };
+
+  const VPS_API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+
+  /** Build VPS headers with a signed auth token */
+  const vpsHeaders = (token: string): Record<string, string> => ({
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  });
+
+  /**
+   * Get a short-lived JWT for VPS authentication.
+   * Calls the Vercel /api/auth/vps-token route (session-authenticated).
+   * Returns the token string, or null on failure.
+   */
+  const getVpsToken = async (): Promise<string | null> => {
+    try {
+      const res = await fetch("/api/auth/vps-token");
+      if (!res.ok) {
+        if (res.status === 401) {
+          toast.error("Authentication required. Please sign in.");
+        } else {
+          toast.error("Failed to authenticate");
+        }
+        return null;
+      }
+      const data = await res.json();
+      return data.token || null;
+    } catch (err) {
+      toast.error("Failed to connect to auth server");
+      return null;
     }
   };
 
@@ -682,9 +1017,154 @@ export default function ProjectCreativePage() {
     addLog(`Style: ${style} (${getTemplateStyle(style)}), Type: ${videoType}`);
 
     try {
-      const response = await fetch("/api/creative/generate", {
+      // Get auth token for VPS
+      const token = await getVpsToken();
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      // Freestyle mode: single call does scrape + code gen + render
+      if (videoType === "freestyle") {
+        addLog("Freestyle mode — Gemini Pro with full creative freedom");
+        setActiveTab("logs");
+
+        const response = await fetch(`${VPS_API_URL}/api/creative/freestyle`, {
+          method: "POST",
+          headers: vpsHeaders(token),
+          body: JSON.stringify({
+            description,
+            url: url.trim() || undefined,
+            style,
+            duration,
+            audio: selectedAudio
+              ? {
+                  url: selectedAudio.url,
+                  bpm: selectedAudio.bpm,
+                  duration: selectedAudio.duration,
+                }
+              : undefined,
+          }),
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || "Freestyle generation failed");
+        }
+
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error("No response body");
+        const decoder = new TextDecoder();
+        let buf = "";
+        let currentRemotionCode = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          const lines = buf.split("\n");
+          buf = lines.pop() || "";
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            try {
+              const event = JSON.parse(line);
+              switch (event.type) {
+                case "status":
+                  addLog(event.data.message || event.data.step);
+                  setGenerationStatus(event.data.message || "Processing...");
+                  if (event.data.step === "scraping") setGenerationProgress(15);
+                  else if (event.data.step === "generating")
+                    setGenerationProgress(40);
+                  else if (event.data.step === "code-ready")
+                    setGenerationProgress(60);
+                  else if (event.data.step === "rendering")
+                    setGenerationProgress(75);
+                  else if (event.data.step === "fixing")
+                    setGenerationProgress(80);
+                  else if (event.data.step === "complete")
+                    setGenerationProgress(100);
+                  break;
+                case "productData":
+                  setProductData(event.data);
+                  await saveProject({
+                    productData: event.data,
+                    sourceUrl: url,
+                  });
+                  addLog("Product data extracted", "success");
+                  break;
+                case "remotionCode":
+                  currentRemotionCode = event.data;
+                  setRemotionCode(event.data);
+                  addLog("Composition generated", "success");
+                  break;
+                case "videoUrl":
+                  setRenderedVideoUrl(event.data);
+                  await saveProject({
+                    videoUrl: event.data,
+                    status: "RENDERED",
+                  });
+
+                  const freestyleVersion: VideoVersion = {
+                    id: `v-${Date.now()}`,
+                    versionNumber: versions.length + 1,
+                    timestamp: Date.now(),
+                    editMessage: "Freestyle render",
+                    remotionCode: currentRemotionCode,
+                    videoUrl: event.data,
+                    isActive: true,
+                  };
+
+                  const freestyleVersions = versions.map((v) => ({
+                    ...v,
+                    isActive: false,
+                  }));
+                  freestyleVersions.push(freestyleVersion);
+                  setVersions(freestyleVersions);
+                  setCurrentVersionId(freestyleVersion.id);
+
+                  await saveProject({ versions: freestyleVersions });
+
+                  try {
+                    await fetch("/api/versions", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        projectId,
+                        versions: freestyleVersions,
+                      }),
+                    });
+                  } catch (err) {
+                    console.warn("Failed to save versions to R2:", err);
+                  }
+
+                  setActiveTab("preview");
+                  addLog("Video rendered!", "success");
+                  break;
+                case "error":
+                  toast.error(event.data.errors?.join(", ") || "Error");
+                  addLog(event.data.errors?.[0] || "Error occurred", "error");
+                  break;
+                case "complete":
+                  addLog(
+                    event.data.success
+                      ? "Freestyle complete!"
+                      : "Generation had errors",
+                    event.data.success ? "success" : "error",
+                  );
+                  break;
+              }
+            } catch {}
+          }
+        }
+
+        setLoading(false);
+        setGenerationProgress(0);
+        return;
+      }
+
+      const response = await fetch(`${VPS_API_URL}/api/creative/generate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: vpsHeaders(token),
         body: JSON.stringify({
           description,
           style,
@@ -692,24 +1172,36 @@ export default function ProjectCreativePage() {
           videoType,
           duration,
           url: url.trim() || undefined,
-          projectId,
-          audio: selectedAudio ? { url: selectedAudio.url, bpm: selectedAudio.bpm, duration: selectedAudio.duration } : undefined,
-          recordings: recordings.length > 0 ? recordings.map(r => ({
-            id: r.id, videoUrl: r.videoUrl, duration: r.duration, featureName: r.featureName,
-            description: r.description, trimStart: r.trimStart, trimEnd: r.trimEnd,
-            mockupFrame: r.mockupFrame || "minimal", zoomPoints: r.zoomPoints || [],
-            cursorStyle: r.cursorStyle || "hand", cursorData: r.cursorData || [],
-            cursorSource: r.cursorSource || "javascript",
-            processedVideoUrl: r.processedVideoUrl,
-          })) : undefined,
+          audio: selectedAudio
+            ? {
+                url: selectedAudio.url,
+                bpm: selectedAudio.bpm,
+                duration: selectedAudio.duration,
+              }
+            : undefined,
+          recordings:
+            recordings.length > 0
+              ? recordings.map((r) => ({
+                  id: r.id,
+                  videoUrl: r.videoUrl,
+                  duration: r.duration,
+                  featureName: r.featureName,
+                  description: r.description,
+                  trimStart: r.trimStart,
+                  trimEnd: r.trimEnd,
+                  mockupFrame: r.mockupFrame || "minimal",
+                  zoomPoints: r.zoomPoints || [],
+                  cursorStyle: r.cursorStyle || "hand",
+                  cursorData: r.cursorData || [],
+                  cursorSource: r.cursorSource || "javascript",
+                  processedVideoUrl: r.processedVideoUrl,
+                }))
+              : undefined,
         }),
       });
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
-        if (response.status === 402) {
-          throw new Error(errData.error || "Insufficient credits");
-        }
         throw new Error(errData.error || "API request failed");
       }
       setGenerationProgress(15);
@@ -737,17 +1229,33 @@ export default function ProjectCreativePage() {
               case "status":
                 addLog(`${event.data.message || event.data.step}`);
                 // Update progress based on status messages
-                const message = (event.data.message || event.data.step || "").toLowerCase();
-                if (message.includes("extracting") || message.includes("scraping")) {
+                const message = (
+                  event.data.message ||
+                  event.data.step ||
+                  ""
+                ).toLowerCase();
+                if (
+                  message.includes("extracting") ||
+                  message.includes("scraping")
+                ) {
                   setGenerationProgress(25);
                   setGenerationStatus("Extracting product data...");
-                } else if (message.includes("analyzing") || message.includes("processing")) {
+                } else if (
+                  message.includes("analyzing") ||
+                  message.includes("processing")
+                ) {
                   setGenerationProgress(35);
                   setGenerationStatus("Analyzing content...");
-                } else if (message.includes("generating") || message.includes("creating")) {
+                } else if (
+                  message.includes("generating") ||
+                  message.includes("creating")
+                ) {
                   setGenerationProgress(60);
                   setGenerationStatus("Generating video script...");
-                } else if (message.includes("finalizing") || message.includes("optimizing")) {
+                } else if (
+                  message.includes("finalizing") ||
+                  message.includes("optimizing")
+                ) {
                   setGenerationProgress(85);
                   setGenerationStatus("Finalizing script...");
                 }
@@ -760,12 +1268,18 @@ export default function ProjectCreativePage() {
                 if (event.data.screenshots?.length > 0) {
                   setScrapedScreenshots(event.data.screenshots);
                   setSelectedScreenshots(event.data.screenshots); // Default select all
-                  addLog(`${event.data.screenshots.length} screenshots captured`, "success");
+                  addLog(
+                    `${event.data.screenshots.length} screenshots captured`,
+                    "success",
+                  );
                 }
 
                 if (event.data.logos?.length > 0) {
                   setExtractedLogos(event.data.logos);
-                  addLog(`${event.data.logos.length} logos extracted`, "success");
+                  addLog(
+                    `${event.data.logos.length} logos extracted`,
+                    "success",
+                  );
                 }
 
                 setGenerationProgress(35);
@@ -775,19 +1289,60 @@ export default function ProjectCreativePage() {
               case "videoScript":
                 setScript(event.data);
                 setEditableScript(event.data);
-                await saveProject({ script: event.data, description, status: "DRAFT" });
+                await saveProject({
+                  script: event.data,
+                  description,
+                  status: "DRAFT",
+                });
                 setGenerationProgress(100);
                 setGenerationStatus("Script generation complete!");
-                addLog(`Script created with ${event.data.scenes?.length || 0} scenes`, "success");
+                addLog(
+                  `Script created with ${event.data.scenes?.length || 0} scenes`,
+                  "success",
+                );
                 break;
               case "remotionCode":
                 setRemotionCode(event.data);
                 addLog("Video composition ready", "success");
                 break;
-              case "videoUrl":
-                setRenderedVideoUrl(event.data);
+              case "videoUrl": {
+                const generatedVideoUrl = event.data;
+                setRenderedVideoUrl(generatedVideoUrl);
+                await saveProject({
+                  audioUrl: generatedVideoUrl,
+                  status: "READY",
+                });
+                const genVersion: VideoVersion = {
+                  id: `v-${Date.now()}`,
+                  versionNumber: versions.length + 1,
+                  timestamp: Date.now(),
+                  editMessage: `Generate: ${description.slice(0, 40)}`,
+                  remotionCode: remotionCode || "",
+                  videoUrl: generatedVideoUrl,
+                  isActive: true,
+                };
+                const genVersions = versions.map((v) => ({
+                  ...v,
+                  isActive: false,
+                }));
+                genVersions.push(genVersion);
+                setVersions(genVersions);
+                setCurrentVersionId(genVersion.id);
+                await saveProject({ versions: genVersions });
+                try {
+                  await fetch("/api/versions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ projectId, versions: genVersions }),
+                  });
+                } catch (err) {
+                  console.warn("Failed to save versions to R2:", err);
+                }
+                setActiveTab("preview");
+                setShowGenerationsSidebar(true);
                 addLog("Video rendered successfully!", "success");
                 break;
+              }
               case "error":
                 toast.error(event.data.errors?.join(", ") || "Unknown error");
                 addLog(event.data.errors?.[0] || "Error occurred", "error");
@@ -821,23 +1376,50 @@ export default function ProjectCreativePage() {
     addLog("Starting video production...");
 
     try {
-      const response = await fetch("/api/creative/continue", {
+      // Get auth token for VPS
+      const token = await getVpsToken();
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${VPS_API_URL}/api/creative/continue`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: vpsHeaders(token),
         body: JSON.stringify({
           videoScript: editableScript,
           productData,
-          projectId,
-          userPreferences: { style, templateStyle: getTemplateStyle(style), videoType, duration, audio: selectedAudio ? { url: selectedAudio.url, bpm: selectedAudio.bpm, duration: selectedAudio.duration } : undefined },
-          recordings: recordings.length > 0 ? recordings.map(r => ({
-            id: r.id, videoUrl: r.videoUrl, duration: r.duration, featureName: r.featureName,
-            description: r.description, trimStart: r.trimStart, trimEnd: r.trimEnd,
-            mockupFrame: r.mockupFrame || "minimal", zoomPoints: r.zoomPoints || [],
-            cursorStyle: r.cursorStyle || "hand",
-            cursorData: r.cursorData || [],
-            cursorSource: r.cursorSource || "javascript",
-            processedVideoUrl: r.processedVideoUrl,
-          })) : undefined,
+          userPreferences: {
+            style,
+            templateStyle: getTemplateStyle(style),
+            videoType,
+            duration,
+            audio: selectedAudio
+              ? {
+                  url: selectedAudio.url,
+                  bpm: selectedAudio.bpm,
+                  duration: selectedAudio.duration,
+                }
+              : undefined,
+          },
+          recordings:
+            recordings.length > 0
+              ? recordings.map((r) => ({
+                  id: r.id,
+                  videoUrl: r.videoUrl,
+                  duration: r.duration,
+                  featureName: r.featureName,
+                  description: r.description,
+                  trimStart: r.trimStart,
+                  trimEnd: r.trimEnd,
+                  mockupFrame: r.mockupFrame || "minimal",
+                  zoomPoints: r.zoomPoints || [],
+                  cursorStyle: r.cursorStyle || "hand",
+                  cursorData: r.cursorData || [],
+                  cursorSource: r.cursorSource || "javascript",
+                  processedVideoUrl: r.processedVideoUrl,
+                }))
+              : undefined,
         }),
       });
 
@@ -848,6 +1430,7 @@ export default function ProjectCreativePage() {
 
       const decoder = new TextDecoder();
       let buffer = "";
+      let currentRemotionCode = remotionCode;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -864,21 +1447,38 @@ export default function ProjectCreativePage() {
               case "status":
                 addLog(`${event.data.message || event.data.step}`);
                 // Update progress based on status messages
-                const message = (event.data.message || event.data.step || "").toLowerCase();
-                if (message.includes("generating code") || message.includes("creating")) {
+                const message = (
+                  event.data.message ||
+                  event.data.step ||
+                  ""
+                ).toLowerCase();
+                if (
+                  message.includes("generating code") ||
+                  message.includes("creating")
+                ) {
                   setGenerationProgress(25);
                   setGenerationStatus("Preparing video composition...");
-                } else if (message.includes("rendering") || message.includes("processing")) {
+                } else if (
+                  message.includes("rendering") ||
+                  message.includes("processing")
+                ) {
                   setGenerationProgress(60);
                   setGenerationStatus("Rendering video...");
-                } else if (message.includes("finalizing") || message.includes("encoding")) {
+                } else if (
+                  message.includes("finalizing") ||
+                  message.includes("encoding")
+                ) {
                   setGenerationProgress(85);
                   setGenerationStatus("Finalizing video...");
                 }
                 break;
               case "remotionCode":
+                currentRemotionCode = event.data;
                 setRemotionCode(event.data);
-                await saveProject({ composition: event.data, status: "GENERATING" });
+                await saveProject({
+                  composition: event.data,
+                  status: "GENERATING",
+                });
                 setGenerationProgress(50);
                 setGenerationStatus("Composition ready, rendering video...");
                 addLog("Video composition ready", "success");
@@ -886,6 +1486,40 @@ export default function ProjectCreativePage() {
               case "videoUrl":
                 setRenderedVideoUrl(event.data);
                 await saveProject({ audioUrl: event.data, status: "READY" });
+
+                const initialVersion: VideoVersion = {
+                  id: `v-${Date.now()}`,
+                  versionNumber: versions.length + 1,
+                  timestamp: Date.now(),
+                  editMessage: "Initial render",
+                  remotionCode: currentRemotionCode || "",
+                  videoUrl: event.data,
+                  isActive: true,
+                };
+
+                const initialVersions = versions.map((v) => ({
+                  ...v,
+                  isActive: false,
+                }));
+                initialVersions.push(initialVersion);
+                setVersions(initialVersions);
+                setCurrentVersionId(initialVersion.id);
+
+                await saveProject({ versions: initialVersions });
+
+                try {
+                  await fetch("/api/versions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      projectId,
+                      versions: initialVersions,
+                    }),
+                  });
+                } catch (err) {
+                  console.warn("Failed to save versions to R2:", err);
+                }
+
                 setGenerationProgress(100);
                 setGenerationStatus("Video generation complete!");
                 setActiveTab("preview");
@@ -915,7 +1549,18 @@ export default function ProjectCreativePage() {
       setGenerationProgress(0);
       setGenerationStatus("");
     }
-  }, [editableScript, productData, style, videoType, duration, selectedAudio, recordings, projectId]);
+  }, [
+    editableScript,
+    productData,
+    style,
+    videoType,
+    duration,
+    selectedAudio,
+    recordings,
+    projectId,
+    versions,
+    remotionCode,
+  ]);
 
   // Re-render video after editing
   const handleReRender = useCallback(async () => {
@@ -927,13 +1572,25 @@ export default function ProjectCreativePage() {
     addLog("Updating video with your changes...");
 
     try {
-      const response = await fetch("/api/creative/render", {
+      // Get auth token for VPS
+      const token = await getVpsToken();
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${VPS_API_URL}/api/creative/render`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: vpsHeaders(token),
         body: JSON.stringify({
           remotionCode,
-          projectId,
-          audio: selectedAudio ? { url: selectedAudio.url, bpm: selectedAudio.bpm, duration: selectedAudio.duration } : undefined,
+          audio: selectedAudio
+            ? {
+                url: selectedAudio.url,
+                bpm: selectedAudio.bpm,
+                duration: selectedAudio.duration,
+              }
+            : undefined,
           durationInFrames: editableScript?.totalDuration || 300,
         }),
       });
@@ -960,7 +1617,8 @@ export default function ProjectCreativePage() {
             switch (event.type) {
               case "status":
                 setGenerationStatus(event.data.message || "Rendering...");
-                if (event.data.progress) setGenerationProgress(event.data.progress);
+                if (event.data.progress)
+                  setGenerationProgress(event.data.progress);
                 break;
               case "videoUrl":
                 const newVideoUrl = event.data;
@@ -972,13 +1630,18 @@ export default function ProjectCreativePage() {
                   id: `v-${Date.now()}`,
                   versionNumber: versions.length + 1,
                   timestamp: Date.now(),
-                  editMessage: videoEditHistory[videoEditHistory.length - 1]?.text || "Manual re-render",
+                  editMessage:
+                    videoEditHistory[videoEditHistory.length - 1]?.text ||
+                    "Manual re-render",
                   remotionCode: remotionCode || "",
                   videoUrl: newVideoUrl,
                   isActive: true,
                 };
 
-                const updatedVersions = versions.map(v => ({ ...v, isActive: false }));
+                const updatedVersions = versions.map((v) => ({
+                  ...v,
+                  isActive: false,
+                }));
                 updatedVersions.push(newVersion);
                 setVersions(updatedVersions);
                 setCurrentVersionId(newVersion.id);
@@ -989,7 +1652,10 @@ export default function ProjectCreativePage() {
                   await fetch("/api/versions", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ projectId, versions: updatedVersions }),
+                    body: JSON.stringify({
+                      projectId,
+                      versions: updatedVersions,
+                    }),
                   });
                 } catch (err) {
                   console.warn("Failed to save versions to R2:", err);
@@ -1001,7 +1667,10 @@ export default function ProjectCreativePage() {
                 break;
               case "error":
                 toast.error(event.data.errors?.join(", ") || "Unknown error");
-                addLog(event.data.errors?.[0] || "Render error occurred", "error");
+                addLog(
+                  event.data.errors?.[0] || "Render error occurred",
+                  "error",
+                );
                 break;
             }
           } catch (e) {
@@ -1016,7 +1685,14 @@ export default function ProjectCreativePage() {
     } finally {
       setLoading(false);
     }
-  }, [remotionCode, projectId, selectedAudio, editableScript, versions, videoEditHistory]);
+  }, [
+    remotionCode,
+    projectId,
+    selectedAudio,
+    editableScript,
+    versions,
+    videoEditHistory,
+  ]);
 
   // Post-render video editing via chat
   const handleVideoEdit = useCallback(async () => {
@@ -1027,25 +1703,50 @@ export default function ProjectCreativePage() {
     setVideoEditLoading(true);
     setEditProgress(10);
     setEditStatus("Analyzing edit request...");
-    setVideoEditHistory(prev => [...prev, { role: "user", text: message }]);
+    setVideoEditHistory((prev) => [...prev, { role: "user", text: message }]);
 
     addLog(`Editing video: "${message}"`, "info");
 
     try {
-      const response = await fetch("/api/creative/edit-video", {
+      // Get auth token for VPS
+      const token = await getVpsToken();
+      if (!token) {
+        setVideoEditLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${VPS_API_URL}/api/creative/edit-video`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: vpsHeaders(token),
         body: JSON.stringify({
           message,
           remotionCode,
           videoScript: editableScript,
           productData,
-          userPreferences: { style, videoType, duration, audio: selectedAudio ? { url: selectedAudio.url, bpm: selectedAudio.bpm, duration: selectedAudio.duration } : undefined },
-          recordings: recordings.map(r => ({
-            id: r.id, videoUrl: r.videoUrl, duration: r.duration, featureName: r.featureName,
-            description: r.description, trimStart: r.trimStart, trimEnd: r.trimEnd,
-            mockupFrame: r.mockupFrame || "minimal", zoomPoints: r.zoomPoints || [],
-            cursorStyle: r.cursorStyle || "hand", cursorData: r.cursorData || [],
+          userPreferences: {
+            style,
+            videoType,
+            duration,
+            audio: selectedAudio
+              ? {
+                  url: selectedAudio.url,
+                  bpm: selectedAudio.bpm,
+                  duration: selectedAudio.duration,
+                }
+              : undefined,
+          },
+          recordings: recordings.map((r) => ({
+            id: r.id,
+            videoUrl: r.videoUrl,
+            duration: r.duration,
+            featureName: r.featureName,
+            description: r.description,
+            trimStart: r.trimStart,
+            trimEnd: r.trimEnd,
+            mockupFrame: r.mockupFrame || "minimal",
+            zoomPoints: r.zoomPoints || [],
+            cursorStyle: r.cursorStyle || "hand",
+            cursorData: r.cursorData || [],
             processedVideoUrl: r.processedVideoUrl,
           })),
         }),
@@ -1084,19 +1785,37 @@ export default function ProjectCreativePage() {
               case "remotionCode":
                 newRemotionCode = event.data;
                 setRemotionCode(event.data);
-                await saveProject({ composition: event.data, status: "EDITING" });
+                await saveProject({
+                  composition: event.data,
+                  status: "EDITING",
+                });
                 setEditProgress(100);
                 break;
               case "error":
                 toast.error(event.data.errors?.join(", ") || "Unknown error");
-                addLog(event.data.errors?.[0] || "Edit error occurred", "error");
+                addLog(
+                  event.data.errors?.[0] || "Edit error occurred",
+                  "error",
+                );
                 break;
               case "complete":
                 if (event.data.success && newRemotionCode) {
-                  setVideoEditHistory(prev => [...prev, { role: "assistant", text: "Applying changes and re-rendering..." }]);
+                  setVideoEditHistory((prev) => [
+                    ...prev,
+                    {
+                      role: "assistant",
+                      text: "Applying changes and re-rendering...",
+                    },
+                  ]);
                   addLog("Changes applied, updating video...", "success");
                 } else {
-                  setVideoEditHistory(prev => [...prev, { role: "assistant", text: "Edit completed with issues. Please try a different request." }]);
+                  setVideoEditHistory((prev) => [
+                    ...prev,
+                    {
+                      role: "assistant",
+                      text: "Edit completed with issues. Please try a different request.",
+                    },
+                  ]);
                 }
                 break;
             }
@@ -1113,35 +1832,54 @@ export default function ProjectCreativePage() {
       const message = err instanceof Error ? err.message : "Unknown error";
       toast.error(message);
       addLog(message, "error");
-      setVideoEditHistory(prev => [...prev, { role: "assistant", text: `Error: ${message}` }]);
+      setVideoEditHistory((prev) => [
+        ...prev,
+        { role: "assistant", text: `Error: ${message}` },
+      ]);
     } finally {
       setVideoEditLoading(false);
     }
-  }, [videoEditInput, remotionCode, editableScript, productData, style, videoType, duration, selectedAudio, recordings, projectId, videoEditLoading, handleReRender]);
+  }, [
+    videoEditInput,
+    remotionCode,
+    editableScript,
+    productData,
+    style,
+    videoType,
+    duration,
+    selectedAudio,
+    recordings,
+    projectId,
+    videoEditLoading,
+    handleReRender,
+  ]);
 
   // Switch to a specific version
-  const switchToVersion = useCallback(async (version: VideoVersion) => {
-    setRemotionCode(version.remotionCode);
-    setRenderedVideoUrl(version.videoUrl);
-    setRenderVersion(Date.now());
-    setCurrentVersionId(version.id);
-    
-    // Mark this version as active
-    const updatedVersions = versions.map(v => ({
-      ...v,
-      isActive: v.id === version.id
-    }));
-    setVersions(updatedVersions);
-    
-    await saveProject({ 
-      composition: version.remotionCode,
-      audioUrl: version.videoUrl,
-      versions: updatedVersions,
-      currentVersionId: version.id 
-    });
-    
-    addLog(`Switched to version ${version.versionNumber}`, "success");
-  }, [versions]);
+  const switchToVersion = useCallback(
+    async (version: VideoVersion) => {
+      setRemotionCode(version.remotionCode);
+      setRenderedVideoUrl(version.videoUrl);
+      setRenderVersion(Date.now());
+      setCurrentVersionId(version.id);
+
+      // Mark this version as active
+      const updatedVersions = versions.map((v) => ({
+        ...v,
+        isActive: v.id === version.id,
+      }));
+      setVersions(updatedVersions);
+
+      await saveProject({
+        composition: version.remotionCode,
+        audioUrl: version.videoUrl,
+        versions: updatedVersions,
+        currentVersionId: version.id,
+      });
+
+      addLog(`Switched to version ${version.versionNumber}`, "success");
+    },
+    [versions],
+  );
 
   const handleRender = async () => {
     if (!remotionCode) {
@@ -1177,7 +1915,11 @@ export default function ProjectCreativePage() {
       const response = await fetch("/api/render", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ remotionCode, durationInFrames: script?.totalDuration || 300, format: "mp4" }),
+        body: JSON.stringify({
+          remotionCode,
+          durationInFrames: script?.totalDuration || 300,
+          format: "mp4",
+        }),
       });
 
       clearInterval(progressInterval);
@@ -1187,7 +1929,10 @@ export default function ProjectCreativePage() {
         setRenderProgress(100);
         setGenerationStatus("Render complete!");
         setRenderedVideoUrl(result.videoUrl);
-        addLog(`Video rendered in ${Math.round(result.renderTime / 1000)}s`, "success");
+        addLog(
+          `Video rendered in ${Math.round(result.renderTime / 1000)}s`,
+          "success",
+        );
       } else {
         throw new Error(result.error || "Render failed");
       }
@@ -1204,28 +1949,55 @@ export default function ProjectCreativePage() {
     }
   };
 
-  // Scene editing handlers
-  const handleUpdateScene = useCallback((sceneId: string, updates: Partial<VideoScene>) => {
-    setEditableScript(prev => {
-      if (!prev) return prev;
-      const scenes = prev.scenes.map(s => s.id === sceneId ? { ...s, ...updates } : s);
-      let frame = 0;
-      for (const scene of scenes) {
-        const duration = scene.endFrame - scene.startFrame;
-        scene.startFrame = frame;
-        scene.endFrame = frame + duration;
-        frame += duration;
+  // Scene editing handlers with debounce
+  const handleUpdateScene = useCallback(
+    (sceneId: string, updates: Partial<VideoScene>) => {
+      setEditableScript((prev) => {
+        if (!prev) return prev;
+        const scenes = prev.scenes.map((s) =>
+          s.id === sceneId ? { ...s, ...updates } : s,
+        );
+        let frame = 0;
+        for (const scene of scenes) {
+          const duration = scene.endFrame - scene.startFrame;
+          scene.startFrame = frame;
+          scene.endFrame = frame + duration;
+          frame += duration;
+        }
+        const updated = { ...prev, scenes, totalDuration: frame };
+        saveProject({ script: updated });
+        return updated;
+      });
+    },
+    [],
+  );
+
+  const debouncedUpdateScene = useCallback(
+    (sceneId: string, updates: Partial<VideoScene>, delay: number = 500) => {
+      const existingTimer = sceneDebounceRef.current[sceneId];
+      if (existingTimer) {
+        clearTimeout(existingTimer);
       }
-      const updated = { ...prev, scenes, totalDuration: frame };
-      saveProject({ script: updated });
-      return updated;
-    });
+      sceneDebounceRef.current[sceneId] = setTimeout(() => {
+        handleUpdateScene(sceneId, updates);
+        delete sceneDebounceRef.current[sceneId];
+      }, delay);
+    },
+    [handleUpdateScene],
+  );
+
+  const flushSceneUpdate = useCallback((sceneId: string) => {
+    const existingTimer = sceneDebounceRef.current[sceneId];
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+      delete sceneDebounceRef.current[sceneId];
+    }
   }, []);
 
   const handleRemoveScene = useCallback((sceneId: string) => {
-    setEditableScript(prev => {
+    setEditableScript((prev) => {
       if (!prev) return prev;
-      const scenes = prev.scenes.filter(s => s.id !== sceneId);
+      const scenes = prev.scenes.filter((s) => s.id !== sceneId);
       let frame = 0;
       for (const scene of scenes) {
         const duration = scene.endFrame - scene.startFrame;
@@ -1240,7 +2012,7 @@ export default function ProjectCreativePage() {
   }, []);
 
   const handleReorderScene = useCallback((fromIdx: number, toIdx: number) => {
-    setEditableScript(prev => {
+    setEditableScript((prev) => {
       if (!prev) return prev;
       const scenes = [...prev.scenes];
       const [moved] = scenes.splice(fromIdx, 1);
@@ -1259,14 +2031,21 @@ export default function ProjectCreativePage() {
   }, []);
 
   const handleAddScene = useCallback(() => {
-    setEditableScript(prev => {
+    setEditableScript((prev) => {
       if (!prev) return prev;
       const scenes = [...prev.scenes];
       const newScene: VideoScene = {
-        id: `scene-${Date.now()}`, startFrame: 0, endFrame: 60, type: "feature",
+        id: `scene-${Date.now()}`,
+        startFrame: 0,
+        endFrame: 60,
+        type: "feature",
         content: { headline: "New Feature", subtext: "" },
         animation: { enter: "blur-in" as any, exit: "fade" },
-        style: { background: "#0a0a0f", textColor: "#ffffff", fontSize: "medium" },
+        style: {
+          background: "#0a0a0f",
+          textColor: "#ffffff",
+          fontSize: "medium",
+        },
       };
       scenes.push(newScene);
       let frame = 0;
@@ -1282,46 +2061,71 @@ export default function ProjectCreativePage() {
     });
   }, []);
 
-  const handleAddRecordingToScene = useCallback((sceneId: string, recording: ScreenRecording) => {
-    setEditableScript(prev => {
-      if (!prev) return prev;
-      const scenes = prev.scenes.map(s =>
-        s.id === sceneId ? {
-          ...s,
-          type: "recording" as const,
-          content: { ...s.content, recordingId: recording.id, headline: recording.featureName }
-        } : s
-      );
-      return { ...prev, scenes };
-    });
-  }, []);
+  const handleAddRecordingToScene = useCallback(
+    (sceneId: string, recording: ScreenRecording) => {
+      setEditableScript((prev) => {
+        if (!prev) return prev;
+        const scenes = prev.scenes.map((s) =>
+          s.id === sceneId
+            ? {
+                ...s,
+                type: "recording" as const,
+                content: {
+                  ...s.content,
+                  recordingId: recording.id,
+                  headline: recording.featureName,
+                },
+              }
+            : s,
+        );
+        return { ...prev, scenes };
+      });
+    },
+    [],
+  );
 
-  const handleAddScreenshotToScene = useCallback((sceneId: string, screenshotUrl: string) => {
-    setEditableScript(prev => {
-      if (!prev) return prev;
-      const scenes = prev.scenes.map(s =>
-        s.id === sceneId ? {
-          ...s,
-          type: "screenshot" as const,
-          content: { ...s.content, screenshotUrl }
-        } : s
-      );
-      return { ...prev, scenes };
-    });
-  }, []);
+  const handleAddScreenshotToScene = useCallback(
+    (sceneId: string, screenshotUrl: string) => {
+      setEditableScript((prev) => {
+        if (!prev) return prev;
+        const scenes = prev.scenes.map((s) =>
+          s.id === sceneId
+            ? {
+                ...s,
+                type: "screenshot" as const,
+                content: { ...s.content, screenshotUrl },
+              }
+            : s,
+        );
+        return { ...prev, scenes };
+      });
+    },
+    [],
+  );
 
   const handleScriptChat = useCallback(async () => {
     if (!scriptChatInput.trim() || !editableScript || scriptChatLoading) return;
     const message = scriptChatInput.trim();
     setScriptChatInput("");
     setScriptChatLoading(true);
-    setScriptChatHistory(prev => [...prev, { role: "user", text: message }]);
+    setScriptChatHistory((prev) => [...prev, { role: "user", text: message }]);
 
     try {
-      const response = await fetch("/api/creative/edit-script", {
+      // Get auth token for VPS
+      const token = await getVpsToken();
+      if (!token) {
+        setScriptChatLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${VPS_API_URL}/api/creative/edit-script`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, videoScript: editableScript, productData }),
+        headers: vpsHeaders(token),
+        body: JSON.stringify({
+          message,
+          videoScript: editableScript,
+          productData,
+        }),
       });
 
       const data = await response.json();
@@ -1330,13 +2134,22 @@ export default function ProjectCreativePage() {
         setScript(data.videoScript);
         await saveProject({ script: data.videoScript });
         const reply = `Updated — ${data.videoScript.scenes?.length || 0} scenes.`;
-        setScriptChatHistory(prev => [...prev, { role: "assistant", text: reply }]);
+        setScriptChatHistory((prev) => [
+          ...prev,
+          { role: "assistant", text: reply },
+        ]);
         addLog(`Script edited: "${message}"`, "success");
       } else {
-        setScriptChatHistory(prev => [...prev, { role: "assistant", text: `Error: ${data.error || "Failed"}` }]);
+        setScriptChatHistory((prev) => [
+          ...prev,
+          { role: "assistant", text: `Error: ${data.error || "Failed"}` },
+        ]);
       }
     } catch (err) {
-      setScriptChatHistory(prev => [...prev, { role: "assistant", text: "Error: Network failed" }]);
+      setScriptChatHistory((prev) => [
+        ...prev,
+        { role: "assistant", text: "Error: Network failed" },
+      ]);
     } finally {
       setScriptChatLoading(false);
     }
@@ -1346,12 +2159,18 @@ export default function ProjectCreativePage() {
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } },
+        video: {
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          frameRate: { ideal: 30 },
+        },
         audio: false,
       });
 
       streamRef.current = stream;
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp9" });
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: "video/webm;codecs=vp9",
+      });
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
 
@@ -1375,19 +2194,34 @@ export default function ProjectCreativePage() {
         formData.append("cursorStyle", editCursorStyle);
 
         try {
-          const response = await fetch("/api/recordings", { method: "POST", body: formData });
+          const response = await fetch("/api/recordings", {
+            method: "POST",
+            body: formData,
+          });
           const data = await response.json();
           if (data.success) {
-            addLog(`Recording saved: ${recordingFeatureName || "Feature Demo"}`, "success");
+            addLog(
+              `Recording saved: ${recordingFeatureName || "Feature Demo"}`,
+              "success",
+            );
 
             // Check if CV processing was triggered (for external recordings)
             const isExternalRecording = cursorData.length === 0;
 
             const newRecording: ScreenRecording = {
-              id: data.recordingId, projectId, videoUrl: data.videoUrl,
-              duration: recordingTime, cursorData, zoomPoints, trimStart: 0, trimEnd: recordingTime,
-              featureName: recordingFeatureName || "Feature Demo", description: recordingDescription || "",
-              cursorStyle: editCursorStyle, mockupFrame: "minimal", createdAt: new Date().toISOString(),
+              id: data.recordingId,
+              projectId,
+              videoUrl: data.videoUrl,
+              duration: recordingTime,
+              cursorData,
+              zoomPoints,
+              trimStart: 0,
+              trimEnd: recordingTime,
+              featureName: recordingFeatureName || "Feature Demo",
+              description: recordingDescription || "",
+              cursorStyle: editCursorStyle,
+              mockupFrame: "minimal",
+              createdAt: new Date().toISOString(),
               cursorSource: isExternalRecording ? "cv_detection" : "javascript",
               processingStatus: "pending",
             };
@@ -1397,7 +2231,10 @@ export default function ProjectCreativePage() {
             setEditMockupFrame("minimal");
             loadRecordings(); // Refresh recordings list
           } else {
-            addLog(`Recording upload failed: ${data.error || "Unknown error"}`, "error");
+            addLog(
+              `Recording upload failed: ${data.error || "Unknown error"}`,
+              "error",
+            );
           }
         } catch (error) {
           addLog(`Failed to save recording`, "error");
@@ -1421,16 +2258,25 @@ export default function ProjectCreativePage() {
     } catch (error) {
       addLog("Failed to start recording", "error");
     }
-  }, [recordingFeatureName, recordingDescription, recordingTime, projectId, editCursorStyle]);
+  }, [
+    recordingFeatureName,
+    recordingDescription,
+    recordingTime,
+    projectId,
+    editCursorStyle,
+  ]);
 
   const stopRecording = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     if (cursorTrackerRef.current) cursorTrackerRef.current.stop();
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state !== "inactive"
+    ) {
       mediaRecorderRef.current.stop();
     }
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach((track) => track.stop());
     }
   }, []);
 
@@ -1448,8 +2294,14 @@ export default function ProjectCreativePage() {
       const videoDuration = await new Promise<number>((resolve) => {
         const video = document.createElement("video");
         video.preload = "metadata";
-        video.onloadedmetadata = () => { resolve(video.duration); URL.revokeObjectURL(video.src); };
-        video.onerror = () => { resolve(30); URL.revokeObjectURL(video.src); };
+        video.onloadedmetadata = () => {
+          resolve(video.duration);
+          URL.revokeObjectURL(video.src);
+        };
+        video.onerror = () => {
+          resolve(30);
+          URL.revokeObjectURL(video.src);
+        };
         video.src = URL.createObjectURL(uploadFile);
       });
 
@@ -1463,14 +2315,26 @@ export default function ProjectCreativePage() {
       formData.append("duration", String(Math.round(videoDuration)));
       formData.append("cursorStyle", editCursorStyle);
 
-      const response = await fetch("/api/recordings", { method: "POST", body: formData });
+      const response = await fetch("/api/recordings", {
+        method: "POST",
+        body: formData,
+      });
       const data = await response.json();
       if (data.success) {
         const newRecording: ScreenRecording = {
-          id: data.recordingId, projectId, videoUrl: data.videoUrl,
-          duration: videoDuration, cursorData: [], zoomPoints: [], trimStart: 0, trimEnd: videoDuration,
-          featureName: recordingFeatureName, description: recordingDescription || "",
-          cursorStyle: editCursorStyle, mockupFrame: "minimal", createdAt: new Date().toISOString(),
+          id: data.recordingId,
+          projectId,
+          videoUrl: data.videoUrl,
+          duration: videoDuration,
+          cursorData: [],
+          zoomPoints: [],
+          trimStart: 0,
+          trimEnd: videoDuration,
+          featureName: recordingFeatureName,
+          description: recordingDescription || "",
+          cursorStyle: editCursorStyle,
+          mockupFrame: "minimal",
+          createdAt: new Date().toISOString(),
           processingStatus: "pending",
         };
         setEditingRecording(newRecording);
@@ -1488,16 +2352,26 @@ export default function ProjectCreativePage() {
       setUploading(false);
       setUploadFile(null);
     }
-  }, [uploadFile, recordingFeatureName, recordingDescription, projectId, editCursorStyle]);
+  }, [
+    uploadFile,
+    recordingFeatureName,
+    recordingDescription,
+    projectId,
+    editCursorStyle,
+  ]);
 
   const handleSaveRecordingEdit = useCallback(() => {
     if (!editingRecording) return;
     const updated: ScreenRecording = {
-      ...editingRecording, trimStart: editTrimStart, trimEnd: editTrimEnd, mockupFrame: editMockupFrame, cursorStyle: editCursorStyle,
+      ...editingRecording,
+      trimStart: editTrimStart,
+      trimEnd: editTrimEnd,
+      mockupFrame: editMockupFrame,
+      cursorStyle: editCursorStyle,
     };
-    setRecordings(prev => {
-      const exists = prev.find(r => r.id === updated.id);
-      if (exists) return prev.map(r => r.id === updated.id ? updated : r);
+    setRecordings((prev) => {
+      const exists = prev.find((r) => r.id === updated.id);
+      if (exists) return prev.map((r) => (r.id === updated.id ? updated : r));
       return [...prev, updated];
     });
     addLog(`Recording saved: ${updated.featureName}`, "success");
@@ -1505,11 +2379,22 @@ export default function ProjectCreativePage() {
     setRecordingFeatureName("");
     setRecordingDescription("");
     setShowRecordingModal(false);
-  }, [editingRecording, editTrimStart, editTrimEnd, editMockupFrame, editCursorStyle]);
+  }, [
+    editingRecording,
+    editTrimStart,
+    editTrimEnd,
+    editMockupFrame,
+    editCursorStyle,
+  ]);
 
   // Composition
   const CompositionComponent = editableScript
-    ? () => <DynamicComposition script={editableScript} audioUrl={selectedAudio?.url || null} />
+    ? () => (
+        <DynamicComposition
+          script={editableScript}
+          audioUrl={selectedAudio?.url || null}
+        />
+      )
     : PlaceholderComposition;
   const totalDuration = editableScript?.totalDuration || 300;
 
@@ -1529,10 +2414,18 @@ export default function ProjectCreativePage() {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-40 px-6 py-4 flex items-center justify-between bg-[#0a0a0a]/80 backdrop-blur-sm border-b border-white/10">
         <div className="flex items-center gap-4">
-          <Link href="/projects" className="text-gray-400 hover:text-white transition-colors">
+          <Link
+            href="/projects"
+            className="text-gray-400 hover:text-white transition-colors"
+          >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <Link href="/" className="text-xl font-light tracking-[0.2em] uppercase">Remawt</Link>
+          <Link
+            href="/"
+            className="text-xl font-light tracking-[0.2em] uppercase"
+          >
+            Remawt
+          </Link>
           <span className="text-gray-600">/</span>
 
           {/* Project Name - Editable */}
@@ -1556,7 +2449,9 @@ export default function ProjectCreativePage() {
               onClick={startEditingProjectName}
               className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 group"
             >
-              <span className="truncate max-w-xs">{projectName || "Untitled Project"}</span>
+              <span className="truncate max-w-xs">
+                {projectName || "Untitled Project"}
+              </span>
               <Edit2 className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
           )}
@@ -1568,11 +2463,164 @@ export default function ProjectCreativePage() {
               Saving...
             </span>
           )}
-          <Link href="/projects" className="text-sm text-gray-400 hover:text-white transition-colors">
+          <Link
+            href="/projects"
+            className="text-sm text-gray-400 hover:text-white transition-colors"
+          >
             All Projects
           </Link>
+          {/* Generations Sidebar Toggle */}
+          <button
+            onClick={() => setShowGenerationsSidebar((v) => !v)}
+            className={`relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all ${
+              showGenerationsSidebar
+                ? "bg-purple-500/20 border border-purple-500/40 text-purple-300"
+                : "bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10"
+            }`}
+            title="Generations History"
+          >
+            <History className="w-4 h-4" />
+            <span className="hidden sm:inline">Generations</span>
+            {versions.length > 0 && (
+              <span className="absolute -top-1 -right-1 bg-purple-500 text-white text-[10px] rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
+                {versions.length}
+              </span>
+            )}
+          </button>
         </div>
       </nav>
+
+      {/* Generations Sidebar Overlay */}
+      {showGenerationsSidebar && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/40 z-40"
+            onClick={() => setShowGenerationsSidebar(false)}
+          />
+          {/* Sidebar Panel */}
+          <div className="fixed top-0 right-0 h-full w-[380px] max-w-[90vw] bg-[#0f0f0f] border-l border-white/10 z-50 flex flex-col shadow-2xl">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <Film className="w-5 h-5 text-purple-400" />
+                <h3 className="font-medium">Generations</h3>
+                <span className="text-xs text-gray-500 bg-white/5 px-2 py-0.5 rounded-full">
+                  {versions.length}
+                </span>
+              </div>
+              <button
+                onClick={() => setShowGenerationsSidebar(false)}
+                className="text-gray-500 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto py-4 px-4 space-y-4">
+              {versions.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center py-12">
+                  <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                    <Film className="w-8 h-8 text-gray-600" />
+                  </div>
+                  <p className="text-gray-500 text-sm">No generations yet</p>
+                  <p className="text-gray-600 text-xs mt-1">
+                    Generate a video to see it here
+                  </p>
+                </div>
+              ) : (
+                [...versions].reverse().map((version, idx) => (
+                  <div
+                    key={version.id}
+                    className={`rounded-xl border overflow-hidden transition-all ${
+                      version.id === currentVersionId
+                        ? "border-purple-500/50 bg-purple-500/10"
+                        : "border-white/10 bg-white/5 hover:bg-white/10"
+                    }`}
+                  >
+                    {/* Video Preview */}
+                    {version.videoUrl ? (
+                      <video
+                        src={version.videoUrl}
+                        controls
+                        preload="metadata"
+                        className="w-full aspect-video bg-black"
+                      />
+                    ) : (
+                      <div className="w-full aspect-video bg-black/50 flex items-center justify-center">
+                        <Film className="w-8 h-8 text-gray-600" />
+                      </div>
+                    )}
+
+                    {/* Info */}
+                    <div className="p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">
+                            Generation #{versions.length - idx}
+                          </span>
+                          {version.id === currentVersionId && (
+                            <span className="text-[10px] bg-purple-500/30 text-purple-300 border border-purple-500/30 px-1.5 py-0.5 rounded-full">
+                              active
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          {new Date(version.timestamp).toLocaleDateString(
+                            undefined,
+                            { month: "short", day: "numeric" },
+                          )}{" "}
+                          {new Date(version.timestamp).toLocaleTimeString(
+                            undefined,
+                            { hour: "2-digit", minute: "2-digit" },
+                          )}
+                        </span>
+                      </div>
+
+                      {version.editMessage && (
+                        <p
+                          className="text-xs text-gray-400 truncate"
+                          title={version.editMessage}
+                        >
+                          {version.editMessage}
+                        </p>
+                      )}
+
+                      {/* Actions */}
+                      <div className="flex gap-2 pt-1">
+                        {version.id !== currentVersionId &&
+                          version.videoUrl && (
+                            <button
+                              onClick={() => {
+                                switchToVersion(version);
+                                setActiveTab("preview");
+                                setShowGenerationsSidebar(false);
+                              }}
+                              className="flex-1 text-xs px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 rounded-lg transition-colors text-purple-300"
+                            >
+                              Use this
+                            </button>
+                          )}
+                        {version.videoUrl && (
+                          <a
+                            href={version.videoUrl}
+                            download
+                            className="flex items-center gap-1 text-xs px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg transition-colors"
+                          >
+                            <Download className="w-3 h-3" />
+                            Download
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Main Content */}
       <main className="pt-20">
@@ -1587,16 +2635,23 @@ export default function ProjectCreativePage() {
               ].map((step, idx) => {
                 const Icon = step.icon;
                 const isActive = activeTab === step.id;
-                const isPast = idx < ["input", "script", "preview"].indexOf(activeTab);
+                const isPast =
+                  idx < ["input", "script", "preview"].indexOf(activeTab);
                 return (
                   <button
                     key={step.id}
                     onClick={() => setActiveTab(step.id as any)}
-                    disabled={step.id === "script" && !editableScript || step.id === "preview" && !renderedVideoUrl}
+                    disabled={
+                      (step.id === "script" && !editableScript) ||
+                      (step.id === "preview" && !renderedVideoUrl)
+                    }
                     className={`flex items-center gap-2 px-4 py-2 text-sm transition-all ${
-                      isActive ? "text-white bg-white/10 rounded-lg" :
-                      isPast ? "text-green-400" : "text-gray-500"
-                    } ${step.id === "script" && !editableScript || step.id === "preview" && !renderedVideoUrl ? "opacity-50 cursor-not-allowed" : ""}`}
+                      isActive
+                        ? "text-white bg-white/10 rounded-lg"
+                        : isPast
+                          ? "text-green-400"
+                          : "text-gray-500"
+                    } ${(step.id === "script" && !editableScript) || (step.id === "preview" && !renderedVideoUrl) ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     <Icon className="w-4 h-4" />
                     <span className="hidden md:inline">{step.label}</span>
@@ -1614,20 +2669,29 @@ export default function ProjectCreativePage() {
               {/* Left Column - Inputs */}
               <div className="space-y-8">
                 <div>
-                  <h2 className="text-2xl font-light mb-2">Create Your Video</h2>
-                  <p className="text-gray-500">Enter your product details and we'll generate a script</p>
+                  <h2 className="text-2xl font-light mb-2">
+                    Create Your Video
+                  </h2>
+                  <p className="text-gray-500">
+                    Enter your product details and we'll generate a script
+                  </p>
                 </div>
 
                 {/* Floating Progress Indicator - Show during generation */}
                 {loading && generationProgress > 0 && activeTab === "input" && (
                   <div className="fixed bottom-6 right-6 z-50 bg-[#1a1a1a] border border-white/10 rounded-lg p-4 shadow-2xl max-w-sm">
-                    <ProgressBar progress={generationProgress} status={generationStatus} />
+                    <ProgressBar
+                      progress={generationProgress}
+                      status={generationStatus}
+                    />
                   </div>
                 )}
 
                 {/* URL Input */}
                 <div className="space-y-2">
-                  <label className="text-xs tracking-widest text-gray-500 uppercase">Product URL (Optional)</label>
+                  <label className="text-xs tracking-widest text-gray-500 uppercase">
+                    Product URL (Optional)
+                  </label>
                   <input
                     type="url"
                     value={url}
@@ -1639,7 +2703,9 @@ export default function ProjectCreativePage() {
 
                 {/* Description Input - Wider */}
                 <div className="space-y-2">
-                  <label className="text-xs tracking-widest text-gray-500 uppercase">Description</label>
+                  <label className="text-xs tracking-widest text-gray-500 uppercase">
+                    Description
+                  </label>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
@@ -1652,20 +2718,26 @@ export default function ProjectCreativePage() {
                 {/* Style & Type */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs tracking-widest text-gray-500 uppercase">Style</label>
+                    <label className="text-xs tracking-widest text-gray-500 uppercase">
+                      Style
+                    </label>
                     <select
                       value={style}
                       onChange={(e) => setStyle(e.target.value as any)}
                       className="w-full px-4 py-3 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none rounded-lg"
                     >
-                      <option value="professional">Professional (Aurora)</option>
+                      <option value="professional">
+                        Professional (Aurora)
+                      </option>
                       <option value="playful">Playful (Blue Clean)</option>
                       <option value="minimal">Minimal (Floating Glass)</option>
                       <option value="bold">Bold (Blue Clean)</option>
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs tracking-widest text-gray-500 uppercase">Video Type</label>
+                    <label className="text-xs tracking-widest text-gray-500 uppercase">
+                      Video Type
+                    </label>
                     <select
                       value={videoType}
                       onChange={(e) => setVideoType(e.target.value as any)}
@@ -1676,6 +2748,7 @@ export default function ProjectCreativePage() {
                       <option value="product-demo">Product Demo</option>
                       <option value="fast-paced">Fast-paced</option>
                       <option value="cinematic">Cinematic</option>
+                      <option value="freestyle">Freestyle (Gemini Pro)</option>
                     </select>
                   </div>
                 </div>
@@ -1683,26 +2756,62 @@ export default function ProjectCreativePage() {
                 {/* Duration */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <label className="text-xs tracking-widest text-gray-500 uppercase">Duration</label>
-                    <span className="text-sm text-gray-400">{duration}s</span>
+                    <label className="text-xs tracking-widest text-gray-500 uppercase">
+                      Duration
+                    </label>
+                    <span className="text-sm text-gray-400">
+                      {duration}s
+                      {selectedAudio?.duration &&
+                      duration > selectedAudio.duration
+                        ? ` (capped at ${Math.floor(selectedAudio.duration)}s — audio length)`
+                        : selectedAudio?.duration
+                          ? ` / ${Math.floor(selectedAudio.duration)}s max`
+                          : ""}
+                    </span>
                   </div>
                   <input
                     type="range"
                     min="10"
-                    max="120"
+                    max={
+                      selectedAudio?.duration
+                        ? Math.floor(selectedAudio.duration)
+                        : 120
+                    }
                     step="1"
-                    value={duration}
-                    onChange={(e) => setDuration(parseInt(e.target.value))}
+                    value={Math.min(
+                      duration,
+                      selectedAudio?.duration
+                        ? Math.floor(selectedAudio.duration)
+                        : 120,
+                    )}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      const maxAllowed = selectedAudio?.duration
+                        ? Math.floor(selectedAudio.duration)
+                        : 120;
+                      setDuration(Math.min(val, maxAllowed));
+                    }}
                     className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
                   />
+                  {selectedAudio?.duration && (
+                    <p className="text-xs text-gray-600">
+                      Max duration is locked to your selected audio track (
+                      {Math.floor(selectedAudio.duration)}s)
+                    </p>
+                  )}
                 </div>
 
                 {/* Audio Selector */}
-                <AudioSelector selectedAudio={selectedAudio} onSelect={setSelectedAudio} />
+                <AudioSelector
+                  selectedAudio={selectedAudio}
+                  onSelect={setSelectedAudio}
+                />
 
                 {/* Recordings */}
                 <div className="space-y-3">
-                  <label className="text-xs tracking-widest text-gray-500 uppercase">Screen Recordings</label>
+                  <label className="text-xs tracking-widest text-gray-500 uppercase">
+                    Screen Recordings
+                  </label>
                   {recordings.length === 0 ? (
                     <button
                       onClick={() => setShowRecordingModal(true)}
@@ -1715,31 +2824,50 @@ export default function ProjectCreativePage() {
                     <div className="space-y-3">
                       {recordings.map((recording) => {
                         const isProcessing =
-                          recording.processingStatus === "pending" || recording.processingStatus === "processing";
+                          recording.processingStatus === "pending" ||
+                          recording.processingStatus === "processing";
                         const progress = recordingProgress[recording.id] || 0;
                         const hasProcessedVideo = !!recording.processedVideoUrl;
-                        const isFailed = recording.processingStatus === "failed";
+                        const isFailed =
+                          recording.processingStatus === "failed";
 
                         return (
-                          <div key={recording.id} className="bg-white/5 border border-white/10 p-4 rounded-lg">
+                          <div
+                            key={recording.id}
+                            className="bg-white/5 border border-white/10 p-4 rounded-lg"
+                          >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
-                                <div className={`w-2 h-2 rounded-full ${
-                                  hasProcessedVideo ? 'bg-green-400' :
-                                  isFailed ? 'bg-red-400' :
-                                  isProcessing ? 'bg-yellow-400 animate-pulse' :
-                                  'bg-gray-400'
-                                }`} />
-                                <span className="text-sm">{recording.featureName}</span>
-                                <span className="text-xs text-gray-500">{formatTime(Math.round(recording.duration))}</span>
+                                <div
+                                  className={`w-2 h-2 rounded-full ${
+                                    hasProcessedVideo
+                                      ? "bg-green-400"
+                                      : isFailed
+                                        ? "bg-red-400"
+                                        : isProcessing
+                                          ? "bg-yellow-400 animate-pulse"
+                                          : "bg-gray-400"
+                                  }`}
+                                />
+                                <span className="text-sm">
+                                  {recording.featureName}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  {formatTime(Math.round(recording.duration))}
+                                </span>
                                 {hasProcessedVideo ? (
-                                  <span className="text-xs text-green-400">Ready</span>
+                                  <span className="text-xs text-green-400">
+                                    Ready
+                                  </span>
                                 ) : isFailed ? (
-                                  <span className="text-xs text-red-400">Failed</span>
+                                  <span className="text-xs text-red-400">
+                                    Failed
+                                  </span>
                                 ) : isProcessing ? (
                                   <span className="text-xs text-yellow-400 flex items-center gap-1">
                                     <Loader2 className="w-3 h-3 animate-spin" />
-                                    Processing {progress > 0 ? `${progress}%` : ''}
+                                    Processing{" "}
+                                    {progress > 0 ? `${progress}%` : ""}
                                   </span>
                                 ) : null}
                               </div>
@@ -1749,26 +2877,59 @@ export default function ProjectCreativePage() {
                                     setEditingRecording(recording);
                                     setEditTrimStart(recording.trimStart);
                                     setEditTrimEnd(recording.trimEnd);
-                                    setEditMockupFrame(recording.mockupFrame || "minimal");
-                                    setEditCursorStyle(recording.cursorStyle || "hand");
-                                    setRecordingFeatureName(recording.featureName);
-                                    setRecordingDescription(recording.description);
+                                    setEditMockupFrame(
+                                      recording.mockupFrame || "minimal",
+                                    );
+                                    setEditCursorStyle(
+                                      recording.cursorStyle || "hand",
+                                    );
+                                    setRecordingFeatureName(
+                                      recording.featureName,
+                                    );
+                                    setRecordingDescription(
+                                      recording.description,
+                                    );
                                     setShowRecordingModal(true);
                                   }}
                                   className="text-gray-500 hover:text-white"
                                   title="Edit recording"
                                 >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                  <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                    />
+                                  </svg>
                                 </button>
                                 <button
                                   onClick={async () => {
-                                    if (!confirm(`Discard recording "${recording.featureName}"?`)) return;
+                                    if (
+                                      !confirm(
+                                        `Discard recording "${recording.featureName}"?`,
+                                      )
+                                    )
+                                      return;
                                     try {
-                                      await fetch(`/api/recordings/${recording.id}`, { method: "DELETE" });
+                                      await fetch(
+                                        `/api/recordings/${recording.id}`,
+                                        { method: "DELETE" },
+                                      );
                                     } catch (err) {
-                                      console.error("Failed to delete recording:", err);
+                                      console.error(
+                                        "Failed to delete recording:",
+                                        err,
+                                      );
                                     }
-                                    setRecordings(prev => prev.filter(r => r.id !== recording.id));
+                                    setRecordings((prev) =>
+                                      prev.filter((r) => r.id !== recording.id),
+                                    );
                                   }}
                                   className="text-gray-500 hover:text-red-400"
                                   title="Discard recording"
@@ -1793,11 +2954,12 @@ export default function ProjectCreativePage() {
                 {/* Progress Bar - Show during generation */}
                 {loading && generationProgress > 0 && (
                   <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-                    <ProgressBar progress={generationProgress} status={generationStatus} />
+                    <ProgressBar
+                      progress={generationProgress}
+                      status={generationStatus}
+                    />
                   </div>
                 )}
-
-
 
                 {/* Generate Button */}
                 <Button
@@ -1820,7 +2982,9 @@ export default function ProjectCreativePage() {
               {/* Right Column - Tips & Preview */}
               <div className="space-y-8">
                 <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                  <h3 className="text-lg font-medium mb-4">Tips for Better Results</h3>
+                  <h3 className="text-lg font-medium mb-4">
+                    Tips for Better Results
+                  </h3>
                   <ul className="space-y-3 text-sm text-gray-400">
                     <li className="flex items-start gap-3">
                       <span className="text-green-400">✓</span>
@@ -1836,7 +3000,9 @@ export default function ProjectCreativePage() {
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="text-green-400">✓</span>
-                      <span>Add screen recordings to show features in action</span>
+                      <span>
+                        Add screen recordings to show features in action
+                      </span>
                     </li>
                   </ul>
                 </div>
@@ -1876,13 +3042,20 @@ export default function ProjectCreativePage() {
 
                   {/* Status Text */}
                   <div className="text-center space-y-2">
-                    <h2 className="text-2xl font-light">Generating Your Script</h2>
-                    <p className="text-gray-500">{generationStatus || "Initializing AI..."}</p>
+                    <h2 className="text-2xl font-light">
+                      Generating Your Script
+                    </h2>
+                    <p className="text-gray-500">
+                      {generationStatus || "Initializing AI..."}
+                    </p>
                   </div>
 
                   {/* Progress Bar */}
                   <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-                    <ProgressBar progress={generationProgress} status={generationStatus} />
+                    <ProgressBar
+                      progress={generationProgress}
+                      status={generationStatus}
+                    />
                   </div>
 
                   {/* Loading Steps */}
@@ -1897,18 +3070,31 @@ export default function ProjectCreativePage() {
                       <div
                         key={idx}
                         className={`flex items-center gap-3 transition-opacity duration-300 ${
-                          generationProgress >= step.threshold ? "opacity-100" : "opacity-30"
+                          generationProgress >= step.threshold
+                            ? "opacity-100"
+                            : "opacity-30"
                         }`}
                       >
-                        <div className={`w-2 h-2 rounded-full ${
-                          generationProgress >= step.threshold ? "bg-green-400" : "bg-gray-600"
-                        }`} />
-                        <span className={generationProgress >= step.threshold ? "text-gray-300" : "text-gray-600"}>
+                        <div
+                          className={`w-2 h-2 rounded-full ${
+                            generationProgress >= step.threshold
+                              ? "bg-green-400"
+                              : "bg-gray-600"
+                          }`}
+                        />
+                        <span
+                          className={
+                            generationProgress >= step.threshold
+                              ? "text-gray-300"
+                              : "text-gray-600"
+                          }
+                        >
                           {step.label}
                         </span>
-                        {generationProgress >= step.threshold && generationProgress < step.threshold + 20 && (
-                          <Loader2 className="w-3 h-3 animate-spin ml-auto text-purple-400" />
-                        )}
+                        {generationProgress >= step.threshold &&
+                          generationProgress < step.threshold + 20 && (
+                            <Loader2 className="w-3 h-3 animate-spin ml-auto text-purple-400" />
+                          )}
                       </div>
                     ))}
                   </div>
@@ -1923,7 +3109,10 @@ export default function ProjectCreativePage() {
                 <div className="flex items-center justify-between mb-8">
                   <div>
                     <h2 className="text-2xl font-light mb-1">Video Script</h2>
-                    <p className="text-gray-500">{editableScript.scenes.length} scenes • {Math.round(editableScript.totalDuration / 30)}s</p>
+                    <p className="text-gray-500">
+                      {editableScript.scenes.length} scenes •{" "}
+                      {Math.round(editableScript.totalDuration / 30)}s
+                    </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <Button
@@ -1946,8 +3135,14 @@ export default function ProjectCreativePage() {
                       variant="outline"
                       className="rounded-lg"
                     >
-                      {showFullPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      <span className="ml-2">{showFullPreview ? "Hide" : "Show"} Full Preview</span>
+                      {showFullPreview ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                      <span className="ml-2">
+                        {showFullPreview ? "Hide" : "Show"} Full Preview
+                      </span>
                     </Button>
                   </div>
                 </div>
@@ -1955,7 +3150,10 @@ export default function ProjectCreativePage() {
                 {/* Progress Bar - Show during generation */}
                 {loading && generationProgress > 0 && (
                   <div className="mb-6 bg-white/5 border border-white/10 rounded-lg p-4">
-                    <ProgressBar progress={generationProgress} status={generationStatus} />
+                    <ProgressBar
+                      progress={generationProgress}
+                      status={generationStatus}
+                    />
                   </div>
                 )}
 
@@ -1993,7 +3191,10 @@ export default function ProjectCreativePage() {
                       setSelectedScreenshots((prev) => [...prev, ...uploaded]);
                       setProductData((prev: any) => ({
                         ...prev,
-                        screenshots: [...(prev?.screenshots || []), ...uploaded],
+                        screenshots: [
+                          ...(prev?.screenshots || []),
+                          ...uploaded,
+                        ],
                       }));
                     }}
                     isAnalyzing={isAnalyzingScreenshots}
@@ -2007,7 +3208,9 @@ export default function ProjectCreativePage() {
                     <div
                       key={scene.id}
                       className={`bg-white/5 border rounded-xl overflow-hidden transition-all ${
-                        selectedSceneId === scene.id ? "border-purple-500 ring-2 ring-purple-500/20" : "border-white/10"
+                        selectedSceneId === scene.id
+                          ? "border-purple-500 ring-2 ring-purple-500/20"
+                          : "border-white/10"
                       }`}
                       onClick={() => setSelectedSceneId(scene.id)}
                     >
@@ -2027,7 +3230,8 @@ export default function ProjectCreativePage() {
                           Scene {idx + 1}
                         </div>
                         <div className="absolute top-2 right-2 bg-white/10 px-2 py-1 rounded text-xs">
-                          {Math.round((scene.endFrame - scene.startFrame) / 30)}s
+                          {Math.round((scene.endFrame - scene.startFrame) / 30)}
+                          s
                         </div>
                       </div>
 
@@ -2038,7 +3242,9 @@ export default function ProjectCreativePage() {
                           value={scene.type}
                           onChange={(e) => {
                             setIsSceneUpdating(scene.id);
-                            handleUpdateScene(scene.id, { type: e.target.value as any });
+                            handleUpdateScene(scene.id, {
+                              type: e.target.value as any,
+                            });
                             setTimeout(() => setIsSceneUpdating(null), 500);
                           }}
                           disabled={isSceneUpdating === scene.id}
@@ -2057,29 +3263,83 @@ export default function ProjectCreativePage() {
                         {/* Headline */}
                         <input
                           type="text"
-                          value={scene.content.headline || ""}
+                          value={
+                            pendingSceneText[scene.id]?.headline ??
+                            scene.content.headline ??
+                            ""
+                          }
                           onChange={(e) => {
-                            setIsSceneUpdating(scene.id);
-                            handleUpdateScene(scene.id, { content: { ...scene.content, headline: e.target.value } });
-                            setTimeout(() => setIsSceneUpdating(null), 500);
+                            const newValue = e.target.value;
+                            setPendingSceneText((prev) => ({
+                              ...prev,
+                              [scene.id]: {
+                                ...prev[scene.id],
+                                headline: newValue,
+                              },
+                            }));
+                            debouncedUpdateScene(scene.id, {
+                              content: { ...scene.content, headline: newValue },
+                            });
+                          }}
+                          onBlur={() => {
+                            flushSceneUpdate(scene.id);
+                            handleUpdateScene(scene.id, {
+                              content: {
+                                ...scene.content,
+                                headline:
+                                  pendingSceneText[scene.id]?.headline ??
+                                  scene.content.headline,
+                              },
+                            });
+                            setPendingSceneText((prev) => {
+                              const next = { ...prev };
+                              delete next[scene.id];
+                              return next;
+                            });
                           }}
                           placeholder="Headline"
-                          disabled={isSceneUpdating === scene.id}
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-sm focus:border-white/30 focus:outline-none disabled:opacity-50"
+                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-sm focus:border-white/30 focus:outline-none"
                         />
 
                         {/* Subtext */}
                         <input
                           type="text"
-                          value={scene.content.subtext || ""}
+                          value={
+                            pendingSceneText[scene.id]?.subtext ??
+                            scene.content.subtext ??
+                            ""
+                          }
                           onChange={(e) => {
-                            setIsSceneUpdating(scene.id);
-                            handleUpdateScene(scene.id, { content: { ...scene.content, subtext: e.target.value } });
-                            setTimeout(() => setIsSceneUpdating(null), 500);
+                            const newValue = e.target.value;
+                            setPendingSceneText((prev) => ({
+                              ...prev,
+                              [scene.id]: {
+                                ...prev[scene.id],
+                                subtext: newValue,
+                              },
+                            }));
+                            debouncedUpdateScene(scene.id, {
+                              content: { ...scene.content, subtext: newValue },
+                            });
+                          }}
+                          onBlur={() => {
+                            flushSceneUpdate(scene.id);
+                            handleUpdateScene(scene.id, {
+                              content: {
+                                ...scene.content,
+                                subtext:
+                                  pendingSceneText[scene.id]?.subtext ??
+                                  scene.content.subtext,
+                              },
+                            });
+                            setPendingSceneText((prev) => {
+                              const next = { ...prev };
+                              delete next[scene.id];
+                              return next;
+                            });
                           }}
                           placeholder="Subtext (optional)"
-                          disabled={isSceneUpdating === scene.id}
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-sm focus:border-white/30 focus:outline-none text-gray-400 disabled:opacity-50"
+                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-sm focus:border-white/30 focus:outline-none text-gray-400"
                         />
 
                         {/* Recording/Screenshot Buttons */}
@@ -2094,7 +3354,9 @@ export default function ProjectCreativePage() {
                             ) : (
                               <Video className="w-3 h-3" />
                             )}
-                            {isSceneUpdating === scene.id ? "Updating..." : "Add Recording"}
+                            {isSceneUpdating === scene.id
+                              ? "Updating..."
+                              : "Add Recording"}
                           </button>
                           <label className="flex-1 flex items-center justify-center gap-2 py-2 bg-white/5 border border-white/10 rounded text-xs hover:bg-white/10 transition-colors cursor-pointer">
                             <ImageIcon className="w-3 h-3" />
@@ -2118,15 +3380,23 @@ export default function ProjectCreativePage() {
                         <div className="flex items-center justify-between pt-2 border-t border-white/10">
                           <div className="flex items-center gap-1">
                             <button
-                              onClick={() => idx > 0 && handleReorderScene(idx, idx - 1)}
+                              onClick={() =>
+                                idx > 0 && handleReorderScene(idx, idx - 1)
+                              }
                               disabled={idx === 0 || isSceneUpdating !== null}
                               className="p-1 text-gray-500 hover:text-white disabled:opacity-20"
                             >
                               <ChevronLeft className="w-4 h-4" />
                             </button>
                             <button
-                              onClick={() => idx < editableScript.scenes.length - 1 && handleReorderScene(idx, idx + 1)}
-                              disabled={idx === editableScript.scenes.length - 1 || isSceneUpdating !== null}
+                              onClick={() =>
+                                idx < editableScript.scenes.length - 1 &&
+                                handleReorderScene(idx, idx + 1)
+                              }
+                              disabled={
+                                idx === editableScript.scenes.length - 1 ||
+                                isSceneUpdating !== null
+                              }
                               className="p-1 text-gray-500 hover:text-white disabled:opacity-20"
                             >
                               <ChevronRight className="w-4 h-4" />
@@ -2155,7 +3425,9 @@ export default function ProjectCreativePage() {
                     className="aspect-[4/3] border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center gap-3 hover:border-white/20 transition-colors text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Plus className="w-8 h-8" />
-                    <span className="text-sm">{isSceneUpdating !== null ? "Updating..." : "Add Scene"}</span>
+                    <span className="text-sm">
+                      {isSceneUpdating !== null ? "Updating..." : "Add Scene"}
+                    </span>
                   </button>
                 </div>
 
@@ -2164,8 +3436,13 @@ export default function ProjectCreativePage() {
                   {scriptChatHistory.length > 0 && (
                     <div className="max-h-32 overflow-y-auto mb-4 space-y-2">
                       {scriptChatHistory.map((msg, i) => (
-                        <div key={i} className={`text-sm ${msg.role === "user" ? "text-gray-300" : "text-purple-400"}`}>
-                          <span className="text-gray-600 font-mono text-xs">{msg.role === "user" ? "you" : "ai"}:</span>{" "}
+                        <div
+                          key={i}
+                          className={`text-sm ${msg.role === "user" ? "text-gray-300" : "text-purple-400"}`}
+                        >
+                          <span className="text-gray-600 font-mono text-xs">
+                            {msg.role === "user" ? "you" : "ai"}:
+                          </span>{" "}
                           {msg.text}
                         </div>
                       ))}
@@ -2176,7 +3453,12 @@ export default function ProjectCreativePage() {
                       type="text"
                       value={scriptChatInput}
                       onChange={(e) => setScriptChatInput(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleScriptChat(); } }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleScriptChat();
+                        }
+                      }}
                       placeholder="Edit by chat... e.g. 'make the intro longer'"
                       className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:border-white/30 focus:outline-none"
                       disabled={scriptChatLoading}
@@ -2186,7 +3468,11 @@ export default function ProjectCreativePage() {
                       disabled={scriptChatLoading || !scriptChatInput.trim()}
                       className="px-4 py-3 bg-white/10 rounded-lg text-gray-500 hover:text-white disabled:opacity-30 transition-colors"
                     >
-                      {scriptChatLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                      {scriptChatLoading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Send className="w-5 h-5" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -2201,14 +3487,17 @@ export default function ProjectCreativePage() {
             {/* Progress Bar - Show during rendering */}
             {(rendering || (loading && generationProgress > 0)) && (
               <div className="mb-8 bg-white/5 border border-white/10 rounded-lg p-6">
-                <ProgressBar progress={rendering ? renderProgress : generationProgress} status={generationStatus || "Rendering video..."} />
+                <ProgressBar
+                  progress={rendering ? renderProgress : generationProgress}
+                  status={generationStatus || "Rendering video..."}
+                />
               </div>
             )}
 
             {renderedVideoUrl ? (
-              <div className="grid lg:grid-cols-3 gap-8">
-                {/* Video Preview + Edit Chat - Takes up 2 columns */}
-                <div className="lg:col-span-2 space-y-6">
+              <div className="max-w-4xl mx-auto space-y-6">
+                {/* Video Preview + Edit Chat */}
+                <div className="space-y-6">
                   <div className="aspect-video bg-black rounded-xl overflow-hidden border border-white/10">
                     <video
                       ref={editVideoRef}
@@ -2223,13 +3512,22 @@ export default function ProjectCreativePage() {
                   {/* Action Buttons */}
                   <div className="flex flex-wrap justify-center gap-4">
                     <Button asChild size="lg" className="rounded-lg">
-                      <a href={`${renderedVideoUrl}?v=${renderVersion}`} download className="inline-flex items-center gap-2">
+                      <a
+                        href={`${renderedVideoUrl}?v=${renderVersion}`}
+                        download
+                        className="inline-flex items-center gap-2"
+                      >
                         <Download className="w-5 h-5" />
                         Download Video
                       </a>
                     </Button>
 
-                    <Button variant="outline" size="lg" className="rounded-lg" onClick={() => router.push('/projects')}>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="rounded-lg"
+                      onClick={() => router.push("/projects")}
+                    >
                       Back to Projects
                     </Button>
                   </div>
@@ -2237,7 +3535,10 @@ export default function ProjectCreativePage() {
                   {/* Edit Progress */}
                   {editProgress > 0 && editProgress < 100 && (
                     <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-                      <ProgressBar progress={editProgress} status={editStatus} />
+                      <ProgressBar
+                        progress={editProgress}
+                        status={editStatus}
+                      />
                     </div>
                   )}
 
@@ -2256,8 +3557,13 @@ export default function ProjectCreativePage() {
                       {videoEditHistory.length > 0 && (
                         <div className="max-h-64 overflow-y-auto mb-4 space-y-3">
                           {videoEditHistory.map((msg, i) => (
-                            <div key={i} className={`text-sm ${msg.role === "user" ? "text-gray-300" : "text-purple-400"}`}>
-                              <span className="text-gray-600 font-mono text-xs">{msg.role === "user" ? "you" : "ai"}:</span>{" "}
+                            <div
+                              key={i}
+                              className={`text-sm ${msg.role === "user" ? "text-gray-300" : "text-purple-400"}`}
+                            >
+                              <span className="text-gray-600 font-mono text-xs">
+                                {msg.role === "user" ? "you" : "ai"}:
+                              </span>{" "}
                               {msg.text}
                             </div>
                           ))}
@@ -2301,7 +3607,9 @@ export default function ProjectCreativePage() {
 
                       {/* Quick Edit Suggestions */}
                       <div className="mt-4 pt-4 border-t border-white/10">
-                        <h4 className="text-sm font-medium mb-3 text-gray-400">Quick Edits</h4>
+                        <h4 className="text-sm font-medium mb-3 text-gray-400">
+                          Quick Edits
+                        </h4>
                         <div className="flex flex-wrap gap-2">
                           {[
                             "Make it faster",
@@ -2309,7 +3617,7 @@ export default function ProjectCreativePage() {
                             "Add more zoom",
                             "Make text bigger",
                             "Add background effects",
-                            "Slow down intro"
+                            "Slow down intro",
                           ].map((suggestion) => (
                             <button
                               key={suggestion}
@@ -2324,88 +3632,21 @@ export default function ProjectCreativePage() {
                     </div>
                   )}
                 </div>
-
-                {/* Version History Sidebar - Always visible */}
-                <div className="space-y-4">
-                  <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-sm font-medium flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        Version History
-                      </h4>
-                      <span className="text-xs text-gray-500">{versions.length} version{versions.length !== 1 ? 's' : ''}</span>
-                    </div>
-
-                    {versions.length === 0 ? (
-                      <p className="text-sm text-gray-500 text-center py-4">No versions yet. Edit the video to create versions.</p>
-                    ) : (
-                      <div className="space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto">
-                        {[...versions].reverse().map((version) => (
-                          <div
-                            key={version.id}
-                            className={`p-3 rounded-lg border transition-all ${
-                              version.id === currentVersionId
-                                ? 'bg-purple-500/20 border-purple-500/50'
-                                : 'bg-white/5 border-white/10 hover:bg-white/10'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-sm font-medium">
-                                Version {version.versionNumber}
-                                {version.id === currentVersionId && (
-                                  <span className="ml-2 text-xs text-purple-400">(current)</span>
-                                )}
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                {new Date(version.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                              </span>
-                            </div>
-                            <p className="text-xs text-gray-400 truncate mb-2">{version.editMessage}</p>
-
-                            {/* Inline video player */}
-                            {version.videoUrl && (
-                              <div className="mb-2 rounded overflow-hidden border border-white/10">
-                                <video
-                                  src={version.videoUrl}
-                                  controls
-                                  preload="metadata"
-                                  className="w-full aspect-video bg-black"
-                                />
-                              </div>
-                            )}
-
-                            {version.videoUrl && (
-                              <div className="flex gap-2">
-                                {version.id !== currentVersionId && (
-                                  <button
-                                    onClick={() => switchToVersion(version)}
-                                    className="text-xs px-2 py-1 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 rounded transition-colors"
-                                  >
-                                    Use this version
-                                  </button>
-                                )}
-                                <a
-                                  href={version.videoUrl}
-                                  download
-                                  className="text-xs px-2 py-1 bg-white/10 hover:bg-white/20 rounded transition-colors"
-                                >
-                                  Download
-                                </a>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
               </div>
             ) : (
               <div className="text-center py-24">
                 <div className="text-6xl mb-4">🎬</div>
-                <h2 className="text-2xl font-light mb-2">No Video Generated Yet</h2>
-                <p className="text-gray-500 mb-6">Approve your script to generate the final video</p>
-                <Button onClick={() => setActiveTab("script")} size="lg" className="rounded-lg">
+                <h2 className="text-2xl font-light mb-2">
+                  No Video Generated Yet
+                </h2>
+                <p className="text-gray-500 mb-6">
+                  Approve your script to generate the final video
+                </p>
+                <Button
+                  onClick={() => setActiveTab("script")}
+                  size="lg"
+                  className="rounded-lg"
+                >
                   Go to Script
                 </Button>
               </div>
@@ -2417,44 +3658,92 @@ export default function ProjectCreativePage() {
       {/* Recording Modal */}
       {showRecordingModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0" onClick={() => { if (!isRecording && !uploading) { setShowRecordingModal(false); setEditingRecording(null); } }} />
+          <div
+            className="absolute inset-0"
+            onClick={() => {
+              if (!isRecording && !uploading) {
+                setShowRecordingModal(false);
+                setEditingRecording(null);
+              }
+            }}
+          />
           <div className="relative max-w-2xl w-full bg-[#111] border border-white/10 rounded-xl p-8 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-light">
-                {editingRecording ? "Edit Recording" : isRecording ? "Recording..." : "Add Recording"}
+                {editingRecording
+                  ? "Edit Recording"
+                  : isRecording
+                    ? "Recording..."
+                    : "Add Recording"}
               </h2>
-              <button onClick={() => { if (!isRecording && !uploading) { setShowRecordingModal(false); setEditingRecording(null); } }} className="text-gray-500 hover:text-white">
+              <button
+                onClick={() => {
+                  if (!isRecording && !uploading) {
+                    setShowRecordingModal(false);
+                    setEditingRecording(null);
+                  }
+                }}
+                className="text-gray-500 hover:text-white"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {editingRecording ? (
               <div className="space-y-5">
-                <video ref={editVideoRef} src={editingRecording.videoUrl} controls className="w-full max-h-[300px] bg-black rounded-lg" />
+                <video
+                  ref={editVideoRef}
+                  src={editingRecording.videoUrl}
+                  controls
+                  className="w-full max-h-[300px] bg-black rounded-lg"
+                />
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Start (s)</label>
+                    <label className="text-xs text-gray-500 mb-1 block">
+                      Start (s)
+                    </label>
                     <input
                       type="number"
                       value={editTrimStart}
-                      onChange={(e) => setEditTrimStart(Math.max(0, parseFloat(e.target.value) || 0))}
-                      min={0} max={editTrimEnd} step={0.1}
+                      onChange={(e) =>
+                        setEditTrimStart(
+                          Math.max(0, parseFloat(e.target.value) || 0),
+                        )
+                      }
+                      min={0}
+                      max={editTrimEnd}
+                      step={0.1}
                       className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded focus:border-white/30 focus:outline-none text-sm"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">End (s)</label>
+                    <label className="text-xs text-gray-500 mb-1 block">
+                      End (s)
+                    </label>
                     <input
                       type="number"
                       value={editTrimEnd}
-                      onChange={(e) => setEditTrimEnd(Math.min(editingRecording.duration, parseFloat(e.target.value) || 0))}
-                      min={editTrimStart} max={editingRecording.duration} step={0.1}
+                      onChange={(e) =>
+                        setEditTrimEnd(
+                          Math.min(
+                            editingRecording.duration,
+                            parseFloat(e.target.value) || 0,
+                          ),
+                        )
+                      }
+                      min={editTrimStart}
+                      max={editingRecording.duration}
+                      step={0.1}
                       className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded focus:border-white/30 focus:outline-none text-sm"
                     />
                   </div>
                 </div>
 
-                <Button onClick={handleSaveRecordingEdit} className="w-full rounded-lg" size="lg">
+                <Button
+                  onClick={handleSaveRecordingEdit}
+                  className="w-full rounded-lg"
+                  size="lg"
+                >
                   Save Recording
                 </Button>
               </div>
@@ -2462,7 +3751,9 @@ export default function ProjectCreativePage() {
               <>
                 <div className="space-y-4 mb-6">
                   <div>
-                    <label className="block text-xs tracking-widest text-gray-500 uppercase mb-2">Feature Name</label>
+                    <label className="block text-xs tracking-widest text-gray-500 uppercase mb-2">
+                      Feature Name
+                    </label>
                     <input
                       type="text"
                       value={recordingFeatureName}
@@ -2480,7 +3771,9 @@ export default function ProjectCreativePage() {
                       <button
                         onClick={() => setRecordingMode("record")}
                         className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm rounded-lg transition-colors ${
-                          recordingMode === "record" ? "bg-white/10 text-white border border-white/20" : "bg-white/5 text-gray-500 border border-white/5 hover:text-white"
+                          recordingMode === "record"
+                            ? "bg-white/10 text-white border border-white/20"
+                            : "bg-white/5 text-gray-500 border border-white/5 hover:text-white"
                         }`}
                       >
                         <Monitor className="w-4 h-4" />
@@ -2489,14 +3782,15 @@ export default function ProjectCreativePage() {
                       <button
                         onClick={() => setRecordingMode("upload")}
                         className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm rounded-lg transition-colors ${
-                          recordingMode === "upload" ? "bg-white/10 text-white border border-white/20" : "bg-white/5 text-gray-500 border border-white/5 hover:text-white"
+                          recordingMode === "upload"
+                            ? "bg-white/10 text-white border border-white/20"
+                            : "bg-white/5 text-gray-500 border border-white/5 hover:text-white"
                         }`}
                       >
                         <Upload className="w-4 h-4" />
                         Upload
                       </button>
                     </div>
-
                   </>
                 )}
 
@@ -2504,19 +3798,33 @@ export default function ProjectCreativePage() {
                   {recordingMode === "record" ? (
                     !isRecording ? (
                       <>
-                        <Button onClick={startRecording} disabled={!recordingFeatureName.trim()} size="lg" className="rounded-lg flex items-center gap-2">
+                        <Button
+                          onClick={startRecording}
+                          disabled={!recordingFeatureName.trim()}
+                          size="lg"
+                          className="rounded-lg flex items-center gap-2"
+                        >
                           <Monitor className="w-5 h-5" />
                           Start Recording
                         </Button>
-                        <p className="text-xs text-gray-600">Select a window or tab to capture</p>
+                        <p className="text-xs text-gray-600">
+                          Select a window or tab to capture
+                        </p>
                       </>
                     ) : (
                       <div className="flex flex-col items-center gap-4">
                         <div className="flex items-center gap-3">
                           <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-                          <span className="font-mono text-2xl text-red-400">{formatTime(recordingTime)}</span>
+                          <span className="font-mono text-2xl text-red-400">
+                            {formatTime(recordingTime)}
+                          </span>
                         </div>
-                        <Button variant="destructive" size="lg" onClick={stopRecording} className="rounded-lg">
+                        <Button
+                          variant="destructive"
+                          size="lg"
+                          onClick={stopRecording}
+                          className="rounded-lg"
+                        >
                           Stop Recording
                         </Button>
                       </div>
@@ -2526,13 +3834,34 @@ export default function ProjectCreativePage() {
                       <label className="flex flex-col items-center gap-3 p-8 border-2 border-dashed border-white/10 hover:border-white/20 cursor-pointer transition-colors rounded-lg">
                         <Upload className="w-8 h-8 text-gray-500" />
                         <span className="text-sm text-gray-400">
-                          {uploadFile ? uploadFile.name : "Drop video file or click to browse"}
+                          {uploadFile
+                            ? uploadFile.name
+                            : "Drop video file or click to browse"}
                         </span>
-                        <input type="file" accept="video/*" className="hidden" onChange={(e) => setUploadFile(e.target.files?.[0] || null)} />
+                        <input
+                          type="file"
+                          accept="video/*"
+                          className="hidden"
+                          onChange={(e) =>
+                            setUploadFile(e.target.files?.[0] || null)
+                          }
+                        />
                       </label>
                       {uploadFile && (
-                        <Button onClick={handleUpload} disabled={uploading || !recordingFeatureName.trim()} className="w-full rounded-lg" size="lg">
-                          {uploading ? <span className="flex items-center gap-2"><Loader2 className="animate-spin h-5 w-5" />Uploading...</span> : "Upload"}
+                        <Button
+                          onClick={handleUpload}
+                          disabled={uploading || !recordingFeatureName.trim()}
+                          className="w-full rounded-lg"
+                          size="lg"
+                        >
+                          {uploading ? (
+                            <span className="flex items-center gap-2">
+                              <Loader2 className="animate-spin h-5 w-5" />
+                              Uploading...
+                            </span>
+                          ) : (
+                            "Upload"
+                          )}
                         </Button>
                       )}
                     </div>

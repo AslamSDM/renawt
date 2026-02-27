@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/auth";
+import { ProductDataSchema, VideoScriptSchema } from "@/lib/types";
+
+function safeParseJson<T>(
+  jsonStr: string | null,
+  schema: { safeParse: (data: unknown) => { success: boolean; data?: T } },
+): T | null {
+  if (!jsonStr) return null;
+  try {
+    const parsed = JSON.parse(jsonStr);
+    const result = schema.safeParse(parsed);
+    return result.success ? result.data ?? null : null;
+  } catch {
+    return null;
+  }
+}
 
 export async function GET(
   request: NextRequest,
@@ -25,11 +40,13 @@ export async function GET(
       return NextResponse.json({ error: "Not authorized" }, { status: 403 });
     }
 
-    // Parse JSON fields
+    const productData = safeParseJson(project.productData, ProductDataSchema);
+    const script = safeParseJson(project.script, VideoScriptSchema);
+
     const response = {
       ...project,
-      productData: project.productData ? JSON.parse(project.productData) : null,
-      script: project.script ? JSON.parse(project.script) : null,
+      productData,
+      script,
     };
 
     return NextResponse.json({ project: response });

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { cvProcessor } from "@/lib/recording/cvProcessor";
 import { videoProcessor } from "@/lib/recording/videoProcessor";
+import { auth } from "@/auth";
 
 // R2 Configuration
 const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
@@ -28,6 +29,11 @@ const getR2Client = (): S3Client => {
  */
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+
     const formData = await request.formData();
 
     const video = formData.get("video") as File;
@@ -183,6 +189,11 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get("projectId");
 
@@ -191,6 +202,14 @@ export async function GET(request: NextRequest) {
         { error: "Project ID required" },
         { status: 400 }
       );
+    }
+
+    const project = await prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    }
+    if (project.userId && project.userId !== session.user.id) {
+      return NextResponse.json({ error: "Not authorized" }, { status: 403 });
     }
 
     const recordings = await prisma.screenRecording.findMany({

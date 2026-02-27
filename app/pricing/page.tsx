@@ -66,7 +66,9 @@ export default function PricingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8">
             <div>
-              <span className="text-xs tracking-[0.3em] text-gray-600 uppercase block mb-4">Pricing</span>
+              <span className="text-xs tracking-[0.3em] text-gray-600 uppercase block mb-4">
+                Pricing
+              </span>
               <h1 className="text-[10vw] md:text-[6vw] font-light leading-[0.9]">
                 Credit
               </h1>
@@ -89,7 +91,7 @@ export default function PricingPage() {
             {subscriptionPlans.map((pkg) => (
               <Card
                 key={pkg.title}
-                className={`bg-[#0a0a0a] border-0 rounded-none ${pkg.popular ? 'relative' : ''}`}
+                className={`bg-[#0a0a0a] border-0 rounded-none ${pkg.popular ? "relative" : ""}`}
               >
                 {pkg.popular && (
                   <div className="absolute top-0 left-0 right-0 bg-white text-black text-center py-2 text-xs tracking-widest uppercase">
@@ -97,7 +99,7 @@ export default function PricingPage() {
                   </div>
                 )}
 
-                <CardHeader className={`${pkg.popular ? 'pt-16' : ''} pb-8`}>
+                <CardHeader className={`${pkg.popular ? "pt-16" : ""} pb-8`}>
                   <div className="flex items-center gap-2 text-xs text-gray-600 tracking-widest uppercase mb-6">
                     <Coins className="w-4 h-4" />
                     <span>One-time purchase</span>
@@ -111,10 +113,14 @@ export default function PricingPage() {
                     {pkg.title}
                   </CardTitle>
                   <div className="mt-2">
-                    <span className="text-3xl font-light text-white">{pkg.creditsPerCycle}</span>
+                    <span className="text-3xl font-light text-white">
+                      {pkg.creditsPerCycle}
+                    </span>
                     <span className="text-sm text-gray-500 ml-2">credits</span>
                   </div>
-                  <p className="text-sm text-gray-500 mt-2">{pkg.description}</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    {pkg.description}
+                  </p>
                 </CardHeader>
 
                 <CardContent className="flex flex-col justify-between space-y-6 h-full">
@@ -140,51 +146,13 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Cost Breakdown */}
-      <section className="py-24 px-6 md:px-12 border-b border-white/10">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-16">
-            <span className="text-xs tracking-[0.3em] text-gray-600 uppercase block mb-4">Value</span>
-            <h2 className="text-4xl md:text-5xl font-light">
-              Simple Pricing
-            </h2>
-            <p className="text-gray-500 mt-4 max-w-xl">
-              Each video costs 1 credit. The more credits you buy, the lower your cost per video.
-            </p>
-          </div>
-
-          <Card className="bg-transparent border border-white/10 rounded-none">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="py-6 px-8 text-gray-600 font-light text-sm tracking-wider uppercase">Package</th>
-                    <th className="py-6 px-8 text-center text-gray-600 font-light text-sm tracking-wider uppercase">Credits</th>
-                    <th className="py-6 px-8 text-center text-gray-600 font-light text-sm tracking-wider uppercase">Price</th>
-                    <th className="py-6 px-8 text-center font-light text-sm tracking-wider uppercase">Cost per video</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {COST_BREAKDOWN.map((row, i) => (
-                    <tr key={i} className="border-b border-white/10 last:border-0">
-                      <td className="py-6 px-8 font-light">{row.package}</td>
-                      <td className="py-6 px-8 text-center text-gray-500">{row.credits}</td>
-                      <td className="py-6 px-8 text-center text-gray-500">${row.price}</td>
-                      <td className="py-6 px-8 text-center">{row.costPerVideo}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </div>
-      </section>
-
       {/* FAQ Section */}
       <section className="py-24 px-6 md:px-12 border-b border-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="mb-16">
-            <span className="text-xs tracking-[0.3em] text-gray-600 uppercase block mb-4">FAQ</span>
+            <span className="text-xs tracking-[0.3em] text-gray-600 uppercase block mb-4">
+              FAQ
+            </span>
             <h2 className="text-4xl md:text-5xl font-light">
               Questions & Answers
             </h2>
@@ -217,7 +185,7 @@ export default function PricingPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
-              onClick={() => router.push('/creative')}
+              onClick={() => router.push("/creative")}
               className="px-12 py-4 text-lg tracking-wider uppercase rounded-none"
               size="lg"
             >
@@ -225,7 +193,7 @@ export default function PricingPage() {
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
             <Button
-              onClick={() => router.push('/projects')}
+              onClick={() => router.push("/projects")}
               className="px-12 py-4 text-lg tracking-wider uppercase rounded-none"
               variant="outline"
               size="lg"
