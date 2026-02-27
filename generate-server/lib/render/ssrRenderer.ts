@@ -32,15 +32,6 @@ export interface RenderOptions {
   height?: number;
   fps?: number;
   durationInFrames: number;
-}
-
-export interface RenderOptions {
-  remotionCode: string;
-  outputFormat?: "mp4" | "webm";
-  width?: number;
-  height?: number;
-  fps?: number;
-  durationInFrames: number;
   projectId?: string; // For R2 organization
 }
 
@@ -58,42 +49,59 @@ export interface RenderResult {
 function createTempComposition(code: string, id: string): string {
   const filePath = join(TEMP_DIR, `composition-${id}.tsx`);
 
+  // Strip markdown code fences if present (LLM output artifact)
+  let finalCode = code
+    .replace(/^```(?:tsx?|jsx?|javascript)?\s*\n?/i, "")
+    .replace(/\n?```\s*$/, "")
+    .trim();
+
   // Ensure the code has proper imports and default export
-  let finalCode = code;
 
   // If code doesn't have React import, add it
-  if (!code.includes("import React") && !code.includes("import * as React")) {
+  if (
+    !finalCode.includes("import React") &&
+    !finalCode.includes("import * as React")
+  ) {
     finalCode = `import React from 'react';\n${finalCode}`;
   }
 
   // If code doesn't have remotion imports, add common ones
-  if (!code.includes("from 'remotion'") && !code.includes('from "remotion"')) {
+  if (
+    !finalCode.includes("from 'remotion'") &&
+    !finalCode.includes('from "remotion"')
+  ) {
     finalCode = `import { AbsoluteFill, Sequence, useCurrentFrame, useVideoConfig, interpolate, spring, Audio, staticFile } from 'remotion';\n${finalCode}`;
   }
 
   // Ensure Audio and staticFile are imported if Audio is used
-  if (code.includes("<Audio") && !code.includes("staticFile")) {
+  if (finalCode.includes("<Audio") && !finalCode.includes("staticFile")) {
     finalCode = finalCode.replace(
       /from ['"]remotion['"]/,
-      `from 'remotion';\nimport { staticFile } from 'remotion'`
+      `from 'remotion';\nimport { staticFile } from 'remotion'`,
     );
   }
-  if (code.includes("<Audio") && !code.includes("Audio,") && !code.includes("Audio }")) {
+  if (
+    finalCode.includes("<Audio") &&
+    !finalCode.includes("Audio,") &&
+    !finalCode.includes("Audio }")
+  ) {
     finalCode = finalCode.replace(
       /import \{([^}]+)\} from ['"]remotion['"]/,
-      (match, imports) => `import {${imports}, Audio, staticFile } from 'remotion'`
+      (match, imports) =>
+        `import {${imports}, Audio, staticFile } from 'remotion'`,
     );
   }
 
   // Check if there's a default export - if not, try to find and add one
-  if (!code.includes("export default")) {
-    // Try to find a component declaration and export it
-    // Common patterns: const VideoComposition, const MyVideo, function Video, etc.
-    const componentMatch = code.match(
-      /(?:const|function|class)\s+([A-Z][a-zA-Z0-9]*)/,
-    );
-    if (componentMatch) {
-      finalCode += `\nexport default ${componentMatch[1]};`;
+  if (!finalCode.includes("export default")) {
+    // Try to find component declarations and export the LAST one
+    // (the last one is typically the main composition, while earlier ones are helpers)
+    const componentMatches = [
+      ...finalCode.matchAll(/(?:const|function|class)\s+([A-Z][a-zA-Z0-9]*)/g),
+    ];
+    if (componentMatches.length > 0) {
+      const mainComponent = componentMatches[componentMatches.length - 1][1];
+      finalCode += `\nexport default ${mainComponent};`;
     } else {
       // Fallback: create a simple wrapper
       finalCode += `
@@ -111,6 +119,37 @@ export default DefaultComposition;`;
   console.log(`[SSR] Created temp composition at: ${filePath}`);
 
   return filePath;
+}
+
+/**
+ * Check if code already has its own RemotionRoot / registerRoot entry point.
+ * If so, we can use the composition file directly as the entry point.
+ */
+function codeHasOwnEntryPoint(code: string): boolean {
+  return (
+    code.includes("registerRoot") ||
+    (code.includes("RemotionRoot") && code.includes("<Composition"))
+  );
+}
+
+/**
+ * Create a self-contained entry point from code that already has RemotionRoot.
+ * We just need to add registerRoot if it's missing.
+ */
+function createSelfContainedEntryPoint(code: string, id: string): string {
+  const entryPath = join(TEMP_DIR, `entry-${id}.tsx`);
+
+  let entryCode = code;
+
+  // If code exports RemotionRoot but doesn't call registerRoot, add it
+  if (!entryCode.includes("registerRoot")) {
+    entryCode += `\nimport { registerRoot } from 'remotion';\nregisterRoot(RemotionRoot);`;
+  }
+
+  writeFileSync(entryPath, entryCode, "utf-8");
+  console.log(`[SSR] Created self-contained entry point at: ${entryPath}`);
+
+  return entryPath;
 }
 
 /**
@@ -174,13 +213,44 @@ export async function renderVideo(
       projectId,
     } = options;
 
-    // Create temp files
-    const compositionPath = createTempComposition(remotionCode, renderId);
-    const entryPath = createTempEntryPoint(
-      compositionPath,
-      renderId,
-      durationInFrames,
+    // Detect if code uses Three.js / WebGL
+    const usesThreeJs =
+      remotionCode.includes("@react-three") ||
+      remotionCode.includes("@remotion/three") ||
+      remotionCode.includes("ThreeCanvas") ||
+      remotionCode.includes("EffectComposer") ||
+      remotionCode.includes("from 'three'") ||
+      remotionCode.includes('from "three"') ||
+      remotionCode.includes("<Canvas");
+
+    // Detect if code already has its own entry point (RemotionRoot + Composition)
+    const hasOwnEntryPoint = codeHasOwnEntryPoint(remotionCode);
+    console.log(
+      `[SSR] Uses Three.js: ${usesThreeJs}, Has own entry point: ${hasOwnEntryPoint}`,
     );
+
+    let entryPath: string;
+    let compositionId: string;
+
+    if (hasOwnEntryPoint) {
+      // Code already has RemotionRoot with Composition — use it directly
+      console.log("[SSR] Code has its own entry point, using directly...");
+      entryPath = createSelfContainedEntryPoint(remotionCode, renderId);
+
+      // Extract the composition ID from the code
+      const compIdMatch = remotionCode.match(/id=["']([^"']+)["']/);
+      compositionId = compIdMatch ? compIdMatch[1] : "GeneratedVideo";
+      console.log(`[SSR] Detected composition ID: ${compositionId}`);
+    } else {
+      // Simple component code — wrap it in our own entry point
+      const compositionPath = createTempComposition(remotionCode, renderId);
+      entryPath = createTempEntryPoint(
+        compositionPath,
+        renderId,
+        durationInFrames,
+      );
+      compositionId = "GeneratedVideo";
+    }
 
     // Bundle the composition with public directory for static files (audio)
     console.log("[SSR] Bundling composition...");
@@ -196,20 +266,30 @@ export async function renderVideo(
     // Select the composition
     const composition = await selectComposition({
       serveUrl: bundleLocation,
-      id: "GeneratedVideo",
+      id: compositionId,
+      chromiumOptions: {
+        gl: usesThreeJs ? "angle" : "swangle",
+      },
     });
 
     // Output path
     const outputFileName = `video-${renderId}.${outputFormat}`;
     const outputPath = join(OUTPUT_DIR, outputFileName);
 
-    // Render the video
-    console.log(`[SSR] Rendering to ${outputPath}...`);
+    // Three.js needs concurrency=1 for WebGL context, otherwise use higher
+    const concurrency = usesThreeJs ? 1 : 8;
+    console.log(
+      `[SSR] Rendering to ${outputPath}... (concurrency=${concurrency})`,
+    );
     await renderMedia({
       composition,
       serveUrl: bundleLocation,
       codec: outputFormat === "mp4" ? "h264" : "vp8",
       outputLocation: outputPath,
+      chromiumOptions: {
+        gl: usesThreeJs ? "angle" : "swangle",
+      },
+      concurrency,
       onProgress: ({ progress }) => {
         console.log(`[SSR] Render progress: ${Math.round(progress * 100)}%`);
       },
@@ -217,8 +297,10 @@ export async function renderVideo(
 
     // Cleanup temp files
     try {
-      unlinkSync(compositionPath);
       unlinkSync(entryPath);
+      // Also clean up composition file if it was created separately
+      const compositionPath = join(TEMP_DIR, `composition-${renderId}.tsx`);
+      if (existsSync(compositionPath)) unlinkSync(compositionPath);
     } catch (e) {
       console.warn("[SSR] Cleanup warning:", e);
     }
@@ -227,18 +309,20 @@ export async function renderVideo(
     console.log(`[SSR] Render complete in ${renderTime}ms`);
 
     // Upload to R2 if configured
-    let finalVideoUrl = `/renders/${outputFileName}`;
+    const serverBase =
+      process.env.PUBLIC_URL || `http://localhost:${process.env.PORT || 3001}`;
+    let finalVideoUrl = `${serverBase}/renders/${outputFileName}`;
     let r2Key: string | undefined;
-    
+
     if (isR2Configured()) {
       console.log(`[SSR] Uploading to R2...`);
       const uploadResult = await uploadVideoToR2(outputPath, projectId);
-      
+
       if (uploadResult.success && uploadResult.url) {
         console.log(`[SSR] Uploaded to R2: ${uploadResult.url}`);
         finalVideoUrl = uploadResult.url;
         r2Key = uploadResult.key;
-        
+
         // Optionally delete local file after successful R2 upload
         try {
           unlinkSync(outputPath);
@@ -293,6 +377,9 @@ export async function renderExistingComposition(
     const composition = await selectComposition({
       serveUrl: bundleLocation,
       id: compositionId,
+      chromiumOptions: {
+        gl: "swangle",
+      },
     });
 
     // Output
@@ -305,6 +392,9 @@ export async function renderExistingComposition(
       serveUrl: bundleLocation,
       codec: outputFormat === "mp4" ? "h264" : "vp8",
       outputLocation: outputPath,
+      chromiumOptions: {
+        gl: "swangle",
+      },
       onProgress: ({ progress }) => {
         console.log(`[SSR] Progress: ${Math.round(progress * 100)}%`);
       },

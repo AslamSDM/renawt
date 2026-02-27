@@ -2,13 +2,15 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis-data:/data
-    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-changeme}
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD:-changeme}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "sh", "-c", "redis-cli -a $$REDIS_PASSWORD ping"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -16,7 +18,7 @@ services:
   scraper-service:
     build: ./services/scraper-service
     ports:
-      - "4001:4001"
+      - "127.0.0.1:4001:4001"
     shm_size: "512mb"
     env_file:
       - path: generate-server/.env
@@ -38,14 +40,14 @@ services:
   render-service:
     build: ./services/render-service
     ports:
-      - "4002:4002"
+      - "127.0.0.1:4002:4002"
     shm_size: "1gb"
     env_file:
       - path: generate-server/.env
         required: false
     environment:
       - PORT=4002
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-changeme}@redis:6379
     depends_on:
       redis:
         condition: service_healthy

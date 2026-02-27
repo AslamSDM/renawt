@@ -156,7 +156,110 @@ export const CODE_GENERATOR_CONFIG: ModelConfig = {
   temperature: 0.3,
   maxTokens: 8000,
 };
-export const FAST_FIX_CONFIG: ModelConfig = { temperature: 0.2, maxTokens: 16000 };
+export const FAST_FIX_CONFIG: ModelConfig = {
+  temperature: 0.2,
+  maxTokens: 16000,
+};
+
+// ============================================
+// Gemini Flash (Google AI SDK) — fast, cheap
+// ============================================
+const GEMINI_FLASH_MODEL =
+  process.env.GEMINI_FLASH_MODEL || "gemini-3-flash-preview";
+
+export async function chatWithGeminiFlash(
+  messages: ChatMessage[],
+  config: ModelConfig = {},
+): Promise<ChatResponse> {
+  const { temperature = 0.7, maxTokens } = config;
+  const client = getGeminiClient();
+
+  console.log("[GeminiFlash] Calling Google AI Studio...");
+  console.log("[GeminiFlash] Model:", GEMINI_FLASH_MODEL);
+
+  const model = client.getGenerativeModel({
+    model: GEMINI_FLASH_MODEL,
+    generationConfig: {
+      temperature,
+      maxOutputTokens: maxTokens,
+    },
+  });
+
+  const systemMessage = messages.find((m) => m.role === "system");
+  const otherMessages = messages.filter((m) => m.role !== "system");
+
+  let fullPrompt = "";
+  if (systemMessage) {
+    fullPrompt = `${systemMessage.content}\n\n---\n\n`;
+  }
+  for (const msg of otherMessages) {
+    if (msg.role === "user") {
+      fullPrompt += msg.content;
+    } else if (msg.role === "assistant") {
+      fullPrompt += `\n\nAssistant: ${msg.content}\n\nUser: `;
+    }
+  }
+
+  try {
+    const result = await model.generateContent(fullPrompt);
+    const text = result.response.text();
+    console.log("[GeminiFlash] Response length:", text?.length || 0);
+    return { content: text || "" };
+  } catch (error) {
+    console.error("[GeminiFlash] API Error, falling back to Kimi:", error);
+    return chatWithKimi(messages, config);
+  }
+}
+
+// ============================================
+// Gemini Pro (Google AI SDK) — smart, for code gen
+// ============================================
+const GEMINI_PRO_MODEL =
+  process.env.GEMINI_PRO_MODEL || "gemini-3.1-pro-preview";
+
+export async function chatWithGeminiPro(
+  messages: ChatMessage[],
+  config: ModelConfig = {},
+): Promise<ChatResponse> {
+  const { temperature = 0.7, maxTokens } = config;
+  const client = getGeminiClient();
+
+  console.log("[GeminiPro] Calling Google AI Studio...");
+  console.log("[GeminiPro] Model:", GEMINI_PRO_MODEL);
+
+  const model = client.getGenerativeModel({
+    model: GEMINI_PRO_MODEL,
+    generationConfig: {
+      temperature,
+      maxOutputTokens: maxTokens,
+    },
+  });
+
+  const systemMessage = messages.find((m) => m.role === "system");
+  const otherMessages = messages.filter((m) => m.role !== "system");
+
+  let fullPrompt = "";
+  if (systemMessage) {
+    fullPrompt = `${systemMessage.content}\n\n---\n\n`;
+  }
+  for (const msg of otherMessages) {
+    if (msg.role === "user") {
+      fullPrompt += msg.content;
+    } else if (msg.role === "assistant") {
+      fullPrompt += `\n\nAssistant: ${msg.content}\n\nUser: `;
+    }
+  }
+
+  try {
+    const result = await model.generateContent(fullPrompt);
+    const text = result.response.text();
+    console.log("[GeminiPro] Response length:", text?.length || 0);
+    return { content: text || "" };
+  } catch (error) {
+    console.error("[GeminiPro] API Error, falling back to Kimi:", error);
+    return chatWithKimi(messages, config);
+  }
+}
 
 // ============================================
 // Fast Model (Gemini 2.0 Flash via OpenRouter)
@@ -201,11 +304,11 @@ export async function chatWithFastModel(
 }
 
 // ============================================
-// OpenRouter Integration (Kimi K2.5 via OpenRouter)
+// OpenRouter Integration (Gemini Flash via OpenRouter)
 // ============================================
 
-// Use Kimi K2.5 for all agents (text and vision)
-const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "moonshotai/kimi-k2.5";
+// Use Gemini Flash for all agents (text and vision)
+const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-exp";
 
 // OpenRouter client singleton
 let openRouterClient: OpenAI | null = null;
@@ -280,8 +383,81 @@ function encodeMediaToDataUrl(filePath: string, type: MediaType): string {
   return `data:${mimePrefix}/${ext};base64,${data.toString("base64")}`;
 }
 
-// Chat with vision model using video or image input
-export async function chatWithKimiVision(
+// Vision via Gemini Flash (Google AI SDK) — primary vision model
+export async function chatWithGeminiFlashVision(
+  media: MediaInput,
+  textPrompt: string,
+  systemPrompt?: string,
+  config: ModelConfig = {},
+): Promise<ChatResponse> {
+  const { temperature = 0.7, maxTokens } = config;
+  const client = getGeminiClient();
+
+  console.log("[GeminiFlashVision] Calling Google AI Studio with media...");
+  console.log("[GeminiFlashVision] Media type:", media.type);
+  console.log("[GeminiFlashVision] Model:", GEMINI_FLASH_MODEL);
+
+  const model = client.getGenerativeModel({
+    model: GEMINI_FLASH_MODEL,
+    generationConfig: {
+      temperature,
+      maxOutputTokens: maxTokens,
+    },
+  });
+
+  // Build prompt with system context
+  const fullPrompt = systemPrompt
+    ? `${systemPrompt}\n\n---\n\n${textPrompt}`
+    : textPrompt;
+
+  // Get image/video data
+  let imageData: { inlineData: { data: string; mimeType: string } };
+
+  if (media.base64 && media.mimeType) {
+    imageData = {
+      inlineData: { data: media.base64, mimeType: media.mimeType },
+    };
+  } else if (media.path) {
+    if (media.path.startsWith("http")) {
+      // For URLs, fetch and convert to base64
+      const response = await fetch(media.path);
+      const buffer = Buffer.from(await response.arrayBuffer());
+      const ext = path.extname(new URL(media.path).pathname).slice(1) || "png";
+      const mimePrefix = media.type === "image" ? "image" : "video";
+      imageData = {
+        inlineData: {
+          data: buffer.toString("base64"),
+          mimeType: `${mimePrefix}/${ext}`,
+        },
+      };
+    } else {
+      const data = fs.readFileSync(media.path);
+      const ext = path.extname(media.path).slice(1);
+      const mimePrefix = media.type === "image" ? "image" : "video";
+      imageData = {
+        inlineData: {
+          data: data.toString("base64"),
+          mimeType: `${mimePrefix}/${ext}`,
+        },
+      };
+    }
+  } else {
+    throw new Error("Media input must have either path or base64+mimeType");
+  }
+
+  try {
+    const result = await model.generateContent([fullPrompt, imageData]);
+    const text = result.response.text();
+    console.log("[GeminiFlashVision] Response length:", text?.length || 0);
+    return { content: text || "" };
+  } catch (error) {
+    console.error("[GeminiFlashVision] API Error, falling back to Kimi vision:", error);
+    return chatWithKimiVisionDirect(media, textPrompt, systemPrompt, config);
+  }
+}
+
+// Kimi vision fallback (OpenRouter)
+async function chatWithKimiVisionDirect(
   media: MediaInput,
   textPrompt: string,
   systemPrompt?: string,
@@ -290,7 +466,7 @@ export async function chatWithKimiVision(
   const { temperature = 0.7, maxTokens } = config;
   const client = getOpenRouterClient();
 
-  console.log("[OpenRouter Vision] Calling API with media...");
+  console.log("[OpenRouter Vision] Fallback — Calling API with media...");
   console.log("[OpenRouter Vision] Media type:", media.type);
   console.log("[OpenRouter Vision] Model:", OPENROUTER_MODEL);
 
@@ -299,7 +475,16 @@ export async function chatWithKimiVision(
   if (media.base64 && media.mimeType) {
     dataUrl = `data:${media.mimeType};base64,${media.base64}`;
   } else if (media.path) {
-    dataUrl = encodeMediaToDataUrl(media.path, media.type);
+    if (media.path.startsWith("http")) {
+      // For URLs, fetch and convert to base64
+      const resp = await fetch(media.path);
+      const buffer = Buffer.from(await resp.arrayBuffer());
+      const ext = path.extname(new URL(media.path).pathname).slice(1) || "png";
+      const mimePrefix = media.type === "image" ? "image" : "video";
+      dataUrl = `data:${mimePrefix}/${ext};base64,${buffer.toString("base64")}`;
+    } else {
+      dataUrl = encodeMediaToDataUrl(media.path, media.type);
+    }
   } else {
     throw new Error("Media input must have either path or base64+mimeType");
   }
@@ -339,7 +524,8 @@ export async function chatWithKimiVision(
   try {
     const completion = await client.chat.completions.create({
       model: OPENROUTER_MODEL,
-      messages: messages as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
+      messages:
+        messages as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
       temperature,
       max_tokens: maxTokens,
     });
@@ -353,6 +539,16 @@ export async function chatWithKimiVision(
     console.error("[OpenRouter Vision] API Error:", error);
     throw error;
   }
+}
+
+// Public vision function — routes to Gemini Flash first, falls back to Kimi
+export async function chatWithKimiVision(
+  media: MediaInput,
+  textPrompt: string,
+  systemPrompt?: string,
+  config: ModelConfig = {},
+): Promise<ChatResponse> {
+  return chatWithGeminiFlashVision(media, textPrompt, systemPrompt, config);
 }
 
 // Convenience function for image analysis

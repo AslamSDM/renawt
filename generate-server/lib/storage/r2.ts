@@ -102,6 +102,51 @@ export async function uploadVideoToR2(
 }
 
 /**
+ * Upload screenshot buffer to R2 (for scraper use)
+ */
+export async function uploadScreenshotBufferToR2(
+  buffer: Buffer,
+  fileName: string,
+  section: string
+): Promise<UploadResult> {
+  try {
+    const client = getR2Client();
+    const key = `screenshots/${section}/${fileName}`;
+
+    const command = new PutObjectCommand({
+      Bucket: R2_BUCKET_NAME,
+      Key: key,
+      Body: buffer,
+      ContentType: "image/png",
+      Metadata: {
+        "uploaded-at": new Date().toISOString(),
+        "section": section,
+      },
+    });
+
+    await client.send(command);
+
+    const publicUrl = R2_PUBLIC_URL 
+      ? `${R2_PUBLIC_URL}/${key}`
+      : `https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${key}`;
+
+    console.log(`[R2] Screenshot uploaded: ${key}`);
+    
+    return {
+      success: true,
+      url: publicUrl,
+      key,
+    };
+  } catch (error) {
+    console.error("[R2] Screenshot buffer upload failed:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown upload error",
+    };
+  }
+}
+
+/**
  * Upload screenshot to R2 for persistence
  */
 export async function uploadScreenshotToR2(

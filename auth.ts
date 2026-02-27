@@ -5,17 +5,20 @@ import { prisma } from "@/lib/db/prisma";
 
 export const runtime = "nodejs";
 
-// Check if required environment variables are set
-const hasAuthConfig = process.env.AUTH_SECRET && process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET;
+if (!process.env.AUTH_SECRET) {
+    throw new Error("AUTH_SECRET environment variable is required");
+}
+
+const hasAuthConfig = process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET;
 
 if (!hasAuthConfig) {
-    console.warn("[Auth] Missing required environment variables. Authentication will be disabled.");
-    console.warn("[Auth] Please set AUTH_SECRET, AUTH_GOOGLE_ID, and AUTH_GOOGLE_SECRET in your .env file");
+    console.warn("[Auth] Missing OAuth providers. Authentication will be disabled.");
+    console.warn("[Auth] Please set AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET in your .env file");
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     adapter: PrismaAdapter(prisma),
-    secret: process.env.AUTH_SECRET || "fallback-secret-key-for-development-only",
+    secret: process.env.AUTH_SECRET,
     session: { strategy: "jwt" },
     providers: hasAuthConfig ? [
         Google({

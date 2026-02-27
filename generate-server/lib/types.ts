@@ -216,6 +216,7 @@ export interface AudioConfig {
 // User Preferences for video generation
 export interface UserPreferences {
   style: "professional" | "playful" | "minimal" | "bold";
+  templateStyle?: string;
   duration?: number;
   musicUrl?: string;
   musicBpm?: number;

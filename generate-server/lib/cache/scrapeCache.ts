@@ -14,15 +14,23 @@ let redisClient: any = null;
 let redisAvailable: boolean | null = null;
 
 async function getRedisClient() {
+  // If we already know Redis is unavailable, don't retry
+  if (redisAvailable === false) return null;
   if (redisClient) return redisClient;
 
   try {
     // Dynamic import to avoid hard dependency
     const { createClient } = await import("redis");
-    redisClient = createClient({ url: REDIS_URL });
+    redisClient = createClient({
+      url: REDIS_URL,
+      socket: {
+        connectTimeout: 3000,
+        reconnectStrategy: false, // Don't auto-reconnect if unavailable
+      },
+    });
 
-    redisClient.on("error", (err: Error) => {
-      console.warn("[ScrapeCache] Redis error:", err.message);
+    redisClient.on("error", () => {
+      // Silently mark unavailable — logged once below
       redisAvailable = false;
     });
 
@@ -30,9 +38,10 @@ async function getRedisClient() {
     redisAvailable = true;
     console.log("[ScrapeCache] Redis connected");
     return redisClient;
-  } catch (error) {
-    console.warn("[ScrapeCache] Redis unavailable:", error);
+  } catch {
+    console.warn("[ScrapeCache] Redis unavailable — cache disabled");
     redisAvailable = false;
+    redisClient = null;
     return null;
   }
 }

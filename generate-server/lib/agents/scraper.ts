@@ -1,13 +1,17 @@
 import {
-  chatWithKimi,
-  chatWithKimiVision,
+  chatWithGeminiFlash,
+  chatWithGeminiFlashVision,
   SCRAPER_CONFIG,
 } from "./model";
 import type { ProductData } from "../types";
 import type { VideoGenerationStateType } from "./state";
 import { scrapeUrl, isScraperServiceAvailable } from "../scraper/scraperClient";
 import type { ScrapeResult, ScreenshotData } from "../scraper/scraperClient";
-import { getCachedScrapeResult, setCachedScrapeResult } from "../cache/scrapeCache";
+import {
+  getCachedScrapeResult,
+  setCachedScrapeResult,
+} from "../cache/scrapeCache";
+import { filterImageUrls } from "./imageEnrichment";
 
 const SCRAPER_SYSTEM_PROMPT = `You are a product analyst specializing in extracting marketing information from websites.
 Given a URL and its rendered content (HTML + page text), extract:
@@ -60,10 +64,10 @@ async function callModel(
   systemPrompt: string,
   userMessage: string,
 ): Promise<string> {
-  console.log("[Scraper] Calling Kimi K2.5...");
+  console.log("[Scraper] Calling Gemini Flash...");
   console.log(`[Scraper] User message length: ${userMessage.length} chars`);
 
-  const response = await chatWithKimi(
+  const response = await chatWithGeminiFlash(
     [
       { role: "system", content: systemPrompt },
       { role: "user", content: userMessage },
@@ -71,19 +75,22 @@ async function callModel(
     SCRAPER_CONFIG,
   );
 
-  console.log("[Scraper] Kimi Response length:", response.content.length);
+  console.log(
+    "[Scraper] Gemini Flash Response length:",
+    response.content.length,
+  );
 
   return response.content;
 }
 
-// Analyze screenshot with Kimi Vision for design insights
+// Analyze screenshot with Gemini Flash Vision for design insights
 async function analyzeScreenshotForDesign(screenshotUrl: string): Promise<{
   designInsights: string;
   colorPalette: string[];
   layoutStyle: string;
   visualMood: string;
 }> {
-  console.log("[Scraper] Analyzing screenshot with Kimi Vision...");
+  console.log("[Scraper] Analyzing screenshot with Gemini Flash Vision...");
 
   const prompt = `Analyze this website screenshot for video production:
 
@@ -111,7 +118,7 @@ Return as JSON:
       ? { type: "image" as const, path: screenshotUrl }
       : { type: "image" as const, path: screenshotUrl };
 
-    const response = await chatWithKimiVision(
+    const response = await chatWithGeminiFlashVision(
       mediaInput,
       prompt,
       "You are a design analyst specializing in web and video production.",
@@ -164,7 +171,7 @@ async function scrapeWebsiteFallback(url: string): Promise<ScrapeResult> {
     const page = await browser.newPage();
     await page.setViewport({ width: 1920, height: 1080 });
     await page.setUserAgent(
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     );
 
     await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
@@ -174,13 +181,15 @@ async function scrapeWebsiteFallback(url: string): Promise<ScrapeResult> {
     const heroPath = path.join(SCREENSHOTS_DIR, `${sessionId}-hero.png`);
     await page.screenshot({ path: heroPath, fullPage: false, type: "png" });
 
-    const screenshots: ScreenshotData[] = [{
-      name: `${sessionId}-hero.png`,
-      path: heroPath,
-      url: `/screenshots/${sessionId}-hero.png`,
-      section: "hero",
-      description: "Hero section",
-    }];
+    const screenshots: ScreenshotData[] = [
+      {
+        name: `${sessionId}-hero.png`,
+        path: heroPath,
+        url: `/screenshots/${sessionId}-hero.png`,
+        section: "hero",
+        description: "Hero section",
+      },
+    ];
 
     const content = await page.evaluate(() => {
       const bodyText = document.body.innerText;
@@ -189,10 +198,22 @@ async function scrapeWebsiteFallback(url: string): Promise<ScrapeResult> {
         .filter((src) => src && src.startsWith("http"))
         .slice(0, 10);
       const title = document.title;
-      const metaDesc = document.querySelector('meta[name="description"]')?.getAttribute("content") || "";
-      const ogTitle = document.querySelector('meta[property="og:title"]')?.getAttribute("content") || "";
-      const ogDesc = document.querySelector('meta[property="og:description"]')?.getAttribute("content") || "";
-      const ogImage = document.querySelector('meta[property="og:image"]')?.getAttribute("content") || "";
+      const metaDesc =
+        document
+          .querySelector('meta[name="description"]')
+          ?.getAttribute("content") || "";
+      const ogTitle =
+        document
+          .querySelector('meta[property="og:title"]')
+          ?.getAttribute("content") || "";
+      const ogDesc =
+        document
+          .querySelector('meta[property="og:description"]')
+          ?.getAttribute("content") || "";
+      const ogImage =
+        document
+          .querySelector('meta[property="og:image"]')
+          ?.getAttribute("content") || "";
 
       return {
         bodyText: bodyText.slice(0, 15000),
@@ -209,7 +230,11 @@ async function scrapeWebsiteFallback(url: string): Promise<ScrapeResult> {
       images: content.images,
       title: content.title,
       screenshots,
-      saasIndicators: { hasDemoButton: false, hasPricing: false, hasSignup: false },
+      saasIndicators: {
+        hasDemoButton: false,
+        hasPricing: false,
+        hasSignup: false,
+      },
     };
   } finally {
     await browser.close();
@@ -239,10 +264,33 @@ export async function scraperNode(
       };
     }
 
-    console.log(`[Scraper] Scraping URL: ${state.sourceUrl}`);
+    // Normalize URL — add https:// if no protocol specified
+    let normalizedUrl = state.sourceUrl.trim();
+    if (normalizedUrl && !/^https?:\/\//i.test(normalizedUrl)) {
+      normalizedUrl = `https://${normalizedUrl}`;
+    }
+
+    // Validate URL
+    try {
+      new URL(normalizedUrl);
+    } catch {
+      console.error(`[Scraper] Invalid URL: ${normalizedUrl}`);
+      // Fall back to description-based generation if we have a description
+      if (state.description) {
+        console.log("[Scraper] Invalid URL, falling back to description");
+        const productData = createProductDataFromDescription(state.description);
+        return { productData, currentStep: "scripting" };
+      }
+      return {
+        errors: [`Invalid URL: ${normalizedUrl}`],
+        currentStep: "error",
+      };
+    }
+
+    console.log(`[Scraper] Scraping URL: ${normalizedUrl}`);
 
     // Check cache first (saves 15-25s for repeat URLs)
-    const cached = await getCachedScrapeResult(state.sourceUrl);
+    const cached = await getCachedScrapeResult(normalizedUrl);
     if (cached) {
       console.log("[Scraper] Using cached result");
       return {
@@ -257,10 +305,12 @@ export async function scraperNode(
 
     if (serviceAvailable) {
       console.log("[Scraper] Using scraper service...");
-      scrapeResult = await scrapeUrl(state.sourceUrl);
+      scrapeResult = await scrapeUrl(normalizedUrl);
     } else {
-      console.log("[Scraper] Scraper service unavailable, using direct Puppeteer fallback...");
-      scrapeResult = await scrapeWebsiteFallback(state.sourceUrl);
+      console.log(
+        "[Scraper] Scraper service unavailable, using direct Puppeteer fallback...",
+      );
+      scrapeResult = await scrapeWebsiteFallback(normalizedUrl);
     }
 
     const { text, images, title, screenshots } = scrapeResult;
@@ -277,7 +327,7 @@ export async function scraperNode(
 
     const userMessage = `Analyze this website and extract product information:
 
-URL: ${state.sourceUrl}
+URL: ${normalizedUrl}
 Page Title: ${title}
 
 ${state.description ? `Additional context from user: ${state.description}\n\n` : ""}
@@ -323,9 +373,11 @@ Return ONLY valid JSON.`;
       visualMood?: string;
     };
 
-    // Merge scraped images
+    // Merge scraped images — filter out favicons, og images, and other low-quality sources
     if (productData.images.length === 0 && images.length > 0) {
-      productData.images = images.slice(0, 5);
+      productData.images = filterImageUrls(images).slice(0, 5);
+    } else {
+      productData.images = filterImageUrls(productData.images).slice(0, 5);
     }
 
     // Override colors from visual analysis if available
@@ -348,10 +400,13 @@ Return ONLY valid JSON.`;
     }
 
     console.log("[Scraper] Extracted product name:", productData.name);
-    console.log("[Scraper] Product type:", productData.productType || "unknown");
+    console.log(
+      "[Scraper] Product type:",
+      productData.productType || "unknown",
+    );
 
     // Cache the result for future requests
-    await setCachedScrapeResult(state.sourceUrl, productData);
+    await setCachedScrapeResult(normalizedUrl, productData);
 
     return {
       productData,

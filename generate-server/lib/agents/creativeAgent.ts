@@ -9,7 +9,7 @@
  * Each loop builds on the previous to create increasingly complex effects.
  */
 
-import { chatWithKimi } from "./model";
+import { chatWithGeminiFlash } from "./model";
 
 export interface AnimationEffect {
   type:
@@ -170,7 +170,7 @@ Return ONLY a JSON array of strings:
 Be CREATIVE. No clichés.`;
 
   try {
-    const response = await chatWithKimi([{ role: "user", content: prompt }], {
+    const response = await chatWithGeminiFlash([{ role: "user", content: prompt }], {
       temperature: 0.9,
       maxTokens: 500,
     });
@@ -230,7 +230,7 @@ Return JSON array:
 Exactly ${texts.length} items.`;
 
   try {
-    const response = await chatWithKimi([{ role: "user", content: prompt }], {
+    const response = await chatWithGeminiFlash([{ role: "user", content: prompt }], {
       temperature: 0.8,
       maxTokens: 1500,
     });
@@ -326,7 +326,7 @@ Return compact JSON:
 {"scenes":[{"duration":90,"bgType":"aurora","colors":["#1a1a2e","#3b82f6"],"textIndices":[0],"enter":"fade","exit":"blur-out"}]}`;
 
   try {
-    const response = await chatWithKimi([{ role: "user", content: prompt }], {
+    const response = await chatWithGeminiFlash([{ role: "user", content: prompt }], {
       temperature: 0.7,
       maxTokens: 1500,
     });
@@ -399,7 +399,7 @@ Suggest a music search query (4-5 words) for royalty-free sites.
 Return ONLY the search terms, no quotes.`;
 
   try {
-    const response = await chatWithKimi([{ role: "user", content: prompt }], {
+    const response = await chatWithGeminiFlash([{ role: "user", content: prompt }], {
       temperature: 0.5,
       maxTokens: 50,
     });

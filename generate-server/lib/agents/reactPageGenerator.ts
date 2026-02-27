@@ -6,7 +6,7 @@
  * The output can be previewed as a static page before conversion to Remotion.
  */
 
-import { chatWithKimi } from "./model";
+import { chatWithGeminiPro } from "./model";
 import type { VideoGenerationStateType } from "./state";
 import type { VideoScene } from "../types";
 
@@ -257,8 +257,8 @@ Create a stunning single-page React component with:
 Make it look like a high-energy kinetic typography video!`;
 
   try {
-    console.log("[ReactPageGenerator] Calling Kimi K2.5...");
-    const response = await chatWithKimi([{ role: "user", content: prompt }], {
+    console.log("[ReactPageGenerator] Calling Gemini Pro...");
+    const response = await chatWithGeminiPro([{ role: "user", content: prompt }], {
       temperature: 0.7,
       maxTokens: 8000,
     });

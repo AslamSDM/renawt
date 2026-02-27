@@ -175,11 +175,12 @@ R2_SECRET_ACCESS_KEY=
 R2_BUCKET_NAME=remawt-videos
 R2_PUBLIC_URL=
 
-# Database
+# Database (MUST point to same DB as Vercel for user auth & credits)
 DATABASE_URL=postgresql://remawt:CHANGE_ME@localhost:5432/remawt?schema=public
 
 # Redis
-REDIS_URL=redis://localhost:6379
+REDIS_PASSWORD=CHANGE_ME_TO_RANDOM_STRING
+REDIS_URL=redis://:CHANGE_ME_TO_RANDOM_STRING@localhost:6379
 
 # Microservices
 SCRAPER_SERVICE_URL=http://localhost:4001
@@ -270,7 +271,7 @@ if command -v docker &>/dev/null; then
     && log "Scraper: healthy" || warn "Scraper: starting..."
   curl -sf http://localhost:4002/health > /dev/null 2>&1 \
     && log "Render: healthy" || warn "Render: starting..."
-  docker compose exec -T redis redis-cli ping 2>/dev/null | grep -q PONG \
+  docker compose exec -T redis redis-cli -a "$REDIS_PASSWORD" ping 2>/dev/null | grep -q PONG \
     && log "Redis: healthy" || warn "Redis: starting..."
 else
   warn "Docker not available — microservices skipped"
