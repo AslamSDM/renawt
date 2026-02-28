@@ -6,9 +6,12 @@ services:
     volumes:
       - redis-data:/data
     environment:
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-changeme}
-    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD:-changeme}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
     restart: unless-stopped
+    networks:
+      - default
+      - internal
     healthcheck:
       test: ["CMD", "sh", "-c", "redis-cli -a $$REDIS_PASSWORD ping"]
       interval: 10s
@@ -42,16 +45,30 @@ services:
     ports:
       - "127.0.0.1:4002:4002"
     shm_size: "1gb"
-    env_file:
-      - path: generate-server/.env
-        required: false
     environment:
       - PORT=4002
-      - REDIS_URL=redis://:${REDIS_PASSWORD:-changeme}@redis:6379
+      - REDIS_URL=redis://:${REDIS_PASSWORD:?REDIS_PASSWORD must be set}@redis:6379
+      - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
     depends_on:
       redis:
         condition: service_healthy
     restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=512m,uid=1000,gid=1000
+      - /app/.remotion-temp:size=2g,uid=1000,gid=1000
+      - /app/public/renders:size=2g,uid=1000,gid=1000
+      - /app/node_modules/.remotion:size=1g,uid=1000,gid=1000
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - SYS_ADMIN
+    networks:
+      - default
+      - internal
     deploy:
       resources:
         limits:
@@ -62,6 +79,12 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
+  # Internal network blocks outbound internet for render-service
+  # Redis and scraper-service use default bridge network
+networks:
+  internal:
+    internal: true
 
 volumes:
   redis-data:

@@ -9,6 +9,7 @@
 import express from "express";
 import { Queue } from "bullmq";
 import IORedis from "ioredis";
+import { existsSync, unlinkSync, createReadStream, statSync } from "fs";
 import { startWorker, jobStatuses } from "./worker.js";
 import type { RenderRequest, RenderJobStatus } from "./types.js";
 import { randomUUID } from "crypto";
@@ -125,6 +126,65 @@ app.get("/render/:jobId/status", async (req, res) => {
       details: error instanceof Error ? error.message : "Unknown error",
     });
   }
+});
+
+/**
+ * GET /render/:jobId/file - Download the rendered video file
+ */
+app.get("/render/:jobId/file", async (req, res) => {
+  const { jobId } = req.params;
+
+  const status = jobStatuses.get(jobId);
+  if (!status) {
+    return res.status(404).json({ error: "Job not found" });
+  }
+
+  if (status.status !== "completed" || !status.localFilePath) {
+    return res.status(400).json({ error: "Job not completed or file not available" });
+  }
+
+  if (!existsSync(status.localFilePath)) {
+    return res.status(410).json({ error: "File no longer exists" });
+  }
+
+  try {
+    const stat = statSync(status.localFilePath);
+    res.setHeader("Content-Type", "video/mp4");
+    res.setHeader("Content-Length", stat.size);
+    res.setHeader("Content-Disposition", `attachment; filename="video-${jobId}.mp4"`);
+
+    const stream = createReadStream(status.localFilePath);
+    stream.pipe(res);
+  } catch (error) {
+    console.error(`[RenderService] File download error for ${jobId}:`, error);
+    res.status(500).json({ error: "Failed to read file" });
+  }
+});
+
+/**
+ * DELETE /render/:jobId/cleanup - Delete local file after generate-server has uploaded to R2
+ */
+app.delete("/render/:jobId/cleanup", async (req, res) => {
+  const { jobId } = req.params;
+
+  const status = jobStatuses.get(jobId);
+  if (!status) {
+    return res.status(404).json({ error: "Job not found" });
+  }
+
+  if (status.localFilePath && existsSync(status.localFilePath)) {
+    try {
+      unlinkSync(status.localFilePath);
+      console.log(`[RenderService] Cleaned up file for job ${jobId}`);
+    } catch (e) {
+      console.warn(`[RenderService] Cleanup warning for ${jobId}:`, e);
+    }
+  }
+
+  // Remove from in-memory status
+  jobStatuses.delete(jobId);
+
+  res.json({ success: true });
 });
 
 /**

@@ -14,7 +14,7 @@ export async function GET() {
       key: track.filename,
       name: track.title + (track.artist ? ` — ${track.artist}` : ""),
       url: track.url,
-      bpm: 120,
+      bpm: (track as any).bpm || 120,
       duration: undefined as number | undefined,
       moods: track.moods,
     }));

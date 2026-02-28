@@ -1,14 +1,6 @@
 import puppeteer, { Page } from "puppeteer";
-import * as path from "path";
-import * as fs from "fs";
 import type { ScreenshotData, ScrapeResult } from "./types.js";
-import { uploadScreenshotToR2, isR2Configured } from "./r2Upload.js";
-
-const SCREENSHOTS_DIR = path.join(process.cwd(), "screenshots");
-
-if (!fs.existsSync(SCREENSHOTS_DIR)) {
-  fs.mkdirSync(SCREENSHOTS_DIR, { recursive: true });
-}
+import { uploadScreenshotBufferToR2, isR2Configured } from "./r2Upload.js";
 
 async function takeScreenshot(
   page: Page,
@@ -17,20 +9,34 @@ async function takeScreenshot(
   description: string
 ): Promise<ScreenshotData> {
   const filename = `${sessionId}-${section}-${Date.now()}.png`;
-  const filepath = path.join(SCREENSHOTS_DIR, filename);
 
-  await page.screenshot({
-    path: filepath,
+  const buffer = await page.screenshot({
     fullPage: false,
     type: "png",
   });
 
-  console.log(`[Scraper] Screenshot saved: ${section} - ${filepath}`);
+  // Upload to R2 directly
+  if (isR2Configured()) {
+    const result = await uploadScreenshotBufferToR2(Buffer.from(buffer), filename, section);
+    if (result.success && result.url) {
+      console.log(`[Scraper] Screenshot uploaded to R2: ${section} - ${result.url}`);
+      return {
+        name: filename,
+        path: "",
+        url: result.url,
+        section,
+        description,
+      };
+    }
+    console.warn(`[Scraper] R2 upload failed for ${section}, screenshot discarded`);
+  } else {
+    console.warn(`[Scraper] R2 not configured, screenshot discarded: ${section}`);
+  }
 
   return {
     name: filename,
-    path: filepath,
-    url: `/screenshots/${filename}`,
+    path: "",
+    url: "",
     section,
     description,
   };
@@ -124,19 +130,24 @@ async function captureSaaSScreenshots(
 
   // 5. Full page screenshot
   console.log("[Scraper] Capturing full page...");
-  const fullPagePath = path.join(SCREENSHOTS_DIR, `${sessionId}-full.png`);
-  await page.screenshot({
-    path: fullPagePath,
+  const fullPageFilename = `${sessionId}-full.png`;
+  const fullPageBuffer = await page.screenshot({
     fullPage: true,
     type: "png",
   });
-  screenshots.push({
-    name: `${sessionId}-full.png`,
-    path: fullPagePath,
-    url: `/screenshots/${sessionId}-full.png`,
-    section: "full",
-    description: "Full page screenshot",
-  });
+
+  if (isR2Configured()) {
+    const fullResult = await uploadScreenshotBufferToR2(Buffer.from(fullPageBuffer), fullPageFilename, "full");
+    if (fullResult.success && fullResult.url) {
+      screenshots.push({
+        name: fullPageFilename,
+        path: "",
+        url: fullResult.url,
+        section: "full",
+        description: "Full page screenshot",
+      });
+    }
+  }
 
   return screenshots;
 }
@@ -317,22 +328,8 @@ export async function scrapeWebsite(url: string): Promise<ScrapeResult> {
       };
     });
 
-    // Upload screenshots to R2 if configured
-    if (isR2Configured()) {
-      const projectId = `project-${Date.now()}`;
-      console.log("[Scraper] Uploading screenshots to R2...");
-      for (const screenshot of screenshots) {
-        try {
-          const result = await uploadScreenshotToR2(screenshot.path, projectId, screenshot.section);
-          if (result.success && result.url) {
-            screenshot.url = result.url;
-            console.log(`[Scraper] Uploaded ${screenshot.section} to R2: ${result.url}`);
-          }
-        } catch (e) {
-          console.warn(`[Scraper] Failed to upload ${screenshot.section} to R2, keeping local URL`);
-        }
-      }
-    }
+    // Filter out screenshots that failed to upload (empty URLs)
+    const uploadedScreenshots = screenshots.filter((s) => s.url);
 
     return {
       text: `Title: ${content.title}
@@ -344,7 +341,7 @@ Page Content:
 ${content.bodyText}`,
       images: content.images,
       title: content.title,
-      screenshots,
+      screenshots: uploadedScreenshots,
       saasIndicators: content.saasIndicators,
     };
   } finally {

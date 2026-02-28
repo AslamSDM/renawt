@@ -456,6 +456,77 @@ export async function chatWithGeminiFlashVision(
   }
 }
 
+// Vision via Gemini Pro (Google AI SDK) — for complex video analysis
+export async function chatWithGeminiProVision(
+  media: MediaInput,
+  textPrompt: string,
+  systemPrompt?: string,
+  config: ModelConfig = {},
+): Promise<ChatResponse> {
+  const { temperature = 0.7, maxTokens } = config;
+  const client = getGeminiClient();
+
+  console.log("[GeminiProVision] Calling Google AI Studio with media...");
+  console.log("[GeminiProVision] Media type:", media.type);
+  console.log("[GeminiProVision] Model:", GEMINI_PRO_MODEL);
+
+  const model = client.getGenerativeModel({
+    model: GEMINI_PRO_MODEL,
+    generationConfig: {
+      temperature,
+      maxOutputTokens: maxTokens,
+    },
+  });
+
+  const fullPrompt = systemPrompt
+    ? `${systemPrompt}\n\n---\n\n${textPrompt}`
+    : textPrompt;
+
+  let imageData: { inlineData: { data: string; mimeType: string } };
+
+  if (media.base64 && media.mimeType) {
+    imageData = {
+      inlineData: { data: media.base64, mimeType: media.mimeType },
+    };
+  } else if (media.path) {
+    if (media.path.startsWith("http")) {
+      const response = await fetch(media.path);
+      const buffer = Buffer.from(await response.arrayBuffer());
+      const ext = path.extname(new URL(media.path).pathname).slice(1) || "mp4";
+      const mimePrefix = media.type === "image" ? "image" : "video";
+      imageData = {
+        inlineData: {
+          data: buffer.toString("base64"),
+          mimeType: `${mimePrefix}/${ext}`,
+        },
+      };
+    } else {
+      const data = fs.readFileSync(media.path);
+      const ext = path.extname(media.path).slice(1);
+      const mimePrefix = media.type === "image" ? "image" : "video";
+      imageData = {
+        inlineData: {
+          data: data.toString("base64"),
+          mimeType: `${mimePrefix}/${ext}`,
+        },
+      };
+    }
+  } else {
+    throw new Error("Media input must have either path or base64+mimeType");
+  }
+
+  try {
+    const result = await model.generateContent([fullPrompt, imageData]);
+    const text = result.response.text();
+    console.log("[GeminiProVision] Response length:", text?.length || 0);
+    return { content: text || "" };
+  } catch (error) {
+    console.error("[GeminiProVision] API Error:", error);
+    // Fall back to Flash vision
+    return chatWithGeminiFlashVision(media, textPrompt, systemPrompt, config);
+  }
+}
+
 // Kimi vision fallback (OpenRouter)
 async function chatWithKimiVisionDirect(
   media: MediaInput,

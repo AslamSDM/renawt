@@ -9,6 +9,7 @@
 
 import { chatWithGeminiPro, chatWithFastModel } from "./model";
 import type { VideoGenerationStateType } from "./state";
+import { analyzeRecording, type RecordingAnalysisResult } from "./recordingAnalyzer";
 
 // ============================================================================
 // REMOTION SKILLS - Best practices embedded in prompt
@@ -152,8 +153,8 @@ Slide directions: "from-left", "from-right", "from-top", "from-bottom"
 
 #### WORD-BY-WORD BLUR REVEAL (Primary text animation):
 \`\`\`tsx
-const WordByWordBlur: React.FC<{ words: string[]; fontSize?: number; color?: string; delay?: number; staggerFrames?: number; gradientWordIndices?: number[] }> = ({
-  words, fontSize = 48, color = '#ffffff', delay = 0, staggerFrames = 5, gradientWordIndices = []
+const WordByWordBlur: React.FC<{ words: string[]; fontSize?: number; color?: string; delay?: number; staggerFrames?: number; gradientWordIndices?: number[]; gradientColors?: [string, string] }> = ({
+  words, fontSize = 48, color = '#ffffff', delay = 0, staggerFrames = 5, gradientWordIndices = [], gradientColors = [BRAND.primary, BRAND.secondary]
 }) => {
   const frame = useCurrentFrame();
   return (
@@ -169,7 +170,7 @@ const WordByWordBlur: React.FC<{ words: string[]; fontSize?: number; color?: str
             fontSize, fontFamily: montserrat, fontWeight: 600,
             opacity: op, filter: \`blur(\${blur}px)\`, transform: \`translateY(\${ty}px)\`,
             display: 'inline-block',
-            ...(isGradient ? { background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } : { color }),
+            ...(isGradient ? { background: \`linear-gradient(135deg, \${gradientColors[0]}, \${gradientColors[1]})\`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } : { color }),
           }}>{word}</span>
         );
       })}
@@ -191,13 +192,13 @@ const LogoWithGlow: React.FC<{ brandName: string; accentSuffix?: string; fontSiz
     <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity }}>
       <div style={{
         position: 'absolute', width: '120%', height: '120%',
-        background: 'linear-gradient(135deg, rgba(168,85,247,0.4), rgba(236,72,153,0.4))',
+        background: \`linear-gradient(135deg, \${BRAND.primary}66, \${BRAND.secondary}66)\`,
         filter: 'blur(40px)', borderRadius: '50%',
         transform: \`scale(\${glowScale})\`, opacity: 0.6,
       }} />
       <span style={{ fontFamily: montserrat, fontWeight: 700, fontSize, color: '#fff', position: 'relative', zIndex: 1 }}>{brandName}</span>
       {accentSuffix && (
-        <span style={{ fontFamily: montserrat, fontWeight: 700, fontSize, position: 'relative', zIndex: 1, marginLeft: 12, background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{accentSuffix}</span>
+        <span style={{ fontFamily: montserrat, fontWeight: 700, fontSize, position: 'relative', zIndex: 1, marginLeft: 12, background: \`linear-gradient(135deg, \${BRAND.primary}, \${BRAND.secondary})\`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{accentSuffix}</span>
       )}
     </div>
   );
@@ -206,19 +207,19 @@ const LogoWithGlow: React.FC<{ brandName: string; accentSuffix?: string; fontSiz
 
 ### 6. AURORA BACKGROUNDS
 
-Dark aurora (for logo, CTA, and card scenes):
+Dark aurora (for logo, CTA, and card scenes) — uses BRAND colors:
 \`\`\`tsx
 const AuroraBackground: React.FC<{ variant?: 'dark' | 'light' }> = ({ variant = 'dark' }) => {
   if (variant === 'light') {
     return (
       <AbsoluteFill style={{
-        background: 'radial-gradient(ellipse at 30% 30%, rgba(168, 85, 247, 0.2) 0%, transparent 50%), radial-gradient(ellipse at 70% 70%, rgba(236, 72, 153, 0.2) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 60%), linear-gradient(135deg, #faf5ff 0%, #fff5f8 50%, #f5f0ff 100%)',
+        background: \`radial-gradient(ellipse at 30% 30%, \${BRAND.primary}33 0%, transparent 50%), radial-gradient(ellipse at 70% 70%, \${BRAND.secondary}33 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, \${BRAND.primary}26 0%, transparent 60%), linear-gradient(135deg, #faf5ff 0%, #fff5f8 50%, #f5f0ff 100%)\`,
       }} />
     );
   }
   return (
     <AbsoluteFill style={{
-      background: 'radial-gradient(ellipse at 20% 20%, rgba(168, 85, 247, 0.3) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(236, 72, 153, 0.3) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.2) 0%, transparent 70%), #0a0a0f',
+      background: \`radial-gradient(ellipse at 20% 20%, \${BRAND.primary}4D 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, \${BRAND.secondary}4D 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, \${BRAND.primary}33 0%, transparent 70%), \${BRAND.dark}\`,
     }} />
   );
 };
@@ -256,7 +257,7 @@ const WhiteGlassCard: React.FC<{ children: React.ReactNode; maxWidth?: number; d
 };
 \`\`\`
 
-Gradient accent text (purple → pink):
+Gradient accent text (uses brand colors):
 \`\`\`tsx
 const GradientAccentText: React.FC<{ text: string; fontSize?: number; delay?: number }> = ({
   text, fontSize = 56, delay = 0,
@@ -268,7 +269,7 @@ const GradientAccentText: React.FC<{ text: string; fontSize?: number; delay?: nu
   return (
     <span style={{
       display: 'inline-block', fontSize, fontFamily: montserrat, fontWeight: 700,
-      background: 'linear-gradient(135deg, #a855f7, #ec4899)',
+      background: \`linear-gradient(135deg, \${BRAND.primary}, \${BRAND.secondary})\`,
       WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
       opacity, transform: \`scale(\${scale})\`,
     }}>{text}</span>
@@ -292,7 +293,7 @@ const SceneProgressDots: React.FC<{ totalScenes: number; sceneBoundaries: number
         <div key={i} style={{
           height: 8, borderRadius: 4,
           width: i === currentScene ? 24 : 8,
-          background: i === currentScene ? '#a855f7' : i < currentScene ? 'rgba(168,85,247,0.5)' : 'rgba(255,255,255,0.3)',
+          background: i === currentScene ? BRAND.primary : i < currentScene ? \`\${BRAND.primary}80\` : 'rgba(255,255,255,0.3)',
         }} />
       ))}
     </div>
@@ -312,11 +313,11 @@ const RecordingScene: React.FC<{ videoUrl: string; featureName: string }> = ({ v
   const { durationInFrames } = useVideoConfig();
   const labelOpacity = interpolate(frame, [0, 30, durationInFrames - 30, durationInFrames], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   return (
-    <AbsoluteFill style={{ backgroundColor: '#0a0a0f' }}>
+    <AbsoluteFill style={{ backgroundColor: BRAND.dark }}>
       <Video src={videoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
       <div style={{ position: 'absolute', bottom: 60, left: 0, right: 0, display: 'flex', justifyContent: 'center', opacity: labelOpacity, zIndex: 10 }}>
         <div style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)', borderRadius: 12, padding: '12px 28px', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'linear-gradient(135deg, #a855f7, #ec4899)' }} />
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: \`linear-gradient(135deg, \${BRAND.primary}, \${BRAND.secondary})\` }} />
           <span style={{ fontFamily: montserrat, fontWeight: 600, fontSize: 20, color: '#ffffff' }}>{featureName}</span>
         </div>
       </div>
@@ -375,9 +376,77 @@ const VideoComposition: React.FC = () => {
   );
 };
 \`\`\`
+
+### 9. CINEMATIC CAMERA MOVEMENTS (MANDATORY IN EVERY SCENE)
+
+EVERY scene wrapper MUST have an interpolated camera transform. Use variety across scenes.
+
+#### Ken Burns Zoom In:
+\`\`\`tsx
+const frame = useCurrentFrame();
+const duration = 90; // scene length
+const camScale = interpolate(frame, [0, duration], [1.0, 1.12], { extrapolateRight: 'clamp' });
+const camX = interpolate(frame, [0, duration], [0, -20], { extrapolateRight: 'clamp' });
+<AbsoluteFill style={{ transform: "scale(" + camScale + ") translateX(" + camX + "px)", transformOrigin: 'center center' }}>
+  {/* content */}
+</AbsoluteFill>
+\`\`\`
+
+#### Ken Burns Zoom Out (alternate scenes):
+\`\`\`tsx
+const camScale = interpolate(frame, [0, duration], [1.14, 1.0], { extrapolateRight: 'clamp' });
+const camY = interpolate(frame, [0, duration], [30, 0], { extrapolateRight: 'clamp' });
+<AbsoluteFill style={{ transform: "scale(" + camScale + ") translateY(" + camY + "px)", transformOrigin: 'top left' }}>
+\`\`\`
+
+#### Parallax Pan (multi-layer depth):
+\`\`\`tsx
+// Background moves slower than foreground
+const bgX = interpolate(frame, [0, 450], [0, -60], { extrapolateRight: 'clamp' });
+const fgX = interpolate(frame, [0, 450], [0, -160], { extrapolateRight: 'clamp' });
+// Apply bgX to bg layer, fgX to text/fg layer
+\`\`\`
+
+#### Continuous Drift (background elements):
+\`\`\`tsx
+// Background blobs / bokeh circles that never stop moving
+const drift = Math.sin(frame / 40) * 18;
+const driftY = Math.cos(frame / 60) * 12;
+<div style={{ transform: "translateX(" + drift + "px) translateY(" + driftY + "px)" }}>
+\`\`\`
+
+### 10. CURSOR ANIMATION (adds realism to product demo videos)
+
+Add an animated SVG cursor that moves to a CTA button and clicks it. This makes the video feel like a real product demo.
+
+\`\`\`tsx
+import { Easing } from 'remotion';
+
+// SVG Cursor component
+const Cursor: React.FC<{ x: number; y: number; opacity: number; clicking: boolean }> = ({ x, y, opacity, clicking }) => (
+  <div style={{ position: 'absolute', left: x, top: y, opacity, zIndex: 200, transform: clicking ? 'scale(0.85)' : 'scale(1)', transition: 'none' }}>
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+      <path d="M5.5 3.21V20.8C5.5 21.46 6.26 21.84 6.78 21.43L11.64 17.65C11.83 17.5 12.07 17.42 12.31 17.42H18.73C19.39 17.42 19.76 16.65 19.34 16.15L6.68 3.12C6.23 2.65 5.5 2.97 5.5 3.21Z" fill="white" stroke="black" strokeWidth="1.5" strokeLinejoin="round"/>
+    </svg>
+  </div>
+);
+
+// Usage: animate cursor from starting position to CTA button
+const cursorStartFrame = 35; // cursor appears after panel entrance
+const cursorMoveEnd = cursorStartFrame + 30; // 1 second to move
+const clickFrame = cursorMoveEnd + 5;
+const cursorOpacity = interpolate(frame, [cursorStartFrame, cursorStartFrame + 8], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+const cursorX = interpolate(frame, [cursorStartFrame, cursorMoveEnd], [startX, targetX], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) });
+const cursorY = interpolate(frame, [cursorStartFrame, cursorMoveEnd], [startY, targetY], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) });
+const isClicking = frame >= clickFrame && frame < clickFrame + 5;
+
+// Button glow after click
+const glowOpacity = interpolate(frame, [clickFrame, clickFrame + 15], [0, 0.8], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+// Apply boxShadow: \`0 0 30px \${BRAND.primary}CC\` with glowOpacity
+\`\`\`
 `;
 
-const REMOTION_TRANSLATOR_SYSTEM_PROMPT = `You are a Remotion expert who converts React components into polished product demo video compositions with the "Premium Demo" style.
+const REMOTION_TRANSLATOR_SYSTEM_PROMPT = `You are a Remotion expert who converts React components into polished product demo video compositions with a cinematic, brand-matched style.
 
 ${REMOTION_SKILLS}
 
@@ -385,81 +454,75 @@ ${REMOTION_SKILLS}
 
 ## YOUR TASK
 
-Take a React page component and translate it into a Remotion video with the "Premium Demo" style: aurora gradients, white glass cards, word-by-word blur reveals, gradient accent text, and scene progress dots.
+Take a React page component and translate it into a Remotion video with a style that MATCHES the brand — not a generic template.
 
-## CRITICAL: DEMO STYLE REQUIREMENTS
+## CRITICAL: CINEMATIC STYLE REQUIREMENTS
 
-1. **MANDATORY FONT - Montserrat ONLY**: Load font using @remotion/google-fonts:
+1. **MANDATORY CAMERA MOVEMENT**: Every scene wrapper MUST include an interpolated zoom or pan (see §9 above). Alternate zoom in / zoom out / pan left / pan right across scenes.
+
+2. **MANDATORY FONT - Montserrat ONLY via @remotion/google-fonts**:
    \`\`\`tsx
    import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
-   const { fontFamily: montserrat } = loadMontserrat("normal", { weights: ["400", "500", "600", "700", "800"], subsets: ["latin"] });
+   const { fontFamily: montserrat } = loadMontserrat("normal", { weights: ["400", "600", "700", "800", "900"], subsets: ["latin"] });
    \`\`\`
-   - Headlines: montserrat, fontWeight 600-700, fontSize 48-72px, normal case (NOT uppercase)
-   - Body: montserrat, fontWeight 400-500, fontSize 24-32px
-   - NEVER use Bebas Neue, system-ui, sans-serif, Impact, or other fonts
-2. **AURORA BACKGROUNDS**: Use dark/light aurora gradient backgrounds, alternating per scene:
-   - Dark: radial-gradient ellipses (purple rgba(168,85,247,0.3), pink rgba(236,72,153,0.3), violet rgba(139,92,246,0.2)) over #0a0a0f
-   - Light: Same ellipses at lower opacity over linear-gradient(135deg, #faf5ff, #fff5f8, #f5f0ff)
-3. **COLOR PALETTE - Purple/Pink only**:
-   - Purple: #a855f7, Pink: #ec4899, Dark BG: #0a0a0f
-   - Card text: #111827 (gray-900), #4b5563 (gray-600)
-   - White glass cards: rgba(255,255,255,0.95)
-4. **TEXT ANIMATIONS**:
-   - WordByWordBlur: Word-by-word blur reveal (opacity 0→1, blur 10→0, translateY 30→0, staggered by 5 frames)
-   - GradientAccentText: Purple→pink gradient text with scale entry
-   - LogoWithGlow: Brand name with blurred gradient glow behind
-5. **CARD STYLE**:
-   - WhiteGlassCard: background rgba(255,255,255,0.95), backdropFilter blur(24px), borderRadius 24, boxShadow 0 25px 50px rgba(0,0,0,0.25)
-   - 3D perspective entry: rotateX(-20→0), translateY(100→0) with perspective(1000px)
-6. **SCENE STRUCTURE**: Use <Sequence> for discrete scenes (2-4 seconds each)
-7. **SCENE PROGRESS DOTS**: Show active/past/future dots at bottom center
+   - Headlines: 100-180px, fontWeight 700-900, letterSpacing -2 to -4px
+   - Supporting: 36-60px, fontWeight 400-500
+   - Max 3 text elements per scene
 
-## IMPORTANT TRANSLATION RULES
+3. **BRAND-MATCHED COLORS**: Define a BRAND constant at the top of the file (after imports) with the brand colors provided in the prompt. Use BRAND.primary, BRAND.secondary, BRAND.dark throughout. Example:
+   \`\`\`tsx
+   const BRAND = { primary: '#...', secondary: '#...', accent: '#...', dark: '#0a0a0f' };
+   \`\`\`
+   Do NOT default to purple+pink unless those ARE the brand colors.
+
+4. **MOVING BACKGROUND (MANDATORY)**: Every background MUST move:
+   - Bokeh circles: blurred divs (filter: blur(80-200px)), drifting via Math.sin/cos
+   - Slow gradient pan: translate the background layer
+   - Pulsing opacity: interpolate opacity in a sine wave pattern
+
+5. **SCENE TRANSITIONS**: Each scene fades out (opacity 1→0) over last 12 frames. Each scene fades in (opacity 0→1) over first 12 frames.
+
+6. **TEXT ANIMATIONS**:
+   - WordByWordBlur: staggered word-by-word reveal (blur 10→0, translateY 30→0)
+   - Line sweep: width 0→100% on a color bar under a headline
+   - Scale pop: spring() for bouncy entrances
+
+7. **SCENE STRUCTURE**: Use <Sequence> for discrete scenes. Each scene gets its own camera direction.
+
+## CRITICAL TRANSLATION RULES
 
 1. CONVERT EVERY CSS ANIMATION:
-   - CSS animation-delay → Sequence from={delay * fps}
    - CSS transition/animation → interpolate() with useCurrentFrame()
-   - CSS keyframes → interpolate() with multiple output values
-   - transform animations → spring() for bouncy effects
+   - transform animations → spring() for bouncy, interpolate() for smooth
 
 2. REQUIRED IMPORTS:
    \`\`\`tsx
    import React from 'react';
-   import { AbsoluteFill, Sequence, useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion';
+   import { AbsoluteFill, Sequence, useCurrentFrame, useVideoConfig, interpolate, spring, Easing } from 'remotion';
    \`\`\`
 
 3. STRUCTURE:
    - Main component uses AbsoluteFill as root
    - Use <Sequence> for discrete scenes with smooth entry/exit animations
    - ALWAYS use premountFor on Sequences
-   - useCurrentFrame() in each animated component
+   - Camera transform on EVERY scene wrapper
 
-4. TEXT ANIMATION PATTERNS:
-   - WordByWordBlur: Split text into words, each word fades in with blur + translateY, staggered
-   - GradientAccentText: Purple→pink gradient text with scale+opacity entry
-   - LogoWithGlow: White text + gradient glow behind
-
-5. BACKGROUND ELEMENTS:
-   - AuroraBackground: Dark/light variant with purple/pink radial gradients
-   - Alternate dark/light per scene
-
-6. OUTPUT FORMAT (CRITICAL):
+4. OUTPUT FORMAT (CRITICAL):
    - Return complete Remotion composition in a code block
    - Main component MUST be named "VideoComposition"
    - MUST end with: export default VideoComposition;
-   - Include SceneProgressDots as persistent overlay
 
-7. STRICTLY FORBIDDEN:
-   - NO CSS animations, transitions, or keyframes
+5. STRICTLY FORBIDDEN:
+   - NO CSS animations or transitions
    - NO Tailwind animation classes
    - NO setTimeout or setInterval
-   - NO Bebas Neue font
-   - NO DualRadialGradient, TextureOverlay, or CameraWrapper
-   - NO transparent glass cards (use white glass: rgba(255,255,255,0.95))
-   - ALL values must be computed from frame
-   - NO named exports only - MUST have export default
+   - NO generic purple+pink aurora (unless brand uses those colors)
+   - NO white glass cards (rgba(255,255,255,0.95)) — too generic
+   - ALL values computed from frame
+   - NO named exports only — MUST have export default
+   - NO useFrame from @react-three/fiber
 
-8. TEMPLATE LITERAL SYNTAX (CRITICAL):
+6. TEMPLATE LITERAL SYNTAX (CRITICAL):
    When using template literals in style objects, ALWAYS close them properly:
 
    CORRECT:
@@ -484,7 +547,10 @@ Take a React page component and translate it into a Remotion video with the "Pre
 /**
  * Validates and fixes common syntax errors in LLM-generated code
  */
-export function validateAndFixCode(code: string): { code: string; issues: string[] } {
+export function validateAndFixCode(code: string): {
+  code: string;
+  issues: string[];
+} {
   const issues: string[] = [];
   let fixedCode = code;
 
@@ -501,13 +567,13 @@ export function validateAndFixCode(code: string): { code: string; issues: string
   // Pattern: filter: `blur(${...}px) should be filter: `blur(${...}px)`
   fixedCode = fixedCode.replace(
     /filter:\s*`blur\(\$\{([^}]+)\}px\)(?!`)/g,
-    "filter: `blur(${$1}px)`"
+    "filter: `blur(${$1}px)`",
   );
 
   // Fix 3: Fix broken transform template literals
   fixedCode = fixedCode.replace(
     /transform:\s*`([^`]+)(?!`)\s*,/g,
-    "transform: `$1`,"
+    "transform: `$1`,",
   );
 
   // Fix 4: Fix common pattern where template literal is broken mid-line
@@ -540,14 +606,31 @@ export function validateAndFixCode(code: string): { code: string; issues: string
     if (inTemplateLiteral && templateLiteralDepth === 0) {
       // Check if next line starts with continuation
       const nextLine = lines[i + 1] || "";
-      if (!nextLine.trim().startsWith("`") && line.includes("${") && line.includes("}")) {
+      if (
+        !nextLine.trim().startsWith("`") &&
+        line.includes("${") &&
+        line.includes("}")
+      ) {
         // This line might need a closing backtick
         const lastBraceIndex = line.lastIndexOf("}");
-        if (lastBraceIndex > -1 && !line.substring(lastBraceIndex).includes("`")) {
+        if (
+          lastBraceIndex > -1 &&
+          !line.substring(lastBraceIndex).includes("`")
+        ) {
           // Find where to insert the closing backtick
-          if (line.trim().endsWith(",") || line.trim().endsWith(";") || line.trim().endsWith(")")) {
+          if (
+            line.trim().endsWith(",") ||
+            line.trim().endsWith(";") ||
+            line.trim().endsWith(")")
+          ) {
             const endChar = line.trim().slice(-1);
-            line = line.slice(0, -endChar.length - (line.length - line.trimEnd().length)) + "`" + endChar;
+            line =
+              line.slice(
+                0,
+                -endChar.length - (line.length - line.trimEnd().length),
+              ) +
+              "`" +
+              endChar;
             issues.push(`Fixed: Added missing backtick at line ${i + 1}`);
             inTemplateLiteral = false;
           }
@@ -570,7 +653,7 @@ export function validateAndFixCode(code: string): { code: string; issues: string
         return `style={{${before}filter: \`blur(\${${blurVar}}px)\`${after}}}`;
       }
       return match;
-    }
+    },
   );
 
   // Fix 6: Ensure all interpolate calls have proper syntax
@@ -580,26 +663,25 @@ export function validateAndFixCode(code: string): { code: string; issues: string
       // Validate and clean up interpolate calls
       const cleanConfig = config || "{ extrapolateRight: 'clamp' }";
       return `interpolate(${frame.trim()}, [${inputRange.trim()}], [${outputRange.trim()}], ${cleanConfig})`;
-    }
+    },
   );
 
   // Fix 7: Fix common 'blur' appearing after a number without backtick closure
-  fixedCode = fixedCode.replace(
-    /(\d+)\s*blur/g,
-    (match, num) => {
-      issues.push("Fixed: Number followed by 'blur' without proper syntax");
-      return `${num}}px)\``;
-    }
-  );
+  fixedCode = fixedCode.replace(/(\d+)\s*blur/g, (match, num) => {
+    issues.push("Fixed: Number followed by 'blur' without proper syntax");
+    return `${num}}px)\``;
+  });
 
   // Fix 8: Fix broken transform template literals like `translate(${x}px`, ${y}px)`
   // Pattern: `...(${var}px`, ${var}px)` -> `...(${var}px, ${var}px)`
   fixedCode = fixedCode.replace(
     /`([^`]*\$\{[^}]+\}px)`\s*,\s*\$\{([^}]+)\}px\)`/g,
     (match, before, afterVar) => {
-      issues.push("Fixed: Broken transform template literal with extra backtick");
+      issues.push(
+        "Fixed: Broken transform template literal with extra backtick",
+      );
       return `\`${before}, \${${afterVar}}px)\``;
-    }
+    },
   );
 
   // Fix 9: Fix nested template literals in transform that have broken syntax
@@ -609,7 +691,7 @@ export function validateAndFixCode(code: string): { code: string; issues: string
     (match, prefix, var1, var2) => {
       issues.push("Fixed: Broken transform syntax with misplaced backtick");
       return `transform: \`${prefix}\${${var1}}px, \${${var2}}px)\``;
-    }
+    },
   );
 
   // Fix 10: Fix backtick appearing mid-interpolate call inside template literal
@@ -618,16 +700,288 @@ export function validateAndFixCode(code: string): { code: string; issues: string
   fixedCode = fixedCode.replace(
     /\$\{(interpolate\([^}]*?\])`\s*,\s*(\{[^}]*?\})\)/g,
     (match, interpCall, config) => {
-      issues.push("Fixed: Backtick inside interpolate call in template literal");
+      issues.push(
+        "Fixed: Backtick inside interpolate call in template literal",
+      );
       return `\${${interpCall}, ${config})}`;
-    }
+    },
   );
+
+  // Fix 10b: More aggressive fix for interpolate with backtick after bracket
+  // Pattern: interpolate(frame, [0, 100], [0, 1]`, { ... })
+  // Should be: interpolate(frame, [0, 100], [0, 1], { ... })
+  fixedCode = fixedCode.replace(
+    /interpolate\s*\(\s*([^,]+)\s*,\s*\[([^\]]*)\]\s*,\s*\[([^\]]*)\]`\s*,/g,
+    (match, frame, input, output) => {
+      issues.push("Fixed: Backtick after interpolate output array");
+      return `interpolate(${frame.trim()}, [${input}], [${output}],`;
+    },
+  );
+
+  // Fix 10c: Fix interpolate with broken bracket syntax
+  // Pattern: interpolate(frame, [0, 100], [0, 1]`, {...})` - backtick after bracket inside template
+  fixedCode = fixedCode.replace(
+    /\$\{interpolate\(([^)]+)\]\s*`\s*,\s*(\{[^}]+\})\s*\)\s*\}/g,
+    (match, args, config) => {
+      issues.push("Fixed: Interpolate with backtick after bracket");
+      return `\${interpolate(${args}], ${config})}`;
+    },
+  );
+
+  // Fix 10d: Fix broken template literal with backtick inside ${...}
+  // Pattern: `...${something` more}...` - backtick inside interpolation
+  fixedCode = fixedCode.replace(
+    /\$\{([^}]*)`([^}]*)\}/g,
+    (match, before, after) => {
+      // Only fix if it looks like a broken interpolate call
+      if (before.includes("interpolate") || before.includes("[")) {
+        issues.push("Fixed: Backtick inside ${...} interpolation");
+        return `\${${before}${after}}`;
+      }
+      return match;
+    },
+  );
+
+  // Fix 10e: Fix transform with multiple backtick-separated segments
+  // Pattern: `translateX(${x}px` `translateY(${y}px)` -> `translateX(${x}px) translateY(${y}px)`
+  fixedCode = fixedCode.replace(
+    /`([^`]*)\$\{([^}]+)\}([^`]*)`\s*`/g,
+    (match, before, varName, after) => {
+      if (
+        before.includes("translate") ||
+        before.includes("rotate") ||
+        before.includes("scale")
+      ) {
+        issues.push("Fixed: Multiple backticks in transform");
+        return `\`${before}\${${varName}}${after}`;
+      }
+      return match;
+    },
+  );
+
+  // Fix 10f: Fix broken pattern }{ that causes "Expected } but found {"
+  // This can happen when previous fixes create invalid brace sequences
+  fixedCode = fixedCode.replace(/\}\s*\{/g, (match) => {
+    // Check if this is inside a template literal interpolation
+    // ${something}{...} might be valid (object literal)
+    // but }{ at end of interpolation is likely broken
+    if (match === "}{") {
+      issues.push("Fixed: Broken }{ brace sequence");
+      return "}";
+    }
+    return match;
+  });
+
+  // Fix 10g: Fix double {{ that might be created accidentally
+  fixedCode = fixedCode.replace(/\{\{/g, (match, offset, str) => {
+    // Check context - {{ might be intentional (object in template)
+    const before = str.slice(Math.max(0, offset - 10), offset);
+    if (before.includes("${")) {
+      return "{"; // Likely broken interpolation
+    }
+    return match;
+  });
+
+  // Fix 11: Remove useFrame from @react-three/fiber — incompatible with Remotion SSR
+  // useFrame runs in R3F's render loop which doesn't exist in Remotion's frame-by-frame rendering.
+  // Replace with useCurrentFrame()-based logic or just remove the calls.
+  if (fixedCode.includes("useFrame")) {
+    issues.push(
+      "Fixed: Removed useFrame calls (incompatible with Remotion SSR)",
+    );
+
+    // Remove useFrame(...) call blocks — matches useFrame((state) => { ... });
+    // Handle nested braces by counting them
+    let result = "";
+    let i = 0;
+    while (i < fixedCode.length) {
+      const useFrameMatch = fixedCode.substring(i).match(/^useFrame\s*\(/);
+      if (useFrameMatch) {
+        // Skip the entire useFrame(...) call including its body
+        let depth = 0;
+        let j = i + useFrameMatch[0].length - 1; // start at the opening (
+        for (; j < fixedCode.length; j++) {
+          if (fixedCode[j] === "(") depth++;
+          else if (fixedCode[j] === ")") {
+            depth--;
+            if (depth === 0) break;
+          }
+        }
+        // Skip past the closing ) and optional ;
+        j++;
+        if (fixedCode[j] === ";") j++;
+        if (fixedCode[j] === "\n") j++;
+        i = j;
+        continue;
+      }
+      result += fixedCode[i];
+      i++;
+    }
+    fixedCode = result;
+
+    // Remove useFrame from the fiber import
+    fixedCode = fixedCode.replace(
+      /import\s*\{([^}]*)\}\s*from\s*['"]@react-three\/fiber['"]/g,
+      (match, imports) => {
+        const cleaned = imports
+          .split(",")
+          .map((s: string) => s.trim())
+          .filter((s: string) => s && s !== "useFrame")
+          .join(", ");
+        if (!cleaned) return ""; // No imports left
+        return `import { ${cleaned} } from '@react-three/fiber'`;
+      },
+    );
+  }
+
+  // Fix 12: Detect @react-three/drei components used outside <Canvas>
+  // Common drei components that MUST be inside Canvas
+  const dreiComponents = [
+    "Environment",
+    "Stars",
+    "OrbitControls",
+    "PerspectiveCamera",
+    "Float",
+    "Text3D",
+    "Center",
+    "MeshDistortMaterial",
+    "MeshWobbleMaterial",
+    "Sky",
+    "Cloud",
+    "ContactShadows",
+    "Sparkles",
+  ];
+  const usedDreiComponents = dreiComponents.filter((c) =>
+    fixedCode.includes(`<${c}`),
+  );
+
+  if (usedDreiComponents.length > 0 && !fixedCode.includes("<Canvas")) {
+    // drei components used but no Canvas — strip drei imports and components entirely
+    issues.push(
+      `Fixed: Removed drei components (${usedDreiComponents.join(", ")}) — no <Canvas> wrapper found`,
+    );
+
+    // Remove drei import line
+    fixedCode = fixedCode.replace(
+      /import\s+\{[^}]*\}\s+from\s+['"]@react-three\/drei['"];?\n?/g,
+      "",
+    );
+    // Remove fiber import line
+    fixedCode = fixedCode.replace(
+      /import\s+\{[^}]*\}\s+from\s+['"]@react-three\/fiber['"];?\n?/g,
+      "",
+    );
+    // Remove three import
+    fixedCode = fixedCode.replace(
+      /import\s+\*\s+as\s+THREE\s+from\s+['"]three['"];?\n?/g,
+      "",
+    );
+
+    // Remove self-closing drei component tags
+    for (const comp of usedDreiComponents) {
+      fixedCode = fixedCode.replace(new RegExp(`<${comp}\\b[^/>]*/>`, "g"), "");
+      // Remove paired tags too
+      fixedCode = fixedCode.replace(
+        new RegExp(`<${comp}\\b[^>]*>[\\s\\S]*?</${comp}>`, "g"),
+        "",
+      );
+    }
+  }
 
   if (issues.length > 0) {
     console.log("[CodeValidator] Fixed issues:", issues);
   }
 
   return { code: fixedCode, issues };
+}
+
+/**
+ * Run validateAndFixCode in a loop until no more fixes are needed or max attempts reached
+ */
+export function validateAndFixCodeWithRetry(
+  code: string,
+  maxAttempts = 5,
+): { code: string; issues: string[] } {
+  let currentCode = code;
+  let allIssues: string[] = [];
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const result = validateAndFixCode(currentCode);
+
+    if (result.issues.length === 0) {
+      // No more fixes needed
+      break;
+    }
+
+    allIssues = [...allIssues, ...result.issues];
+    currentCode = result.code;
+
+    console.log(
+      `[CodeValidator] Attempt ${attempt} fixed ${result.issues.length} issues`,
+    );
+  }
+
+  return { code: currentCode, issues: allIssues };
+}
+
+/**
+ * More aggressive syntax fixer for broken template literals
+ */
+export function fixBrokenTemplateLiterals(code: string): string {
+  let fixedCode = code;
+
+  // Fix pattern: interpolate with backtick before config object
+  // ${interpolate(frame, [0, 100], [0, 1]` { ... })} -> ${interpolate(frame, [0, 100], [0, 1], { ... })}
+  fixedCode = fixedCode.replace(
+    /\$\{interpolate\s*\(\s*([^,]+)\s*,\s*\[([^\]]*)\]\s*,\s*\[([^\]]*)\]`\s*,\s*(\{[^}]*\})\s*\)\s*\}/g,
+    (match, frame, input, output, config) => {
+      console.log(
+        "[FixTemplate] Fixed interpolate with backtick before config",
+      );
+      return `\${interpolate(${frame.trim()}, [${input}], [${output}], ${config})}`;
+    },
+  );
+
+  // Fix pattern: }{ adjacent braces (broken from previous fixes)
+  fixedCode = fixedCode.replace(/\}\s*\{/g, (match, offset, str) => {
+    const before = str.slice(Math.max(0, offset - 5), offset);
+    // If preceded by ) or ] or }, it's likely closing something
+    if (/[)\]\}]\s*$/.test(before)) {
+      return "}";
+    }
+    return match;
+  });
+
+  // Fix pattern: }}{ at end of interpolation
+  fixedCode = fixedCode.replace(/\}\}\s*\{/g, "}}");
+
+  // Fix pattern: double {{ at start
+  fixedCode = fixedCode.replace(/\{\{/g, (match, offset, str) => {
+    const before = str.slice(Math.max(0, offset - 10), offset);
+    if (/\$\{[^}]*$/.test(before)) {
+      return "{";
+    }
+    return match;
+  });
+
+  // Fix pattern: ${...}{{...}} - interpolation with double braces
+  fixedCode = fixedCode.replace(/\$\{([^}]+)\}\{\{/g, (match, inner) => {
+    return `\${${inner}}{`;
+  });
+
+  // Fix broken transform patterns
+  // `translateX(${x}px` ${y})` -> `translateX(${x}px, ${y})`
+  fixedCode = fixedCode.replace(
+    /`([^`]*)\$\{([^}]+)\}([^`]*)`\s*\$\{/g,
+    (match, before, varName, after, offset, str) => {
+      if (before.includes("translate") || before.includes("rotate")) {
+        return `\`${before}\${${varName}}${after}, \${`;
+      }
+      return match;
+    },
+  );
+
+  return fixedCode;
 }
 
 /**
@@ -638,7 +992,12 @@ export function hasBasicSyntaxErrors(code: string): string[] {
 
   // Check for balanced braces
   const braces = { "{": 0, "[": 0, "(": 0, "<": 0 };
-  const closingBraces: Record<string, keyof typeof braces> = { "}": "{", "]": "[", ")": "(", ">": "<" };
+  const closingBraces: Record<string, keyof typeof braces> = {
+    "}": "{",
+    "]": "[",
+    ")": "(",
+    ">": "<",
+  };
 
   let inString = false;
   let stringChar = "";
@@ -673,9 +1032,12 @@ export function hasBasicSyntaxErrors(code: string): string[] {
   }
 
   // Check for unbalanced braces
-  if (braces["{"] !== 0) errors.push(`Unbalanced curly braces: ${braces["{"]} extra {`);
-  if (braces["["] !== 0) errors.push(`Unbalanced square brackets: ${braces["["]} extra [`);
-  if (braces["("] !== 0) errors.push(`Unbalanced parentheses: ${braces["("]} extra (`);
+  if (braces["{"] !== 0)
+    errors.push(`Unbalanced curly braces: ${braces["{"]} extra {`);
+  if (braces["["] !== 0)
+    errors.push(`Unbalanced square brackets: ${braces["["]} extra [`);
+  if (braces["("] !== 0)
+    errors.push(`Unbalanced parentheses: ${braces["("]} extra (`);
 
   // Check for unclosed template strings
   if (inTemplateString) errors.push("Unclosed template string");
@@ -687,7 +1049,7 @@ export function hasBasicSyntaxErrors(code: string): string[] {
 /**
  * Detect if code appears to be truncated
  */
-function isCodeTruncated(code: string): boolean {
+export function isCodeTruncated(code: string): boolean {
   // Check if code has export default (required for Remotion)
   if (!code.includes("export default")) {
     return true;
@@ -712,9 +1074,90 @@ function isCodeTruncated(code: string): boolean {
 }
 
 /**
+ * Convert a string to Title Case (capitalize first letter of each word)
+ */
+function toTitleCase(str: string): string {
+  const minorWords = new Set(['a', 'an', 'the', 'and', 'but', 'or', 'for', 'nor', 'on', 'at', 'to', 'by', 'in', 'of', 'with', 'is']);
+  return str
+    .split(' ')
+    .map((word, i) => {
+      if (i === 0 || !minorWords.has(word.toLowerCase())) {
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      }
+      return word.toLowerCase();
+    })
+    .join(' ');
+}
+
+/**
+ * Extract text content from a VideoScript for use in fallback composition
+ */
+function extractScriptText(videoScript: any): {
+  tagline: string;
+  features: Array<{ title: string; description: string }>;
+  ctaHeadline: string;
+  ctaSubtext: string;
+  introSubtext: string;
+} {
+  const defaults = {
+    tagline: 'Built for the Future',
+    features: [
+      { title: 'Powerful Features', description: 'Built for performance, designed for simplicity.' },
+      { title: 'Seamless Experience', description: 'Every detail crafted with care.' },
+    ],
+    ctaHeadline: 'Get Started Today',
+    ctaSubtext: 'Try it free — no credit card required',
+    introSubtext: 'The future is now',
+  };
+
+  if (!videoScript || !videoScript.scenes || videoScript.scenes.length === 0) {
+    return defaults;
+  }
+
+  const scenes = videoScript.scenes;
+
+  // Find tagline scene
+  const taglineScene = scenes.find((s: any) => s.type === 'tagline' || s.type === 'value-prop') || scenes[1];
+  const tagline = taglineScene?.content?.headline || defaults.tagline;
+
+  // Find intro subtext
+  const introScene = scenes.find((s: any) => s.type === 'intro') || scenes[0];
+  const introSubtext = introScene?.content?.subtext || defaults.introSubtext;
+
+  // Find feature scenes
+  const featureScenes = scenes.filter((s: any) => s.type === 'feature');
+  const features = featureScenes.length > 0
+    ? featureScenes.slice(0, 2).map((s: any) => ({
+        title: s.content?.headline || 'Feature',
+        description: s.content?.subtext || '',
+      }))
+    : defaults.features;
+
+  // Find CTA scene
+  const ctaScene = scenes.find((s: any) => s.type === 'cta') || scenes[scenes.length - 1];
+  const ctaHeadline = ctaScene?.content?.headline || defaults.ctaHeadline;
+  const ctaSubtext = ctaScene?.content?.subtext || defaults.ctaSubtext;
+
+  return { tagline, features, ctaHeadline, ctaSubtext, introSubtext };
+}
+
+/**
  * Generate fallback composition code when LLM output is truncated or invalid
  */
-export function generateFallbackComposition(productName: string = "Product", audioUrl: string = "audio/audio1.mp3", bpm: number = 120, recordings?: Array<{ id: string; videoUrl: string; duration: number; featureName: string; description: string }>): string {
+export function generateFallbackComposition(
+  productName: string = "Product",
+  audioUrl: string = "audio/audio1.mp3",
+  bpm: number = 120,
+  recordings?: Array<{
+    id: string;
+    videoUrl: string;
+    duration: number;
+    featureName: string;
+    description: string;
+  }>,
+  brandColors?: { primary?: string; secondary?: string; accent?: string; dark?: string },
+  videoScript?: any,
+): string {
   // Determine audio src based on URL type
   const isR2Audio = audioUrl.startsWith("http");
   const audioSrcCode = isR2Audio
@@ -734,63 +1177,93 @@ export function generateFallbackComposition(productName: string = "Product", aud
 
   const hasRecordings = recordings && recordings.length > 0;
 
+  // Extract text from video script (or use defaults)
+  const scriptText = extractScriptText(videoScript);
+  const taglineWords = toTitleCase(scriptText.tagline).split(' ');
+  const feature1Title = toTitleCase(scriptText.features[0]?.title || 'Powerful Features');
+  const feature1Desc = scriptText.features[0]?.description || 'Built for performance, designed for simplicity.';
+  const feature2Title = toTitleCase(scriptText.features[1]?.title || 'Seamless Experience');
+  const feature2Desc = scriptText.features[1]?.description || 'Every detail crafted with care.';
+  const ctaHeadline = toTitleCase(scriptText.ctaHeadline);
+  const ctaSubtext = scriptText.ctaSubtext;
+  const introSubtext = scriptText.introSubtext;
+
   // Beat-relative timing values for scene animations
   const halfBeat = Math.round(framesPerBeat * 0.5);
   const quarterBeat = Math.round(framesPerBeat * 0.25);
   const sixteenthBeat = Math.round(framesPerBeat / 4);
 
   return `import React from 'react';
-import { AbsoluteFill, Sequence, useCurrentFrame, useVideoConfig, interpolate, spring, Audio,${hasRecordings ? ' Video,' : ''} staticFile } from 'remotion';
+import { AbsoluteFill, Sequence, useCurrentFrame, useVideoConfig, interpolate, spring, Audio,${hasRecordings ? " Video," : ""} staticFile } from 'remotion';
 import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
 
-const { fontFamily: montserrat } = loadMontserrat("normal", { weights: ["400", "500", "600", "700", "800"], subsets: ["latin"] });
+const { fontFamily: mont } = loadMontserrat("normal", { weights: ["400", "600", "700", "800", "900"], subsets: ["latin"] });
 
-// DEMO-STYLE COLOR PALETTE
-const COLORS = {
-  purple: '#a855f7',
-  pink: '#ec4899',
-  darkBg: '#0a0a0f',
-  cardText: '#111827',
-  cardSubtext: '#4b5563',
-  dark: '#0a0a0f',
+// BRAND COLOR PALETTE
+const C = {
+  bg: '${brandColors?.dark || "#08080f"}',
+  text: '#ffffff',
+  sub: 'rgba(255,255,255,0.65)',
+  accent: '${brandColors?.primary || "#3b82f6"}',
+  accentAlt: '${brandColors?.secondary || "#06b6d4"}',
+  line: 'rgba(255,255,255,0.15)',
 };
 
-
-// AURORA BACKGROUND
-const AuroraBackground: React.FC<{ variant?: 'dark' | 'light' }> = ({ variant = 'dark' }) => {
-  if (variant === 'light') {
-    return (
-      <AbsoluteFill style={{
-        background: 'radial-gradient(ellipse at 30% 30%, rgba(168, 85, 247, 0.2) 0%, transparent 50%), radial-gradient(ellipse at 70% 70%, rgba(236, 72, 153, 0.2) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 60%), linear-gradient(135deg, #faf5ff 0%, #fff5f8 50%, #f5f0ff 100%)',
-      }} />
-    );
-  }
+// CINEMATIC BOKEH BACKGROUND — drifting blurred circles, never static
+const CineBg: React.FC<{ seed?: number }> = ({ seed = 0 }) => {
+  const frame = useCurrentFrame();
+  const blobs = [
+    { x: 15, y: 20, r: 400, color: C.accent + '2E' },
+    { x: 75, y: 70, r: 500, color: C.accentAlt + '1F' },
+    { x: 50, y: 45, r: 350, color: C.accent + '1A' },
+    { x: 20, y: 80, r: 300, color: C.accentAlt + '14' },
+  ];
   return (
-    <AbsoluteFill style={{
-      background: 'radial-gradient(ellipse at 20% 20%, rgba(168, 85, 247, 0.3) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(236, 72, 153, 0.3) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.2) 0%, transparent 70%), #0a0a0f',
-    }} />
+    <AbsoluteFill style={{ background: C.bg, overflow: 'hidden' }}>
+      {blobs.map((b, i) => {
+        const drift = Math.sin((frame + seed * 30 + i * 40) / (50 + i * 10)) * 30;
+        const driftY = Math.cos((frame + seed * 30 + i * 25) / (60 + i * 12)) * 20;
+        return (
+          <div key={i} style={{
+            position: 'absolute',
+            left: b.x + '%', top: b.y + '%',
+            width: b.r, height: b.r,
+            borderRadius: '50%',
+            background: b.color,
+            filter: 'blur(120px)',
+            transform: 'translate(-50%,-50%) translateX(' + drift + 'px) translateY(' + driftY + 'px)',
+          }} />
+        );
+      })}
+    </AbsoluteFill>
   );
 };
 
-// WORD BY WORD BLUR REVEAL
-const WordByWordBlur: React.FC<{ words: string[]; fontSize?: number; color?: string; delay?: number; staggerFrames?: number; gradientWordIndices?: number[] }> = ({
-  words, fontSize = 48, color = '#ffffff', delay = 0, staggerFrames = 5, gradientWordIndices = []
+// FADE WRAPPER — fades in and out at scene edges
+const FadeWrapper: React.FC<{ children: React.ReactNode; duration: number; fadeFrames?: number }> = ({ children, duration, fadeFrames = 12 }) => {
+  const frame = useCurrentFrame();
+  const opacity = interpolate(frame, [0, fadeFrames, duration - fadeFrames, duration], [0, 1, 1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  return <AbsoluteFill style={{ opacity }}>{children}</AbsoluteFill>;
+};
+
+// WORD BY WORD REVEAL
+const WordReveal: React.FC<{ words: string[]; fontSize?: number; color?: string; delay?: number; stagger?: number }> = ({
+  words, fontSize = 80, color = '#ffffff', delay = 0, stagger = 8,
 }) => {
   const frame = useCurrentFrame();
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3em', justifyContent: 'center' }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25em', justifyContent: 'center', alignItems: 'center' }}>
       {words.map((word, i) => {
-        const f = Math.max(0, frame - delay - i * staggerFrames);
-        const op = interpolate(f, [0, 15], [0, 1], { extrapolateRight: "clamp" });
-        const blur = interpolate(f, [0, 15], [10, 0], { extrapolateRight: "clamp" });
-        const ty = interpolate(f, [0, 15], [30, 0], { extrapolateRight: "clamp" });
-        const isGradient = gradientWordIndices.includes(i);
+        const f = Math.max(0, frame - delay - i * stagger);
+        const op = interpolate(f, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
+        const blur = interpolate(f, [0, 15], [12, 0], { extrapolateRight: 'clamp' });
+        const ty = interpolate(f, [0, 15], [40, 0], { extrapolateRight: 'clamp' });
         return (
           <span key={i} style={{
-            fontSize, fontFamily: montserrat, fontWeight: 600,
-            opacity: op, filter: "blur(" + blur + "px)", transform: "translateY(" + ty + "px)",
+            fontFamily: mont, fontWeight: 800, fontSize, color,
+            letterSpacing: '-3px', lineHeight: 1,
             display: 'inline-block',
-            ...(isGradient ? { background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } : { color }),
+            opacity: op, filter: 'blur(' + blur + 'px)', transform: 'translateY(' + ty + 'px)',
           }}>{word}</span>
         );
       })}
@@ -798,241 +1271,167 @@ const WordByWordBlur: React.FC<{ words: string[]; fontSize?: number; color?: str
   );
 };
 
-// WHITE GLASS CARD with entry animations
-const WhiteGlassCard: React.FC<{ children: React.ReactNode; maxWidth?: number; delay?: number; entryAnimation?: 'slide-up' | 'perspective' | 'scale'; padding?: number }> = ({
-  children, maxWidth = 800, delay = 0, entryAnimation = 'perspective', padding = 48,
-}) => {
+// SWEEP LINE — width animates left to right
+const SweepLine: React.FC<{ delay?: number; color?: string; width?: number | string }> = ({ delay = 0, color = C.accent, width = 120 }) => {
   const frame = useCurrentFrame();
   const f = Math.max(0, frame - delay);
-  const progress = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
-  const opacity = interpolate(f, [0, 15], [0, 1], { extrapolateRight: "clamp" });
-
-  let transform = '';
-  if (entryAnimation === 'perspective') {
-    const rotateX = interpolate(progress, [0, 1], [-20, 0]);
-    const ty = interpolate(progress, [0, 1], [100, 0]);
-    transform = "perspective(1000px) rotateX(" + rotateX + "deg) translateY(" + ty + "px)";
-  } else if (entryAnimation === 'slide-up') {
-    const ty = interpolate(progress, [0, 1], [80, 0]);
-    transform = "translateY(" + ty + "px)";
-  } else {
-    const s = interpolate(progress, [0, 1], [0.8, 1]);
-    transform = "scale(" + s + ")";
-  }
-
-  return (
-    <div style={{
-      maxWidth, padding, opacity, transform,
-      background: 'rgba(255,255,255,0.95)',
-      backdropFilter: 'blur(24px)',
-      borderRadius: 24,
-      boxShadow: '0 25px 50px rgba(0,0,0,0.25)',
-      border: '1px solid rgba(255,255,255,0.3)',
-    }}>
-      {children}
-    </div>
-  );
-};
-
-// GRADIENT ACCENT TEXT (purple -> pink)
-const GradientAccentText: React.FC<{ text: string; fontSize?: number; fontWeight?: number; delay?: number }> = ({
-  text, fontSize = 56, fontWeight = 700, delay = 0,
-}) => {
-  const frame = useCurrentFrame();
-  const f = Math.max(0, frame - delay);
-  const opacity = interpolate(f, [0, 15], [0, 1], { extrapolateRight: "clamp" });
-  const scale = interpolate(f, [0, 15], [0.9, 1], { extrapolateRight: "clamp" });
-
-  return (
-    <span style={{
-      display: 'inline-block', fontSize, fontFamily: montserrat, fontWeight,
-      background: 'linear-gradient(135deg, #a855f7, #ec4899)',
-      WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-      opacity, transform: "scale(" + scale + ")",
-    }}>
-      {text}
-    </span>
-  );
-};
-
-// LOGO WITH GLOW effect
-const LogoWithGlow: React.FC<{ brandName: string; accentSuffix?: string; fontSize?: number; delay?: number }> = ({
-  brandName, accentSuffix, fontSize = 80, delay = 0,
-}) => {
-  const frame = useCurrentFrame();
-  const f = Math.max(0, frame - delay);
-  const opacity = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
-  const glowScale = interpolate(f, [0, 30], [0.5, 1.5], { extrapolateRight: "clamp" });
-
-  return (
-    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity }}>
-      {/* Glow behind */}
-      <div style={{
-        position: 'absolute', width: '120%', height: '120%',
-        background: 'linear-gradient(135deg, rgba(168,85,247,0.4), rgba(236,72,153,0.4))',
-        filter: 'blur(40px)', borderRadius: '50%',
-        transform: "scale(" + glowScale + ")", opacity: 0.6,
-      }} />
-      <span style={{ fontFamily: montserrat, fontWeight: 700, fontSize, color: '#fff', position: 'relative', zIndex: 1 }}>
-        {brandName}
-      </span>
-      {accentSuffix && (
-        <span style={{
-          fontFamily: montserrat, fontWeight: 700, fontSize, position: 'relative', zIndex: 1, marginLeft: 12,
-          background: 'linear-gradient(135deg, #a855f7, #ec4899)',
-          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-        }}>
-          {accentSuffix}
-        </span>
-      )}
-    </div>
-  );
-};
-
-// SCENE PROGRESS DOTS
-const SceneProgressDots: React.FC<{ totalScenes: number; sceneBoundaries: number[]; beatPulse?: number }> = ({
-  totalScenes, sceneBoundaries, beatPulse = 0,
-}) => {
-  const frame = useCurrentFrame();
-  let currentScene = 0;
-  for (let i = 0; i < sceneBoundaries.length; i++) {
-    if (frame >= sceneBoundaries[i]) currentScene = i;
-  }
-
-  return (
-    <div style={{
-      position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)',
-      display: 'flex', gap: 8, zIndex: 100,
-    }}>
-      {Array.from({ length: totalScenes }).map((_, i) => {
-        const isActive = i === currentScene;
-        const dotScale = isActive ? 1 + beatPulse * 0.15 : 1;
-        return (
-          <div key={i} style={{
-            height: 8, borderRadius: 4,
-            width: isActive ? 24 : 8,
-            background: isActive ? COLORS.purple : i < currentScene ? 'rgba(168,85,247,0.5)' : 'rgba(255,255,255,0.3)',
-            transform: "scale(" + dotScale + ")",
-          }} />
-        );
-      })}
-    </div>
-  );
+  const w = interpolate(f, [0, 20], [0, typeof width === 'number' ? width : 120], { extrapolateRight: 'clamp' });
+  return <div style={{ height: 3, width: w, background: color, borderRadius: 2, marginTop: 16 }} />;
 };
 
 
-// SCENE 1: Logo intro on dark aurora
+// SCENE 1: Logo intro — zoom IN slowly + beat pulse
 const Scene1: React.FC = () => {
+  const frame = useCurrentFrame();
   const { beatPulse } = useBeatSync(${bpm});
+  const camScale = interpolate(frame, [0, ${introFrames}], [1.0, 1.10], { extrapolateRight: 'clamp' });
+  const camX = interpolate(frame, [0, ${introFrames}], [0, -15], { extrapolateRight: 'clamp' });
+  const titleOp = interpolate(frame, [0, 10], [0, 1], { extrapolateRight: 'clamp' });
+  const subOp = interpolate(Math.max(0, frame - 18), [0, 15], [0, 1], { extrapolateRight: 'clamp' });
+  const lineW = interpolate(Math.max(0, frame - 12), [0, 25], [0, 260], { extrapolateRight: 'clamp' });
+  const beatScale = 1 + beatPulse * 0.012;
   return (
     <AbsoluteFill>
-      <AuroraBackground variant="dark" />
-      <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', transform: "scale(" + (1 + beatPulse * 0.015) + ")" }}>
-        <LogoWithGlow brandName="${productName}" fontSize={80} delay={${halfBeat}} />
-      </AbsoluteFill>
+      <CineBg seed={0} />
+      <FadeWrapper duration={${introFrames}}>
+        <AbsoluteFill style={{ transform: 'scale(' + (camScale * beatScale) + ') translateX(' + camX + 'px)', transformOrigin: 'center center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+          <div style={{ opacity: titleOp }}>
+            <div style={{ fontFamily: mont, fontWeight: 900, fontSize: 140, color: C.text, letterSpacing: '-5px', lineHeight: 0.95, textAlign: 'center' }}>
+              ${productName}
+            </div>
+          </div>
+          <div style={{ height: 3, width: lineW, background: C.accent, borderRadius: 2 }} />
+          <div style={{ opacity: subOp, fontFamily: mont, fontWeight: 400, fontSize: 32, color: C.sub, letterSpacing: '6px', textTransform: 'uppercase', marginTop: 8 }}>
+            ${introSubtext}
+          </div>
+        </AbsoluteFill>
+      </FadeWrapper>
     </AbsoluteFill>
   );
 };
 
-// SCENE 2: Tagline on light aurora
+// SCENE 2: Tagline — zoom OUT from top-left + beat pulse
 const Scene2: React.FC = () => {
+  const frame = useCurrentFrame();
   const { beatPulse } = useBeatSync(${bpm});
+  const camScale = interpolate(frame, [0, ${fastFrames}], [1.12, 1.0], { extrapolateRight: 'clamp' });
+  const camY = interpolate(frame, [0, ${fastFrames}], [20, 0], { extrapolateRight: 'clamp' });
+  const beatScale = 1 + beatPulse * 0.01;
   return (
     <AbsoluteFill>
-      <AuroraBackground variant="light" />
-      <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 80, transform: "scale(" + (1 + beatPulse * 0.01) + ")" }}>
-        <WordByWordBlur
-          words={["The", "Future", "of", "Innovation"]}
-          fontSize={64} color={COLORS.dark}
-          delay={${halfBeat}} staggerFrames={${sixteenthBeat}}
-          gradientWordIndices={[1, 3]}
-        />
-      </AbsoluteFill>
+      <CineBg seed={1} />
+      <FadeWrapper duration={${fastFrames}}>
+        <AbsoluteFill style={{ transform: 'scale(' + (camScale * beatScale) + ') translateY(' + camY + 'px)', transformOrigin: 'top left', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 100 }}>
+          <WordReveal words={[${taglineWords.map(w => `'${w.replace(/'/g, "\\'")}'`).join(', ')}]} fontSize={120} delay={8} stagger={${Math.round(framesPerBeat / 3)}} />
+        </AbsoluteFill>
+      </FadeWrapper>
     </AbsoluteFill>
   );
 };
 
-// SCENE 3: Feature card on dark aurora
+// SCENE 3: Feature — pan left slowly
 const Scene3: React.FC = () => {
-  const { beatPulse } = useBeatSync(${bpm});
+  const frame = useCurrentFrame();
+  const camX = interpolate(frame, [0, ${cardFrames}], [0, -50], { extrapolateRight: 'clamp' });
+  const bgX = interpolate(frame, [0, ${cardFrames}], [0, -20], { extrapolateRight: 'clamp' });
+  const labelOp = interpolate(Math.max(0, frame - 8), [0, 15], [0, 1], { extrapolateRight: 'clamp' });
+  const labelTy = interpolate(Math.max(0, frame - 8), [0, 15], [30, 0], { extrapolateRight: 'clamp' });
+  const lineW = interpolate(Math.max(0, frame - 18), [0, 20], [0, 180], { extrapolateRight: 'clamp' });
   return (
     <AbsoluteFill>
-      <AuroraBackground variant="dark" />
-      <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <WhiteGlassCard delay={${halfBeat}} entryAnimation="perspective" maxWidth={700}>
-          <div style={{ transform: "scale(" + (1 + beatPulse * 0.015) + ")" }}>
-            <GradientAccentText text="Powerful Features" fontSize={48} delay={${Math.round(framesPerBeat)}} />
+      <AbsoluteFill style={{ transform: 'translateX(' + bgX + 'px)' }}><CineBg seed={2} /></AbsoluteFill>
+      <FadeWrapper duration={${cardFrames}}>
+        <AbsoluteFill style={{ transform: 'translateX(' + camX + 'px)', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', padding: '0 120px' }}>
+          <div style={{ opacity: labelOp, transform: 'translateY(' + labelTy + 'px)' }}>
+            <div style={{ fontFamily: mont, fontWeight: 400, fontSize: 22, color: C.sub, letterSpacing: '5px', textTransform: 'uppercase', marginBottom: 20 }}>Feature 01</div>
+            <div style={{ fontFamily: mont, fontWeight: 800, fontSize: 100, color: C.text, letterSpacing: '-3px', lineHeight: 0.95 }}>${feature1Title.split(' ').slice(0, Math.ceil(feature1Title.split(' ').length / 2)).join(' ')}</div>
+            <div style={{ fontFamily: mont, fontWeight: 800, fontSize: 100, color: C.accent, letterSpacing: '-3px', lineHeight: 0.95 }}>${feature1Title.split(' ').slice(Math.ceil(feature1Title.split(' ').length / 2)).join(' ') || feature1Title}</div>
+            <div style={{ height: 3, width: lineW, background: C.accent, borderRadius: 2, marginTop: 20 }} />
+            <div style={{ fontFamily: mont, fontWeight: 400, fontSize: 28, color: C.sub, marginTop: 20, maxWidth: 500, lineHeight: 1.5 }}>${feature1Desc}</div>
           </div>
-          <p style={{ fontFamily: montserrat, fontWeight: 400, fontSize: 28, color: '#4b5563', marginTop: 16, lineHeight: 1.5 }}>
-            Built for performance, designed for simplicity.
-          </p>
-        </WhiteGlassCard>
-      </AbsoluteFill>
+        </AbsoluteFill>
+      </FadeWrapper>
     </AbsoluteFill>
   );
 };
 
-// SCENE 4: Value prop text on light aurora
+// SCENE 4: Value prop — zoom IN from right
 const Scene4: React.FC = () => {
-  const { beatPulse } = useBeatSync(${bpm});
+  const frame = useCurrentFrame();
+  const camScale = interpolate(frame, [0, ${fastFrames}], [1.0, 1.10], { extrapolateRight: 'clamp' });
+  const camX = interpolate(frame, [0, ${fastFrames}], [30, 0], { extrapolateRight: 'clamp' });
   return (
     <AbsoluteFill>
-      <AuroraBackground variant="light" />
-      <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 80, transform: "scale(" + (1 + beatPulse * 0.01) + ")" }}>
-        <WordByWordBlur
-          words={["Build", "Something", "Amazing"]}
-          fontSize={72} color={COLORS.dark}
-          delay={${halfBeat}} staggerFrames={${sixteenthBeat}}
-          gradientWordIndices={[2]}
-        />
-      </AbsoluteFill>
+      <CineBg seed={3} />
+      <FadeWrapper duration={${fastFrames}}>
+        <AbsoluteFill style={{ transform: 'scale(' + camScale + ') translateX(' + camX + 'px)', transformOrigin: 'right center', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 100 }}>
+          <WordReveal words={[${feature2Title.split(' ').map(w => `'${w.replace(/'/g, "\\'")}'`).join(', ')}]} fontSize={110} delay={8} stagger={10} />
+        </AbsoluteFill>
+      </FadeWrapper>
     </AbsoluteFill>
   );
 };
 
-// SCENE 5: Feature card on dark aurora
+// SCENE 5: Feature 2 — pan right
 const Scene5: React.FC = () => {
-  const { beatPulse } = useBeatSync(${bpm});
+  const frame = useCurrentFrame();
+  const camX = interpolate(frame, [0, ${cardFrames}], [0, 50], { extrapolateRight: 'clamp' });
+  const bgX = interpolate(frame, [0, ${cardFrames}], [0, 20], { extrapolateRight: 'clamp' });
+  const labelOp = interpolate(Math.max(0, frame - 8), [0, 15], [0, 1], { extrapolateRight: 'clamp' });
+  const labelTy = interpolate(Math.max(0, frame - 8), [0, 15], [30, 0], { extrapolateRight: 'clamp' });
   return (
     <AbsoluteFill>
-      <AuroraBackground variant="dark" />
-      <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <WhiteGlassCard delay={${halfBeat}} entryAnimation="slide-up" maxWidth={700}>
-          <div style={{ transform: "scale(" + (1 + beatPulse * 0.015) + ")" }}>
-            <GradientAccentText text="Seamless Experience" fontSize={48} delay={${Math.round(framesPerBeat)}} />
+      <AbsoluteFill style={{ transform: 'translateX(' + bgX + 'px)' }}><CineBg seed={4} /></AbsoluteFill>
+      <FadeWrapper duration={${cardFrames}}>
+        <AbsoluteFill style={{ transform: 'translateX(' + camX + 'px)', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', padding: '0 120px', textAlign: 'right' }}>
+          <div style={{ opacity: labelOp, transform: 'translateY(' + labelTy + 'px)' }}>
+            <div style={{ fontFamily: mont, fontWeight: 400, fontSize: 22, color: C.sub, letterSpacing: '5px', textTransform: 'uppercase', marginBottom: 20 }}>Feature 02</div>
+            <div style={{ fontFamily: mont, fontWeight: 800, fontSize: 100, color: C.text, letterSpacing: '-3px', lineHeight: 0.95 }}>${feature2Title.split(' ').slice(0, Math.ceil(feature2Title.split(' ').length / 2)).join(' ')}</div>
+            <div style={{ fontFamily: mont, fontWeight: 800, fontSize: 100, color: C.accentAlt, letterSpacing: '-3px', lineHeight: 0.95 }}>${feature2Title.split(' ').slice(Math.ceil(feature2Title.split(' ').length / 2)).join(' ') || feature2Title}</div>
+            <div style={{ fontFamily: mont, fontWeight: 400, fontSize: 28, color: C.sub, marginTop: 20, maxWidth: 500, lineHeight: 1.5 }}>${feature2Desc}</div>
           </div>
-          <p style={{ fontFamily: montserrat, fontWeight: 400, fontSize: 28, color: '#4b5563', marginTop: 16, lineHeight: 1.5 }}>
-            Every detail crafted with care.
-          </p>
-        </WhiteGlassCard>
-      </AbsoluteFill>
+        </AbsoluteFill>
+      </FadeWrapper>
     </AbsoluteFill>
   );
 };
 
-// SCENE 6: CTA on dark aurora
+// SCENE 6: CTA — slow dramatic zoom IN + beat pulse
 const Scene6: React.FC = () => {
+  const frame = useCurrentFrame();
   const { beatPulse } = useBeatSync(${bpm});
+  const camScale = interpolate(frame, [0, ${ctaFrames}], [1.0, 1.08], { extrapolateRight: 'clamp' });
+  const labelOp = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
+  const subOp = interpolate(Math.max(0, frame - 20), [0, 15], [0, 1], { extrapolateRight: 'clamp' });
+  const lineW = interpolate(Math.max(0, frame - 15), [0, 20], [0, 320], { extrapolateRight: 'clamp' });
+  const beatScale = 1 + beatPulse * 0.015;
+  const beatGlow = beatPulse * 0.3;
   return (
     <AbsoluteFill>
-      <AuroraBackground variant="dark" />
-      <AbsoluteFill style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24, transform: "scale(" + (1 + beatPulse * 0.01) + ")" }}>
-        <WordByWordBlur
-          words={["Get", "Started", "Today"]}
-          fontSize={72} color="#ffffff"
-          delay={${halfBeat}} staggerFrames={${sixteenthBeat}}
-          gradientWordIndices={[1, 2]}
-        />
-        <GradientAccentText text="${productName}" fontSize={56} delay={${Math.round(framesPerBeat * 1.5)}} />
-      </AbsoluteFill>
+      <CineBg seed={5} />
+      <FadeWrapper duration={${ctaFrames}}>
+        <AbsoluteFill style={{ transform: 'scale(' + (camScale * beatScale) + ')', transformOrigin: 'center center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+          <div style={{ opacity: labelOp, fontFamily: mont, fontWeight: 400, fontSize: 22, color: C.sub, letterSpacing: '6px', textTransform: 'uppercase' }}>${ctaHeadline}</div>
+          <div style={{ fontFamily: mont, fontWeight: 900, fontSize: 130, color: C.text, letterSpacing: '-4px', lineHeight: 0.9, textAlign: 'center', opacity: labelOp, filter: 'drop-shadow(0 0 ' + (20 + beatGlow * 30) + 'px ' + C.accent + ')' }}>
+            ${productName}
+          </div>
+          <div style={{ height: 3, width: lineW, background: 'linear-gradient(90deg, ' + C.accent + ', ' + C.accentAlt + ')', borderRadius: 2 }} />
+          <div style={{ opacity: subOp, fontFamily: mont, fontWeight: 400, fontSize: 28, color: C.sub, marginTop: 8 }}>${ctaSubtext}</div>
+        </AbsoluteFill>
+      </FadeWrapper>
     </AbsoluteFill>
   );
 };
 
-${hasRecordings ? recordings!.map((rec, i) => {
-  const isR2 = rec.videoUrl.startsWith("http");
-  const videoSrc = isR2 ? `"${rec.videoUrl}"` : `staticFile("${rec.videoUrl.replace(/^\//, "")}")`;
-  return `
+${
+  hasRecordings
+    ? recordings!
+        .map((rec, i) => {
+          const isR2 = rec.videoUrl.startsWith("http");
+          const videoSrc = isR2
+            ? `"${rec.videoUrl}"`
+            : `staticFile("${rec.videoUrl.replace(/^\//, "")}")`;
+          return `
 // RECORDING SCENE ${i + 1}: ${rec.featureName}
 const RecordingScene${i + 1}: React.FC = () => {
   const frame = useCurrentFrame();
@@ -1042,20 +1441,23 @@ const RecordingScene${i + 1}: React.FC = () => {
   const entryOpacity = interpolate(frame, [0, ${quarterBeat}], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   const labelOpacity = interpolate(frame, [0, 30, durationInFrames - 30, durationInFrames], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   return (
-    <AbsoluteFill style={{ backgroundColor: '#0a0a0f' }}>
+    <AbsoluteFill style={{ backgroundColor: C.bg }}>
       <div style={{ width: '100%', height: '100%', transform: "scale(" + (entryScale * (1 + beatPulse * 0.008)) + ")", opacity: entryOpacity }}>
         <Video src={${videoSrc}} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
       </div>
       <div style={{ position: 'absolute', bottom: 60, left: 0, right: 0, display: 'flex', justifyContent: 'center', opacity: labelOpacity, zIndex: 10 }}>
         <div style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)', borderRadius: 12, padding: '12px 28px', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'linear-gradient(135deg, #a855f7, #ec4899)' }} />
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'linear-gradient(135deg, ' + C.accent + ', ' + C.accentAlt + ')' }} />
           <span style={{ fontFamily: montserrat, fontWeight: 600, fontSize: 20, color: '#ffffff' }}>${rec.featureName}</span>
         </div>
       </div>
     </AbsoluteFill>
   );
 };`;
-}).join('\n') : ''}
+        })
+        .join("\n")
+    : ""
+}
 
 // BEAT SYNC HOOK
 const useBeatSync = (bpm: number) => {
@@ -1068,7 +1470,6 @@ const useBeatSync = (bpm: number) => {
 };
 
 const VideoComposition: React.FC = () => {
-  const { beatPulse } = useBeatSync(${bpm});
   // Beat-snapped scene durations (BPM: ${bpm})
   const introFrames = ${introFrames};
   const fastFrames = ${fastFrames};
@@ -1081,58 +1482,66 @@ const VideoComposition: React.FC = () => {
   const s4Start = s3Start + cardFrames;
   const s5Start = s4Start + fastFrames;
   let nextStart = s5Start + cardFrames;
-${hasRecordings ? recordings!.map((rec, i) => {
-  const recFrames = Math.round(rec.duration * 30);
-  return `  const rec${i + 1}Start = nextStart;
+${
+  hasRecordings
+    ? recordings!
+        .map((rec, i) => {
+          const recFrames = Math.round(rec.duration * 30);
+          return `  const rec${i + 1}Start = nextStart;
   const rec${i + 1}Frames = ${recFrames};
   nextStart = rec${i + 1}Start + rec${i + 1}Frames;`;
-}).join('\n') : ''}
+        })
+        .join("\n")
+    : ""
+}
   const s6Start = nextStart;
-
-  const sceneBoundaries = [s1Start, s2Start, s3Start, s4Start, s5Start, ${hasRecordings ? recordings!.map((_, i) => `rec${i + 1}Start`).join(', ') + ', ' : ''}s6Start];
-  const totalScenes = ${6 + (hasRecordings ? recordings!.length : 0)};
 
   return (
     <AbsoluteFill>
-      <Audio src={${audioSrcCode}} volume={1} />
+      <Audio src={${audioSrcCode}} volume={0.8} />
 
-      {/* Scene 1: Logo intro */}
+      {/* Scene 1: Logo intro — zoom in */}
       <Sequence from={s1Start} durationInFrames={introFrames}>
         <Scene1 />
       </Sequence>
 
-      {/* Scene 2: Tagline — fast */}
+      {/* Scene 2: Tagline — zoom out */}
       <Sequence from={s2Start} durationInFrames={fastFrames}>
         <Scene2 />
       </Sequence>
 
-      {/* Scene 3: Feature card */}
+      {/* Scene 3: Feature — pan left */}
       <Sequence from={s3Start} durationInFrames={cardFrames}>
         <Scene3 />
       </Sequence>
 
-      {/* Scene 4: Value prop — fast */}
+      {/* Scene 4: Value prop — zoom in from right */}
       <Sequence from={s4Start} durationInFrames={fastFrames}>
         <Scene4 />
       </Sequence>
 
-      {/* Scene 5: Feature card */}
+      {/* Scene 5: Feature 2 — pan right */}
       <Sequence from={s5Start} durationInFrames={cardFrames}>
         <Scene5 />
       </Sequence>
 
-${hasRecordings ? recordings!.map((rec, i) => `      {/* Recording: ${rec.featureName} */}
+${
+  hasRecordings
+    ? recordings!
+        .map(
+          (rec, i) => `      {/* Recording: ${rec.featureName} */}
       <Sequence from={rec${i + 1}Start} durationInFrames={rec${i + 1}Frames}>
         <RecordingScene${i + 1} />
       </Sequence>
-`).join('\n') : ''}
-      {/* Scene 6: CTA */}
+`,
+        )
+        .join("\n")
+    : ""
+}
+      {/* Scene 6: CTA — dramatic zoom in */}
       <Sequence from={s6Start} durationInFrames={ctaFrames}>
         <Scene6 />
       </Sequence>
-
-      {/* Progress dots overlay */}
-      <SceneProgressDots totalScenes={totalScenes} sceneBoundaries={sceneBoundaries} beatPulse={beatPulse} />
     </AbsoluteFill>
   );
 };
@@ -1148,48 +1557,103 @@ export async function remotionTranslatorNode(
     "[RemotionTranslator] Starting translation to Remotion with skills...",
   );
 
-  const reactCode = state.reactPageCode;
-  if (!reactCode) {
+  const script = state.videoScript;
+  if (!script && !state.reactPageCode) {
     return {
-      errors: [...state.errors, "No React page code available for translation"],
+      errors: [...state.errors, "No video script or React page code available for translation"],
       currentStep: "error",
     };
   }
-
-  const script = state.videoScript;
   const totalDuration = script?.totalDuration || 300;
+
+  // Compute resolution from aspect ratio
+  const ASPECT_DIMS: Record<string, { width: number; height: number }> = {
+    "16:9": { width: 1920, height: 1080 },
+    "9:16": { width: 1080, height: 1920 },
+    "1:1": { width: 1080, height: 1080 },
+    "4:5": { width: 1080, height: 1350 },
+  };
+  const ar = (state.userPreferences as any)?.aspectRatio || "16:9";
+  const { width: videoWidth, height: videoHeight } = ASPECT_DIMS[ar] || ASPECT_DIMS["16:9"];
 
   // Compute audio source early so it can be injected into the prompt
   const rawAudioUrl = state.userPreferences?.audio?.url || "";
-  const audioUrl = rawAudioUrl.startsWith("http") ? rawAudioUrl : rawAudioUrl.replace(/^\//, '');
+  const audioUrl = rawAudioUrl.startsWith("http")
+    ? rawAudioUrl
+    : rawAudioUrl.replace(/^\//, "");
   const isR2Audio = audioUrl.startsWith("http");
   const audioSrcCode = audioUrl
-    ? (isR2Audio ? `"${audioUrl}"` : `staticFile("${audioUrl}")`)
+    ? isR2Audio
+      ? `"${audioUrl}"`
+      : `staticFile("${audioUrl}")`
     : `staticFile("audio/audio1.mp3")`;
-  const audioBpm = state.userPreferences?.audio?.bpm || state.videoScript?.music?.tempo || 120;
+  const audioBpm =
+    state.userPreferences?.audio?.bpm || state.videoScript?.music?.tempo || 120;
+
+  // Build source section: use videoScript directly if no reactPageCode
+  const reactCode = state.reactPageCode;
+  const sourceSection = reactCode
+    ? `## TRANSLATE THIS REACT PAGE TO REMOTION
+
+\`\`\`tsx
+${reactCode}
+\`\`\``
+    : `## CREATE REMOTION VIDEO FROM THIS SCRIPT
+
+**Product**: ${state.productData?.name || "Product"}
+**Description**: ${state.productData?.description || state.description || ""}
+
+### VIDEO SCRIPT (follow this scene structure):
+\`\`\`json
+${JSON.stringify(script, null, 2)}
+\`\`\`
+
+### PRODUCT DATA:
+\`\`\`json
+${JSON.stringify(state.productData || {}, null, 2)}
+\`\`\`
+
+Create a complete Remotion composition that follows the scene structure from the video script above.
+Each scene in the script should become a \`<Sequence>\` with appropriate animations.
+Use the product name, tagline, features, and description from the product data.`;
 
   const prompt = `${REMOTION_TRANSLATOR_SYSTEM_PROMPT}
 
 ---
 
-## TRANSLATE THIS REACT PAGE TO REMOTION
-
-\`\`\`tsx
-${reactCode}
-\`\`\`
+${sourceSection}
 
 ## VIDEO SPECIFICATIONS
 - Total duration: ${totalDuration} frames (${Math.round(totalDuration / 30)} seconds)
 - FPS: 30
-- Resolution: 1920x1080
+- Resolution: ${videoWidth}x${videoHeight} (aspect ratio: ${ar})
+
+## BEAT-SYNCED TIMING (BPM: ${audioBpm})
+${(() => {
+  const beatMap = state.beatMap;
+  const fpb = (30 * 60) / audioBpm;
+  if (beatMap && beatMap.beats.length > 0) {
+    // Provide key beat frames for scene alignment
+    const measures = beatMap.measures.slice(0, 20);
+    return `- Frames per beat: ${fpb.toFixed(1)} (${audioBpm} BPM at 30fps)
+- Frames per measure (4 beats): ${(fpb * 4).toFixed(1)}
+- Measure start frames: [${measures.join(", ")}]
+- SNAP all scene boundaries to the nearest measure frame from the list above
+- Use beat pulse (exponential decay) on text scale and opacity for rhythm: Math.exp(-((frame % ${Math.round(fpb)}) / ${Math.round(fpb)}) * 4)
+- Transition effects (fade, slide) should last exactly 1 beat (${Math.round(fpb)} frames)`;
+  }
+  return `- Frames per beat: ${fpb.toFixed(1)} (${audioBpm} BPM at 30fps)
+- Snap scene durations to multiples of ${Math.round(fpb)} frames (1 beat)
+- Transitions should last 1 beat (${Math.round(fpb)} frames)`;
+})()}
 
 ## REQUIREMENTS - PREMIUM DEMO STYLE VIDEO
-1. **VARIABLE SCENE TIMING**:
-   - Intro (first): ~90 frames (3s) — slow, dramatic
-   - Middle scenes: ~45 frames (1.5s) — fast, punchy
-   - Feature cards: ~60 frames (2s) — readable
-   - Screenshots: ~75 frames (2.5s) — see the product
-   - CTA (ALWAYS last): ~90 frames (3s) — slow, dramatic close
+1. **VARIABLE SCENE TIMING** (beat-snapped):
+   - Intro (first): ~${Math.round(((30 * 60) / audioBpm) * 6)} frames (${Math.round(((60) / audioBpm) * 6)}s, 6 beats) — slow, dramatic
+   - Middle scenes: ~${Math.round(((30 * 60) / audioBpm) * 3)} frames (${Math.round(((60) / audioBpm) * 3)}s, 3 beats) — fast, punchy
+   - Feature cards: ~${Math.round(((30 * 60) / audioBpm) * 4)} frames (${Math.round(((60) / audioBpm) * 4)}s, 4 beats) — readable
+   - Screenshots: ~${Math.round(((30 * 60) / audioBpm) * 5)} frames (${Math.round(((60) / audioBpm) * 5)}s, 5 beats) — see the product
+   - CTA (ALWAYS last): ~${Math.round(((30 * 60) / audioBpm) * 6)} frames (${Math.round(((60) / audioBpm) * 6)}s, 6 beats) — slow, dramatic close
 2. **DISCRETE SCENES**: Use separate Sequence components with smooth entry animations
 3. **AURORA BACKGROUNDS**: Alternate dark/light aurora backgrounds between scenes
    - Dark aurora: logo scenes, CTA scenes, card scenes
@@ -1202,39 +1666,60 @@ ${reactCode}
    - Card text: #111827 (dark gray), card subtext: #4b5563
 6. **SCENE PROGRESS DOTS**: Add SceneProgressDots overlay at the root level
 7. **FONT**: Montserrat only (400-800 weights), normal case (NOT uppercase)
-8. **COLOR PALETTE**: Purple #a855f7, Pink #ec4899, Dark #0a0a0f
+8. **COLOR PALETTE**: ${(() => {
+  const colors = (state.productData as any)?.colors;
+  if (colors && (colors.primary || colors.secondary || colors.accent)) {
+    return `Use the BRAND colors from the website:
+   - Primary: ${colors.primary || '#a855f7'}
+   - Secondary: ${colors.secondary || '#ec4899'}
+   - Accent: ${colors.accent || colors.primary || '#3b82f6'}
+   - Dark background: ${colors.dark || '#0a0a0f'}
+   Use these colors for gradients, glows, accents, and backgrounds. Do NOT use generic purple/pink unless those ARE the brand colors.`;
+  }
+  return `Purple #a855f7, Pink #ec4899, Dark #0a0a0f (no brand colors available)`;
+})()}
 9. **CTA**: The LAST scene MUST always be a call-to-action
-10. Convert ALL CSS animations to interpolate() or spring()
+10. **CURSOR ANIMATION**: Include an animated SVG cursor in at least one scene (see §10 above). The cursor should move to a CTA button and click it for a realistic demo feel.
+11. Convert ALL CSS animations to interpolate() or spring()
 11. CRITICAL: Include Audio component at root level with the EXACT src provided:
     \`\`\`tsx
-    import { Audio${!isR2Audio ? ', staticFile' : ''} } from 'remotion';
+    import { Audio${!isR2Audio ? ", staticFile" : ""} } from 'remotion';
     // Inside VideoComposition:
     <Audio src={${audioSrcCode}} volume={1} />
     \`\`\`
     DO NOT use staticFile("audio/audio1.mp3") — use the exact audio source shown above.
 
-## MANDATORY: USE WEBSITE SCREENSHOT
-The website screenshot MUST be displayed in the video:
+## IMAGES / SCREENSHOTS
 ${(() => {
+  const useImages = (state.userPreferences as any)?.useImages === true;
+  if (!useImages) {
+    return `- Do NOT use any images, screenshots, or <Img> tags in this video.
+- Use text-only scenes with gradient backgrounds, aurora effects, and animated typography instead.
+- Do NOT import Img from remotion.`;
+  }
   const screenshots = (state.productData as any)?.screenshots || [];
   const heroShot = screenshots.find((s: any) => s.section === "hero");
   const primaryShot = heroShot || screenshots[0];
   if (primaryShot) {
     const isR2 = primaryShot.url.startsWith("http");
-    const imgSrc = isR2 ? `"${primaryShot.url}"` : `staticFile("${primaryShot.url.replace(/^\//, '')}")`;
+    const imgSrc = isR2
+      ? `"${primaryShot.url}"`
+      : `staticFile("${primaryShot.url.replace(/^\//, "")}")`;
     return `- Available screenshots:
-${screenshots.map((s: any) => {
-  const sIsR2 = s.url.startsWith("http");
-  return `  - ${s.section}: ${sIsR2 ? `"${s.url}"` : `staticFile("${s.url.replace(/^\//, '')}")`} — ${s.description}`;
-}).join('\n')}
-- Import Img from remotion: import { Img${!isR2 ? ', staticFile' : ''} } from 'remotion';
+${screenshots
+  .map((s: any) => {
+    const sIsR2 = s.url.startsWith("http");
+    return `  - ${s.section}: ${sIsR2 ? `"${s.url}"` : `staticFile("${s.url.replace(/^\//, "")}")`} — ${s.description}`;
+  })
+  .join("\n")}
+- Import Img from remotion: import { Img${!isR2 ? ", staticFile" : ""} } from 'remotion';
 - Primary screenshot: <Img src={${imgSrc}} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-- Display at least one screenshot in the video with animations (zoom, pan, fade, scale)`;
+- Display at least one screenshot in the video with animations (zoom, pan, fade, scale)
+- Can be used as background with overlay, or as a featured element
+- Apply effects like: scale, blur, opacity changes using interpolate()`;
   }
   return `- No screenshots available — skip Img usage, use text-only scenes instead`;
 })()}
-- Can be used as background with overlay, or as a featured element
-- Apply effects like: scale, blur, opacity changes using interpolate()
 - If no screenshot file exists, do NOT use <Img> — use text and gradient backgrounds instead
 
 ## SCREEN RECORDINGS
@@ -1242,11 +1727,15 @@ ${(() => {
   const recordings = state.recordings || [];
   if (recordings.length > 0) {
     return `Screen recordings are available. Include them as Video playback scenes:
-${recordings.map((r) => {
-  const isR2 = r.videoUrl.startsWith("http");
-  const src = isR2 ? `"${r.videoUrl}"` : `staticFile("${r.videoUrl.replace(/^\//, '')}")`;
-  return `- "${r.featureName}": <Video src={${src}} /> — ${r.duration}s, ${r.description}`;
-}).join('\n')}
+${recordings
+  .map((r) => {
+    const isR2 = r.videoUrl.startsWith("http");
+    const src = isR2
+      ? `"${r.videoUrl}"`
+      : `staticFile("${r.videoUrl.replace(/^\//, "")}")`;
+    return `- "${r.featureName}": <Video src={${src}} /> — ${r.duration}s, ${r.description}`;
+  })
+  .join("\n")}
 - Import Video from remotion: import { Video } from 'remotion';
 - Each recording scene should show the video with a feature label overlay
 - Duration per recording = recording duration × 30 frames`;
@@ -1254,19 +1743,63 @@ ${recordings.map((r) => {
   return `- No recordings available — skip Video usage`;
 })()}
 
-Output the complete Remotion composition code with FAST-PACED text animations. MUST include Audio component, text effects, and the website screenshot!`;
+## FEATURE FLAGS
+${(state.userPreferences as any)?.nanoBanana ? `- AI IMAGE GENERATION: Enabled. If scenes have "aiImagePrompt" in content, generate placeholder image URLs or use gradient backgrounds with the prompt text as overlay.` : `- AI Image Generation: Disabled.`}
+${(state.userPreferences as any)?.stockImages ? `- STOCK IMAGES: Enabled. If scenes have "stockImageQuery" in content, you may use placeholder stock image URLs.` : `- Stock Images: Disabled. Do not use stock images.`}
+${(state.userPreferences as any)?.animatedComponents === false ? `- ANIMATED COMPONENTS: Disabled. Use simpler animations — basic fade in/out, minimal spring effects. No complex stagger animations or 3D perspective entries.` : `- ANIMATED COMPONENTS: Enabled. Use rich animations — word-by-word reveals, spring entrances, perspective card entries, beat-synced pulses.`}
+
+## CRITICAL: USE EXACT SCRIPT TEXT
+- Every headline and subtext in the video MUST match the video script JSON exactly
+- Do NOT invent, paraphrase, or use placeholder text like "Built for Speed" or "Powerful Features"
+- Copy the exact headline and subtext strings from each scene in the video script
+- Apply Title Case to headlines (capitalize first letter of major words)
+
+Output the complete Remotion composition code with FAST-PACED text animations. MUST include Audio component and text effects!${(state.userPreferences as any)?.useImages ? " Include the website screenshot!" : " Do NOT use <Img> or any images."}`;
+
+  // Analyze recordings with Gemini Pro Vision (if any)
+  let analyzedRecordings: RecordingAnalysisResult[] = [];
+  const recordings = state.recordings || [];
+  if (recordings.length > 0) {
+    console.log(`[RemotionTranslator] Analyzing ${recordings.length} recording(s) with Gemini Pro Vision...`);
+    const analysisPromises = recordings.map((rec) => analyzeRecording(rec));
+    analyzedRecordings = await Promise.allSettled(analysisPromises).then((results) =>
+      results.map((r, i) => {
+        if (r.status === "fulfilled") return r.value;
+        console.warn(`[RemotionTranslator] Recording analysis failed for ${recordings[i].featureName}:`, r.reason);
+        return {
+          componentCode: "",
+          componentName: `RecordingScene_${recordings[i].id.replace(/[^a-zA-Z0-9]/g, '_')}`,
+          success: false,
+          error: String(r.reason),
+        } as RecordingAnalysisResult;
+      })
+    );
+    const successCount = analyzedRecordings.filter((r) => r.success).length;
+    console.log(`[RemotionTranslator] Recording analysis: ${successCount}/${recordings.length} succeeded`);
+  }
 
   try {
     console.log("[RemotionTranslator] Calling Gemini Pro...");
-    const response = await chatWithGeminiPro([{ role: "user", content: prompt }], {
-      temperature: 0.5,
-      maxTokens: 16000, // Increased to prevent truncation
-    });
+    const response = await chatWithGeminiPro(
+      [{ role: "user", content: prompt }],
+      {
+        temperature: 0.5,
+        maxTokens: 16000, // Increased to prevent truncation
+      },
+    );
 
     // Extract code from response using regex for code blocks
     // Use RegExp constructor with proper escaping for backticks
     const backtick = String.fromCharCode(96);
-    const codeBlockPattern = new RegExp(backtick + backtick + backtick + "(?:tsx?|jsx?|javascript)?\\s*([\\s\\S]*?)" + backtick + backtick + backtick);
+    const codeBlockPattern = new RegExp(
+      backtick +
+        backtick +
+        backtick +
+        "(?:tsx?|jsx?|javascript)?\\s*([\\s\\S]*?)" +
+        backtick +
+        backtick +
+        backtick,
+    );
     const codeMatch = response.content.match(codeBlockPattern);
     let remotionCode = codeMatch ? codeMatch[1].trim() : response.content;
 
@@ -1279,7 +1812,9 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
       ) {
         remotionCode += "\n\nexport default VideoComposition;";
       } else {
-        const componentMatch = remotionCode.match(/(?:const|function)\s+([A-Z][a-zA-Z0-9]*)/);
+        const componentMatch = remotionCode.match(
+          /(?:const|function)\s+([A-Z][a-zA-Z0-9]*)/,
+        );
         if (componentMatch) {
           remotionCode += "\n\nexport default " + componentMatch[1] + ";";
         }
@@ -1294,9 +1829,18 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
 
     // Check for truncation first
     if (isCodeTruncated(remotionCode)) {
-      console.warn("[RemotionTranslator] Code appears truncated! Using fallback...");
+      console.warn(
+        "[RemotionTranslator] Code appears truncated! Using fallback...",
+      );
       const productName = state.productData?.name || "Product";
-      remotionCode = generateFallbackComposition(productName, audioUrl, audioBpm, state.recordings);
+      remotionCode = generateFallbackComposition(
+        productName,
+        audioUrl,
+        audioBpm,
+        state.recordings,
+        (state.productData as any)?.colors,
+        state.videoScript,
+      );
       console.log("[RemotionTranslator] Using fallback composition");
     }
 
@@ -1320,23 +1864,41 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
     let finalCode = validatedCode;
     const syntaxErrors = hasBasicSyntaxErrors(validatedCode);
     if (syntaxErrors.length > 0) {
-      console.warn("[RemotionTranslator] Remaining syntax issues:", syntaxErrors);
+      console.warn(
+        "[RemotionTranslator] Remaining syntax issues:",
+        syntaxErrors,
+      );
       // If there are severe syntax errors, ask LLM to fix them
-      if (syntaxErrors.some(e => e.includes("Unclosed") || e.includes("Unbalanced"))) {
+      if (
+        syntaxErrors.some(
+          (e) => e.includes("Unclosed") || e.includes("Unbalanced"),
+        )
+      ) {
         console.log("[RemotionTranslator] Asking LLM to fix syntax errors...");
-        
+
         // Escape backticks in the code to prevent breaking the template literal
         const backtickChar = String.fromCharCode(96);
-        const escapedCode = validatedCode.replace(new RegExp(backtickChar, "g"), "\\\\" + backtickChar);
-        
+        const escapedCode = validatedCode.replace(
+          new RegExp(backtickChar, "g"),
+          "\\\\" + backtickChar,
+        );
+
         // Build prompt using string concatenation to avoid backtick issues
-        const fixPrompt = "You are a TypeScript/React expert. Fix the syntax errors in this Remotion code.\n\n" +
+        const fixPrompt =
+          "You are a TypeScript/React expert. Fix the syntax errors in this Remotion code.\n\n" +
           "## SYNTAX ERRORS TO FIX:\n" +
-          syntaxErrors.map(e => "- " + e).join("\n") +
+          syntaxErrors.map((e) => "- " + e).join("\n") +
           "\n\n## CURRENT CODE (with errors):\n" +
-          backtickChar + backtickChar + backtickChar + "tsx\n" +
-          escapedCode + "\n" +
-          backtickChar + backtickChar + backtickChar + "\n\n" +
+          backtickChar +
+          backtickChar +
+          backtickChar +
+          "tsx\n" +
+          escapedCode +
+          "\n" +
+          backtickChar +
+          backtickChar +
+          backtickChar +
+          "\n\n" +
           "## REQUIREMENTS:\n" +
           "1. Fix ALL syntax errors listed above\n" +
           "2. Ensure all braces {}, brackets [], and parentheses () are balanced\n" +
@@ -1347,58 +1909,154 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
           "7. MUST end with: export default VideoComposition;";
 
         try {
-          const fixResponse = await chatWithFastModel([{ role: "user", content: fixPrompt }], {
-            temperature: 0.2,
-            maxTokens: 16000,
-          });
-          
-          const fixedCodeBlockPattern = new RegExp(backtickChar + backtickChar + backtickChar + "(?:tsx?|jsx?|javascript)?\\s*([\\s\\S]*?)" + backtickChar + backtickChar + backtickChar);
-          const fixedCodeMatch = fixResponse.content.match(fixedCodeBlockPattern);
-          const fixedCode = fixedCodeMatch ? fixedCodeMatch[1].trim() : fixResponse.content;
-          
+          const fixResponse = await chatWithFastModel(
+            [{ role: "user", content: fixPrompt }],
+            {
+              temperature: 0.2,
+              maxTokens: 16000,
+            },
+          );
+
+          const fixedCodeBlockPattern = new RegExp(
+            backtickChar +
+              backtickChar +
+              backtickChar +
+              "(?:tsx?|jsx?|javascript)?\\s*([\\s\\S]*?)" +
+              backtickChar +
+              backtickChar +
+              backtickChar,
+          );
+          const fixedCodeMatch = fixResponse.content.match(
+            fixedCodeBlockPattern,
+          );
+          const fixedCode = fixedCodeMatch
+            ? fixedCodeMatch[1].trim()
+            : fixResponse.content;
+
           // Validate the fixed code - must be non-trivial (at least 100 chars)
           const remainingErrors = hasBasicSyntaxErrors(fixedCode);
           if (fixedCode.length < 100) {
-            console.warn("[RemotionTranslator] Fix returned empty/trivial code, using fallback");
-            finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm, state.recordings);
+            console.warn(
+              "[RemotionTranslator] Fix returned empty/trivial code, using fallback",
+            );
+            finalCode = generateFallbackComposition(
+              state.productData?.name || "Product",
+              audioUrl,
+              audioBpm,
+              state.recordings,
+              (state.productData as any)?.colors,
+              state.videoScript,
+            );
           } else if (remainingErrors.length === 0) {
-            console.log("[RemotionTranslator] Syntax errors fixed successfully");
+            console.log(
+              "[RemotionTranslator] Syntax errors fixed successfully",
+            );
             finalCode = fixedCode;
           } else {
-            console.warn("[RemotionTranslator] Fix attempt failed, remaining errors:", remainingErrors);
+            console.warn(
+              "[RemotionTranslator] Fix attempt failed, remaining errors:",
+              remainingErrors,
+            );
             // Try one more time with more specific instructions
-            const secondFixPrompt = "Fix these specific syntax errors in the Remotion code:\n\n" +
-              "ERRORS: " + remainingErrors.join(', ') + "\n\n" +
+            const secondFixPrompt =
+              "Fix these specific syntax errors in the Remotion code:\n\n" +
+              "ERRORS: " +
+              remainingErrors.join(", ") +
+              "\n\n" +
               "CODE:\n" +
-              backtickChar + backtickChar + backtickChar + "tsx\n" +
-              fixedCode + "\n" +
-              backtickChar + backtickChar + backtickChar + "\n\n" +
+              backtickChar +
+              backtickChar +
+              backtickChar +
+              "tsx\n" +
+              fixedCode +
+              "\n" +
+              backtickChar +
+              backtickChar +
+              backtickChar +
+              "\n\n" +
               "Return ONLY valid TypeScript/React code with ALL errors fixed. Ensure perfect syntax.";
-            
-            const secondResponse = await chatWithFastModel([{ role: "user", content: secondFixPrompt }], {
-              temperature: 0.2,
-              maxTokens: 16000,
-            });
-            
-            const secondFixedBlockPattern = new RegExp(backtickChar + backtickChar + backtickChar + "(?:tsx?|jsx?|javascript)?\\s*([\\s\\S]*?)" + backtickChar + backtickChar + backtickChar);
-            const secondFixedMatch = secondResponse.content.match(secondFixedBlockPattern);
-            const secondFixed = secondFixedMatch ? secondFixedMatch[1].trim() : secondResponse.content;
-            
+
+            const secondResponse = await chatWithFastModel(
+              [{ role: "user", content: secondFixPrompt }],
+              {
+                temperature: 0.2,
+                maxTokens: 16000,
+              },
+            );
+
+            const secondFixedBlockPattern = new RegExp(
+              backtickChar +
+                backtickChar +
+                backtickChar +
+                "(?:tsx?|jsx?|javascript)?\\s*([\\s\\S]*?)" +
+                backtickChar +
+                backtickChar +
+                backtickChar,
+            );
+            const secondFixedMatch = secondResponse.content.match(
+              secondFixedBlockPattern,
+            );
+            const secondFixed = secondFixedMatch
+              ? secondFixedMatch[1].trim()
+              : secondResponse.content;
+
             const finalCheck = hasBasicSyntaxErrors(secondFixed);
             if (secondFixed.length < 100) {
-              console.warn("[RemotionTranslator] Second fix returned empty/trivial code, using fallback");
-              finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm, state.recordings);
+              console.warn(
+                "[RemotionTranslator] Second fix returned empty/trivial code, using fallback",
+              );
+              finalCode = generateFallbackComposition(
+                state.productData?.name || "Product",
+                audioUrl,
+                audioBpm,
+                state.recordings,
+              );
             } else if (finalCheck.length === 0) {
-              console.log("[RemotionTranslator] Syntax errors fixed on second attempt");
+              console.log(
+                "[RemotionTranslator] Syntax errors fixed on second attempt",
+              );
               finalCode = secondFixed;
             } else {
-              console.warn("[RemotionTranslator] Could not fix syntax errors, using fallback");
-              finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm, state.recordings);
+              console.warn(
+                "[RemotionTranslator] Could not fix syntax errors, using fallback",
+              );
+              finalCode = generateFallbackComposition(
+                state.productData?.name || "Product",
+                audioUrl,
+                audioBpm,
+                state.recordings,
+              );
             }
           }
         } catch (fixError) {
-          console.error("[RemotionTranslator] Error during syntax fix:", fixError);
-          finalCode = generateFallbackComposition(state.productData?.name || "Product", audioUrl, audioBpm, state.recordings);
+          console.error(
+            "[RemotionTranslator] Error during syntax fix:",
+            fixError,
+          );
+          finalCode = generateFallbackComposition(
+            state.productData?.name || "Product",
+            audioUrl,
+            audioBpm,
+            state.recordings,
+            (state.productData as any)?.colors,
+            state.videoScript,
+          );
+        }
+      }
+    }
+
+    // Inject analyzed recording components into the code
+    if (analyzedRecordings.length > 0) {
+      const successfulAnalyses = analyzedRecordings.filter((r) => r.success && r.componentCode);
+      if (successfulAnalyses.length > 0) {
+        console.log(`[RemotionTranslator] Injecting ${successfulAnalyses.length} analyzed recording component(s)`);
+        // Add recording components before the main VideoComposition
+        const exportDefaultIndex = finalCode.lastIndexOf("export default");
+        if (exportDefaultIndex > -1) {
+          const injectedCode = successfulAnalyses
+            .map((r) => `\n// --- Analyzed Recording Component ---\n${r.componentCode}`)
+            .join("\n");
+          finalCode = finalCode.slice(0, exportDefaultIndex) + injectedCode + "\n\n" + finalCode.slice(exportDefaultIndex);
         }
       }
     }

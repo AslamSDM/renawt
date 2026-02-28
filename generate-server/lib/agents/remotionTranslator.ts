@@ -9,6 +9,7 @@
 
 import { chatWithGeminiPro, chatWithFastModel } from "./model";
 import type { VideoGenerationStateType } from "./state";
+import { analyzeRecording, type RecordingAnalysisResult } from "./recordingAnalyzer";
 
 // ============================================================================
 // REMOTION SKILLS - Best practices embedded in prompt
@@ -152,8 +153,8 @@ Slide directions: "from-left", "from-right", "from-top", "from-bottom"
 
 #### WORD-BY-WORD BLUR REVEAL (Primary text animation):
 \`\`\`tsx
-const WordByWordBlur: React.FC<{ words: string[]; fontSize?: number; color?: string; delay?: number; staggerFrames?: number; gradientWordIndices?: number[] }> = ({
-  words, fontSize = 48, color = '#ffffff', delay = 0, staggerFrames = 5, gradientWordIndices = []
+const WordByWordBlur: React.FC<{ words: string[]; fontSize?: number; color?: string; delay?: number; staggerFrames?: number; gradientWordIndices?: number[]; gradientColors?: [string, string] }> = ({
+  words, fontSize = 48, color = '#ffffff', delay = 0, staggerFrames = 5, gradientWordIndices = [], gradientColors = [BRAND.primary, BRAND.secondary]
 }) => {
   const frame = useCurrentFrame();
   return (
@@ -169,7 +170,7 @@ const WordByWordBlur: React.FC<{ words: string[]; fontSize?: number; color?: str
             fontSize, fontFamily: montserrat, fontWeight: 600,
             opacity: op, filter: \`blur(\${blur}px)\`, transform: \`translateY(\${ty}px)\`,
             display: 'inline-block',
-            ...(isGradient ? { background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } : { color }),
+            ...(isGradient ? { background: \`linear-gradient(135deg, \${gradientColors[0]}, \${gradientColors[1]})\`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } : { color }),
           }}>{word}</span>
         );
       })}
@@ -191,13 +192,13 @@ const LogoWithGlow: React.FC<{ brandName: string; accentSuffix?: string; fontSiz
     <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity }}>
       <div style={{
         position: 'absolute', width: '120%', height: '120%',
-        background: 'linear-gradient(135deg, rgba(168,85,247,0.4), rgba(236,72,153,0.4))',
+        background: \`linear-gradient(135deg, \${BRAND.primary}66, \${BRAND.secondary}66)\`,
         filter: 'blur(40px)', borderRadius: '50%',
         transform: \`scale(\${glowScale})\`, opacity: 0.6,
       }} />
       <span style={{ fontFamily: montserrat, fontWeight: 700, fontSize, color: '#fff', position: 'relative', zIndex: 1 }}>{brandName}</span>
       {accentSuffix && (
-        <span style={{ fontFamily: montserrat, fontWeight: 700, fontSize, position: 'relative', zIndex: 1, marginLeft: 12, background: 'linear-gradient(135deg, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{accentSuffix}</span>
+        <span style={{ fontFamily: montserrat, fontWeight: 700, fontSize, position: 'relative', zIndex: 1, marginLeft: 12, background: \`linear-gradient(135deg, \${BRAND.primary}, \${BRAND.secondary})\`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{accentSuffix}</span>
       )}
     </div>
   );
@@ -206,19 +207,19 @@ const LogoWithGlow: React.FC<{ brandName: string; accentSuffix?: string; fontSiz
 
 ### 6. AURORA BACKGROUNDS
 
-Dark aurora (for logo, CTA, and card scenes):
+Dark aurora (for logo, CTA, and card scenes) — uses BRAND colors:
 \`\`\`tsx
 const AuroraBackground: React.FC<{ variant?: 'dark' | 'light' }> = ({ variant = 'dark' }) => {
   if (variant === 'light') {
     return (
       <AbsoluteFill style={{
-        background: 'radial-gradient(ellipse at 30% 30%, rgba(168, 85, 247, 0.2) 0%, transparent 50%), radial-gradient(ellipse at 70% 70%, rgba(236, 72, 153, 0.2) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 60%), linear-gradient(135deg, #faf5ff 0%, #fff5f8 50%, #f5f0ff 100%)',
+        background: \`radial-gradient(ellipse at 30% 30%, \${BRAND.primary}33 0%, transparent 50%), radial-gradient(ellipse at 70% 70%, \${BRAND.secondary}33 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, \${BRAND.primary}26 0%, transparent 60%), linear-gradient(135deg, #faf5ff 0%, #fff5f8 50%, #f5f0ff 100%)\`,
       }} />
     );
   }
   return (
     <AbsoluteFill style={{
-      background: 'radial-gradient(ellipse at 20% 20%, rgba(168, 85, 247, 0.3) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(236, 72, 153, 0.3) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.2) 0%, transparent 70%), #0a0a0f',
+      background: \`radial-gradient(ellipse at 20% 20%, \${BRAND.primary}4D 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, \${BRAND.secondary}4D 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, \${BRAND.primary}33 0%, transparent 70%), \${BRAND.dark}\`,
     }} />
   );
 };
@@ -256,7 +257,7 @@ const WhiteGlassCard: React.FC<{ children: React.ReactNode; maxWidth?: number; d
 };
 \`\`\`
 
-Gradient accent text (purple → pink):
+Gradient accent text (uses brand colors):
 \`\`\`tsx
 const GradientAccentText: React.FC<{ text: string; fontSize?: number; delay?: number }> = ({
   text, fontSize = 56, delay = 0,
@@ -268,7 +269,7 @@ const GradientAccentText: React.FC<{ text: string; fontSize?: number; delay?: nu
   return (
     <span style={{
       display: 'inline-block', fontSize, fontFamily: montserrat, fontWeight: 700,
-      background: 'linear-gradient(135deg, #a855f7, #ec4899)',
+      background: \`linear-gradient(135deg, \${BRAND.primary}, \${BRAND.secondary})\`,
       WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
       opacity, transform: \`scale(\${scale})\`,
     }}>{text}</span>
@@ -292,7 +293,7 @@ const SceneProgressDots: React.FC<{ totalScenes: number; sceneBoundaries: number
         <div key={i} style={{
           height: 8, borderRadius: 4,
           width: i === currentScene ? 24 : 8,
-          background: i === currentScene ? '#a855f7' : i < currentScene ? 'rgba(168,85,247,0.5)' : 'rgba(255,255,255,0.3)',
+          background: i === currentScene ? BRAND.primary : i < currentScene ? \`\${BRAND.primary}80\` : 'rgba(255,255,255,0.3)',
         }} />
       ))}
     </div>
@@ -312,11 +313,11 @@ const RecordingScene: React.FC<{ videoUrl: string; featureName: string }> = ({ v
   const { durationInFrames } = useVideoConfig();
   const labelOpacity = interpolate(frame, [0, 30, durationInFrames - 30, durationInFrames], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   return (
-    <AbsoluteFill style={{ backgroundColor: '#0a0a0f' }}>
+    <AbsoluteFill style={{ backgroundColor: BRAND.dark }}>
       <Video src={videoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
       <div style={{ position: 'absolute', bottom: 60, left: 0, right: 0, display: 'flex', justifyContent: 'center', opacity: labelOpacity, zIndex: 10 }}>
         <div style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)', borderRadius: 12, padding: '12px 28px', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'linear-gradient(135deg, #a855f7, #ec4899)' }} />
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: \`linear-gradient(135deg, \${BRAND.primary}, \${BRAND.secondary})\` }} />
           <span style={{ fontFamily: montserrat, fontWeight: 600, fontSize: 20, color: '#ffffff' }}>{featureName}</span>
         </div>
       </div>
@@ -413,6 +414,36 @@ const drift = Math.sin(frame / 40) * 18;
 const driftY = Math.cos(frame / 60) * 12;
 <div style={{ transform: "translateX(" + drift + "px) translateY(" + driftY + "px)" }}>
 \`\`\`
+
+### 10. CURSOR ANIMATION (adds realism to product demo videos)
+
+Add an animated SVG cursor that moves to a CTA button and clicks it. This makes the video feel like a real product demo.
+
+\`\`\`tsx
+import { Easing } from 'remotion';
+
+// SVG Cursor component
+const Cursor: React.FC<{ x: number; y: number; opacity: number; clicking: boolean }> = ({ x, y, opacity, clicking }) => (
+  <div style={{ position: 'absolute', left: x, top: y, opacity, zIndex: 200, transform: clicking ? 'scale(0.85)' : 'scale(1)', transition: 'none' }}>
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+      <path d="M5.5 3.21V20.8C5.5 21.46 6.26 21.84 6.78 21.43L11.64 17.65C11.83 17.5 12.07 17.42 12.31 17.42H18.73C19.39 17.42 19.76 16.65 19.34 16.15L6.68 3.12C6.23 2.65 5.5 2.97 5.5 3.21Z" fill="white" stroke="black" strokeWidth="1.5" strokeLinejoin="round"/>
+    </svg>
+  </div>
+);
+
+// Usage: animate cursor from starting position to CTA button
+const cursorStartFrame = 35; // cursor appears after panel entrance
+const cursorMoveEnd = cursorStartFrame + 30; // 1 second to move
+const clickFrame = cursorMoveEnd + 5;
+const cursorOpacity = interpolate(frame, [cursorStartFrame, cursorStartFrame + 8], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+const cursorX = interpolate(frame, [cursorStartFrame, cursorMoveEnd], [startX, targetX], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) });
+const cursorY = interpolate(frame, [cursorStartFrame, cursorMoveEnd], [startY, targetY], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) });
+const isClicking = frame >= clickFrame && frame < clickFrame + 5;
+
+// Button glow after click
+const glowOpacity = interpolate(frame, [clickFrame, clickFrame + 15], [0, 0.8], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+// Apply boxShadow: \`0 0 30px \${BRAND.primary}CC\` with glowOpacity
+\`\`\`
 `;
 
 const REMOTION_TRANSLATOR_SYSTEM_PROMPT = `You are a Remotion expert who converts React components into polished product demo video compositions with a cinematic, brand-matched style.
@@ -438,7 +469,11 @@ Take a React page component and translate it into a Remotion video with a style 
    - Supporting: 36-60px, fontWeight 400-500
    - Max 3 text elements per scene
 
-3. **BRAND-MATCHED COLORS**: Extract dominant colors from the source component and build the visual language around them. Do NOT default to purple+pink unless the brand actually uses them.
+3. **BRAND-MATCHED COLORS**: Define a BRAND constant at the top of the file (after imports) with the brand colors provided in the prompt. Use BRAND.primary, BRAND.secondary, BRAND.dark throughout. Example:
+   \`\`\`tsx
+   const BRAND = { primary: '#...', secondary: '#...', accent: '#...', dark: '#0a0a0f' };
+   \`\`\`
+   Do NOT default to purple+pink unless those ARE the brand colors.
 
 4. **MOVING BACKGROUND (MANDATORY)**: Every background MUST move:
    - Bokeh circles: blurred divs (filter: blur(80-200px)), drifting via Math.sin/cos
@@ -1039,6 +1074,74 @@ export function isCodeTruncated(code: string): boolean {
 }
 
 /**
+ * Convert a string to Title Case (capitalize first letter of each word)
+ */
+function toTitleCase(str: string): string {
+  const minorWords = new Set(['a', 'an', 'the', 'and', 'but', 'or', 'for', 'nor', 'on', 'at', 'to', 'by', 'in', 'of', 'with', 'is']);
+  return str
+    .split(' ')
+    .map((word, i) => {
+      if (i === 0 || !minorWords.has(word.toLowerCase())) {
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      }
+      return word.toLowerCase();
+    })
+    .join(' ');
+}
+
+/**
+ * Extract text content from a VideoScript for use in fallback composition
+ */
+function extractScriptText(videoScript: any): {
+  tagline: string;
+  features: Array<{ title: string; description: string }>;
+  ctaHeadline: string;
+  ctaSubtext: string;
+  introSubtext: string;
+} {
+  const defaults = {
+    tagline: 'Built for the Future',
+    features: [
+      { title: 'Powerful Features', description: 'Built for performance, designed for simplicity.' },
+      { title: 'Seamless Experience', description: 'Every detail crafted with care.' },
+    ],
+    ctaHeadline: 'Get Started Today',
+    ctaSubtext: 'Try it free — no credit card required',
+    introSubtext: 'The future is now',
+  };
+
+  if (!videoScript || !videoScript.scenes || videoScript.scenes.length === 0) {
+    return defaults;
+  }
+
+  const scenes = videoScript.scenes;
+
+  // Find tagline scene
+  const taglineScene = scenes.find((s: any) => s.type === 'tagline' || s.type === 'value-prop') || scenes[1];
+  const tagline = taglineScene?.content?.headline || defaults.tagline;
+
+  // Find intro subtext
+  const introScene = scenes.find((s: any) => s.type === 'intro') || scenes[0];
+  const introSubtext = introScene?.content?.subtext || defaults.introSubtext;
+
+  // Find feature scenes
+  const featureScenes = scenes.filter((s: any) => s.type === 'feature');
+  const features = featureScenes.length > 0
+    ? featureScenes.slice(0, 2).map((s: any) => ({
+        title: s.content?.headline || 'Feature',
+        description: s.content?.subtext || '',
+      }))
+    : defaults.features;
+
+  // Find CTA scene
+  const ctaScene = scenes.find((s: any) => s.type === 'cta') || scenes[scenes.length - 1];
+  const ctaHeadline = ctaScene?.content?.headline || defaults.ctaHeadline;
+  const ctaSubtext = ctaScene?.content?.subtext || defaults.ctaSubtext;
+
+  return { tagline, features, ctaHeadline, ctaSubtext, introSubtext };
+}
+
+/**
  * Generate fallback composition code when LLM output is truncated or invalid
  */
 export function generateFallbackComposition(
@@ -1052,6 +1155,8 @@ export function generateFallbackComposition(
     featureName: string;
     description: string;
   }>,
+  brandColors?: { primary?: string; secondary?: string; accent?: string; dark?: string },
+  videoScript?: any,
 ): string {
   // Determine audio src based on URL type
   const isR2Audio = audioUrl.startsWith("http");
@@ -1072,6 +1177,17 @@ export function generateFallbackComposition(
 
   const hasRecordings = recordings && recordings.length > 0;
 
+  // Extract text from video script (or use defaults)
+  const scriptText = extractScriptText(videoScript);
+  const taglineWords = toTitleCase(scriptText.tagline).split(' ');
+  const feature1Title = toTitleCase(scriptText.features[0]?.title || 'Powerful Features');
+  const feature1Desc = scriptText.features[0]?.description || 'Built for performance, designed for simplicity.';
+  const feature2Title = toTitleCase(scriptText.features[1]?.title || 'Seamless Experience');
+  const feature2Desc = scriptText.features[1]?.description || 'Every detail crafted with care.';
+  const ctaHeadline = toTitleCase(scriptText.ctaHeadline);
+  const ctaSubtext = scriptText.ctaSubtext;
+  const introSubtext = scriptText.introSubtext;
+
   // Beat-relative timing values for scene animations
   const halfBeat = Math.round(framesPerBeat * 0.5);
   const quarterBeat = Math.round(framesPerBeat * 0.25);
@@ -1083,13 +1199,13 @@ import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
 
 const { fontFamily: mont } = loadMontserrat("normal", { weights: ["400", "600", "700", "800", "900"], subsets: ["latin"] });
 
-// CINEMATIC COLOR PALETTE
+// BRAND COLOR PALETTE
 const C = {
-  bg: '#08080f',
+  bg: '${brandColors?.dark || "#08080f"}',
   text: '#ffffff',
   sub: 'rgba(255,255,255,0.65)',
-  accent: '#3b82f6',  // default blue — overridden per-brand
-  accentAlt: '#06b6d4',
+  accent: '${brandColors?.primary || "#3b82f6"}',
+  accentAlt: '${brandColors?.secondary || "#06b6d4"}',
   line: 'rgba(255,255,255,0.15)',
 };
 
@@ -1097,10 +1213,10 @@ const C = {
 const CineBg: React.FC<{ seed?: number }> = ({ seed = 0 }) => {
   const frame = useCurrentFrame();
   const blobs = [
-    { x: 15, y: 20, r: 400, color: 'rgba(59,130,246,0.18)' },
-    { x: 75, y: 70, r: 500, color: 'rgba(6,182,212,0.12)' },
-    { x: 50, y: 45, r: 350, color: 'rgba(139,92,246,0.10)' },
-    { x: 20, y: 80, r: 300, color: 'rgba(59,130,246,0.08)' },
+    { x: 15, y: 20, r: 400, color: C.accent + '2E' },
+    { x: 75, y: 70, r: 500, color: C.accentAlt + '1F' },
+    { x: 50, y: 45, r: 350, color: C.accent + '1A' },
+    { x: 20, y: 80, r: 300, color: C.accentAlt + '14' },
   ];
   return (
     <AbsoluteFill style={{ background: C.bg, overflow: 'hidden' }}>
@@ -1164,19 +1280,21 @@ const SweepLine: React.FC<{ delay?: number; color?: string; width?: number | str
 };
 
 
-// SCENE 1: Logo intro — zoom IN slowly
+// SCENE 1: Logo intro — zoom IN slowly + beat pulse
 const Scene1: React.FC = () => {
   const frame = useCurrentFrame();
+  const { beatPulse } = useBeatSync(${bpm});
   const camScale = interpolate(frame, [0, ${introFrames}], [1.0, 1.10], { extrapolateRight: 'clamp' });
   const camX = interpolate(frame, [0, ${introFrames}], [0, -15], { extrapolateRight: 'clamp' });
   const titleOp = interpolate(frame, [0, 10], [0, 1], { extrapolateRight: 'clamp' });
   const subOp = interpolate(Math.max(0, frame - 18), [0, 15], [0, 1], { extrapolateRight: 'clamp' });
   const lineW = interpolate(Math.max(0, frame - 12), [0, 25], [0, 260], { extrapolateRight: 'clamp' });
+  const beatScale = 1 + beatPulse * 0.012;
   return (
     <AbsoluteFill>
       <CineBg seed={0} />
       <FadeWrapper duration={${introFrames}}>
-        <AbsoluteFill style={{ transform: 'scale(' + camScale + ') translateX(' + camX + 'px)', transformOrigin: 'center center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+        <AbsoluteFill style={{ transform: 'scale(' + (camScale * beatScale) + ') translateX(' + camX + 'px)', transformOrigin: 'center center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
           <div style={{ opacity: titleOp }}>
             <div style={{ fontFamily: mont, fontWeight: 900, fontSize: 140, color: C.text, letterSpacing: '-5px', lineHeight: 0.95, textAlign: 'center' }}>
               ${productName}
@@ -1184,7 +1302,7 @@ const Scene1: React.FC = () => {
           </div>
           <div style={{ height: 3, width: lineW, background: C.accent, borderRadius: 2 }} />
           <div style={{ opacity: subOp, fontFamily: mont, fontWeight: 400, fontSize: 32, color: C.sub, letterSpacing: '6px', textTransform: 'uppercase', marginTop: 8 }}>
-            The future is now
+            ${introSubtext}
           </div>
         </AbsoluteFill>
       </FadeWrapper>
@@ -1192,17 +1310,19 @@ const Scene1: React.FC = () => {
   );
 };
 
-// SCENE 2: Tagline — zoom OUT from top-left
+// SCENE 2: Tagline — zoom OUT from top-left + beat pulse
 const Scene2: React.FC = () => {
   const frame = useCurrentFrame();
+  const { beatPulse } = useBeatSync(${bpm});
   const camScale = interpolate(frame, [0, ${fastFrames}], [1.12, 1.0], { extrapolateRight: 'clamp' });
   const camY = interpolate(frame, [0, ${fastFrames}], [20, 0], { extrapolateRight: 'clamp' });
+  const beatScale = 1 + beatPulse * 0.01;
   return (
     <AbsoluteFill>
       <CineBg seed={1} />
       <FadeWrapper duration={${fastFrames}}>
-        <AbsoluteFill style={{ transform: 'scale(' + camScale + ') translateY(' + camY + 'px)', transformOrigin: 'top left', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 100 }}>
-          <WordReveal words={['Built', 'for', 'Speed']} fontSize={120} delay={8} stagger={10} />
+        <AbsoluteFill style={{ transform: 'scale(' + (camScale * beatScale) + ') translateY(' + camY + 'px)', transformOrigin: 'top left', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 100 }}>
+          <WordReveal words={[${taglineWords.map(w => `'${w.replace(/'/g, "\\'")}'`).join(', ')}]} fontSize={120} delay={8} stagger={${Math.round(framesPerBeat / 3)}} />
         </AbsoluteFill>
       </FadeWrapper>
     </AbsoluteFill>
@@ -1224,10 +1344,10 @@ const Scene3: React.FC = () => {
         <AbsoluteFill style={{ transform: 'translateX(' + camX + 'px)', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', padding: '0 120px' }}>
           <div style={{ opacity: labelOp, transform: 'translateY(' + labelTy + 'px)' }}>
             <div style={{ fontFamily: mont, fontWeight: 400, fontSize: 22, color: C.sub, letterSpacing: '5px', textTransform: 'uppercase', marginBottom: 20 }}>Feature 01</div>
-            <div style={{ fontFamily: mont, fontWeight: 800, fontSize: 100, color: C.text, letterSpacing: '-3px', lineHeight: 0.95 }}>Powerful</div>
-            <div style={{ fontFamily: mont, fontWeight: 800, fontSize: 100, color: C.accent, letterSpacing: '-3px', lineHeight: 0.95 }}>Features</div>
+            <div style={{ fontFamily: mont, fontWeight: 800, fontSize: 100, color: C.text, letterSpacing: '-3px', lineHeight: 0.95 }}>${feature1Title.split(' ').slice(0, Math.ceil(feature1Title.split(' ').length / 2)).join(' ')}</div>
+            <div style={{ fontFamily: mont, fontWeight: 800, fontSize: 100, color: C.accent, letterSpacing: '-3px', lineHeight: 0.95 }}>${feature1Title.split(' ').slice(Math.ceil(feature1Title.split(' ').length / 2)).join(' ') || feature1Title}</div>
             <div style={{ height: 3, width: lineW, background: C.accent, borderRadius: 2, marginTop: 20 }} />
-            <div style={{ fontFamily: mont, fontWeight: 400, fontSize: 28, color: C.sub, marginTop: 20, maxWidth: 500, lineHeight: 1.5 }}>Built for performance, designed for simplicity.</div>
+            <div style={{ fontFamily: mont, fontWeight: 400, fontSize: 28, color: C.sub, marginTop: 20, maxWidth: 500, lineHeight: 1.5 }}>${feature1Desc}</div>
           </div>
         </AbsoluteFill>
       </FadeWrapper>
@@ -1245,7 +1365,7 @@ const Scene4: React.FC = () => {
       <CineBg seed={3} />
       <FadeWrapper duration={${fastFrames}}>
         <AbsoluteFill style={{ transform: 'scale(' + camScale + ') translateX(' + camX + 'px)', transformOrigin: 'right center', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 100 }}>
-          <WordReveal words={['Build', 'Something', 'Amazing']} fontSize={110} delay={8} stagger={10} />
+          <WordReveal words={[${feature2Title.split(' ').map(w => `'${w.replace(/'/g, "\\'")}'`).join(', ')}]} fontSize={110} delay={8} stagger={10} />
         </AbsoluteFill>
       </FadeWrapper>
     </AbsoluteFill>
@@ -1266,9 +1386,9 @@ const Scene5: React.FC = () => {
         <AbsoluteFill style={{ transform: 'translateX(' + camX + 'px)', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', padding: '0 120px', textAlign: 'right' }}>
           <div style={{ opacity: labelOp, transform: 'translateY(' + labelTy + 'px)' }}>
             <div style={{ fontFamily: mont, fontWeight: 400, fontSize: 22, color: C.sub, letterSpacing: '5px', textTransform: 'uppercase', marginBottom: 20 }}>Feature 02</div>
-            <div style={{ fontFamily: mont, fontWeight: 800, fontSize: 100, color: C.text, letterSpacing: '-3px', lineHeight: 0.95 }}>Seamless</div>
-            <div style={{ fontFamily: mont, fontWeight: 800, fontSize: 100, color: C.accentAlt, letterSpacing: '-3px', lineHeight: 0.95 }}>Experience</div>
-            <div style={{ fontFamily: mont, fontWeight: 400, fontSize: 28, color: C.sub, marginTop: 20, maxWidth: 500, lineHeight: 1.5 }}>Every detail crafted with care.</div>
+            <div style={{ fontFamily: mont, fontWeight: 800, fontSize: 100, color: C.text, letterSpacing: '-3px', lineHeight: 0.95 }}>${feature2Title.split(' ').slice(0, Math.ceil(feature2Title.split(' ').length / 2)).join(' ')}</div>
+            <div style={{ fontFamily: mont, fontWeight: 800, fontSize: 100, color: C.accentAlt, letterSpacing: '-3px', lineHeight: 0.95 }}>${feature2Title.split(' ').slice(Math.ceil(feature2Title.split(' ').length / 2)).join(' ') || feature2Title}</div>
+            <div style={{ fontFamily: mont, fontWeight: 400, fontSize: 28, color: C.sub, marginTop: 20, maxWidth: 500, lineHeight: 1.5 }}>${feature2Desc}</div>
           </div>
         </AbsoluteFill>
       </FadeWrapper>
@@ -1276,24 +1396,27 @@ const Scene5: React.FC = () => {
   );
 };
 
-// SCENE 6: CTA — slow dramatic zoom IN
+// SCENE 6: CTA — slow dramatic zoom IN + beat pulse
 const Scene6: React.FC = () => {
   const frame = useCurrentFrame();
+  const { beatPulse } = useBeatSync(${bpm});
   const camScale = interpolate(frame, [0, ${ctaFrames}], [1.0, 1.08], { extrapolateRight: 'clamp' });
   const labelOp = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
   const subOp = interpolate(Math.max(0, frame - 20), [0, 15], [0, 1], { extrapolateRight: 'clamp' });
   const lineW = interpolate(Math.max(0, frame - 15), [0, 20], [0, 320], { extrapolateRight: 'clamp' });
+  const beatScale = 1 + beatPulse * 0.015;
+  const beatGlow = beatPulse * 0.3;
   return (
     <AbsoluteFill>
       <CineBg seed={5} />
       <FadeWrapper duration={${ctaFrames}}>
-        <AbsoluteFill style={{ transform: 'scale(' + camScale + ')', transformOrigin: 'center center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-          <div style={{ opacity: labelOp, fontFamily: mont, fontWeight: 400, fontSize: 22, color: C.sub, letterSpacing: '6px', textTransform: 'uppercase' }}>Get Started Today</div>
-          <div style={{ fontFamily: mont, fontWeight: 900, fontSize: 130, color: C.text, letterSpacing: '-4px', lineHeight: 0.9, textAlign: 'center', opacity: labelOp }}>
+        <AbsoluteFill style={{ transform: 'scale(' + (camScale * beatScale) + ')', transformOrigin: 'center center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+          <div style={{ opacity: labelOp, fontFamily: mont, fontWeight: 400, fontSize: 22, color: C.sub, letterSpacing: '6px', textTransform: 'uppercase' }}>${ctaHeadline}</div>
+          <div style={{ fontFamily: mont, fontWeight: 900, fontSize: 130, color: C.text, letterSpacing: '-4px', lineHeight: 0.9, textAlign: 'center', opacity: labelOp, filter: 'drop-shadow(0 0 ' + (20 + beatGlow * 30) + 'px ' + C.accent + ')' }}>
             ${productName}
           </div>
           <div style={{ height: 3, width: lineW, background: 'linear-gradient(90deg, ' + C.accent + ', ' + C.accentAlt + ')', borderRadius: 2 }} />
-          <div style={{ opacity: subOp, fontFamily: mont, fontWeight: 400, fontSize: 28, color: C.sub, marginTop: 8 }}>Try it free — no credit card required</div>
+          <div style={{ opacity: subOp, fontFamily: mont, fontWeight: 400, fontSize: 28, color: C.sub, marginTop: 8 }}>${ctaSubtext}</div>
         </AbsoluteFill>
       </FadeWrapper>
     </AbsoluteFill>
@@ -1318,13 +1441,13 @@ const RecordingScene${i + 1}: React.FC = () => {
   const entryOpacity = interpolate(frame, [0, ${quarterBeat}], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   const labelOpacity = interpolate(frame, [0, 30, durationInFrames - 30, durationInFrames], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   return (
-    <AbsoluteFill style={{ backgroundColor: '#0a0a0f' }}>
+    <AbsoluteFill style={{ backgroundColor: C.bg }}>
       <div style={{ width: '100%', height: '100%', transform: "scale(" + (entryScale * (1 + beatPulse * 0.008)) + ")", opacity: entryOpacity }}>
         <Video src={${videoSrc}} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
       </div>
       <div style={{ position: 'absolute', bottom: 60, left: 0, right: 0, display: 'flex', justifyContent: 'center', opacity: labelOpacity, zIndex: 10 }}>
         <div style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)', borderRadius: 12, padding: '12px 28px', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'linear-gradient(135deg, #a855f7, #ec4899)' }} />
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'linear-gradient(135deg, ' + C.accent + ', ' + C.accentAlt + ')' }} />
           <span style={{ fontFamily: montserrat, fontWeight: 600, fontSize: 20, color: '#ffffff' }}>${rec.featureName}</span>
         </div>
       </div>
@@ -1434,16 +1557,24 @@ export async function remotionTranslatorNode(
     "[RemotionTranslator] Starting translation to Remotion with skills...",
   );
 
-  const reactCode = state.reactPageCode;
-  if (!reactCode) {
+  const script = state.videoScript;
+  if (!script && !state.reactPageCode) {
     return {
-      errors: [...state.errors, "No React page code available for translation"],
+      errors: [...state.errors, "No video script or React page code available for translation"],
       currentStep: "error",
     };
   }
-
-  const script = state.videoScript;
   const totalDuration = script?.totalDuration || 300;
+
+  // Compute resolution from aspect ratio
+  const ASPECT_DIMS: Record<string, { width: number; height: number }> = {
+    "16:9": { width: 1920, height: 1080 },
+    "9:16": { width: 1080, height: 1920 },
+    "1:1": { width: 1080, height: 1080 },
+    "4:5": { width: 1080, height: 1350 },
+  };
+  const ar = (state.userPreferences as any)?.aspectRatio || "16:9";
+  const { width: videoWidth, height: videoHeight } = ASPECT_DIMS[ar] || ASPECT_DIMS["16:9"];
 
   // Compute audio source early so it can be injected into the prompt
   const rawAudioUrl = state.userPreferences?.audio?.url || "";
@@ -1459,28 +1590,70 @@ export async function remotionTranslatorNode(
   const audioBpm =
     state.userPreferences?.audio?.bpm || state.videoScript?.music?.tempo || 120;
 
+  // Build source section: use videoScript directly if no reactPageCode
+  const reactCode = state.reactPageCode;
+  const sourceSection = reactCode
+    ? `## TRANSLATE THIS REACT PAGE TO REMOTION
+
+\`\`\`tsx
+${reactCode}
+\`\`\``
+    : `## CREATE REMOTION VIDEO FROM THIS SCRIPT
+
+**Product**: ${state.productData?.name || "Product"}
+**Description**: ${state.productData?.description || state.description || ""}
+
+### VIDEO SCRIPT (follow this scene structure):
+\`\`\`json
+${JSON.stringify(script, null, 2)}
+\`\`\`
+
+### PRODUCT DATA:
+\`\`\`json
+${JSON.stringify(state.productData || {}, null, 2)}
+\`\`\`
+
+Create a complete Remotion composition that follows the scene structure from the video script above.
+Each scene in the script should become a \`<Sequence>\` with appropriate animations.
+Use the product name, tagline, features, and description from the product data.`;
+
   const prompt = `${REMOTION_TRANSLATOR_SYSTEM_PROMPT}
 
 ---
 
-## TRANSLATE THIS REACT PAGE TO REMOTION
-
-\`\`\`tsx
-${reactCode}
-\`\`\`
+${sourceSection}
 
 ## VIDEO SPECIFICATIONS
 - Total duration: ${totalDuration} frames (${Math.round(totalDuration / 30)} seconds)
 - FPS: 30
-- Resolution: 1920x1080
+- Resolution: ${videoWidth}x${videoHeight} (aspect ratio: ${ar})
+
+## BEAT-SYNCED TIMING (BPM: ${audioBpm})
+${(() => {
+  const beatMap = state.beatMap;
+  const fpb = (30 * 60) / audioBpm;
+  if (beatMap && beatMap.beats.length > 0) {
+    // Provide key beat frames for scene alignment
+    const measures = beatMap.measures.slice(0, 20);
+    return `- Frames per beat: ${fpb.toFixed(1)} (${audioBpm} BPM at 30fps)
+- Frames per measure (4 beats): ${(fpb * 4).toFixed(1)}
+- Measure start frames: [${measures.join(", ")}]
+- SNAP all scene boundaries to the nearest measure frame from the list above
+- Use beat pulse (exponential decay) on text scale and opacity for rhythm: Math.exp(-((frame % ${Math.round(fpb)}) / ${Math.round(fpb)}) * 4)
+- Transition effects (fade, slide) should last exactly 1 beat (${Math.round(fpb)} frames)`;
+  }
+  return `- Frames per beat: ${fpb.toFixed(1)} (${audioBpm} BPM at 30fps)
+- Snap scene durations to multiples of ${Math.round(fpb)} frames (1 beat)
+- Transitions should last 1 beat (${Math.round(fpb)} frames)`;
+})()}
 
 ## REQUIREMENTS - PREMIUM DEMO STYLE VIDEO
-1. **VARIABLE SCENE TIMING**:
-   - Intro (first): ~90 frames (3s) — slow, dramatic
-   - Middle scenes: ~45 frames (1.5s) — fast, punchy
-   - Feature cards: ~60 frames (2s) — readable
-   - Screenshots: ~75 frames (2.5s) — see the product
-   - CTA (ALWAYS last): ~90 frames (3s) — slow, dramatic close
+1. **VARIABLE SCENE TIMING** (beat-snapped):
+   - Intro (first): ~${Math.round(((30 * 60) / audioBpm) * 6)} frames (${Math.round(((60) / audioBpm) * 6)}s, 6 beats) — slow, dramatic
+   - Middle scenes: ~${Math.round(((30 * 60) / audioBpm) * 3)} frames (${Math.round(((60) / audioBpm) * 3)}s, 3 beats) — fast, punchy
+   - Feature cards: ~${Math.round(((30 * 60) / audioBpm) * 4)} frames (${Math.round(((60) / audioBpm) * 4)}s, 4 beats) — readable
+   - Screenshots: ~${Math.round(((30 * 60) / audioBpm) * 5)} frames (${Math.round(((60) / audioBpm) * 5)}s, 5 beats) — see the product
+   - CTA (ALWAYS last): ~${Math.round(((30 * 60) / audioBpm) * 6)} frames (${Math.round(((60) / audioBpm) * 6)}s, 6 beats) — slow, dramatic close
 2. **DISCRETE SCENES**: Use separate Sequence components with smooth entry animations
 3. **AURORA BACKGROUNDS**: Alternate dark/light aurora backgrounds between scenes
    - Dark aurora: logo scenes, CTA scenes, card scenes
@@ -1493,9 +1666,21 @@ ${reactCode}
    - Card text: #111827 (dark gray), card subtext: #4b5563
 6. **SCENE PROGRESS DOTS**: Add SceneProgressDots overlay at the root level
 7. **FONT**: Montserrat only (400-800 weights), normal case (NOT uppercase)
-8. **COLOR PALETTE**: Purple #a855f7, Pink #ec4899, Dark #0a0a0f
+8. **COLOR PALETTE**: ${(() => {
+  const colors = (state.productData as any)?.colors;
+  if (colors && (colors.primary || colors.secondary || colors.accent)) {
+    return `Use the BRAND colors from the website:
+   - Primary: ${colors.primary || '#a855f7'}
+   - Secondary: ${colors.secondary || '#ec4899'}
+   - Accent: ${colors.accent || colors.primary || '#3b82f6'}
+   - Dark background: ${colors.dark || '#0a0a0f'}
+   Use these colors for gradients, glows, accents, and backgrounds. Do NOT use generic purple/pink unless those ARE the brand colors.`;
+  }
+  return `Purple #a855f7, Pink #ec4899, Dark #0a0a0f (no brand colors available)`;
+})()}
 9. **CTA**: The LAST scene MUST always be a call-to-action
-10. Convert ALL CSS animations to interpolate() or spring()
+10. **CURSOR ANIMATION**: Include an animated SVG cursor in at least one scene (see §10 above). The cursor should move to a CTA button and click it for a realistic demo feel.
+11. Convert ALL CSS animations to interpolate() or spring()
 11. CRITICAL: Include Audio component at root level with the EXACT src provided:
     \`\`\`tsx
     import { Audio${!isR2Audio ? ", staticFile" : ""} } from 'remotion';
@@ -1504,9 +1689,14 @@ ${reactCode}
     \`\`\`
     DO NOT use staticFile("audio/audio1.mp3") — use the exact audio source shown above.
 
-## MANDATORY: USE WEBSITE SCREENSHOT
-The website screenshot MUST be displayed in the video:
+## IMAGES / SCREENSHOTS
 ${(() => {
+  const useImages = (state.userPreferences as any)?.useImages === true;
+  if (!useImages) {
+    return `- Do NOT use any images, screenshots, or <Img> tags in this video.
+- Use text-only scenes with gradient backgrounds, aurora effects, and animated typography instead.
+- Do NOT import Img from remotion.`;
+  }
   const screenshots = (state.productData as any)?.screenshots || [];
   const heroShot = screenshots.find((s: any) => s.section === "hero");
   const primaryShot = heroShot || screenshots[0];
@@ -1524,12 +1714,12 @@ ${screenshots
   .join("\n")}
 - Import Img from remotion: import { Img${!isR2 ? ", staticFile" : ""} } from 'remotion';
 - Primary screenshot: <Img src={${imgSrc}} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-- Display at least one screenshot in the video with animations (zoom, pan, fade, scale)`;
+- Display at least one screenshot in the video with animations (zoom, pan, fade, scale)
+- Can be used as background with overlay, or as a featured element
+- Apply effects like: scale, blur, opacity changes using interpolate()`;
   }
   return `- No screenshots available — skip Img usage, use text-only scenes instead`;
 })()}
-- Can be used as background with overlay, or as a featured element
-- Apply effects like: scale, blur, opacity changes using interpolate()
 - If no screenshot file exists, do NOT use <Img> — use text and gradient backgrounds instead
 
 ## SCREEN RECORDINGS
@@ -1553,7 +1743,40 @@ ${recordings
   return `- No recordings available — skip Video usage`;
 })()}
 
-Output the complete Remotion composition code with FAST-PACED text animations. MUST include Audio component, text effects, and the website screenshot!`;
+## FEATURE FLAGS
+${(state.userPreferences as any)?.nanoBanana ? `- AI IMAGE GENERATION: Enabled. If scenes have "aiImagePrompt" in content, generate placeholder image URLs or use gradient backgrounds with the prompt text as overlay.` : `- AI Image Generation: Disabled.`}
+${(state.userPreferences as any)?.stockImages ? `- STOCK IMAGES: Enabled. If scenes have "stockImageQuery" in content, you may use placeholder stock image URLs.` : `- Stock Images: Disabled. Do not use stock images.`}
+${(state.userPreferences as any)?.animatedComponents === false ? `- ANIMATED COMPONENTS: Disabled. Use simpler animations — basic fade in/out, minimal spring effects. No complex stagger animations or 3D perspective entries.` : `- ANIMATED COMPONENTS: Enabled. Use rich animations — word-by-word reveals, spring entrances, perspective card entries, beat-synced pulses.`}
+
+## CRITICAL: USE EXACT SCRIPT TEXT
+- Every headline and subtext in the video MUST match the video script JSON exactly
+- Do NOT invent, paraphrase, or use placeholder text like "Built for Speed" or "Powerful Features"
+- Copy the exact headline and subtext strings from each scene in the video script
+- Apply Title Case to headlines (capitalize first letter of major words)
+
+Output the complete Remotion composition code with FAST-PACED text animations. MUST include Audio component and text effects!${(state.userPreferences as any)?.useImages ? " Include the website screenshot!" : " Do NOT use <Img> or any images."}`;
+
+  // Analyze recordings with Gemini Pro Vision (if any)
+  let analyzedRecordings: RecordingAnalysisResult[] = [];
+  const recordings = state.recordings || [];
+  if (recordings.length > 0) {
+    console.log(`[RemotionTranslator] Analyzing ${recordings.length} recording(s) with Gemini Pro Vision...`);
+    const analysisPromises = recordings.map((rec) => analyzeRecording(rec));
+    analyzedRecordings = await Promise.allSettled(analysisPromises).then((results) =>
+      results.map((r, i) => {
+        if (r.status === "fulfilled") return r.value;
+        console.warn(`[RemotionTranslator] Recording analysis failed for ${recordings[i].featureName}:`, r.reason);
+        return {
+          componentCode: "",
+          componentName: `RecordingScene_${recordings[i].id.replace(/[^a-zA-Z0-9]/g, '_')}`,
+          success: false,
+          error: String(r.reason),
+        } as RecordingAnalysisResult;
+      })
+    );
+    const successCount = analyzedRecordings.filter((r) => r.success).length;
+    console.log(`[RemotionTranslator] Recording analysis: ${successCount}/${recordings.length} succeeded`);
+  }
 
   try {
     console.log("[RemotionTranslator] Calling Gemini Pro...");
@@ -1615,6 +1838,8 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
         audioUrl,
         audioBpm,
         state.recordings,
+        (state.productData as any)?.colors,
+        state.videoScript,
       );
       console.log("[RemotionTranslator] Using fallback composition");
     }
@@ -1719,6 +1944,8 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
               audioUrl,
               audioBpm,
               state.recordings,
+              (state.productData as any)?.colors,
+              state.videoScript,
             );
           } else if (remainingErrors.length === 0) {
             console.log(
@@ -1811,7 +2038,25 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
             audioUrl,
             audioBpm,
             state.recordings,
+            (state.productData as any)?.colors,
+            state.videoScript,
           );
+        }
+      }
+    }
+
+    // Inject analyzed recording components into the code
+    if (analyzedRecordings.length > 0) {
+      const successfulAnalyses = analyzedRecordings.filter((r) => r.success && r.componentCode);
+      if (successfulAnalyses.length > 0) {
+        console.log(`[RemotionTranslator] Injecting ${successfulAnalyses.length} analyzed recording component(s)`);
+        // Add recording components before the main VideoComposition
+        const exportDefaultIndex = finalCode.lastIndexOf("export default");
+        if (exportDefaultIndex > -1) {
+          const injectedCode = successfulAnalyses
+            .map((r) => `\n// --- Analyzed Recording Component ---\n${r.componentCode}`)
+            .join("\n");
+          finalCode = finalCode.slice(0, exportDefaultIndex) + injectedCode + "\n\n" + finalCode.slice(exportDefaultIndex);
         }
       }
     }

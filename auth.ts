@@ -20,6 +20,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     adapter: PrismaAdapter(prisma),
     secret: process.env.AUTH_SECRET,
     session: { strategy: "jwt" },
+    pages: {
+        signIn: "/signin",
+    },
     providers: hasAuthConfig ? [
         Google({
             clientId: process.env.AUTH_GOOGLE_ID!,

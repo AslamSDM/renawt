@@ -101,6 +101,12 @@ If product screenshots are provided, include 1-2 "screenshot" type scenes:
   }
 }
 
+## TEXT FORMATTING RULES
+- Headlines: Use Title Case (capitalize first letter of major words, lowercase minor words like "a", "the", "of", "in")
+- Subtext: Use sentence case (capitalize only the first word and proper nouns)
+- Do NOT use ALL CAPS or all lowercase for any text
+- Keep headlines short and punchy (3-8 words)
+
 ## STYLE REQUIREMENTS
 - Purple/pink color scheme: #a855f7 (purple), #ec4899 (pink)
 - Aurora gradient backgrounds (NOT solid colors)
@@ -173,11 +179,12 @@ export async function scriptWriterNode(
 
     const bpm = preferences.musicBpm || 120;
 
-    // Check if we have screenshots for SaaS product videos
-    const screenshots = (productData as any).screenshots || [];
-    const isSaaSProduct = (productData as any).productType === "saas" || screenshots.length > 0;
+    // Check if images/screenshots should be used (only when explicitly requested)
+    const useImages = (preferences as any)?.useImages === true;
+    const screenshots = useImages ? ((productData as any).screenshots || []) : [];
+    const isSaaSProduct = useImages && ((productData as any).productType === "saas" || screenshots.length > 0);
 
-    // Build screenshots section if available
+    // Build screenshots section if available and images are enabled
     let screenshotsSection = "";
     if (screenshots.length > 0) {
       screenshotsSection = `
@@ -225,7 +232,7 @@ ${productData.testimonials ? `Testimonials:\n${productData.testimonials.map((t) 
 
 ${productData.pricing ? `Pricing:\n${productData.pricing.map((p) => `${p.tier}: ${p.price}`).join("\n")}` : ""}
 
-Available Images: ${productData.images.length > 0 ? productData.images.join(", ") : "None - use solid color backgrounds"}
+Available Images: ${useImages && productData.images.length > 0 ? productData.images.join(", ") : "None - use solid color backgrounds and text-only scenes"}
 ${screenshotsSection}${recordingsSection}
 Brand Colors:
 - Primary: ${productData.colors.primary}
@@ -237,7 +244,7 @@ Style Preference: ${preferences.style}
 Target Duration: ~${targetSeconds} seconds (${targetFrames} frames at 30fps)
 Music BPM: ${bpm}
 
-${isSaaSProduct ? `
+${isSaaSProduct && useImages ? `
 IMPORTANT FOR SAAS PRODUCTS:
 - Include screenshot URLs in scene "image" fields where appropriate
 - Show actual product UI in feature scenes
@@ -246,6 +253,10 @@ IMPORTANT FOR SAAS PRODUCTS:
 ` : ""}
 
 Consider timing transitions to align with beats (every ${Math.round(1800 / bpm)} frames at ${bpm} BPM).
+
+${(preferences as any)?.nanoBanana ? `\nAI IMAGE GENERATION ENABLED: You can include AI-generated images in scenes. Add "aiImagePrompt" field to scene content with a descriptive prompt for image generation.` : ""}
+${(preferences as any)?.stockImages ? `\nSTOCK IMAGES ENABLED: You can reference stock photography. Add "stockImageQuery" field to scene content with a search query.` : ""}
+${!(preferences as any)?.animatedComponents ? `\nANIMATED COMPONENTS DISABLED: Use simpler, static layouts. Minimize complex animations and stagger effects.` : ""}
 
 Return ONLY valid JSON.`;
 
@@ -261,6 +272,39 @@ Return ONLY valid JSON.`;
     }
 
     const videoScript = JSON.parse(jsonMatch[0]) as VideoScript;
+
+    // Post-process text formatting: Title Case for headlines, sentence case for subtexts
+    const toTitleCase = (str: string): string => {
+      const minorWords = new Set(['a', 'an', 'the', 'and', 'but', 'or', 'for', 'nor', 'on', 'at', 'to', 'by', 'in', 'of', 'with', 'is']);
+      return str
+        .split(' ')
+        .map((word, i) => {
+          if (i === 0 || !minorWords.has(word.toLowerCase())) {
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+          }
+          return word.toLowerCase();
+        })
+        .join(' ');
+    };
+
+    const toSentenceCase = (str: string): string => {
+      if (!str) return str;
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    };
+
+    for (const scene of videoScript.scenes) {
+      if (scene.content.headline) {
+        scene.content.headline = toTitleCase(scene.content.headline);
+      }
+      if (scene.content.subtext) {
+        scene.content.subtext = toSentenceCase(scene.content.subtext);
+      }
+      if (scene.content.features) {
+        for (const feature of scene.content.features) {
+          feature.title = toTitleCase(feature.title);
+        }
+      }
+    }
 
     // Ensure all scenes have unique IDs
     videoScript.scenes = videoScript.scenes.map((scene) => ({

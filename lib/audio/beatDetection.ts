@@ -376,14 +376,14 @@ export async function analyzeAudioWithFFprobe(
   }
 
   try {
-    const { exec } = await import("child_process");
+    const { execFile } = await import("child_process");
     const { promisify } = await import("util");
-    const execAsync = promisify(exec);
+    const execFileAsync = promisify(execFile);
 
     // Get audio duration and metadata
-    const { stdout } = await execAsync(
-      `ffprobe -v quiet -print_format json -show_format -show_streams "${filePath}"`
-    );
+    const { stdout } = await execFileAsync("ffprobe", [
+      "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", filePath
+    ]);
     const data = JSON.parse(stdout);
 
     const format = data.format || {};

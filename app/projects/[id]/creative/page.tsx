@@ -473,14 +473,14 @@ const ScenePreview: React.FC<{ scene: VideoScene; isActive?: boolean }> = ({
   );
 };
 
-const SingleScenePlayer: React.FC<{ scene: VideoScene }> = ({ scene }) => {
+const SingleScenePlayer: React.FC<{ scene: VideoScene; width?: number; height?: number }> = ({ scene, width = 1920, height = 1080 }) => {
   return (
     <Player
       component={() => <ScenePreview scene={scene} />}
       durationInFrames={scene.endFrame - scene.startFrame}
       fps={30}
-      compositionWidth={1920}
-      compositionHeight={1080}
+      compositionWidth={width}
+      compositionHeight={height}
       style={{ width: "100%", height: "100%" }}
       controls
       loop
@@ -589,38 +589,41 @@ export default function ProjectCreativePage() {
 
   // Input states
   const [description, setDescription] = useState("");
-  const [style, setStyle] = useState<
-    "professional" | "playful" | "minimal" | "bold"
-  >("professional");
-  const [videoType, setVideoType] = useState<
-    | "demo"
-    | "creative"
-    | "fast-paced"
-    | "cinematic"
-    | "product-demo"
-    | "freestyle"
-  >("creative");
+  // Single preset combines style + videoType + templateStyle
+  const PRESETS = {
+    creative:     { style: "professional" as const, videoType: "creative"    as const, templateStyle: "aurora"          as const, label: "Creative" },
+    "fast-paced": { style: "bold"         as const, videoType: "fast-paced"  as const, templateStyle: "blue-clean"      as const, label: "Fast-paced" },
+    cinematic:    { style: "minimal"      as const, videoType: "cinematic"   as const, templateStyle: "floating-glass"  as const, label: "Cinematic" },
+    demo:         { style: "professional" as const, videoType: "demo"        as const, templateStyle: "aurora"          as const, label: "Demo" },
+    freestyle:    { style: "professional" as const, videoType: "freestyle"   as const, templateStyle: "aurora"          as const, label: "Freestyle (Gemini Pro)" },
+  } as const;
+  type PresetKey = keyof typeof PRESETS;
+  const [preset, setPreset] = useState<PresetKey>("creative");
+  const { style, videoType, templateStyle: _tplStyle } = PRESETS[preset];
+  const getTemplateStyle = (_s: string) => PRESETS[preset].templateStyle;
+
   const [duration, setDuration] = useState<number>(38);
   const [url, setUrl] = useState("");
   const [selectedAudio, setSelectedAudio] = useState<AudioFile | null>(null);
 
-  // Map style to template style
-  const getTemplateStyle = (
-    selectedStyle: string,
-  ): "aurora" | "floating-glass" | "blue-clean" => {
-    switch (selectedStyle) {
-      case "professional":
-        return "aurora";
-      case "playful":
-        return "blue-clean";
-      case "minimal":
-        return "floating-glass";
-      case "bold":
-        return "blue-clean";
-      default:
-        return "aurora";
-    }
-  };
+  // Aspect ratio
+  const ASPECT_RATIOS = {
+    "16:9": { width: 1920, height: 1080, label: "16:9" },
+    "9:16": { width: 1080, height: 1920, label: "9:16" },
+    "1:1": { width: 1080, height: 1080, label: "1:1" },
+    "4:5": { width: 1080, height: 1350, label: "4:5" },
+  } as const;
+  type AspectRatioKey = keyof typeof ASPECT_RATIOS;
+  const [aspectRatio, setAspectRatio] = useState<AspectRatioKey>("16:9");
+  const compositionWidth = ASPECT_RATIOS[aspectRatio].width;
+  const compositionHeight = ASPECT_RATIOS[aspectRatio].height;
+
+  // Feature toggles
+  const [toggles, setToggles] = useState({
+    nanoBanana: false,
+    stockImages: false,
+    animatedComponents: true,
+  });
 
   // Processing states
   const [loading, setLoading] = useState(false);
@@ -1037,6 +1040,11 @@ export default function ProjectCreativePage() {
             url: url.trim() || undefined,
             style,
             duration,
+            aspectRatio,
+            useImages: selectedScreenshots.length > 0,
+            nanoBanana: toggles.nanoBanana,
+            stockImages: toggles.stockImages,
+            animatedComponents: toggles.animatedComponents,
             audio: selectedAudio
               ? {
                   url: selectedAudio.url,
@@ -1171,7 +1179,12 @@ export default function ProjectCreativePage() {
           templateStyle: getTemplateStyle(style),
           videoType,
           duration,
+          aspectRatio,
           url: url.trim() || undefined,
+          useImages: selectedScreenshots.length > 0,
+          nanoBanana: toggles.nanoBanana,
+          stockImages: toggles.stockImages,
+          animatedComponents: toggles.animatedComponents,
           audio: selectedAudio
             ? {
                 url: selectedAudio.url,
@@ -1267,9 +1280,9 @@ export default function ProjectCreativePage() {
                 // Extract screenshots and logos from product data
                 if (event.data.screenshots?.length > 0) {
                   setScrapedScreenshots(event.data.screenshots);
-                  setSelectedScreenshots(event.data.screenshots); // Default select all
+                  // Don't auto-select screenshots — images are opt-in only
                   addLog(
-                    `${event.data.screenshots.length} screenshots captured`,
+                    `${event.data.screenshots.length} screenshots captured (select them in the Screenshots panel to use in video)`,
                     "success",
                   );
                 }
@@ -1394,6 +1407,11 @@ export default function ProjectCreativePage() {
             templateStyle: getTemplateStyle(style),
             videoType,
             duration,
+            aspectRatio,
+            useImages: selectedScreenshots.length > 0,
+            nanoBanana: toggles.nanoBanana,
+            stockImages: toggles.stockImages,
+            animatedComponents: toggles.animatedComponents,
             audio: selectedAudio
               ? {
                   url: selectedAudio.url,
@@ -1552,8 +1570,7 @@ export default function ProjectCreativePage() {
   }, [
     editableScript,
     productData,
-    style,
-    videoType,
+    preset,
     duration,
     selectedAudio,
     recordings,
@@ -1727,6 +1744,7 @@ export default function ProjectCreativePage() {
             style,
             videoType,
             duration,
+            useImages: selectedScreenshots.length > 0,
             audio: selectedAudio
               ? {
                   url: selectedAudio.url,
@@ -1844,8 +1862,7 @@ export default function ProjectCreativePage() {
     remotionCode,
     editableScript,
     productData,
-    style,
-    videoType,
+    preset,
     duration,
     selectedAudio,
     recordings,
@@ -2715,42 +2732,20 @@ export default function ProjectCreativePage() {
                   />
                 </div>
 
-                {/* Style & Type */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs tracking-widest text-gray-500 uppercase">
-                      Style
-                    </label>
-                    <select
-                      value={style}
-                      onChange={(e) => setStyle(e.target.value as any)}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none rounded-lg"
-                    >
-                      <option value="professional">
-                        Professional (Aurora)
-                      </option>
-                      <option value="playful">Playful (Blue Clean)</option>
-                      <option value="minimal">Minimal (Floating Glass)</option>
-                      <option value="bold">Bold (Blue Clean)</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs tracking-widest text-gray-500 uppercase">
-                      Video Type
-                    </label>
-                    <select
-                      value={videoType}
-                      onChange={(e) => setVideoType(e.target.value as any)}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none rounded-lg"
-                    >
-                      <option value="creative">Creative</option>
-                      <option value="demo">Demo</option>
-                      <option value="product-demo">Product Demo</option>
-                      <option value="fast-paced">Fast-paced</option>
-                      <option value="cinematic">Cinematic</option>
-                      <option value="freestyle">Freestyle (Gemini Pro)</option>
-                    </select>
-                  </div>
+                {/* Video Preset */}
+                <div className="space-y-2">
+                  <label className="text-xs tracking-widest text-gray-500 uppercase">
+                    Video Preset
+                  </label>
+                  <select
+                    value={preset}
+                    onChange={(e) => setPreset(e.target.value as PresetKey)}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none rounded-lg"
+                  >
+                    {Object.entries(PRESETS).map(([key, p]) => (
+                      <option key={key} value={key}>{p.label}</option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Duration */}
@@ -2799,6 +2794,59 @@ export default function ProjectCreativePage() {
                       {Math.floor(selectedAudio.duration)}s)
                     </p>
                   )}
+                </div>
+
+                {/* Aspect Ratio */}
+                <div className="space-y-2">
+                  <label className="text-xs tracking-widest text-gray-500 uppercase">
+                    Aspect Ratio
+                  </label>
+                  <div className="flex gap-2">
+                    {(Object.keys(ASPECT_RATIOS) as AspectRatioKey[]).map((ratio) => (
+                      <button
+                        key={ratio}
+                        onClick={() => setAspectRatio(ratio)}
+                        className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                          aspectRatio === ratio
+                            ? "bg-white/20 text-white border border-white/30"
+                            : "bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10"
+                        }`}
+                      >
+                        {ASPECT_RATIOS[ratio].label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Feature Toggles */}
+                <div className="space-y-3">
+                  <label className="text-xs tracking-widest text-gray-500 uppercase">
+                    Features
+                  </label>
+                  {[
+                    { key: "nanoBanana" as const, label: "AI Image Gen", desc: "Generate images with Gemini Flash" },
+                    { key: "stockImages" as const, label: "Stock Images", desc: "Include stock photography" },
+                    { key: "animatedComponents" as const, label: "Animated Components", desc: "Use animated UI elements" },
+                  ].map(({ key, label, desc }) => (
+                    <div key={key} className="flex items-center justify-between py-2">
+                      <div>
+                        <div className="text-sm text-gray-300">{label}</div>
+                        <div className="text-xs text-gray-600">{desc}</div>
+                      </div>
+                      <button
+                        onClick={() => setToggles((prev) => ({ ...prev, [key]: !prev[key] }))}
+                        className={`relative w-10 h-5 rounded-full transition-colors ${
+                          toggles[key] ? "bg-white/30" : "bg-white/10"
+                        }`}
+                      >
+                        <div
+                          className={`absolute top-0.5 w-4 h-4 rounded-full transition-transform ${
+                            toggles[key] ? "translate-x-5 bg-white" : "translate-x-0.5 bg-gray-500"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Audio Selector */}

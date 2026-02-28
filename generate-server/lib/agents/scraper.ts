@@ -12,6 +12,7 @@ import {
   setCachedScrapeResult,
 } from "../cache/scrapeCache";
 import { filterImageUrls } from "./imageEnrichment";
+import { isUrlSafe } from "../security/urlValidator";
 
 const SCRAPER_SYSTEM_PROMPT = `You are a product analyst specializing in extracting marketing information from websites.
 Given a URL and its rendered content (HTML + page text), extract:
@@ -149,17 +150,12 @@ Return as JSON:
 
 /**
  * Fallback scraper using Puppeteer directly (when scraper service is unavailable)
+ * Screenshots are uploaded to R2 — no local file storage.
  */
 async function scrapeWebsiteFallback(url: string): Promise<ScrapeResult> {
   // Dynamic import to avoid loading puppeteer if service is available
   const puppeteer = await import("puppeteer");
-  const path = await import("path");
-  const fs = await import("fs");
-
-  const SCREENSHOTS_DIR = path.join(process.cwd(), "public", "screenshots");
-  if (!fs.existsSync(SCREENSHOTS_DIR)) {
-    fs.mkdirSync(SCREENSHOTS_DIR, { recursive: true });
-  }
+  const { uploadScreenshotBufferToR2 } = await import("../storage/r2");
 
   const sessionId = `scrape-${Date.now()}`;
   const browser = await puppeteer.default.launch({
@@ -177,19 +173,29 @@ async function scrapeWebsiteFallback(url: string): Promise<ScrapeResult> {
     await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
     await new Promise((r) => setTimeout(r, 2000));
 
-    // Take hero screenshot
-    const heroPath = path.join(SCREENSHOTS_DIR, `${sessionId}-hero.png`);
-    await page.screenshot({ path: heroPath, fullPage: false, type: "png" });
+    // Take hero screenshot as buffer and upload to R2
+    const heroBuffer = await page.screenshot({ fullPage: false, type: "png" });
+    const heroFileName = `${sessionId}-hero.png`;
 
-    const screenshots: ScreenshotData[] = [
-      {
-        name: `${sessionId}-hero.png`,
-        path: heroPath,
-        url: `/screenshots/${sessionId}-hero.png`,
+    const screenshots: ScreenshotData[] = [];
+
+    const uploadResult = await uploadScreenshotBufferToR2(
+      Buffer.from(heroBuffer),
+      heroFileName,
+      "hero",
+    );
+
+    if (uploadResult.success && uploadResult.url) {
+      screenshots.push({
+        name: heroFileName,
+        path: "",
+        url: uploadResult.url,
         section: "hero",
         description: "Hero section",
-      },
-    ];
+      });
+    } else {
+      console.warn("[Scraper] Failed to upload hero screenshot to R2:", uploadResult.error);
+    }
 
     const content = await page.evaluate(() => {
       const bodyText = document.body.innerText;
@@ -275,7 +281,6 @@ export async function scraperNode(
       new URL(normalizedUrl);
     } catch {
       console.error(`[Scraper] Invalid URL: ${normalizedUrl}`);
-      // Fall back to description-based generation if we have a description
       if (state.description) {
         console.log("[Scraper] Invalid URL, falling back to description");
         const productData = createProductDataFromDescription(state.description);
@@ -283,6 +288,19 @@ export async function scraperNode(
       }
       return {
         errors: [`Invalid URL: ${normalizedUrl}`],
+        currentStep: "error",
+      };
+    }
+
+    // SSRF protection: block private/internal URLs
+    if (!isUrlSafe(normalizedUrl)) {
+      console.error(`[Scraper] Blocked unsafe URL: ${normalizedUrl}`);
+      if (state.description) {
+        const productData = createProductDataFromDescription(state.description);
+        return { productData, currentStep: "scripting" };
+      }
+      return {
+        errors: ["URL points to a restricted address"],
         currentStep: "error",
       };
     }

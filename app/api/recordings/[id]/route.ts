@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import { auth } from "@/auth";
 
 /**
  * GET /api/recordings/[id]
@@ -9,11 +10,17 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
   try {
     const { id } = await params;
 
     const recording = await prisma.screenRecording.findUnique({
-      where: { id }
+      where: { id },
+      include: { project: { select: { userId: true } } }
     });
 
     if (!recording) {
@@ -21,6 +28,10 @@ export async function GET(
         { error: "Recording not found" },
         { status: 404 }
       );
+    }
+
+    if (recording.project && recording.project.userId !== session.user.id) {
+      return NextResponse.json({ error: "Not authorized" }, { status: 403 });
     }
 
     return NextResponse.json({ recording });
@@ -42,8 +53,26 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
   try {
     const { id } = await params;
+
+    // Verify ownership
+    const existing = await prisma.screenRecording.findUnique({
+      where: { id },
+      include: { project: { select: { userId: true } } }
+    });
+    if (!existing) {
+      return NextResponse.json({ error: "Recording not found" }, { status: 404 });
+    }
+    if (existing.project && existing.project.userId !== session.user.id) {
+      return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+    }
+
     const body = await request.json();
 
     const {
@@ -89,8 +118,25 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
   try {
     const { id } = await params;
+
+    // Verify ownership
+    const existing = await prisma.screenRecording.findUnique({
+      where: { id },
+      include: { project: { select: { userId: true } } }
+    });
+    if (!existing) {
+      return NextResponse.json({ error: "Recording not found" }, { status: 404 });
+    }
+    if (existing.project && existing.project.userId !== session.user.id) {
+      return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+    }
 
     await prisma.screenRecording.delete({
       where: { id }

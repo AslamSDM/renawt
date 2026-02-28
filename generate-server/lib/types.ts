@@ -214,6 +214,8 @@ export interface AudioConfig {
 }
 
 // User Preferences for video generation
+export type AspectRatio = "16:9" | "9:16" | "1:1" | "4:5";
+
 export interface UserPreferences {
   style: "professional" | "playful" | "minimal" | "bold";
   templateStyle?: string;
@@ -222,6 +224,11 @@ export interface UserPreferences {
   musicBpm?: number;
   videoType?: "demo" | "creative" | "fast-paced" | "cinematic";
   audio?: AudioConfig; // Audio file configuration
+  aspectRatio?: AspectRatio;
+  useImages?: boolean;
+  nanoBanana?: boolean;
+  stockImages?: boolean;
+  animatedComponents?: boolean;
 }
 
 export const UserPreferencesSchema = z.object({
@@ -229,6 +236,10 @@ export const UserPreferencesSchema = z.object({
   duration: z.number().optional(),
   musicUrl: z.string().optional(),
   musicBpm: z.number().optional(),
+  aspectRatio: z.enum(["16:9", "9:16", "1:1", "4:5"]).optional(),
+  nanoBanana: z.boolean().optional(),
+  stockImages: z.boolean().optional(),
+  animatedComponents: z.boolean().optional(),
 });
 
 // Generation State for UI

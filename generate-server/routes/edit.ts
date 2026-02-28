@@ -3,7 +3,7 @@ import { AuthenticatedRequest } from "../lib/auth";
 import { setupSSE, createSSESend } from "../lib/sse";
 import { checkAndDeductCredits, COSTS } from "../lib/billing";
 import { chatWithGeminiFlash } from "../lib/agents/model";
-import { renderVideo } from "../lib/render/ssrRenderer";
+import { submitAndWaitForRender } from "../lib/render/renderClient";
 import {
   validateAndFixCode,
   hasBasicSyntaxErrors,
@@ -12,6 +12,7 @@ import {
   buildEditVideoPrompt,
   EDIT_SCRIPT_SYSTEM_PROMPT,
 } from "../lib/prompts";
+import { logAgentOutput } from "../lib/agentLogger";
 
 const router: Router = Router();
 
@@ -47,17 +48,28 @@ router.post("/render", async (req: AuthenticatedRequest, res) => {
         progress: 10,
       });
 
-      const result = await renderVideo({
-        remotionCode,
-        durationInFrames: durationInFrames || 300,
-        outputFormat: "mp4",
-        width: 1920,
-        height: 1080,
-        fps: 30,
-      });
+      const status = await submitAndWaitForRender(
+        {
+          remotionCode,
+          durationInFrames: durationInFrames || 300,
+          outputFormat: "mp4",
+          width: 1920,
+          height: 1080,
+          fps: 30,
+        },
+        (progress) => {
+          if (progress.progress !== undefined) {
+            send("status", {
+              step: "rendering",
+              message: `Rendering... ${Math.round((progress.progress || 0) * 100)}%`,
+              progress: 10 + Math.round((progress.progress || 0) * 85),
+            });
+          }
+        },
+      );
 
-      if (result.success && result.videoUrl) {
-        send("videoUrl", result.videoUrl);
+      if (status.status === "completed" && status.videoUrl) {
+        send("videoUrl", status.videoUrl);
         send("status", {
           step: "complete",
           message: "Video rendered successfully!",
@@ -65,7 +77,7 @@ router.post("/render", async (req: AuthenticatedRequest, res) => {
         });
         send("complete", { success: true });
       } else {
-        send("error", { errors: [result.error || "Rendering failed"] });
+        send("error", { errors: [status.error || "Rendering failed"] });
         send("complete", { success: false });
       }
     } catch (error) {
@@ -82,7 +94,6 @@ router.post("/render", async (req: AuthenticatedRequest, res) => {
     if (!res.headersSent) {
       res.status(500).json({
         error: "Render failed",
-        details: error instanceof Error ? error.message : "Unknown error",
       });
     }
   }
@@ -136,6 +147,7 @@ router.post("/edit-video", async (req: AuthenticatedRequest, res) => {
 
       send("status", { step: "generating", message: "Applying your edits..." });
 
+      const editStart = Date.now();
       const editResponse = await chatWithGeminiFlash(
         [{ role: "user", content: editPrompt }],
         {
@@ -143,6 +155,10 @@ router.post("/edit-video", async (req: AuthenticatedRequest, res) => {
           maxTokens: 16000,
         },
       );
+      logAgentOutput("edit-video", { message, codeLength: remotionCode.length }, {
+        codeLength: editResponse.content.length,
+        currentStep: "editing",
+      }, Date.now() - editStart);
 
       let editedCode = editResponse.content;
 
@@ -217,7 +233,6 @@ router.post("/edit-video", async (req: AuthenticatedRequest, res) => {
     if (!res.headersSent) {
       res.status(500).json({
         error: "Video edit failed",
-        details: error instanceof Error ? error.message : "Unknown error",
       });
     }
   }
@@ -289,7 +304,6 @@ router.post("/edit-script", async (req: AuthenticatedRequest, res) => {
     console.error("[EditScript] Error:", error);
     res.status(500).json({
       error: "Failed to edit script",
-      details: error instanceof Error ? error.message : String(error),
     });
   }
 });

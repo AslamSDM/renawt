@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { setupSSE, createSSESend } from "../lib/sse";
-import { renderVideo } from "../lib/render/ssrRenderer";
+import { submitAndWaitForRender } from "../lib/render/renderClient";
 
 const router: Router = Router();
 
@@ -81,7 +81,7 @@ router.get("/render", (_req, res) => {
       </div>
     </div>
 
-    <button id="renderBtn" onclick="doRender()">🚀 Render Video</button>
+    <button id="renderBtn" onclick="doRender()">Render Video</button>
 
     <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
     <div id="log"></div>
@@ -99,7 +99,7 @@ router.get("/render", (_req, res) => {
       const result = document.getElementById('result');
       const progressFill = document.getElementById('progressFill');
       btn.disabled = true;
-      btn.textContent = '⏳ Rendering...';
+      btn.textContent = 'Rendering...';
       log.innerHTML = '';
       result.style.display = 'none';
       progressFill.style.width = '0%';
@@ -144,24 +144,24 @@ router.get("/render", (_req, res) => {
                 progressFill.style.width = progress + '%';
                 appendLog('[' + event.data.step + '] ' + event.data.message + (progress ? ' (' + progress + '%)' : ''), 'log-status');
               } else if (event.type === 'videoUrl') {
-                appendLog('✅ Video URL: ' + event.data, 'log-success');
+                appendLog('Video URL: ' + event.data, 'log-success');
                 document.getElementById('videoPlayer').src = event.data;
                 document.getElementById('downloadLink').href = event.data;
                 result.style.display = 'block';
                 progressFill.style.width = '100%';
               } else if (event.type === 'error') {
-                appendLog('❌ ' + JSON.stringify(event.data), 'log-error');
+                appendLog('Error: ' + JSON.stringify(event.data), 'log-error');
               } else if (event.type === 'complete') {
-                appendLog(event.data.success ? '🎉 Done!' : '⚠️ Completed with errors', event.data.success ? 'log-success' : 'log-error');
+                appendLog(event.data.success ? 'Done!' : 'Completed with errors', event.data.success ? 'log-success' : 'log-error');
               }
             } catch (e) { appendLog(line, ''); }
           }
         }
       } catch (err) {
-        appendLog('❌ Network error: ' + err.message, 'log-error');
+        appendLog('Network error: ' + err.message, 'log-error');
       } finally {
         btn.disabled = false;
-        btn.textContent = '🚀 Render Video';
+        btn.textContent = 'Render Video';
       }
     }
   </script>
@@ -192,29 +192,40 @@ router.post("/render", async (req, res) => {
   try {
     send("status", {
       step: "rendering",
-      message: "Starting render...",
+      message: "Starting render via render-service...",
       progress: 5,
     });
 
-    const result = await renderVideo({
-      remotionCode,
-      durationInFrames,
-      outputFormat: format as "mp4" | "webm",
-      width,
-      height,
-      fps,
-    });
+    const status = await submitAndWaitForRender(
+      {
+        remotionCode,
+        durationInFrames,
+        outputFormat: format as "mp4" | "webm",
+        width,
+        height,
+        fps,
+      },
+      (progress) => {
+        if (progress.progress !== undefined) {
+          send("status", {
+            step: "rendering",
+            message: `Rendering... ${Math.round((progress.progress || 0) * 100)}%`,
+            progress: 5 + Math.round((progress.progress || 0) * 90),
+          });
+        }
+      },
+    );
 
-    if (result.success && result.videoUrl) {
-      send("videoUrl", result.videoUrl);
+    if (status.status === "completed" && status.videoUrl) {
+      send("videoUrl", status.videoUrl);
       send("status", {
         step: "complete",
-        message: `Rendered in ${result.renderTime}ms`,
+        message: `Rendered in ${status.renderTime}ms`,
         progress: 100,
       });
-      send("complete", { success: true, renderTime: result.renderTime });
+      send("complete", { success: true, renderTime: status.renderTime });
     } else {
-      send("error", { errors: [result.error || "Render failed"] });
+      send("error", { errors: [status.error || "Render failed"] });
       send("complete", { success: false });
     }
   } catch (error) {

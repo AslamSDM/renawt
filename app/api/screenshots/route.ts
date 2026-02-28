@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { auth } from "@/auth";
 
 // R2 Configuration
 const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
@@ -24,6 +25,11 @@ const getR2Client = (): S3Client => {
  * Upload screenshot image(s) to R2, return ScreenshotData-shaped JSON
  */
 export async function POST(request: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
   try {
     const formData = await request.formData();
 
@@ -31,6 +37,11 @@ export async function POST(request: NextRequest) {
     const projectId = (formData.get("projectId") as string) || "creative-session";
     const section = (formData.get("section") as string) || "uploaded";
     const description = (formData.get("description") as string) || "";
+
+    // Prevent path traversal in R2 keys
+    if (/[\/\\]|\.\./.test(projectId) || /[\/\\]|\.\./.test(section)) {
+      return NextResponse.json({ error: "Invalid project ID or section" }, { status: 400 });
+    }
 
     if (!images.length) {
       return NextResponse.json(

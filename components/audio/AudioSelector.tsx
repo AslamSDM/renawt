@@ -44,12 +44,60 @@ export function AudioSelector({ selectedAudio, onSelect }: AudioSelectorProps) {
     };
   }, []);
 
+  // Update parent's selectedAudio when duration becomes available
+  useEffect(() => {
+    if (selectedAudio && !selectedAudio.duration) {
+      const updated = audioList.find((a) => a.key === selectedAudio.key);
+      if (updated?.duration) {
+        onSelect(updated);
+      }
+    }
+  }, [audioList, selectedAudio, onSelect]);
+
+  const probeAudioDuration = (url: string): Promise<number | undefined> => {
+    return new Promise((resolve) => {
+      const audio = new Audio();
+      audio.preload = "metadata";
+      const cleanup = () => { audio.src = ""; };
+      audio.addEventListener("loadedmetadata", () => {
+        const dur = isFinite(audio.duration) ? Math.floor(audio.duration) : undefined;
+        cleanup();
+        resolve(dur);
+      }, { once: true });
+      audio.addEventListener("error", () => { cleanup(); resolve(undefined); }, { once: true });
+      // Timeout after 8s
+      setTimeout(() => { cleanup(); resolve(undefined); }, 8000);
+      audio.src = url;
+    });
+  };
+
   const fetchAudioList = async () => {
     try {
       const response = await fetch("/api/audio");
       const data = await response.json();
       if (data.audio) {
         setAudioList(data.audio);
+        // Probe durations for tracks missing them
+        const tracksNeedingDuration = (data.audio as AudioFile[]).filter((a) => !a.duration && a.url);
+        if (tracksNeedingDuration.length > 0) {
+          // Probe in batches of 5 to avoid overwhelming the browser
+          const batchSize = 5;
+          for (let i = 0; i < tracksNeedingDuration.length; i += batchSize) {
+            const batch = tracksNeedingDuration.slice(i, i + batchSize);
+            const results = await Promise.all(
+              batch.map(async (track) => ({
+                key: track.key,
+                duration: await probeAudioDuration(track.url),
+              }))
+            );
+            setAudioList((prev) =>
+              prev.map((a) => {
+                const result = results.find((r) => r.key === a.key);
+                return result?.duration ? { ...a, duration: result.duration } : a;
+              })
+            );
+          }
+        }
       }
     } catch (error) {
       console.error("Failed to fetch audio:", error);

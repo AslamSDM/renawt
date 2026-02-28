@@ -77,9 +77,9 @@ export function Navbar({
               Pricing
             </Link>
             <Link
-              href="/creative"
+              href="/projects"
               className={`hover:text-gray-400 transition-colors uppercase ${
-                isActive('/creative') ? 'text-white' : 'text-gray-400'
+                isActive('/projects') ? 'text-white' : 'text-gray-400'
               }`}
             >
               Create
@@ -211,7 +211,7 @@ export function Navbar({
                   Pricing
                 </Link>
                 <Link
-                  href="/creative"
+                  href="/projects"
                   className="text-2xl tracking-wider uppercase"
                   onClick={() => setMenuOpen(false)}
                 >

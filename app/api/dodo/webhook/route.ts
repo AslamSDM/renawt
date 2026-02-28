@@ -18,13 +18,31 @@ export const POST = async (req: NextRequest) => {
       webhookKey,
       onPaymentSucceeded: async (payload) => {
         const { userId, product, quantity } = payload.data.metadata as Metadata;
-        const creditsToAdd = productToCreditMap[product] * parseInt(quantity);
+
+        // Validate metadata fields
+        if (!userId || !product || !quantity) {
+          console.error("[Webhook] Missing required metadata fields");
+          return;
+        }
+
+        const creditRate = productToCreditMap[product];
+        if (creditRate === undefined) {
+          console.error(`[Webhook] Unknown product: ${product}`);
+          return;
+        }
+
+        const parsedQuantity = parseInt(quantity);
+        if (isNaN(parsedQuantity) || parsedQuantity <= 0 || parsedQuantity > 100) {
+          console.error(`[Webhook] Invalid quantity: ${quantity}`);
+          return;
+        }
+
+        const creditsToAdd = creditRate * parsedQuantity;
         const { payment_id } = payload.data;
 
-        console.log(userId, product, quantity, creditsToAdd);
+        console.log("[+] Payment succeeded:", { userId, product, quantity: parsedQuantity, creditsToAdd });
 
         await addCredits(webhookEventId, userId, creditsToAdd, payment_id);
-        console.log("[+] Payment succeeded");
       },
       onSubscriptionUpdated: async (payload) => {
         console.log("[+] Subscription renewed");

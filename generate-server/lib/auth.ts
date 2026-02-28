@@ -12,6 +12,10 @@ export async function jwtAuth(
 ) {
   const secret = process.env.API_KEY;
   if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      console.error("FATAL: API_KEY is not set in production. Rejecting all requests.");
+      return res.status(500).json({ error: "Server misconfiguration" });
+    }
     // Dev mode — no auth required
     req.userId = "dev-user";
     return next();
@@ -34,8 +38,9 @@ export async function jwtAuth(
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Token verification failed";
+    console.error("JWT verification failed:", message);
     return res
       .status(401)
-      .json({ error: `Invalid or expired token: ${message}` });
+      .json({ error: "Invalid or expired token" });
   }
 }

@@ -23,6 +23,10 @@ export async function GET() {
 
   const secret = process.env.API_KEY;
   if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      console.error("FATAL: API_KEY is not set in production.");
+      return NextResponse.json({ error: "Server misconfiguration" }, { status: 500 });
+    }
     // Dev mode — no signing key, return a dev placeholder
     return NextResponse.json({ token: "dev" });
   }

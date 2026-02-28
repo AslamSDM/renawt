@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cvProcessor } from "@/lib/recording/cvProcessor";
 import { videoProcessor } from "@/lib/recording/videoProcessor";
 import { prisma } from "@/lib/db/prisma";
+import { auth } from "@/auth";
 
 /**
  * GET /api/recordings/[id]/status
@@ -11,6 +12,11 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
   try {
     const { id: recordingId } = await params;
 
@@ -107,6 +113,11 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
   try {
     const { id: recordingId } = await params;
     const { searchParams } = new URL(request.url);

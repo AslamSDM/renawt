@@ -151,6 +151,7 @@ export function buildFreestylePrompt(
   screenshotsList: any[],
   enrichedImages: string[] = [],
   brandStyleSection: string = "",
+  audioBpm: number = 120,
 ): string {
   const productContext = finalProductData
     ? `PRODUCT INFO:
@@ -184,8 +185,15 @@ Wrap drei components in <React.Suspense fallback={null}>.
 Camera MUST animate: interpolate() the position z or y value for a slow zoom.`
     : "";
 
+  const fpb = (30 * 60) / audioBpm;
   const audioInstruction = audioSrcCode
-    ? `\nAUDIO: Include <Audio src={${audioSrcCode}} volume={0.8} /> at the root level.`
+    ? `\nAUDIO: Include <Audio src={${audioSrcCode}} volume={0.8} /> at the root level.
+BEAT SYNC (${audioBpm} BPM):
+- Frames per beat: ${fpb.toFixed(1)}, frames per measure (4 beats): ${(fpb * 4).toFixed(1)}
+- Snap scene durations to beat multiples (${Math.round(fpb)} frames per beat)
+- Add a useBeatSync hook: const useBeatSync = (bpm: number) => { const frame = useCurrentFrame(); const { fps } = useVideoConfig(); const fpb = (60/bpm)*fps; const p = (frame%fpb)/fpb; return { beatPulse: Math.exp(-p*4), fpb }; };
+- Use beatPulse for subtle scale (1 + beatPulse*0.01) and glow effects on text
+- Transition durations should be 1 beat (${Math.round(fpb)} frames)`
     : "\nNo audio track selected.";
 
   const uiMockupSection = uiMockupData

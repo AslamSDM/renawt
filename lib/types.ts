@@ -250,6 +250,8 @@ export interface AudioConfig {
 }
 
 // User Preferences for video generation
+export type AspectRatio = "16:9" | "9:16" | "1:1" | "4:5";
+
 export interface UserPreferences {
   style: "professional" | "playful" | "minimal" | "bold";
   templateStyle?: "aurora" | "floating-glass" | "blue-clean";
@@ -258,6 +260,10 @@ export interface UserPreferences {
   musicBpm?: number;
   videoType?: "demo" | "creative" | "fast-paced" | "cinematic" | "product-demo";
   audio?: AudioConfig; // Audio file configuration
+  aspectRatio?: AspectRatio;
+  nanoBanana?: boolean; // Gemini 3 Flash image generation
+  stockImages?: boolean; // Use stock images in video
+  animatedComponents?: boolean; // Use animated UI components
 }
 
 export const UserPreferencesSchema = z.object({
@@ -266,6 +272,10 @@ export const UserPreferencesSchema = z.object({
   duration: z.number().optional(),
   musicUrl: z.string().optional(),
   musicBpm: z.number().optional(),
+  aspectRatio: z.enum(["16:9", "9:16", "1:1", "4:5"]).optional(),
+  nanoBanana: z.boolean().optional(),
+  stockImages: z.boolean().optional(),
+  animatedComponents: z.boolean().optional(),
 });
 
 // Generation State for UI

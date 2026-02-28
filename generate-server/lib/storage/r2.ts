@@ -102,6 +102,53 @@ export async function uploadVideoToR2(
 }
 
 /**
+ * Upload a video buffer to R2 (for render-service proxy)
+ */
+export async function uploadVideoBufferToR2(
+  buffer: Buffer,
+  fileName: string,
+  projectId?: string
+): Promise<UploadResult> {
+  try {
+    const client = getR2Client();
+    const key = projectId
+      ? `projects/${projectId}/videos/${fileName}`
+      : `videos/${randomUUID()}/${fileName}`;
+
+    const command = new PutObjectCommand({
+      Bucket: R2_BUCKET_NAME,
+      Key: key,
+      Body: buffer,
+      ContentType: "video/mp4",
+      Metadata: {
+        "uploaded-at": new Date().toISOString(),
+        "project-id": projectId || "unknown",
+      },
+    });
+
+    await client.send(command);
+
+    const publicUrl = R2_PUBLIC_URL
+      ? `${R2_PUBLIC_URL}/${key}`
+      : `https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${key}`;
+
+    console.log(`[R2] Video buffer uploaded: ${key}`);
+
+    return {
+      success: true,
+      url: publicUrl,
+      key,
+    };
+  } catch (error) {
+    console.error("[R2] Video buffer upload failed:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown upload error",
+    };
+  }
+}
+
+/**
  * Upload screenshot buffer to R2 (for scraper use)
  */
 export async function uploadScreenshotBufferToR2(

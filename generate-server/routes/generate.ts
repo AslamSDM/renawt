@@ -4,11 +4,12 @@ import { setupSSE, createSSESend } from "../lib/sse";
 import { checkAndDeductCredits, COSTS } from "../lib/billing";
 import { scraperNode } from "../lib/agents/scraper";
 import { scriptWriterNode } from "../lib/agents/scriptWriter";
-import { reactPageGeneratorNode } from "../lib/agents/reactPageGenerator";
 import { remotionTranslatorNode } from "../lib/agents/remotionTranslator";
 import { videoRendererNode } from "../lib/agents/videoRenderer";
 import { renderErrorFixerNode } from "../lib/agents/renderErrorFixer";
 import type { VideoGenerationStateType } from "../lib/agents/state";
+import { withAgentLogging } from "../lib/agentLogger";
+import { generateBeatMap } from "../lib/audio/beatSync";
 
 const router: Router = Router();
 
@@ -59,8 +60,13 @@ router.post("/generate", async (req: AuthenticatedRequest, res) => {
       templateStyle,
       videoType = "creative",
       duration,
+      aspectRatio,
       audio,
       recordings,
+      useImages = false,
+      nanoBanana = false,
+      stockImages = false,
+      animatedComponents = true,
     } = req.body;
 
     if (!description && !url) {
@@ -85,6 +91,11 @@ router.post("/generate", async (req: AuthenticatedRequest, res) => {
           templateStyle: templateStyle as any,
           videoType: videoType as any,
           duration: duration ? parseInt(duration) : undefined,
+          aspectRatio: aspectRatio || "16:9",
+          useImages,
+          nanoBanana,
+          stockImages,
+          animatedComponents,
           audio: audio
             ? {
                 url: audio.url,
@@ -108,10 +119,19 @@ router.post("/generate", async (req: AuthenticatedRequest, res) => {
         projectId: null,
       };
 
+      // Pre-compute beatmap from audio BPM + requested duration
+      const audioBpm = audio?.bpm || 120;
+      const videoDurationSec = duration ? parseInt(duration) : 30;
+      const totalFrames = videoDurationSec * 30;
+      state.beatMap = generateBeatMap({ bpm: audioBpm, totalDurationFrames: totalFrames, fps: 30 });
+      console.log(`[GenerateServer] Pre-computed beatmap: ${state.beatMap.beats.length} beats at ${audioBpm} BPM for ${videoDurationSec}s`);
+
       // Step 1: Scraper
       send("status", { step: "scraping", message: "Analyzing product..." });
-      const scraperResult = await scraperNode(
-        state as VideoGenerationStateType,
+      const scraperResult = await withAgentLogging(
+        "scraper",
+        { sourceUrl: state.sourceUrl, description: state.description },
+        () => scraperNode(state as VideoGenerationStateType),
       );
       state = { ...state, ...scraperResult };
 
@@ -127,8 +147,10 @@ router.post("/generate", async (req: AuthenticatedRequest, res) => {
 
       // Step 2: Script Writer
       send("status", { step: "scripting", message: "Writing video script..." });
-      const scriptResult = await scriptWriterNode(
-        state as VideoGenerationStateType,
+      const scriptResult = await withAgentLogging(
+        "scriptWriter",
+        { productData: state.productData, userPreferences: state.userPreferences },
+        () => scriptWriterNode(state as VideoGenerationStateType),
       );
       state = { ...state, ...scriptResult };
 
@@ -155,7 +177,6 @@ router.post("/generate", async (req: AuthenticatedRequest, res) => {
     if (!res.headersSent) {
       res.status(500).json({
         error: "Creative generation failed",
-        details: error instanceof Error ? error.message : "Unknown error",
       });
     }
   }
@@ -211,34 +232,21 @@ router.post("/continue", async (req: AuthenticatedRequest, res) => {
         projectId: null,
       };
 
-      // Step 1: Generate React page code
-      send("status", {
-        step: "generating",
-        message: "Generating React page...",
-      });
-      const pageResult = await reactPageGeneratorNode(
-        state as VideoGenerationStateType,
-      );
-      state = { ...state, ...pageResult };
+      // Pre-compute beatmap from audio + video script duration
+      const contAudioBpm = (userPreferences as any)?.audio?.bpm || 120;
+      const contTotalFrames = videoScript?.totalDuration || 900;
+      state.beatMap = generateBeatMap({ bpm: contAudioBpm, totalDurationFrames: contTotalFrames, fps: 30 });
+      console.log(`[GenerateServer] Continue beatmap: ${state.beatMap.beats.length} beats at ${contAudioBpm} BPM`);
 
-      if (state.reactPageCode) {
-        send("reactPageCode", state.reactPageCode);
-        send("status", { step: "generating", message: "React page generated" });
-      }
-
-      if (state.currentStep === "error") {
-        send("error", { errors: state.errors });
-        send("complete", { success: false });
-        return res.end();
-      }
-
-      // Step 2: Translate to Remotion
+      // Step 1: Translate script directly to Remotion (skipping React page generation)
       send("status", {
         step: "translating",
         message: "Translating to Remotion...",
       });
-      const translatorResult = await remotionTranslatorNode(
-        state as VideoGenerationStateType,
+      const translatorResult = await withAgentLogging(
+        "remotionTranslator",
+        { videoScript: state.videoScript, productData: state.productData?.name, userPreferences: state.userPreferences },
+        () => remotionTranslatorNode(state as VideoGenerationStateType),
       );
       state = { ...state, ...translatorResult };
 
@@ -268,8 +276,10 @@ router.post("/continue", async (req: AuthenticatedRequest, res) => {
           message: `Rendering video (attempt ${attempts})...`,
         });
 
-        const renderResult = await videoRendererNode(
-          state as VideoGenerationStateType,
+        const renderResult = await withAgentLogging(
+          "videoRenderer",
+          { remotionCode: state.remotionCode ? `${(state.remotionCode as string).length} chars` : null, attempt: attempts },
+          () => videoRendererNode(state as VideoGenerationStateType),
         );
         state = { ...state, ...renderResult };
 
@@ -284,8 +294,10 @@ router.post("/continue", async (req: AuthenticatedRequest, res) => {
             step: "fixing",
             message: `Fixing render errors (attempt ${attempts})...`,
           });
-          const fixResult = await renderErrorFixerNode(
-            state as VideoGenerationStateType,
+          const fixResult = await withAgentLogging(
+            "renderErrorFixer",
+            { lastRenderError: state.lastRenderError, attempt: attempts },
+            () => renderErrorFixerNode(state as VideoGenerationStateType),
           );
           state = { ...state, ...fixResult };
           if (fixResult.remotionCode) {
@@ -312,7 +324,6 @@ router.post("/continue", async (req: AuthenticatedRequest, res) => {
     if (!res.headersSent) {
       res.status(500).json({
         error: "Continue generation failed",
-        details: error instanceof Error ? error.message : "Unknown error",
       });
     }
   }

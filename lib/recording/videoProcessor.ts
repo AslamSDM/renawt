@@ -5,7 +5,6 @@
  */
 
 import { writeFile, mkdir, unlink } from "fs/promises";
-import { existsSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { spawn } from "child_process";
@@ -273,9 +272,7 @@ class VideoProcessor {
   }
 
   private async ensureTempDir(): Promise<void> {
-    if (!existsSync(this.tempDir)) {
-      await mkdir(this.tempDir, { recursive: true });
-    }
+    await mkdir(this.tempDir, { recursive: true });
   }
 
   /**
@@ -440,7 +437,7 @@ class VideoProcessor {
       // Clean up temp files
       for (const f of [tempVideoPath, tempOutputPath]) {
         try {
-          if (existsSync(f)) await unlink(f);
+          await unlink(f);
         } catch {}
       }
     }

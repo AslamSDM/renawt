@@ -1,6 +1,7 @@
 /**
  * Core Remotion rendering engine.
  * Handles bundling, composition creation, and video rendering.
+ * Returns local file path — R2 upload is handled by generate-server.
  */
 
 import { bundle } from "@remotion/bundler";
@@ -8,11 +9,12 @@ import { renderMedia, selectComposition } from "@remotion/renderer";
 import { writeFileSync, mkdirSync, existsSync, unlinkSync } from "fs";
 import { join } from "path";
 import { randomUUID } from "crypto";
-import { uploadVideoToR2, isR2Configured } from "./r2Upload.js";
+import { validateGeneratedCode } from "./codeValidator.js";
 import type { RenderResult } from "./types.js";
 
 const OUTPUT_DIR = join(process.cwd(), "public", "renders");
 const TEMP_DIR = join(process.cwd(), ".remotion-temp");
+const BROWSER_PATH = process.env.PUPPETEER_EXECUTABLE_PATH || undefined;
 
 // Ensure directories exist
 if (!existsSync(OUTPUT_DIR)) {
@@ -63,6 +65,13 @@ const DefaultComposition = () => (
 );
 export default DefaultComposition;`;
     }
+  }
+
+  // Security: validate code before writing to disk
+  const validation = validateGeneratedCode(finalCode);
+  if (!validation.safe) {
+    console.error(`[RenderEngine] BLOCKED: Dangerous code detected:`, validation.violations);
+    throw new Error(`Code validation failed: ${validation.violations.join(", ")}`);
   }
 
   writeFileSync(filePath, finalCode, "utf-8");
@@ -130,7 +139,6 @@ export async function renderVideo(options: RenderOptions): Promise<RenderResult>
       height = 1080,
       fps = 30,
       durationInFrames,
-      projectId,
       onProgress,
     } = options;
 
@@ -152,6 +160,7 @@ export async function renderVideo(options: RenderOptions): Promise<RenderResult>
     const composition = await selectComposition({
       serveUrl: bundleLocation,
       id: "GeneratedVideo",
+      browserExecutable: BROWSER_PATH,
     });
 
     // Output path
@@ -165,6 +174,7 @@ export async function renderVideo(options: RenderOptions): Promise<RenderResult>
       serveUrl: bundleLocation,
       codec: outputFormat === "mp4" ? "h264" : "vp8",
       outputLocation: outputPath,
+      browserExecutable: BROWSER_PATH,
       onProgress: ({ progress }) => {
         console.log(`[RenderEngine] Progress: ${Math.round(progress * 100)}%`);
         onProgress?.(progress);
@@ -182,34 +192,10 @@ export async function renderVideo(options: RenderOptions): Promise<RenderResult>
     const renderTime = Date.now() - startTime;
     console.log(`[RenderEngine] Render complete in ${renderTime}ms`);
 
-    // Upload to R2 if configured
-    let finalVideoUrl = `/renders/${outputFileName}`;
-    let r2Key: string | undefined;
-
-    if (isR2Configured()) {
-      console.log("[RenderEngine] Uploading to R2...");
-      const uploadResult = await uploadVideoToR2(outputPath, projectId);
-
-      if (uploadResult.success && uploadResult.url) {
-        console.log(`[RenderEngine] Uploaded to R2: ${uploadResult.url}`);
-        finalVideoUrl = uploadResult.url;
-        r2Key = uploadResult.key;
-
-        try {
-          unlinkSync(outputPath);
-          console.log("[RenderEngine] Local file cleaned up");
-        } catch (e) {
-          console.warn("[RenderEngine] Could not clean up local file:", e);
-        }
-      } else {
-        console.error(`[RenderEngine] R2 upload failed: ${uploadResult.error}`);
-      }
-    }
-
+    // Return local file path — generate-server handles R2 upload
     return {
       success: true,
-      videoUrl: finalVideoUrl,
-      r2Key,
+      localFilePath: outputPath,
       renderTime,
     };
   } catch (error) {

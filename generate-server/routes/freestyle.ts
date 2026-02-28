@@ -7,7 +7,7 @@ import { scraperNode } from "../lib/agents/scraper";
 import { analyzeScreenshotsForUI } from "../lib/agents/uiMockupGenerator";
 import type { UIMockupData } from "../lib/agents/uiMockupGenerator";
 import type { VideoGenerationStateType } from "../lib/agents/state";
-import { renderVideo } from "../lib/render/ssrRenderer";
+import { submitAndWaitForRender } from "../lib/render/renderClient";
 import {
   validateAndFixCodeWithRetry,
   fixBrokenTemplateLiterals,
@@ -23,6 +23,7 @@ import {
   enrichProductImages,
   filterImageUrls,
 } from "../lib/agents/imageEnrichment";
+import { withAgentLogging, logAgentOutput } from "../lib/agentLogger";
 
 const router: Router = Router();
 
@@ -116,9 +117,18 @@ router.post("/freestyle", async (req: AuthenticatedRequest, res) => {
       videoScript,
       style,
       duration = 15,
+      aspectRatio = "16:9",
       audio,
       useThreeJs = false,
     } = req.body;
+
+    const ASPECT_DIMS: Record<string, { width: number; height: number }> = {
+      "16:9": { width: 1920, height: 1080 },
+      "9:16": { width: 1080, height: 1920 },
+      "1:1": { width: 1080, height: 1080 },
+      "4:5": { width: 1080, height: 1350 },
+    };
+    const { width: renderWidth, height: renderHeight } = ASPECT_DIMS[aspectRatio] || ASPECT_DIMS["16:9"];
 
     if (!description && !videoScript && !productData) {
       return res.status(400).json({
@@ -143,24 +153,28 @@ router.post("/freestyle", async (req: AuthenticatedRequest, res) => {
       let finalProductData = productData;
       if (url && !productData) {
         send("status", { step: "scraping", message: "Analyzing product..." });
-        const scraperResult = await scraperNode({
-          sourceUrl: url,
-          description: description || null,
-          userPreferences: { style: style || "professional" },
-          recordings: [],
-          productData: null,
-          videoScript: null,
-          reactPageCode: null,
-          remotionCode: null,
-          currentStep: "scraping",
-          errors: [],
-          renderAttempts: 0,
-          lastRenderError: null,
-          videoUrl: null,
-          beatMap: null,
-          r2Key: null,
-          projectId: null,
-        } as VideoGenerationStateType);
+        const scraperResult = await withAgentLogging(
+          "freestyle-scraper",
+          { sourceUrl: url, description },
+          () => scraperNode({
+            sourceUrl: url,
+            description: description || null,
+            userPreferences: { style: style || "professional" },
+            recordings: [],
+            productData: null,
+            videoScript: null,
+            reactPageCode: null,
+            remotionCode: null,
+            currentStep: "scraping",
+            errors: [],
+            renderAttempts: 0,
+            lastRenderError: null,
+            videoUrl: null,
+            beatMap: null,
+            r2Key: null,
+            projectId: null,
+          } as VideoGenerationStateType),
+        );
         if (scraperResult.productData) {
           finalProductData = scraperResult.productData;
           send("productData", finalProductData);
@@ -168,13 +182,15 @@ router.post("/freestyle", async (req: AuthenticatedRequest, res) => {
       }
 
       // Step 2: Brand Analysis + UI Mockup Analysis (run in parallel after scraping)
-      const screenshotsList = (finalProductData as any)?.screenshots || [];
+      // Images/screenshots are only used when the user explicitly requests them
+      const useImages = req.body.useImages === true;
+      const screenshotsList = useImages ? ((finalProductData as any)?.screenshots || []) : [];
       let uiMockupData: UIMockupData | null = null;
       let brandStyleSection = "";
 
-      // Enrich product images — filter out favicons/og images, add Unsplash stock photos
+      // Enrich product images — only when images are explicitly requested
       let enrichedImages: string[] = [];
-      if (finalProductData) {
+      if (useImages && finalProductData) {
         try {
           enrichedImages = await enrichProductImages(finalProductData, 4);
           console.log(
@@ -273,6 +289,7 @@ router.post("/freestyle", async (req: AuthenticatedRequest, res) => {
       }
 
       // Step 3: Build the creative prompt
+      const audioBpm = audio?.bpm || 120;
       const userPrompt = buildFreestylePrompt(
         durationInFrames,
         duration,
@@ -285,6 +302,7 @@ router.post("/freestyle", async (req: AuthenticatedRequest, res) => {
         screenshotsList,
         enrichedImages,
         brandStyleSection,
+        audioBpm,
       );
 
       send("status", {
@@ -292,6 +310,7 @@ router.post("/freestyle", async (req: AuthenticatedRequest, res) => {
         message: "Gemini Pro is creating your video...",
       });
 
+      const llmStart = Date.now();
       const response = await chatWithGeminiPro(
         [
           { role: "system", content: FREESTYLE_SYSTEM_PROMPT },
@@ -299,6 +318,10 @@ router.post("/freestyle", async (req: AuthenticatedRequest, res) => {
         ],
         { temperature: 0.7, maxTokens: 16000 },
       );
+      logAgentOutput("freestyle-llm", { description, duration, style }, {
+        codeLength: response.content.length,
+        currentStep: "generating",
+      }, Date.now() - llmStart);
 
       let code = response.content;
 
@@ -378,16 +401,26 @@ router.post("/freestyle", async (req: AuthenticatedRequest, res) => {
           currentCode = validatedCode;
         }
 
-        const renderResult = await renderVideo({
-          remotionCode: currentCode,
-          durationInFrames,
-          outputFormat: "mp4",
-          width: 1920,
-          height: 1080,
-          fps: 30,
-        });
+        const renderResult = await submitAndWaitForRender(
+          {
+            remotionCode: currentCode,
+            durationInFrames,
+            outputFormat: "mp4",
+            width: renderWidth,
+            height: renderHeight,
+            fps: 30,
+          },
+          (progress) => {
+            if (progress.progress !== undefined) {
+              send("status", {
+                step: "rendering",
+                message: `Rendering... ${Math.round((progress.progress || 0) * 100)}%`,
+              });
+            }
+          },
+        );
 
-        if (renderResult.success && renderResult.videoUrl) {
+        if (renderResult.status === "completed" && renderResult.videoUrl) {
           send("videoUrl", renderResult.videoUrl);
           send("status", { step: "complete", message: "Video rendered!" });
           send("complete", { success: true });
@@ -395,19 +428,20 @@ router.post("/freestyle", async (req: AuthenticatedRequest, res) => {
           break;
         }
 
+        const renderError = renderResult.error;
         console.warn(
           `[Freestyle] Render attempt ${attempt} failed:`,
-          renderResult.error,
+          renderError,
         );
 
         // If it's a Three.js/WebGL/R3F error, strip Three.js and retry immediately
         const isThreeJsError =
-          renderResult.error &&
-          (renderResult.error.includes("WebGL") ||
-            renderResult.error.includes("R3F") ||
-            renderResult.error.includes("Canvas component") ||
-            renderResult.error.includes("useThree") ||
-            renderResult.error.includes("three"));
+          renderError &&
+          (renderError.includes("WebGL") ||
+            renderError.includes("R3F") ||
+            renderError.includes("Canvas component") ||
+            renderError.includes("useThree") ||
+            renderError.includes("three"));
 
         if (isThreeJsError) {
           console.warn(
@@ -422,7 +456,7 @@ router.post("/freestyle", async (req: AuthenticatedRequest, res) => {
         if (attempt >= maxAttempts) {
           send("error", {
             errors: [
-              renderResult.error || "Rendering failed after all attempts",
+              renderError || "Rendering failed after all attempts",
             ],
           });
           send("complete", { success: false });
@@ -437,7 +471,7 @@ router.post("/freestyle", async (req: AuthenticatedRequest, res) => {
 
         const fixPrompt = `The following Remotion code failed to render with this error:
 
-ERROR: ${renderResult.error}
+ERROR: ${renderError}
 
 CODE:
 \`\`\`tsx

@@ -1,5 +1,4 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { readFileSync } from "fs";
 
 const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
 const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
@@ -32,25 +31,22 @@ export interface UploadResult {
   error?: string;
 }
 
-export async function uploadScreenshotToR2(
-  filePath: string,
-  projectId: string,
+export async function uploadScreenshotBufferToR2(
+  buffer: Buffer,
+  fileName: string,
   section: string
 ): Promise<UploadResult> {
   try {
     const client = getR2Client();
-    const fileContent = readFileSync(filePath);
-    const fileName = filePath.split("/").pop() || `screenshot-${Date.now()}.png`;
-    const key = `projects/${projectId}/screenshots/${section}/${fileName}`;
+    const key = `screenshots/${section}/${fileName}`;
 
     const command = new PutObjectCommand({
       Bucket: R2_BUCKET_NAME,
       Key: key,
-      Body: fileContent,
+      Body: buffer,
       ContentType: "image/png",
       Metadata: {
         "uploaded-at": new Date().toISOString(),
-        "project-id": projectId,
         section,
       },
     });

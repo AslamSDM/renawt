@@ -37,7 +37,9 @@ export function startWorker() {
       jobStatuses.set(job.id!, status);
 
       try {
-        const result = await renderVideo({
+        // 10-minute timeout for rendering
+        const timeoutMs = 10 * 60 * 1000;
+        const renderPromise = renderVideo({
           remotionCode,
           durationInFrames,
           outputFormat,
@@ -56,10 +58,15 @@ export function startWorker() {
           },
         });
 
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Render timed out after 10 minutes")), timeoutMs)
+        );
+
+        const result = await Promise.race([renderPromise, timeoutPromise]);
+
         if (result.success) {
           status.status = "completed";
-          status.videoUrl = result.videoUrl;
-          status.r2Key = result.r2Key;
+          status.localFilePath = result.localFilePath;
           status.renderTime = result.renderTime;
         } else {
           status.status = "failed";

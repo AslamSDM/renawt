@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadAudioToR2, isR2Configured } from "@/lib/storage/r2";
+import { auth } from "@/auth";
 
 /**
  * POST /api/audio/upload
  * Upload an audio file to R2
  */
 export async function POST(request: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
   try {
     if (!isR2Configured()) {
       return NextResponse.json(

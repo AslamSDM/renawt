@@ -16,10 +16,10 @@ export interface RenderRequest {
 
 export interface RenderJobStatus {
   jobId: string;
-  status: "queued" | "active" | "rendering" | "uploading" | "completed" | "failed";
+  status: "queued" | "active" | "rendering" | "completed" | "failed";
   progress?: number;
+  localFilePath?: string;
   videoUrl?: string;
-  r2Key?: string;
   error?: string;
   renderTime?: number;
   createdAt: string;
@@ -28,8 +28,7 @@ export interface RenderJobStatus {
 
 export interface RenderResult {
   success: boolean;
-  videoUrl?: string;
-  r2Key?: string;
+  localFilePath?: string;
   error?: string;
   renderTime?: number;
 }

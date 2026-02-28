@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { auth } from "@/auth";
 
 // R2 Configuration
 const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
@@ -23,6 +24,11 @@ const getR2Client = (): S3Client => {
  * Save version history to R2
  */
 export async function POST(request: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
   try {
     const { projectId, versions } = await request.json();
 
@@ -31,6 +37,11 @@ export async function POST(request: NextRequest) {
         { error: "Project ID and versions are required" },
         { status: 400 }
       );
+    }
+
+    // Prevent path traversal
+    if (/[\/\\]|\.\./.test(projectId)) {
+      return NextResponse.json({ error: "Invalid project ID" }, { status: 400 });
     }
 
     const client = getR2Client();
@@ -64,6 +75,11 @@ export async function POST(request: NextRequest) {
  * Load version history from R2
  */
 export async function GET(request: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get("projectId");
@@ -73,6 +89,11 @@ export async function GET(request: NextRequest) {
         { error: "Project ID is required" },
         { status: 400 }
       );
+    }
+
+    // Prevent path traversal
+    if (/[\/\\]|\.\./.test(projectId)) {
+      return NextResponse.json({ error: "Invalid project ID" }, { status: 400 });
     }
 
     const client = getR2Client();

@@ -18,7 +18,12 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Global Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(",")
+    : ["http://localhost:3000"],
+  methods: ["GET", "POST", "PATCH", "DELETE"],
+}));
 app.use(express.json({ limit: "10mb" }));
 
 // Serve static rendered videos & screenshots
@@ -30,7 +35,7 @@ app.use(
 
 // Health check (no auth needed)
 app.get("/health", (_req, res) => {
-  res.json({ status: "ok", memory: process.memoryUsage() });
+  res.json({ status: "ok" });
 });
 
 // ============================================================

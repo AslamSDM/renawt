@@ -142,17 +142,12 @@ Return as JSON:
 
 /**
  * Fallback scraper using Puppeteer directly (when scraper service is unavailable)
+ * Screenshots are uploaded to R2 — no local file storage.
  */
 async function scrapeWebsiteFallback(url: string): Promise<ScrapeResult> {
   // Dynamic import to avoid loading puppeteer if service is available
   const puppeteer = await import("puppeteer");
-  const path = await import("path");
-  const fs = await import("fs");
-
-  const SCREENSHOTS_DIR = path.join(process.cwd(), "public", "screenshots");
-  if (!fs.existsSync(SCREENSHOTS_DIR)) {
-    fs.mkdirSync(SCREENSHOTS_DIR, { recursive: true });
-  }
+  const { uploadScreenshotBufferToR2 } = await import("../storage/r2");
 
   const sessionId = `scrape-${Date.now()}`;
   const browser = await puppeteer.default.launch({
@@ -170,17 +165,29 @@ async function scrapeWebsiteFallback(url: string): Promise<ScrapeResult> {
     await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
     await new Promise((r) => setTimeout(r, 2000));
 
-    // Take hero screenshot
-    const heroPath = path.join(SCREENSHOTS_DIR, `${sessionId}-hero.png`);
-    await page.screenshot({ path: heroPath, fullPage: false, type: "png" });
+    // Take hero screenshot as buffer and upload to R2
+    const heroBuffer = await page.screenshot({ fullPage: false, type: "png" });
+    const heroFileName = `${sessionId}-hero.png`;
 
-    const screenshots: ScreenshotData[] = [{
-      name: `${sessionId}-hero.png`,
-      path: heroPath,
-      url: `/screenshots/${sessionId}-hero.png`,
-      section: "hero",
-      description: "Hero section",
-    }];
+    const screenshots: ScreenshotData[] = [];
+
+    const uploadResult = await uploadScreenshotBufferToR2(
+      Buffer.from(heroBuffer),
+      heroFileName,
+      "hero",
+    );
+
+    if (uploadResult.success && uploadResult.url) {
+      screenshots.push({
+        name: heroFileName,
+        path: "",
+        url: uploadResult.url,
+        section: "hero",
+        description: "Hero section",
+      });
+    } else {
+      console.warn("[Scraper] Failed to upload hero screenshot to R2:", uploadResult.error);
+    }
 
     const content = await page.evaluate(() => {
       const bodyText = document.body.innerText;

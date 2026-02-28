@@ -1,24 +1,38 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createCheckoutSession } from '@/lib/dodo';
-
-// const requestExample = {
-//   userId: "12345"
-//   product: "SUBSCRIPTION_STARTER",
-//   quantity: 1
-// }
+import { auth } from "@/auth";
+import { productToCreditMap } from "@/lib/dodo/subscription";
 
 export async function POST(request: NextRequest) {
-  try {
-    const { userId, product, quantity } = await request.json();
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
 
-    if (!product || !userId || !quantity) {
-      return new Response(JSON.stringify({ error: 'Missing subscription or userId' }), { status: 400 });
+  try {
+    const { product, quantity } = await request.json();
+
+    if (!product || !quantity) {
+      return NextResponse.json({ error: 'Missing product or quantity' }, { status: 400 });
     }
 
-    const session = await createCheckoutSession(userId, product, quantity);
+    // Validate product exists
+    if (productToCreditMap[product] === undefined) {
+      return NextResponse.json({ error: 'Invalid product' }, { status: 400 });
+    }
 
-    return new Response(JSON.stringify({ checkout_url: session.checkout_url }), { status: 200 });
+    // Validate quantity
+    const parsedQuantity = parseInt(quantity);
+    if (isNaN(parsedQuantity) || parsedQuantity <= 0 || parsedQuantity > 100) {
+      return NextResponse.json({ error: 'Invalid quantity' }, { status: 400 });
+    }
+
+    // Use authenticated user's ID, not client-supplied userId
+    const checkoutSession = await createCheckoutSession(session.user.id, product, parsedQuantity);
+
+    return NextResponse.json({ checkout_url: checkoutSession.checkout_url });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to create checkout session' }), { status: 500 });
+    console.error("[Checkout] Error:", error);
+    return NextResponse.json({ error: 'Failed to create checkout session' }, { status: 500 });
   }
 }

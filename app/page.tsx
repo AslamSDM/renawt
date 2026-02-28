@@ -8,12 +8,24 @@ import { Button } from "@/components/ui/Button";
 import { Separator } from "@/components/ui/separator";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import dynamic from "next/dynamic";
+import { ComponentType } from "react";
+
+const CircularGallery = dynamic(
+  () =>
+    import("@/components/ui/CircularGallery").then(
+      (mod) => mod.default as ComponentType<any>,
+    ),
+  {
+    ssr: false,
+  },
+);
 
 const TYPING_TEXTS = [
   "motion graphics",
   "Product launch videos",
   "info videos",
-  "explainer videos"
+  "explainer videos",
 ];
 
 const TypewriterText = () => {
@@ -67,27 +79,34 @@ const FEATURES = [
   {
     title: "AI-Powered Generation",
     subtitle: "Smart Scripts",
-    description: "Advanced AI agents analyze your content and generate compelling video scripts",
-    image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800&q=80"
+    description:
+      "Advanced AI agents analyze your content and generate compelling video scripts",
+    image:
+      "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800&q=80",
   },
   {
     title: "Pro Rendering",
     subtitle: "Studio Quality",
-    description: "Professional-grade video rendering with smooth animations and transitions",
-    image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=800&q=80"
+    description:
+      "Professional-grade video rendering with smooth animations and transitions",
+    image:
+      "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=800&q=80",
   },
   {
     title: "Beat Synchronized",
     subtitle: "Perfect Timing",
-    description: "Animations automatically sync to music beats for engaging content",
-    image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800&q=80"
+    description:
+      "Animations automatically sync to music beats for engaging content",
+    image:
+      "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800&q=80",
   },
   {
     title: "Export Anywhere",
     subtitle: "4K Quality",
     description: "Download in multiple formats including 4K for any platform",
-    image: "https://images.unsplash.com/photo-1579783901586-d88db74b4fe4?w=800&q=80"
-  }
+    image:
+      "https://images.unsplash.com/photo-1579783901586-d88db74b4fe4?w=800&q=80",
+  },
 ];
 
 const VIDEO_TYPES = [
@@ -95,31 +114,56 @@ const VIDEO_TYPES = [
     title: "Product Launch",
     subtitle: "Cinematic announcements",
     year: "2024",
-    image: "https://images.unsplash.com/photo-1549490349-8643362247b5?w=600&q=80"
+    image:
+      "https://images.unsplash.com/photo-1549490349-8643362247b5?w=600&q=80",
   },
   {
     title: "Explainer Videos",
     subtitle: "Clear & engaging",
     year: "2024",
-    image: "https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=600&q=80"
+    image:
+      "https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=600&q=80",
   },
   {
     title: "Motion Graphics",
     subtitle: "Dynamic visuals",
     year: "2024",
-    image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=600&q=80"
+    image:
+      "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=600&q=80",
   },
   {
     title: "Info Videos",
     subtitle: "Data-driven",
     year: "2024",
-    image: "https://images.unsplash.com/photo-1578321272176-b7bbc0679853?w=600&q=80"
-  }
+    image:
+      "https://images.unsplash.com/photo-1578321272176-b7bbc0679853?w=600&q=80",
+  },
 ];
 
 export default function LandingPage() {
   const router = useRouter();
   const [isPlaying, setIsPlaying] = useState(false);
+  const [galleryItems, setGalleryItems] = useState<
+    { image: string; text: string }[]
+  >([]);
+
+  useEffect(() => {
+    fetch("/api/renders")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.videos && data.videos.length > 0) {
+          // limit to 10 for performance
+          const selected = data.videos
+            .slice(0, 10)
+            .map((url: string, i: number) => ({
+              image: url,
+              text: `Generated Video ${i + 1}`,
+            }));
+          setGalleryItems(selected);
+        }
+      })
+      .catch((err) => console.error("Failed to load videos for gallery:", err));
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-white selection:text-black">
@@ -178,22 +222,52 @@ export default function LandingPage() {
 
           {/* Description */}
           <p className="max-w-xl text-gray-500 leading-relaxed mb-12">
-            The world&apos;s first AI-powered video generation platform with intelligent scripting.
-            Transform your ideas into professional motion graphics, product launches, and explainer content.
+            The world&apos;s first AI-powered video generation platform with
+            intelligent scripting. Transform your ideas into professional motion
+            graphics, product launches, and explainer content.
           </p>
 
           {/* CTA */}
           <div className="flex flex-col sm:flex-row gap-4">
             <button
-              onClick={() => router.push('/projects')}
+              onClick={() => router.push("/projects")}
               className="group flex items-center gap-4 text-lg tracking-wider uppercase hover:text-gray-400 transition-colors"
             >
               <span>Start Creating</span>
-              <img src="https://images.unsplash.com/photo-1611532736381-143b08317b74?w=24&h=24&fit=crop" alt="Arrow" className="w-5 h-5 invert group-hover:translate-x-2 transition-transform" />
+              <img
+                src="https://images.unsplash.com/photo-1611532736381-143b08317b74?w=24&h=24&fit=crop"
+                alt="Arrow"
+                className="w-5 h-5 invert group-hover:translate-x-2 transition-transform"
+              />
             </button>
           </div>
         </div>
       </section>
+
+      {/* Video Gallery Section - Circular WebGL Showcase */}
+      {galleryItems.length > 0 && (
+        <section className="py-24 md:py-32 px-6 md:px-0 border-t border-white/10 relative overflow-hidden">
+          <div className="max-w-7xl mx-auto px-6 md:px-12 mb-16 relative z-10 pointer-events-none">
+            <span className="text-xs tracking-[0.3em] text-gray-600 uppercase">
+              Gallery
+            </span>
+            <h2 className="text-4xl md:text-5xl font-light mt-4">
+              Made with ReMawt
+            </h2>
+          </div>
+
+          <div className="w-full relative h-[600px] mt-8 bg-black">
+            <CircularGallery
+              items={galleryItems}
+              bend={3}
+              textColor="#ffffff"
+              borderRadius={0.05}
+              scrollSpeed={3}
+              className="absolute inset-0"
+            />
+          </div>
+        </section>
+      )}
 
       {/* Video Types Grid - Bruegel Style */}
       <section className="py-24 md:py-32 px-6 md:px-12 border-t border-white/10">
@@ -203,7 +277,7 @@ export default function LandingPage() {
               <div
                 key={i}
                 className="bg-[#0a0a0a] p-8 group hover:bg-white/5 transition-colors cursor-pointer"
-                onClick={() => router.push('/projects')}
+                onClick={() => router.push("/projects")}
               >
                 <div className="aspect-[4/5] mb-6 overflow-hidden">
                   <img
@@ -212,9 +286,15 @@ export default function LandingPage() {
                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
                   />
                 </div>
-                <div className="text-xs text-gray-600 tracking-widest mb-4">{type.year}</div>
-                <h3 className="text-2xl font-light mb-2 tracking-wide">{type.title}</h3>
-                <p className="text-sm text-gray-500 tracking-wider uppercase">{type.subtitle}</p>
+                <div className="text-xs text-gray-600 tracking-widest mb-4">
+                  {type.year}
+                </div>
+                <h3 className="text-2xl font-light mb-2 tracking-wide">
+                  {type.title}
+                </h3>
+                <p className="text-sm text-gray-500 tracking-wider uppercase">
+                  {type.subtitle}
+                </p>
               </div>
             ))}
           </div>
@@ -225,8 +305,12 @@ export default function LandingPage() {
       <section className="py-24 md:py-32 px-6 md:px-12 border-t border-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="mb-16">
-            <span className="text-xs tracking-[0.3em] text-gray-600 uppercase">Features</span>
-            <h2 className="text-4xl md:text-5xl font-light mt-4">How It Works</h2>
+            <span className="text-xs tracking-[0.3em] text-gray-600 uppercase">
+              Features
+            </span>
+            <h2 className="text-4xl md:text-5xl font-light mt-4">
+              How It Works
+            </h2>
           </div>
 
           <div className="grid md:grid-cols-2 gap-px bg-white/10">
@@ -247,7 +331,9 @@ export default function LandingPage() {
                     {feature.subtitle}
                   </div>
                   <h3 className="text-2xl font-light mb-4">{feature.title}</h3>
-                  <p className="text-gray-500 leading-relaxed">{feature.description}</p>
+                  <p className="text-gray-500 leading-relaxed">
+                    {feature.description}
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -259,16 +345,42 @@ export default function LandingPage() {
       <section className="py-24 md:py-32 px-6 md:px-12 border-t border-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="mb-16">
-            <span className="text-xs tracking-[0.3em] text-gray-600 uppercase">Process</span>
+            <span className="text-xs tracking-[0.3em] text-gray-600 uppercase">
+              Process
+            </span>
             <h2 className="text-4xl md:text-5xl font-light mt-4">Four Steps</h2>
           </div>
 
           <div className="grid md:grid-cols-4 gap-8">
             {[
-              { step: "01", title: "Describe", desc: "Enter your product URL or description", image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=200&q=80" },
-              { step: "02", title: "Generate", desc: "AI creates your video script & scenes", image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=200&q=80" },
-              { step: "03", title: "Preview", desc: "Review and customize the animation", image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=200&q=80" },
-              { step: "04", title: "Export", desc: "Download your professional video", image: "https://images.unsplash.com/photo-1579783901586-d88db74b4fe4?w=200&q=80" }
+              {
+                step: "01",
+                title: "Describe",
+                desc: "Enter your product URL or description",
+                image:
+                  "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=200&q=80",
+              },
+              {
+                step: "02",
+                title: "Generate",
+                desc: "AI creates your video script & scenes",
+                image:
+                  "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=200&q=80",
+              },
+              {
+                step: "03",
+                title: "Preview",
+                desc: "Review and customize the animation",
+                image:
+                  "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=200&q=80",
+              },
+              {
+                step: "04",
+                title: "Export",
+                desc: "Download your professional video",
+                image:
+                  "https://images.unsplash.com/photo-1579783901586-d88db74b4fe4?w=200&q=80",
+              },
             ].map((item, i) => (
               <div key={i} className="border-t border-white/20 pt-8">
                 <div className="w-16 h-16 mb-6 overflow-hidden rounded-full">
@@ -278,9 +390,15 @@ export default function LandingPage() {
                     className="w-full h-full object-cover grayscale"
                   />
                 </div>
-                <div className="text-5xl font-light text-gray-700 mb-6">{item.step}</div>
-                <h3 className="text-xl font-light mb-3 tracking-wide">{item.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
+                <div className="text-5xl font-light text-gray-700 mb-6">
+                  {item.step}
+                </div>
+                <h3 className="text-xl font-light mb-3 tracking-wide">
+                  {item.title}
+                </h3>
+                <p className="text-sm text-gray-500 leading-relaxed">
+                  {item.desc}
+                </p>
               </div>
             ))}
           </div>
@@ -292,7 +410,9 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <span className="text-xs tracking-[0.3em] text-gray-600 uppercase">Audio Guide</span>
+              <span className="text-xs tracking-[0.3em] text-gray-600 uppercase">
+                Audio Guide
+              </span>
               <h2 className="text-4xl md:text-5xl font-light mt-4 mb-8">
                 Experience the Process
               </h2>
@@ -307,9 +427,17 @@ export default function LandingPage() {
               >
                 <div className="w-10 h-10 border border-white/30 flex items-center justify-center">
                   {isPlaying ? (
-                    <img src="https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=24&h=24&fit=crop" alt="Pause" className="w-5 h-5 invert" />
+                    <img
+                      src="https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=24&h=24&fit=crop"
+                      alt="Pause"
+                      className="w-5 h-5 invert"
+                    />
                   ) : (
-                    <img src="https://images.unsplash.com/photo-1614680376593-902f74cf0d41?w=24&h=24&fit=crop" alt="Play" className="w-5 h-5 invert" />
+                    <img
+                      src="https://images.unsplash.com/photo-1614680376593-902f74cf0d41?w=24&h=24&fit=crop"
+                      alt="Play"
+                      className="w-5 h-5 invert"
+                    />
                   )}
                 </div>
                 <span>{isPlaying ? "Pause" : "Play"} Introduction</span>
@@ -334,11 +462,11 @@ export default function LandingPage() {
             Ready to Create?
           </h2>
           <p className="text-gray-500 max-w-xl mx-auto mb-12">
-            Join thousands of creators producing professional videos with AI.
-            No experience required.
+            Join thousands of creators producing professional videos with AI. No
+            experience required.
           </p>
           <button
-            onClick={() => router.push('/projects')}
+            onClick={() => router.push("/projects")}
             className="px-12 py-4 border border-white text-lg tracking-wider uppercase hover:bg-white hover:text-black transition-all"
           >
             Start For Free
