@@ -7,17 +7,37 @@ import type { VideoGenerationStateType } from "./state";
 import { v4 as uuidv4 } from "uuid";
 import { generateBeatMap } from "../audio/beatSync";
 
-const SCRIPT_WRITER_SYSTEM_PROMPT = `You are a PREMIUM video scriptwriter specializing in polished product demo videos with the "Premium Demo" style.
+const SCRIPT_WRITER_SYSTEM_PROMPT = `You are a PREMIUM video scriptwriter specializing in polished product demo videos.
 Create visually impressive 30-60 second videos (30fps = 900-1800 frames) with DISCRETE SCENES using smooth entry/exit animations.
 
-## CRITICAL: PREMIUM DEMO STYLE
-This video uses discrete scenes with smooth transitions:
-- Each scene has its own aurora gradient background (alternating dark/light)
-- Text appears with word-by-word blur reveal animations
-- Feature content uses white glass morphism cards with 3D perspective entry
-- Accent text uses purple-to-pink gradient
-- Scene progress dots track position at the bottom
-- Montserrat font only, normal case (NOT uppercase)
+## CRITICAL: MATCH THE BRAND STYLE
+Choose the visual style that best fits the product's brand colors and tone. DO NOT default to purple/pink.
+
+### STYLE A -- Dark Cinematic (for tech, SaaS, dev tools):
+- Background: near-black with slow-moving bokeh circles (blurred divs, opacity 0.15-0.4, drifting)
+- Headline: oversized (140-200px), tight letter-spacing (-4px), white or brand color
+- Accent lines: thin 1-2px horizontal rules that sweep in from left
+- Card elements: dark glass (rgba(255,255,255,0.04)) with subtle border (rgba(255,255,255,0.08))
+
+### STYLE B -- Vibrant Brand (for consumer apps, e-commerce, lifestyle):
+- Background: rich brand color fills, NOT black -- use product's actual primary color
+- Big bold text that FILLS the frame -- poster typography
+- Shapes: geometric rectangles, diagonal slices, full-bleed color blocks
+- Text: high contrast, complementary colors
+
+### STYLE C -- Editorial Clean (for health, finance, B2B):
+- Background: warm off-white (#FAFAF7) or slate (#F1F5F8)
+- Typography: tight columns, large numerics for stats, small caps for labels
+- Thin lines and data-viz style graphics
+- Minimal palette: 2 colors max + background
+
+### STYLE D -- Neon Glow (for gaming, crypto, energy):
+- Background: deep navy/black
+- Glowing text via textShadow and boxShadow
+- Scanline overlay: thin horizontal lines (1px, opacity 0.04, repeating-linear-gradient)
+- Neon palette: one dominant glow color, others as accents
+
+Use the brand colors provided in the prompt -- never invent new colors or default to generic schemes.
 
 ## SCENE TIMING - VARIABLE PACING
 - **Intro scene (first)**: ~3 seconds (90 frames) — slow, dramatic brand reveal
@@ -78,9 +98,9 @@ If product screenshots are provided, include 1-2 "screenshot" type scenes:
       "headline": "short punchy text (3-8 words)",
       "subtext": "supporting text" | null,
       "image": "screenshot URL or product image URL" | null,
-      "icon": "emoji for features" | null,
+      "icon": null,
       "stats": [{"value": number, "label": string, "suffix": string}] | null,
-      "features": [{"icon": emoji, "title": string, "description": string}] | null,
+      "features": [{"title": string, "description": string}] | null,
       "gradientWords": [indices of words to highlight with gradient] | null
     },
     "animation": {
@@ -108,15 +128,14 @@ If product screenshots are provided, include 1-2 "screenshot" type scenes:
 - Keep headlines short and punchy (3-8 words)
 
 ## STYLE REQUIREMENTS
-- Purple/pink color scheme: #a855f7 (purple), #ec4899 (pink)
-- Aurora gradient backgrounds (NOT solid colors)
-- White opaque glass cards (rgba(255,255,255,0.95))
+- Use the BRAND COLORS from the prompt -- never default to purple/pink
+- Gradient backgrounds that use brand colors (NOT solid colors)
 - Word-by-word blur text reveals (NOT typing effects)
-- Gradient accent text for emphasis words
+- Gradient accent text for emphasis words using brand palette
 - Scene progress dots at bottom
-- Montserrat font only (weights 400-800)
+- Font loaded from @remotion/google-fonts (weights 400-800)
 - Normal case text (NOT uppercase)
-- 3D perspective card entries
+- 3D perspective card entries for feature scenes
 
 Return ONLY valid JSON. No markdown, no explanation.`;
 
@@ -133,6 +152,16 @@ async function callModel(
     SCRIPT_WRITER_CONFIG,
   );
   return response.content;
+}
+
+function suggestVideoStyle(tone: string): string {
+  const t = (tone || "professional").toLowerCase();
+  if (t.includes("playful") || t.includes("fun") || t.includes("bold")) return "STYLE B -- Vibrant Brand";
+  if (t.includes("luxury") || t.includes("premium")) return "STYLE B -- Vibrant Brand (gold/premium palette)";
+  if (t.includes("health") || t.includes("finance") || t.includes("minimal")) return "STYLE C -- Editorial Clean";
+  if (t.includes("gaming") || t.includes("crypto") || t.includes("energy")) return "STYLE D -- Neon Glow";
+  if (t.includes("technical") || t.includes("professional")) return "STYLE A -- Dark Cinematic";
+  return "STYLE A -- Dark Cinematic";
 }
 
 export async function scriptWriterNode(
@@ -234,13 +263,14 @@ ${productData.pricing ? `Pricing:\n${productData.pricing.map((p) => `${p.tier}: 
 
 Available Images: ${useImages && productData.images.length > 0 ? productData.images.join(", ") : "None - use solid color backgrounds and text-only scenes"}
 ${screenshotsSection}${recordingsSection}
-Brand Colors:
+Brand Colors (use these EXACTLY -- do not invent new colors):
 - Primary: ${productData.colors.primary}
 - Secondary: ${productData.colors.secondary}
 - Accent: ${productData.colors.accent}
 
 Brand Tone: ${productData.tone}
 Style Preference: ${preferences.style}
+Suggested Visual Style: ${suggestVideoStyle(productData.tone)}
 Target Duration: ~${targetSeconds} seconds (${targetFrames} frames at 30fps)
 Music BPM: ${bpm}
 
@@ -403,7 +433,7 @@ Return ONLY valid JSON.`;
             content: {
               headline: feature.title,
               subtext: feature.description,
-              icon: feature.icon || "✨",
+              icon: null,
             },
             animation: {
               enter: extraScenes.length % 2 === 0 ? "blur-in" : "slide-up",

@@ -2681,9 +2681,7 @@ export default function ProjectCreativePage() {
 
         {/* INPUT TAB - Wider Configuration Panel */}
         {activeTab === "input" && (
-          <div className="max-w-6xl mx-auto px-6 py-12">
-            <div className="grid lg:grid-cols-2 gap-12">
-              {/* Left Column - Inputs */}
+          <div className="max-w-2xl mx-auto px-6 py-12">
               <div className="space-y-8">
                 <div>
                   <h2 className="text-2xl font-light mb-2">
@@ -3026,50 +3024,6 @@ export default function ProjectCreativePage() {
                   )}
                 </Button>
               </div>
-
-              {/* Right Column - Tips & Preview */}
-              <div className="space-y-8">
-                <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                  <h3 className="text-lg font-medium mb-4">
-                    Tips for Better Results
-                  </h3>
-                  <ul className="space-y-3 text-sm text-gray-400">
-                    <li className="flex items-start gap-3">
-                      <span className="text-green-400">✓</span>
-                      <span>Be specific about your product's key features</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="text-green-400">✓</span>
-                      <span>Mention your target audience</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="text-green-400">✓</span>
-                      <span>Include any specific phrases or taglines</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="text-green-400">✓</span>
-                      <span>
-                        Add screen recordings to show features in action
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* Live Preview Placeholder */}
-                <div className="aspect-video bg-black rounded-xl overflow-hidden border border-white/10">
-                  <Player
-                    component={PlaceholderComposition}
-                    durationInFrames={150}
-                    fps={30}
-                    compositionWidth={1920}
-                    compositionHeight={1080}
-                    style={{ width: "100%", height: "100%" }}
-                    controls
-                    loop
-                  />
-                </div>
-              </div>
-            </div>
           </div>
         )}
 

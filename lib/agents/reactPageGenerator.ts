@@ -22,7 +22,7 @@ Convert a video script into a SINGLE React component with CONTINUOUS text animat
 - Bold, condensed, or black font weights preferred
 
 ## LIMITED COLOR PALETTE - USE ONLY 2-3 COLORS PER VIDEO:
-Pick ONE color scheme and use ONLY those colors throughout the entire video:
+If BRAND COLORS are provided in the prompt, use those as the foundation. Otherwise pick ONE of these fallback schemes:
 
 Scheme 1 - Gold & Navy (Elegant):
 - Background: #0a0a1a (deep navy)
@@ -34,9 +34,9 @@ Scheme 2 - Cyan & Purple (Modern):
 - Primary Text: #22d3ee (cyan)
 - Secondary: #ffffff (white)
 
-Scheme 3 - Pink & Charcoal (Bold):
+Scheme 3 - Coral & Dark (Bold):
 - Background: #0c0a09 (charcoal)
-- Primary Text: #f472b6 (hot pink)
+- Primary Text: #f97316 (coral orange)
 - Secondary: #fbbf24 (gold accent)
 
 Scheme 4 - Blue & Navy (Professional):
@@ -44,7 +44,12 @@ Scheme 4 - Blue & Navy (Professional):
 - Primary Text: #60a5fa (bright blue)
 - Secondary: #22d3ee (cyan accent)
 
-**CRITICAL**: Choose ONE scheme and ONLY use colors from that scheme. Do NOT mix colors from different schemes!
+Scheme 5 - Green & Slate (Natural):
+- Background: #0f1a14 (deep green-black)
+- Primary Text: #34d399 (emerald)
+- Secondary: #a7f3d0 (mint)
+
+**CRITICAL**: Use brand colors if provided. Otherwise choose ONE scheme and stick to it. Do NOT mix colors from different schemes.
 
 ## CRITICAL: FAST-PACED TEXT (MAX 2 SECONDS PER TEXT)
 - Each text element appears for MAX 2 seconds (≈60 frames at 30fps)
@@ -231,6 +236,15 @@ export async function reactPageGeneratorNode(
   const productName =
     state.productData?.name || script.scenes[0]?.content.headline || "Product";
 
+  const colors = state.productData?.colors;
+  const colorSection = colors
+    ? `\nBRAND COLORS (use these instead of the default schemes):
+- Primary: ${colors.primary}
+- Secondary: ${colors.secondary}
+- Accent: ${colors.accent}
+Build the color scheme around these brand colors. Dark variant: overlay with rgba(0,0,0,0.85).`
+    : "";
+
   const prompt = `${REACT_PAGE_SYSTEM_PROMPT}
 
 ---
@@ -240,6 +254,7 @@ Create a TEXT-HEAVY, FAST-PACED React page for this video script:
 PRODUCT: ${productName}
 STYLE: ${state.userPreferences.style}
 TOTAL DURATION: ${script.totalDuration} frames (${Math.round(script.totalDuration / 30)}s)
+${colorSection}
 
 SCENES:
 ${sceneDescriptions}

@@ -1,5 +1,5 @@
 import {
-  chatWithKimi,
+  chatWithGeminiFlash,
   SCRIPT_WRITER_CONFIG,
 } from "./model";
 import type { VideoScript } from "../types";
@@ -56,7 +56,7 @@ The demo should feel like ONE CONTINUOUS CAMERA MOVE through the product:
       "notification": { "title": string, "message": string, "actionText": string | null } | null,
       "stats": [{ "title": string, "value": string, "subtitle": string, "trend": "up" | "down" | "neutral" }] | null,
       "progress": { "title": string, "progress": number, "status": string } | null,
-      "features": [{ "icon": emoji, "title": string, "description": string }] | null
+      "features": [{ "title": string, "description": string }] | null
     },
     "animation": {
       "enter": "float-in-left" | "float-in-right" | "float-in-bottom" | "scale-in" | "reveal-wipe",
@@ -99,8 +99,8 @@ The demo should feel like ONE CONTINUOUS CAMERA MOVE through the product:
 Return ONLY valid JSON. No markdown, no explanation.`;
 
 async function callModel(systemPrompt: string, userMessage: string): Promise<string> {
-  console.log("[DemoScriptWriter] Calling Kimi K2.5...");
-  const response = await chatWithKimi(
+  console.log("[DemoScriptWriter] Calling Gemini Flash...");
+  const response = await chatWithGeminiFlash(
     [
       { role: "system", content: systemPrompt },
       { role: "user", content: userMessage },

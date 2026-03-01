@@ -56,7 +56,7 @@ The demo should feel like ONE CONTINUOUS CAMERA MOVE through the product:
       "notification": { "title": string, "message": string, "actionText": string | null } | null,
       "stats": [{ "title": string, "value": string, "subtitle": string, "trend": "up" | "down" | "neutral" }] | null,
       "progress": { "title": string, "progress": number, "status": string } | null,
-      "features": [{ "icon": emoji, "title": string, "description": string }] | null
+      "features": [{ "title": string, "description": string }] | null
     },
     "animation": {
       "enter": "float-in-left" | "float-in-right" | "float-in-bottom" | "scale-in" | "reveal-wipe",

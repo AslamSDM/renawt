@@ -460,11 +460,13 @@ Take a React page component and translate it into a Remotion video with a style 
 
 1. **MANDATORY CAMERA MOVEMENT**: Every scene wrapper MUST include an interpolated zoom or pan (see §9 above). Alternate zoom in / zoom out / pan left / pan right across scenes.
 
-2. **MANDATORY FONT - Montserrat ONLY via @remotion/google-fonts**:
+2. **FONT via @remotion/google-fonts** (use brand font if specified, otherwise Montserrat):
    \`\`\`tsx
-   import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
-   const { fontFamily: montserrat } = loadMontserrat("normal", { weights: ["400", "600", "700", "800", "900"], subsets: ["latin"] });
+   import { loadFont } from "@remotion/google-fonts/Montserrat";
+   const { fontFamily } = loadFont("normal", { weights: ["400", "600", "700", "800", "900"], subsets: ["latin"] });
    \`\`\`
+   Other good options: Oswald, Bebas Neue, Poppins, Inter, Playfair Display, Space Grotesk, DM Sans.
+   Choose based on brand personality (serif for luxury, geometric sans for tech, condensed for bold/energetic).
    - Headlines: 100-180px, fontWeight 700-900, letterSpacing -2 to -4px
    - Supporting: 36-60px, fontWeight 400-500
    - Max 3 text elements per scene

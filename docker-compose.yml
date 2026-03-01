@@ -7,7 +7,7 @@ services:
       - redis-data:/data
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
-    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
+    command: redis-server --maxmemory 256mb --maxmemory-policy noeviction --stop-writes-on-bgsave-error no --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
     restart: unless-stopped
     networks:
       - default
@@ -44,7 +44,7 @@ services:
     build: ./services/render-service
     ports:
       - "127.0.0.1:4002:4002"
-    shm_size: "1gb"
+    shm_size: "2gb"
     environment:
       - PORT=4002
       - REDIS_URL=redis://:${REDIS_PASSWORD:?REDIS_PASSWORD must be set}@redis:6379
@@ -72,8 +72,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 4G
-          cpus: "2.0"
+          memory: 8G
+          cpus: "4.0"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4002/health"]
       interval: 30s

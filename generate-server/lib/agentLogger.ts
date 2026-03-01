@@ -8,6 +8,7 @@
 import fs from "fs";
 import path from "path";
 
+const IS_DEV = process.env.NODE_ENV !== "production";
 const AGENT_LOG_DIR = path.join(process.cwd(), "logs", "agents");
 
 function ensureDir() {
@@ -25,6 +26,7 @@ export function logAgentOutput(
   output: Record<string, unknown>,
   durationMs: number,
 ): void {
+  if (!IS_DEV) return;
   try {
     ensureDir();
     const ts = new Date().toISOString().replace(/[:.]/g, "-");

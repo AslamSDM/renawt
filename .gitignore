@@ -49,9 +49,11 @@ prisma/dev.db-journal
 *.mp4
 
 logs/
+generate-server/logs/
 .remotion-temp/
 venv/
 app/public/screenshots
+generate-server/public/screenshots
 eg/ 
 .ruff_cache
 

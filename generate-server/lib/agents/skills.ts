@@ -53,6 +53,7 @@ export function savePromptLog(
   userPrompt: string,
   response?: string,
 ): void {
+  if (process.env.NODE_ENV === "production") return;
   try {
     // Ensure log directory exists
     if (!fs.existsSync(PROMPTS_LOG_DIR)) {

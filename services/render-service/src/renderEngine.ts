@@ -50,8 +50,19 @@ function createTempComposition(code: string, id: string): string {
     );
   }
 
-  if (!code.includes("export default")) {
-    const componentMatch = code.match(
+  // Count export defaults and fix duplicates
+  const exportDefaultMatches = finalCode.match(/export\s+default\s/g);
+  if (exportDefaultMatches && exportDefaultMatches.length > 1) {
+    // Keep only the last export default, remove earlier ones
+    let count = 0;
+    const total = exportDefaultMatches.length;
+    finalCode = finalCode.replace(/export\s+default\s/g, (match) => {
+      count++;
+      return count < total ? "const _unused_export = " : match;
+    });
+    console.warn(`[RenderEngine] Fixed ${total - 1} duplicate export default(s)`);
+  } else if (!exportDefaultMatches) {
+    const componentMatch = finalCode.match(
       /(?:const|function|class)\s+([A-Z][a-zA-Z0-9]*)/
     );
     if (componentMatch) {
@@ -161,6 +172,7 @@ export async function renderVideo(options: RenderOptions): Promise<RenderResult>
       serveUrl: bundleLocation,
       id: "GeneratedVideo",
       browserExecutable: BROWSER_PATH,
+      chromiumOptions: { enableMultiProcessOnLinux: false },
     });
 
     // Output path
@@ -175,6 +187,7 @@ export async function renderVideo(options: RenderOptions): Promise<RenderResult>
       codec: outputFormat === "mp4" ? "h264" : "vp8",
       outputLocation: outputPath,
       browserExecutable: BROWSER_PATH,
+      chromiumOptions: { enableMultiProcessOnLinux: false },
       onProgress: ({ progress }) => {
         console.log(`[RenderEngine] Progress: ${Math.round(progress * 100)}%`);
         onProgress?.(progress);
