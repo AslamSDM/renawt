@@ -258,11 +258,14 @@ sudo -u "$APP_USER" bash -c "cd $APP_DIR && npx prisma migrate deploy" 2>/dev/nu
 log "Building generate-server..."
 sudo -u "$APP_USER" bash -c "cd $APP_DIR/generate-server && pnpm build"
 
+log "Copying Prisma client to dist..."
+sudo -u "$APP_USER" bash -c "cp -r $APP_DIR/generate-server/lib/generated $APP_DIR/generate-server/dist/lib/generated"
+
 # Docker microservices
 if command -v docker &>/dev/null; then
   log "Starting Docker microservices..."
   cd "$APP_DIR"
-  docker compose up -d --build
+  docker compose --env-file generate-server/.env up -d --build
 
   log "Waiting for services..."
   sleep 8

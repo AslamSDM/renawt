@@ -10,6 +10,8 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import dynamic from "next/dynamic";
 import { ComponentType } from "react";
+import ScrollExpandMedia from "@/components/ui/scroll-expansion-hero";
+import { ArrowRight, Play, Pause } from "lucide-react";
 
 const CircularGallery = dynamic(
   () =>
@@ -22,10 +24,10 @@ const CircularGallery = dynamic(
 );
 
 const TYPING_TEXTS = [
-  "motion graphics",
-  "Product launch videos",
-  "info videos",
+  "SaaS product demos",
+  "stunning motion graphics",
   "explainer videos",
+  "app promo videos",
 ];
 
 const TypewriterText = () => {
@@ -178,71 +180,50 @@ export default function LandingPage() {
       {/* Navigation with Logo */}
       <Navbar transparent={true} />
 
-      {/* Hero Section - Bruegel Style */}
-      <section className="min-h-screen flex flex-col justify-center px-6 md:px-12 pt-24">
-        <div className="max-w-7xl mx-auto w-full">
-          {/* Top Info */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 md:mb-24">
-            <div className="text-sm tracking-widest text-gray-500 uppercase">
-              <span className="block">AI Video</span>
-              <span className="block">Production</span>
-            </div>
-            <div className="text-sm tracking-widest text-gray-500 uppercase mt-4 md:mt-0 text-right">
-              <span className="block">Est. 2024</span>
-              <span className="block">AI Powered</span>
-            </div>
+      {/* Hero Section - Renaissance Style using ScrollExpandMedia */}
+      <ScrollExpandMedia
+        mediaType="video"
+        mediaSrc="https://me7aitdbxq.ufs.sh/f/2wsMIGDMQRdYuZ5R8ahEEZ4aQK56LizRdfBSqeDMsmUIrJN1"
+        posterSrc="https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=800&q=80"
+        bgImageSrc="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=1920&auto=format&fit=crop"
+        title="SaaS Demos in Minutes"
+        date="AI-Powered"
+        scrollToExpand="Scroll to Experience"
+        textBlend={true}
+      >
+        <div className="flex flex-col items-center text-center max-w-4xl mx-auto mt-24">
+          <div className="text-sm tracking-widest text-gray-500 uppercase mb-8">
+            <span className="block">AI Video Production</span>
           </div>
 
-          {/* Main Title - Bruegel Style Large Typography */}
-          <div className="mb-16 md:mb-24">
-            <div className="overflow-hidden">
-              <h1 className="text-[12vw] md:text-[10vw] font-light leading-[0.85] tracking-tight">
-                Once in a
-              </h1>
-            </div>
-            <div className="overflow-hidden">
-              <h1 className="text-[12vw] md:text-[10vw] font-light leading-[0.85] tracking-tight">
-                Lifetime
-              </h1>
-            </div>
-          </div>
-
-          {/* Subtitle with Typing Effect */}
-          <div className="max-w-2xl mb-12">
-            <p className="text-lg md:text-xl text-gray-400 mb-4">
+          <div className="mb-12">
+            <p className="text-lg md:text-2xl text-gray-300 mb-4 font-light">
               Create stunning
             </p>
-            <div className="text-2xl md:text-3xl font-light mb-4">
+            <div className="text-3xl md:text-5xl font-light mb-4 text-white">
               <TypewriterText />
             </div>
-            <p className="text-lg md:text-xl text-gray-400">
+            <p className="text-lg md:text-2xl text-gray-300 font-light">
               in minutes with AI
             </p>
           </div>
 
-          {/* Description */}
-          <p className="max-w-xl text-gray-500 leading-relaxed mb-12">
-            The world&apos;s first AI-powered video generation platform with
-            intelligent scripting. Transform your ideas into professional motion
-            graphics, product launches, and explainer content.
+          <p className="text-lg text-gray-400 leading-relaxed mb-12 max-w-2xl">
+            The world&apos;s first AI-powered video generation platform for
+            SaaS. Transform screen recordings and URLs into professional motion
+            graphics and product demos in under 5 minutes. No timeline editing
+            required.
           </p>
 
-          {/* CTA */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <button
-              onClick={() => router.push("/projects")}
-              className="group flex items-center gap-4 text-lg tracking-wider uppercase hover:text-gray-400 transition-colors"
-            >
-              <span>Start Creating</span>
-              <img
-                src="https://images.unsplash.com/photo-1611532736381-143b08317b74?w=24&h=24&fit=crop"
-                alt="Arrow"
-                className="w-5 h-5 invert group-hover:translate-x-2 transition-transform"
-              />
-            </button>
-          </div>
+          <button
+            onClick={() => router.push("/projects")}
+            className="group flex items-center gap-4 text-xl tracking-wider uppercase text-white hover:text-gray-300 transition-colors border border-white/20 px-8 py-4 rounded-full hover:bg-white/5 bg-black/50 backdrop-blur-sm"
+          >
+            <span>Start Creating</span>
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+          </button>
         </div>
-      </section>
+      </ScrollExpandMedia>
 
       {/* Video Gallery Section - Circular WebGL Showcase */}
       {galleryItems.length > 0 && (
@@ -427,17 +408,9 @@ export default function LandingPage() {
               >
                 <div className="w-10 h-10 border border-white/30 flex items-center justify-center">
                   {isPlaying ? (
-                    <img
-                      src="https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=24&h=24&fit=crop"
-                      alt="Pause"
-                      className="w-5 h-5 invert"
-                    />
+                    <Pause className="w-5 h-5 text-white" />
                   ) : (
-                    <img
-                      src="https://images.unsplash.com/photo-1614680376593-902f74cf0d41?w=24&h=24&fit=crop"
-                      alt="Play"
-                      className="w-5 h-5 invert"
-                    />
+                    <Play className="w-5 h-5 text-white" />
                   )}
                 </div>
                 <span>{isPlaying ? "Pause" : "Play"} Introduction</span>

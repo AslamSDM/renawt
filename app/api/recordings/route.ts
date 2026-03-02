@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { cvProcessor } from "@/lib/recording/cvProcessor";
+
 import { videoProcessor } from "@/lib/recording/videoProcessor";
 import { auth } from "@/auth";
 
@@ -91,10 +91,8 @@ export async function POST(request: NextRequest) {
           .processRecording(recordingId, videoUrl, parsedCursorData, parsedZoomPoints, cursorStyle || "hand", effectiveProjectId)
           .catch((err) => console.warn("[API] Video processing failed to start:", err));
       } else {
-        // No cursor data — run CV detection first (which chains to video processing)
-        cvProcessor.addJob(recordingId, videoUrl, effectiveProjectId).catch((err) => {
-          console.warn("[API] CV processing failed to start:", err);
-        });
+        // No cursor data — video processing requires cursor data
+        console.warn("[API] No cursor data available for processing");
       }
 
       return NextResponse.json({
@@ -161,10 +159,8 @@ export async function POST(request: NextRequest) {
           }).catch(() => {});
         });
     } else {
-      // No cursor data — run CV detection first (which chains to video processing)
-      cvProcessor.addJob(recording.id, videoUrl, effectiveProjectId).catch((err) => {
-        console.warn("[API] CV processing failed to start:", err);
-      });
+      // No cursor data — video processing requires cursor data
+      console.warn("[API] No cursor data available for processing");
     }
 
     return NextResponse.json({

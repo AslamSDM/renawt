@@ -155,7 +155,7 @@ Return as JSON:
 async function scrapeWebsiteFallback(url: string): Promise<ScrapeResult> {
   // Dynamic import to avoid loading puppeteer if service is available
   const puppeteer = await import("puppeteer");
-  const { uploadScreenshotBufferToR2 } = await import("../storage/r2");
+  const { uploadScreenshotBufferToR2 } = await import("../storage/r2.js");
 
   const sessionId = `scrape-${Date.now()}`;
   const browser = await puppeteer.default.launch({
