@@ -32,11 +32,20 @@ router.post("/render", async (req: AuthenticatedRequest, res) => {
   }
 
   try {
-    const { remotionCode, durationInFrames, audio } = req.body;
+    const { remotionCode, durationInFrames, audio, aspectRatio } = req.body;
 
     if (!remotionCode) {
       return res.status(400).json({ error: "remotionCode is required" });
     }
+
+    // Resolve dimensions from aspect ratio
+    const ASPECT_DIMS: Record<string, { width: number; height: number }> = {
+      "16:9": { width: 1920, height: 1080 },
+      "9:16": { width: 1080, height: 1920 },
+      "1:1": { width: 1080, height: 1080 },
+      "4:5": { width: 1080, height: 1350 },
+    };
+    const { width, height } = ASPECT_DIMS[aspectRatio] || ASPECT_DIMS["16:9"];
 
     setupSSE(res);
     const send = createSSESend(res);
@@ -53,8 +62,8 @@ router.post("/render", async (req: AuthenticatedRequest, res) => {
           remotionCode,
           durationInFrames: durationInFrames || 300,
           outputFormat: "mp4",
-          width: 1920,
-          height: 1080,
+          width,
+          height,
           fps: 30,
         },
         (progress) => {
@@ -155,10 +164,15 @@ router.post("/edit-video", async (req: AuthenticatedRequest, res) => {
           maxTokens: 16000,
         },
       );
-      logAgentOutput("edit-video", { message, codeLength: remotionCode.length }, {
-        codeLength: editResponse.content.length,
-        currentStep: "editing",
-      }, Date.now() - editStart);
+      logAgentOutput(
+        "edit-video",
+        { message, codeLength: remotionCode.length },
+        {
+          codeLength: editResponse.content.length,
+          currentStep: "editing",
+        },
+        Date.now() - editStart,
+      );
 
       let editedCode = editResponse.content;
 

@@ -7,9 +7,16 @@
  * Enhanced with Remotion Best Practices from .agent/skills/remotion/
  */
 
-import { chatWithGeminiPro, chatWithFastModel } from "./model";
+import {
+  chatWithGeminiPro,
+  chatWithFastModel,
+  chatWithGeminiFlash,
+} from "./model";
 import type { VideoGenerationStateType } from "./state";
-import { analyzeRecording, type RecordingAnalysisResult } from "./recordingAnalyzer";
+import {
+  analyzeRecording,
+  type RecordingAnalysisResult,
+} from "./recordingAnalyzer";
 
 // ============================================================================
 // REMOTION SKILLS - Best practices embedded in prompt
@@ -1079,16 +1086,33 @@ export function isCodeTruncated(code: string): boolean {
  * Convert a string to Title Case (capitalize first letter of each word)
  */
 function toTitleCase(str: string): string {
-  const minorWords = new Set(['a', 'an', 'the', 'and', 'but', 'or', 'for', 'nor', 'on', 'at', 'to', 'by', 'in', 'of', 'with', 'is']);
+  const minorWords = new Set([
+    "a",
+    "an",
+    "the",
+    "and",
+    "but",
+    "or",
+    "for",
+    "nor",
+    "on",
+    "at",
+    "to",
+    "by",
+    "in",
+    "of",
+    "with",
+    "is",
+  ]);
   return str
-    .split(' ')
+    .split(" ")
     .map((word, i) => {
       if (i === 0 || !minorWords.has(word.toLowerCase())) {
         return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
       }
       return word.toLowerCase();
     })
-    .join(' ');
+    .join(" ");
 }
 
 /**
@@ -1102,14 +1126,20 @@ function extractScriptText(videoScript: any): {
   introSubtext: string;
 } {
   const defaults = {
-    tagline: 'Built for the Future',
+    tagline: "Built for the Future",
     features: [
-      { title: 'Powerful Features', description: 'Built for performance, designed for simplicity.' },
-      { title: 'Seamless Experience', description: 'Every detail crafted with care.' },
+      {
+        title: "Powerful Features",
+        description: "Built for performance, designed for simplicity.",
+      },
+      {
+        title: "Seamless Experience",
+        description: "Every detail crafted with care.",
+      },
     ],
-    ctaHeadline: 'Get Started Today',
-    ctaSubtext: 'Try it free — no credit card required',
-    introSubtext: 'The future is now',
+    ctaHeadline: "Get Started Today",
+    ctaSubtext: "Try it free — no credit card required",
+    introSubtext: "The future is now",
   };
 
   if (!videoScript || !videoScript.scenes || videoScript.scenes.length === 0) {
@@ -1119,24 +1149,28 @@ function extractScriptText(videoScript: any): {
   const scenes = videoScript.scenes;
 
   // Find tagline scene
-  const taglineScene = scenes.find((s: any) => s.type === 'tagline' || s.type === 'value-prop') || scenes[1];
+  const taglineScene =
+    scenes.find((s: any) => s.type === "tagline" || s.type === "value-prop") ||
+    scenes[1];
   const tagline = taglineScene?.content?.headline || defaults.tagline;
 
   // Find intro subtext
-  const introScene = scenes.find((s: any) => s.type === 'intro') || scenes[0];
+  const introScene = scenes.find((s: any) => s.type === "intro") || scenes[0];
   const introSubtext = introScene?.content?.subtext || defaults.introSubtext;
 
   // Find feature scenes
-  const featureScenes = scenes.filter((s: any) => s.type === 'feature');
-  const features = featureScenes.length > 0
-    ? featureScenes.slice(0, 2).map((s: any) => ({
-        title: s.content?.headline || 'Feature',
-        description: s.content?.subtext || '',
-      }))
-    : defaults.features;
+  const featureScenes = scenes.filter((s: any) => s.type === "feature");
+  const features =
+    featureScenes.length > 0
+      ? featureScenes.slice(0, 2).map((s: any) => ({
+          title: s.content?.headline || "Feature",
+          description: s.content?.subtext || "",
+        }))
+      : defaults.features;
 
   // Find CTA scene
-  const ctaScene = scenes.find((s: any) => s.type === 'cta') || scenes[scenes.length - 1];
+  const ctaScene =
+    scenes.find((s: any) => s.type === "cta") || scenes[scenes.length - 1];
   const ctaHeadline = ctaScene?.content?.headline || defaults.ctaHeadline;
   const ctaSubtext = ctaScene?.content?.subtext || defaults.ctaSubtext;
 
@@ -1157,7 +1191,12 @@ export function generateFallbackComposition(
     featureName: string;
     description: string;
   }>,
-  brandColors?: { primary?: string; secondary?: string; accent?: string; dark?: string },
+  brandColors?: {
+    primary?: string;
+    secondary?: string;
+    accent?: string;
+    dark?: string;
+  },
   videoScript?: any,
 ): string {
   // Determine audio src based on URL type
@@ -1181,11 +1220,18 @@ export function generateFallbackComposition(
 
   // Extract text from video script (or use defaults)
   const scriptText = extractScriptText(videoScript);
-  const taglineWords = toTitleCase(scriptText.tagline).split(' ');
-  const feature1Title = toTitleCase(scriptText.features[0]?.title || 'Powerful Features');
-  const feature1Desc = scriptText.features[0]?.description || 'Built for performance, designed for simplicity.';
-  const feature2Title = toTitleCase(scriptText.features[1]?.title || 'Seamless Experience');
-  const feature2Desc = scriptText.features[1]?.description || 'Every detail crafted with care.';
+  const taglineWords = toTitleCase(scriptText.tagline).split(" ");
+  const feature1Title = toTitleCase(
+    scriptText.features[0]?.title || "Powerful Features",
+  );
+  const feature1Desc =
+    scriptText.features[0]?.description ||
+    "Built for performance, designed for simplicity.";
+  const feature2Title = toTitleCase(
+    scriptText.features[1]?.title || "Seamless Experience",
+  );
+  const feature2Desc =
+    scriptText.features[1]?.description || "Every detail crafted with care.";
   const ctaHeadline = toTitleCase(scriptText.ctaHeadline);
   const ctaSubtext = scriptText.ctaSubtext;
   const introSubtext = scriptText.introSubtext;
@@ -1324,7 +1370,7 @@ const Scene2: React.FC = () => {
       <CineBg seed={1} />
       <FadeWrapper duration={${fastFrames}}>
         <AbsoluteFill style={{ transform: 'scale(' + (camScale * beatScale) + ') translateY(' + camY + 'px)', transformOrigin: 'top left', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 100 }}>
-          <WordReveal words={[${taglineWords.map(w => `'${w.replace(/'/g, "\\'")}'`).join(', ')}]} fontSize={120} delay={8} stagger={${Math.round(framesPerBeat / 3)}} />
+          <WordReveal words={[${taglineWords.map((w) => `'${w.replace(/'/g, "\\'")}'`).join(", ")}]} fontSize={120} delay={8} stagger={${Math.round(framesPerBeat / 3)}} />
         </AbsoluteFill>
       </FadeWrapper>
     </AbsoluteFill>
@@ -1346,8 +1392,16 @@ const Scene3: React.FC = () => {
         <AbsoluteFill style={{ transform: 'translateX(' + camX + 'px)', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', padding: '0 120px' }}>
           <div style={{ opacity: labelOp, transform: 'translateY(' + labelTy + 'px)' }}>
             <div style={{ fontFamily: mont, fontWeight: 400, fontSize: 22, color: C.sub, letterSpacing: '5px', textTransform: 'uppercase', marginBottom: 20 }}>Feature 01</div>
-            <div style={{ fontFamily: mont, fontWeight: 800, fontSize: 100, color: C.text, letterSpacing: '-3px', lineHeight: 0.95 }}>${feature1Title.split(' ').slice(0, Math.ceil(feature1Title.split(' ').length / 2)).join(' ')}</div>
-            <div style={{ fontFamily: mont, fontWeight: 800, fontSize: 100, color: C.accent, letterSpacing: '-3px', lineHeight: 0.95 }}>${feature1Title.split(' ').slice(Math.ceil(feature1Title.split(' ').length / 2)).join(' ') || feature1Title}</div>
+            <div style={{ fontFamily: mont, fontWeight: 800, fontSize: 100, color: C.text, letterSpacing: '-3px', lineHeight: 0.95 }}>${feature1Title
+              .split(" ")
+              .slice(0, Math.ceil(feature1Title.split(" ").length / 2))
+              .join(" ")}</div>
+            <div style={{ fontFamily: mont, fontWeight: 800, fontSize: 100, color: C.accent, letterSpacing: '-3px', lineHeight: 0.95 }}>${
+              feature1Title
+                .split(" ")
+                .slice(Math.ceil(feature1Title.split(" ").length / 2))
+                .join(" ") || feature1Title
+            }</div>
             <div style={{ height: 3, width: lineW, background: C.accent, borderRadius: 2, marginTop: 20 }} />
             <div style={{ fontFamily: mont, fontWeight: 400, fontSize: 28, color: C.sub, marginTop: 20, maxWidth: 500, lineHeight: 1.5 }}>${feature1Desc}</div>
           </div>
@@ -1367,7 +1421,10 @@ const Scene4: React.FC = () => {
       <CineBg seed={3} />
       <FadeWrapper duration={${fastFrames}}>
         <AbsoluteFill style={{ transform: 'scale(' + camScale + ') translateX(' + camX + 'px)', transformOrigin: 'right center', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 100 }}>
-          <WordReveal words={[${feature2Title.split(' ').map(w => `'${w.replace(/'/g, "\\'")}'`).join(', ')}]} fontSize={110} delay={8} stagger={10} />
+          <WordReveal words={[${feature2Title
+            .split(" ")
+            .map((w) => `'${w.replace(/'/g, "\\'")}'`)
+            .join(", ")}]} fontSize={110} delay={8} stagger={10} />
         </AbsoluteFill>
       </FadeWrapper>
     </AbsoluteFill>
@@ -1388,8 +1445,16 @@ const Scene5: React.FC = () => {
         <AbsoluteFill style={{ transform: 'translateX(' + camX + 'px)', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', padding: '0 120px', textAlign: 'right' }}>
           <div style={{ opacity: labelOp, transform: 'translateY(' + labelTy + 'px)' }}>
             <div style={{ fontFamily: mont, fontWeight: 400, fontSize: 22, color: C.sub, letterSpacing: '5px', textTransform: 'uppercase', marginBottom: 20 }}>Feature 02</div>
-            <div style={{ fontFamily: mont, fontWeight: 800, fontSize: 100, color: C.text, letterSpacing: '-3px', lineHeight: 0.95 }}>${feature2Title.split(' ').slice(0, Math.ceil(feature2Title.split(' ').length / 2)).join(' ')}</div>
-            <div style={{ fontFamily: mont, fontWeight: 800, fontSize: 100, color: C.accentAlt, letterSpacing: '-3px', lineHeight: 0.95 }}>${feature2Title.split(' ').slice(Math.ceil(feature2Title.split(' ').length / 2)).join(' ') || feature2Title}</div>
+            <div style={{ fontFamily: mont, fontWeight: 800, fontSize: 100, color: C.text, letterSpacing: '-3px', lineHeight: 0.95 }}>${feature2Title
+              .split(" ")
+              .slice(0, Math.ceil(feature2Title.split(" ").length / 2))
+              .join(" ")}</div>
+            <div style={{ fontFamily: mont, fontWeight: 800, fontSize: 100, color: C.accentAlt, letterSpacing: '-3px', lineHeight: 0.95 }}>${
+              feature2Title
+                .split(" ")
+                .slice(Math.ceil(feature2Title.split(" ").length / 2))
+                .join(" ") || feature2Title
+            }</div>
             <div style={{ fontFamily: mont, fontWeight: 400, fontSize: 28, color: C.sub, marginTop: 20, maxWidth: 500, lineHeight: 1.5 }}>${feature2Desc}</div>
           </div>
         </AbsoluteFill>
@@ -1562,7 +1627,10 @@ export async function remotionTranslatorNode(
   const script = state.videoScript;
   if (!script && !state.reactPageCode) {
     return {
-      errors: [...state.errors, "No video script or React page code available for translation"],
+      errors: [
+        ...state.errors,
+        "No video script or React page code available for translation",
+      ],
       currentStep: "error",
     };
   }
@@ -1576,7 +1644,8 @@ export async function remotionTranslatorNode(
     "4:5": { width: 1080, height: 1350 },
   };
   const ar = (state.userPreferences as any)?.aspectRatio || "16:9";
-  const { width: videoWidth, height: videoHeight } = ASPECT_DIMS[ar] || ASPECT_DIMS["16:9"];
+  const { width: videoWidth, height: videoHeight } =
+    ASPECT_DIMS[ar] || ASPECT_DIMS["16:9"];
 
   // Compute audio source early so it can be injected into the prompt
   const rawAudioUrl = state.userPreferences?.audio?.url || "";
@@ -1651,11 +1720,11 @@ ${(() => {
 
 ## REQUIREMENTS - PREMIUM DEMO STYLE VIDEO
 1. **VARIABLE SCENE TIMING** (beat-snapped):
-   - Intro (first): ~${Math.round(((30 * 60) / audioBpm) * 6)} frames (${Math.round(((60) / audioBpm) * 6)}s, 6 beats) — slow, dramatic
-   - Middle scenes: ~${Math.round(((30 * 60) / audioBpm) * 3)} frames (${Math.round(((60) / audioBpm) * 3)}s, 3 beats) — fast, punchy
-   - Feature cards: ~${Math.round(((30 * 60) / audioBpm) * 4)} frames (${Math.round(((60) / audioBpm) * 4)}s, 4 beats) — readable
-   - Screenshots: ~${Math.round(((30 * 60) / audioBpm) * 5)} frames (${Math.round(((60) / audioBpm) * 5)}s, 5 beats) — see the product
-   - CTA (ALWAYS last): ~${Math.round(((30 * 60) / audioBpm) * 6)} frames (${Math.round(((60) / audioBpm) * 6)}s, 6 beats) — slow, dramatic close
+   - Intro (first): ~${Math.round(((30 * 60) / audioBpm) * 6)} frames (${Math.round((60 / audioBpm) * 6)}s, 6 beats) — slow, dramatic
+   - Middle scenes: ~${Math.round(((30 * 60) / audioBpm) * 3)} frames (${Math.round((60 / audioBpm) * 3)}s, 3 beats) — fast, punchy
+   - Feature cards: ~${Math.round(((30 * 60) / audioBpm) * 4)} frames (${Math.round((60 / audioBpm) * 4)}s, 4 beats) — readable
+   - Screenshots: ~${Math.round(((30 * 60) / audioBpm) * 5)} frames (${Math.round((60 / audioBpm) * 5)}s, 5 beats) — see the product
+   - CTA (ALWAYS last): ~${Math.round(((30 * 60) / audioBpm) * 6)} frames (${Math.round((60 / audioBpm) * 6)}s, 6 beats) — slow, dramatic close
 2. **DISCRETE SCENES**: Use separate Sequence components with smooth entry animations
 3. **AURORA BACKGROUNDS**: Alternate dark/light aurora backgrounds between scenes
    - Dark aurora: logo scenes, CTA scenes, card scenes
@@ -1669,17 +1738,17 @@ ${(() => {
 6. **SCENE PROGRESS DOTS**: Add SceneProgressDots overlay at the root level
 7. **FONT**: Montserrat only (400-800 weights), normal case (NOT uppercase)
 8. **COLOR PALETTE**: ${(() => {
-  const colors = (state.productData as any)?.colors;
-  if (colors && (colors.primary || colors.secondary || colors.accent)) {
-    return `Use the BRAND colors from the website:
-   - Primary: ${colors.primary || '#a855f7'}
-   - Secondary: ${colors.secondary || '#ec4899'}
-   - Accent: ${colors.accent || colors.primary || '#3b82f6'}
-   - Dark background: ${colors.dark || '#0a0a0f'}
+    const colors = (state.productData as any)?.colors;
+    if (colors && (colors.primary || colors.secondary || colors.accent)) {
+      return `Use the BRAND colors from the website:
+   - Primary: ${colors.primary || "#a855f7"}
+   - Secondary: ${colors.secondary || "#ec4899"}
+   - Accent: ${colors.accent || colors.primary || "#3b82f6"}
+   - Dark background: ${colors.dark || "#0a0a0f"}
    Use these colors for gradients, glows, accents, and backgrounds. Do NOT use generic purple/pink unless those ARE the brand colors.`;
-  }
-  return `Purple #a855f7, Pink #ec4899, Dark #0a0a0f (no brand colors available)`;
-})()}
+    }
+    return `Purple #a855f7, Pink #ec4899, Dark #0a0a0f (no brand colors available)`;
+  })()}
 9. **CTA**: The LAST scene MUST always be a call-to-action
 10. **CURSOR ANIMATION**: Include an animated SVG cursor in at least one scene (see §10 above). The cursor should move to a CTA button and click it for a realistic demo feel.
 11. Convert ALL CSS animations to interpolate() or spring()
@@ -1762,22 +1831,30 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
   let analyzedRecordings: RecordingAnalysisResult[] = [];
   const recordings = state.recordings || [];
   if (recordings.length > 0) {
-    console.log(`[RemotionTranslator] Analyzing ${recordings.length} recording(s) with Gemini Pro Vision...`);
+    console.log(
+      `[RemotionTranslator] Analyzing ${recordings.length} recording(s) with Gemini Pro Vision...`,
+    );
     const analysisPromises = recordings.map((rec) => analyzeRecording(rec));
-    analyzedRecordings = await Promise.allSettled(analysisPromises).then((results) =>
-      results.map((r, i) => {
-        if (r.status === "fulfilled") return r.value;
-        console.warn(`[RemotionTranslator] Recording analysis failed for ${recordings[i].featureName}:`, r.reason);
-        return {
-          componentCode: "",
-          componentName: `RecordingScene_${recordings[i].id.replace(/[^a-zA-Z0-9]/g, '_')}`,
-          success: false,
-          error: String(r.reason),
-        } as RecordingAnalysisResult;
-      })
+    analyzedRecordings = await Promise.allSettled(analysisPromises).then(
+      (results) =>
+        results.map((r, i) => {
+          if (r.status === "fulfilled") return r.value;
+          console.warn(
+            `[RemotionTranslator] Recording analysis failed for ${recordings[i].featureName}:`,
+            r.reason,
+          );
+          return {
+            componentCode: "",
+            componentName: `RecordingScene_${recordings[i].id.replace(/[^a-zA-Z0-9]/g, "_")}`,
+            success: false,
+            error: String(r.reason),
+          } as RecordingAnalysisResult;
+        }),
     );
     const successCount = analyzedRecordings.filter((r) => r.success).length;
-    console.log(`[RemotionTranslator] Recording analysis: ${successCount}/${recordings.length} succeeded`);
+    console.log(
+      `[RemotionTranslator] Recording analysis: ${successCount}/${recordings.length} succeeded`,
+    );
   }
 
   try {
@@ -1911,7 +1988,7 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
           "7. MUST end with: export default VideoComposition;";
 
         try {
-          const fixResponse = await chatWithFastModel(
+          const fixResponse = await chatWithGeminiFlash(
             [{ role: "user", content: fixPrompt }],
             {
               temperature: 0.2,
@@ -1978,7 +2055,7 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
               "\n\n" +
               "Return ONLY valid TypeScript/React code with ALL errors fixed. Ensure perfect syntax.";
 
-            const secondResponse = await chatWithFastModel(
+            const secondResponse = await chatWithGeminiFlash(
               [{ role: "user", content: secondFixPrompt }],
               {
                 temperature: 0.2,
@@ -2049,16 +2126,27 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
 
     // Inject analyzed recording components into the code
     if (analyzedRecordings.length > 0) {
-      const successfulAnalyses = analyzedRecordings.filter((r) => r.success && r.componentCode);
+      const successfulAnalyses = analyzedRecordings.filter(
+        (r) => r.success && r.componentCode,
+      );
       if (successfulAnalyses.length > 0) {
-        console.log(`[RemotionTranslator] Injecting ${successfulAnalyses.length} analyzed recording component(s)`);
+        console.log(
+          `[RemotionTranslator] Injecting ${successfulAnalyses.length} analyzed recording component(s)`,
+        );
         // Add recording components before the main VideoComposition
         const exportDefaultIndex = finalCode.lastIndexOf("export default");
         if (exportDefaultIndex > -1) {
           const injectedCode = successfulAnalyses
-            .map((r) => `\n// --- Analyzed Recording Component ---\n${r.componentCode}`)
+            .map(
+              (r) =>
+                `\n// --- Analyzed Recording Component ---\n${r.componentCode}`,
+            )
             .join("\n");
-          finalCode = finalCode.slice(0, exportDefaultIndex) + injectedCode + "\n\n" + finalCode.slice(exportDefaultIndex);
+          finalCode =
+            finalCode.slice(0, exportDefaultIndex) +
+            injectedCode +
+            "\n\n" +
+            finalCode.slice(exportDefaultIndex);
         }
       }
     }

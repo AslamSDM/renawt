@@ -5,7 +5,7 @@
  * Analyzes the error and asks the LLM to fix the code.
  */
 
-import { chatWithFastModel } from "./model";
+import { chatWithGeminiFlash } from "./model";
 import type { VideoGenerationStateType } from "./state";
 
 const RENDER_ERROR_FIXER_SYSTEM_PROMPT = `You are a Remotion and TypeScript expert who fixes rendering errors.
@@ -68,35 +68,43 @@ function autoFixCommonErrors(code: string): { code: string; fixed: boolean } {
 
   // Fix 1: Broken transform template literals like `translate(${x}px`, ${y}px)`
   // Should be: `translate(${x}px, ${y}px)`
-  const brokenTransformPattern = /`([^`]*\$\{[^}]+\}px)`\s*,\s*\$\{([^}]+)\}px\)`/g;
+  const brokenTransformPattern =
+    /`([^`]*\$\{[^}]+\}px)`\s*,\s*\$\{([^}]+)\}px\)`/g;
   if (brokenTransformPattern.test(fixedCode)) {
-    fixedCode = fixedCode.replace(brokenTransformPattern, (match, before, afterVar) => {
-      fixed = true;
-      return `\`${before}, \${${afterVar}}px)\``;
-    });
+    fixedCode = fixedCode.replace(
+      brokenTransformPattern,
+      (match, before, afterVar) => {
+        fixed = true;
+        return `\`${before}, \${${afterVar}}px)\``;
+      },
+    );
     console.log("[RenderErrorFixer] Fixed broken transform template literals");
   }
 
   // Fix 2: Unbalanced template literals in style objects
   // Pattern: style={{ transform: `...`something` }}
   const unbalancedStylePattern = /style=\{\{([^}]*?)`([^`]*?)`([^}]*?)\}\}/g;
-  fixedCode = fixedCode.replace(unbalancedStylePattern, (match, before, content, after) => {
-    // Check if there are odd number of backticks in the match
-    const backtickCount = (match.match(/`/g) || []).length;
-    if (backtickCount % 2 !== 0) {
-      fixed = true;
-      // Try to fix by adding a closing backtick before the }}}
-      return match.replace(/}}\s*\}$/, "`}}");
-    }
-    return match;
-  });
+  fixedCode = fixedCode.replace(
+    unbalancedStylePattern,
+    (match, before, content, after) => {
+      // Check if there are odd number of backticks in the match
+      const backtickCount = (match.match(/`/g) || []).length;
+      if (backtickCount % 2 !== 0) {
+        fixed = true;
+        // Try to fix by adding a closing backtick before the }}}
+        return match.replace(/}}\s*\}$/, "`}}");
+      }
+      return match;
+    },
+  );
 
   // Fix 3: Missing closing backtick in interpolate or spring calls
-  const brokenInterpolatePattern = /interpolate\([^)]*`[^}]*\$\{[^}]+\}[^`]*$/gm;
+  const brokenInterpolatePattern =
+    /interpolate\([^)]*`[^}]*\$\{[^}]+\}[^`]*$/gm;
   fixedCode = fixedCode.replace(brokenInterpolatePattern, (match) => {
-    if (!match.endsWith('`')) {
+    if (!match.endsWith("`")) {
       fixed = true;
-      return match + '`';
+      return match + "`";
     }
     return match;
   });
@@ -135,12 +143,33 @@ export async function renderErrorFixerNode(
     };
   }
 
+  // Skip LLM fix for infrastructure errors (timeouts, browser launch failures)
+  const infraErrors = [
+    "timed out",
+    "TimeoutError",
+    "Failed to launch the browser",
+    "chrome_crashpad",
+  ];
+  const isInfraError = infraErrors.some((pattern) =>
+    lastError.includes(pattern),
+  );
+  if (isInfraError) {
+    console.log(
+      "[RenderErrorFixer] Infrastructure error detected, retrying render without code changes...",
+    );
+    return {
+      currentStep: "rendering",
+      lastRenderError: null,
+      renderAttempts: state.renderAttempts + 1,
+    };
+  }
+
   // Try auto-fixing common errors first
   const { code: autoFixedCode, fixed } = autoFixCommonErrors(remotionCode);
   if (fixed) {
     console.log("[RenderErrorFixer] Auto-fixed common syntax errors");
     remotionCode = autoFixedCode;
-    
+
     // Return immediately with fixed code to retry rendering
     return {
       remotionCode: autoFixedCode,
@@ -171,15 +200,26 @@ ${remotionCode}
 Output the fixed Remotion code in a TypeScript code block.`;
 
   try {
-    console.log("[RenderErrorFixer] Calling fast model to fix errors...");
-    const response = await chatWithFastModel([{ role: "user", content: prompt }], {
-      temperature: 0.2,
-      maxTokens: 16000,
-    });
+    console.log("[RenderErrorFixer] Calling Gemini Flash to fix errors...");
+    const response = await chatWithGeminiFlash(
+      [{ role: "user", content: prompt }],
+      {
+        temperature: 0.2,
+        maxTokens: 16000,
+      },
+    );
 
     // Extract code from response using RegExp constructor to avoid backtick issues
     const backtick = String.fromCharCode(96);
-    const codeBlockPattern = new RegExp(backtick + backtick + backtick + "(?:tsx?|jsx?|javascript)?\\s*([\\s\\S]*?)" + backtick + backtick + backtick);
+    const codeBlockPattern = new RegExp(
+      backtick +
+        backtick +
+        backtick +
+        "(?:tsx?|jsx?|javascript)?\\s*([\\s\\S]*?)" +
+        backtick +
+        backtick +
+        backtick,
+    );
     const codeMatch = response.content.match(codeBlockPattern);
     let fixedCode = codeMatch ? codeMatch[1].trim() : response.content;
 
@@ -200,7 +240,11 @@ Output the fixed Remotion code in a TypeScript code block.`;
       }
     }
 
-    console.log("[RenderErrorFixer] Generated fixed code:", fixedCode.length, "chars");
+    console.log(
+      "[RenderErrorFixer] Generated fixed code:",
+      fixedCode.length,
+      "chars",
+    );
 
     return {
       remotionCode: fixedCode,

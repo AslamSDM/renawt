@@ -5,7 +5,8 @@
 
 import { uploadVideoBufferToR2, isR2Configured } from "../storage/r2";
 
-const RENDER_SERVICE_URL = process.env.RENDER_SERVICE_URL || "http://localhost:4002";
+const RENDER_SERVICE_URL =
+  process.env.RENDER_SERVICE_URL || "http://localhost:4002";
 const POLL_INTERVAL = 2000; // 2 seconds
 
 export interface RenderJobStatus {
@@ -33,7 +34,9 @@ export interface SubmitRenderOptions {
 /**
  * Submit a render job to the render service
  */
-export async function submitRenderJob(options: SubmitRenderOptions): Promise<{ jobId: string }> {
+export async function submitRenderJob(
+  options: SubmitRenderOptions,
+): Promise<{ jobId: string }> {
   console.log("[RenderClient] Submitting render job...");
 
   const response = await fetch(`${RENDER_SERVICE_URL}/render`, {
@@ -60,15 +63,18 @@ export async function submitRenderJob(options: SubmitRenderOptions): Promise<{ j
 export async function pollRenderStatus(
   jobId: string,
   onProgress?: (status: RenderJobStatus) => void,
-  timeoutMs: number = 10 * 60 * 1000, // 10 minutes (matches worker timeout)
+  timeoutMs: number = 20 * 60 * 1000, // 20 minutes for slow VPS renders
 ): Promise<RenderJobStatus> {
   const startTime = Date.now();
 
   while (Date.now() - startTime < timeoutMs) {
     try {
-      const response = await fetch(`${RENDER_SERVICE_URL}/render/${jobId}/status`, {
-        signal: AbortSignal.timeout(10000),
-      });
+      const response = await fetch(
+        `${RENDER_SERVICE_URL}/render/${jobId}/status`,
+        {
+          signal: AbortSignal.timeout(10000),
+        },
+      );
 
       if (!response.ok) {
         throw new Error(`Status check failed: ${response.status}`);
@@ -110,7 +116,9 @@ async function downloadRenderedFile(jobId: string): Promise<Buffer> {
 
   const arrayBuffer = await response.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
-  console.log(`[RenderClient] Downloaded ${(buffer.length / 1024 / 1024).toFixed(1)}MB`);
+  console.log(
+    `[RenderClient] Downloaded ${(buffer.length / 1024 / 1024).toFixed(1)}MB`,
+  );
 
   return buffer;
 }
@@ -152,7 +160,11 @@ export async function submitAndWaitForRender(
     if (isR2Configured()) {
       console.log("[RenderClient] Uploading to R2...");
       const fileName = `video-${jobId}.mp4`;
-      const uploadResult = await uploadVideoBufferToR2(videoBuffer, fileName, options.projectId);
+      const uploadResult = await uploadVideoBufferToR2(
+        videoBuffer,
+        fileName,
+        options.projectId,
+      );
 
       if (uploadResult.success && uploadResult.url) {
         console.log(`[RenderClient] Uploaded to R2: ${uploadResult.url}`);
@@ -176,7 +188,8 @@ export async function submitAndWaitForRender(
   } catch (error) {
     console.error("[RenderClient] File download/upload failed:", error);
     status.status = "failed";
-    status.error = error instanceof Error ? error.message : "File transfer failed";
+    status.error =
+      error instanceof Error ? error.message : "File transfer failed";
   }
 
   return status;

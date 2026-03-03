@@ -14,6 +14,7 @@ set -euo pipefail
 REMOTE="${1:-}"
 MODE="${2:---update}"
 APP_DIR="/opt/remawt"
+SSH_KEY="${SSH_KEY:-$HOME/.ssh/aslamSDM}"
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -38,9 +39,9 @@ fi
 # ============================================================
 log "Syncing project files to $REMOTE:$APP_DIR ..."
 
-ssh "$REMOTE" "mkdir -p $APP_DIR"
+ssh -i "$SSH_KEY" "$REMOTE" "mkdir -p $APP_DIR"
 
-rsync -avz --progress \
+rsync -avz --progress -e "ssh -i $SSH_KEY" \
   --exclude 'node_modules' \
   --exclude '.next' \
   --exclude 'dist' \
@@ -317,8 +318,8 @@ rm -f /tmp/remawt-deploy.sh
 ENDSCRIPT
 
 # Upload and execute
-scp -q "$REMOTE_SCRIPT" "$REMOTE:/tmp/remawt-deploy.sh"
+scp -i "$SSH_KEY" -q "$REMOTE_SCRIPT" "$REMOTE:/tmp/remawt-deploy.sh"
 rm -f "$REMOTE_SCRIPT"
-ssh "$REMOTE" "chmod +x /tmp/remawt-deploy.sh && /tmp/remawt-deploy.sh $MODE"
+ssh -i "$SSH_KEY" "$REMOTE" "chmod +x /tmp/remawt-deploy.sh && /tmp/remawt-deploy.sh $MODE"
 
 log "Done!"

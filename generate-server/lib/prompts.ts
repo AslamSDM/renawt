@@ -109,6 +109,7 @@ NEVER produce a generic aurora+glass-card layout. Instead, use ONE of these cine
    \`const { fontFamily } = loadFont("normal", { weights: ["700", "900"] });\`
 6. SCENE TRANSITIONS: Fade out last 15 frames of each scene (opacity 1→0) and fade in first 15f of next scene.
 7. LINE REVEALS: Animated underlines/rules using width: interpolate → 0% to 100%.
+8. TEXT SPACING: When splitting text into individual word \`<span>\` elements for word-by-word animation, the parent MUST use \`display: 'flex', flexWrap: 'wrap', gap: '0.3em'\`. NEVER render adjacent spans without explicit spacing.
 
 ## ━━ STRICTLY FORBIDDEN ━━
 - NO CSS animations, transitions, or keyframes

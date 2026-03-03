@@ -40,13 +40,18 @@ function createTempComposition(code: string, id: string): string {
   if (code.includes("<Audio") && !code.includes("staticFile")) {
     finalCode = finalCode.replace(
       /from ['"]remotion['"]/,
-      `from 'remotion';\nimport { staticFile } from 'remotion'`
+      `from 'remotion';\nimport { staticFile } from 'remotion'`,
     );
   }
-  if (code.includes("<Audio") && !code.includes("Audio,") && !code.includes("Audio }")) {
+  if (
+    code.includes("<Audio") &&
+    !code.includes("Audio,") &&
+    !code.includes("Audio }")
+  ) {
     finalCode = finalCode.replace(
       /import \{([^}]+)\} from ['"]remotion['"]/,
-      (match, imports) => `import {${imports}, Audio, staticFile } from 'remotion'`
+      (match, imports) =>
+        `import {${imports}, Audio, staticFile } from 'remotion'`,
     );
   }
 
@@ -60,10 +65,12 @@ function createTempComposition(code: string, id: string): string {
       count++;
       return count < total ? "const _unused_export = " : match;
     });
-    console.warn(`[RenderEngine] Fixed ${total - 1} duplicate export default(s)`);
+    console.warn(
+      `[RenderEngine] Fixed ${total - 1} duplicate export default(s)`,
+    );
   } else if (!exportDefaultMatches) {
     const componentMatch = finalCode.match(
-      /(?:const|function|class)\s+([A-Z][a-zA-Z0-9]*)/
+      /(?:const|function|class)\s+([A-Z][a-zA-Z0-9]*)/,
     );
     if (componentMatch) {
       finalCode += `\nexport default ${componentMatch[1]};`;
@@ -81,8 +88,13 @@ export default DefaultComposition;`;
   // Security: validate code before writing to disk
   const validation = validateGeneratedCode(finalCode);
   if (!validation.safe) {
-    console.error(`[RenderEngine] BLOCKED: Dangerous code detected:`, validation.violations);
-    throw new Error(`Code validation failed: ${validation.violations.join(", ")}`);
+    console.error(
+      `[RenderEngine] BLOCKED: Dangerous code detected:`,
+      validation.violations,
+    );
+    throw new Error(
+      `Code validation failed: ${validation.violations.join(", ")}`,
+    );
   }
 
   writeFileSync(filePath, finalCode, "utf-8");
@@ -94,7 +106,9 @@ export default DefaultComposition;`;
 function createTempEntryPoint(
   compositionPath: string,
   id: string,
-  durationInFrames: number
+  durationInFrames: number,
+  width: number,
+  height: number,
 ): string {
   const entryPath = join(TEMP_DIR, `entry-${id}.tsx`);
 
@@ -110,8 +124,8 @@ const RemotionRoot: React.FC = () => {
       component={VideoComposition}
       durationInFrames={${durationInFrames}}
       fps={30}
-      width={1920}
-      height={1080}
+      width={${width}}
+      height={${height}}
     />
   );
 };
@@ -136,7 +150,9 @@ export interface RenderOptions {
   onProgress?: (progress: number) => void;
 }
 
-export async function renderVideo(options: RenderOptions): Promise<RenderResult> {
+export async function renderVideo(
+  options: RenderOptions,
+): Promise<RenderResult> {
   const startTime = Date.now();
   const renderId = randomUUID().slice(0, 8);
 
@@ -155,7 +171,13 @@ export async function renderVideo(options: RenderOptions): Promise<RenderResult>
 
     // Create temp files
     const compositionPath = createTempComposition(remotionCode, renderId);
-    const entryPath = createTempEntryPoint(compositionPath, renderId, durationInFrames);
+    const entryPath = createTempEntryPoint(
+      compositionPath,
+      renderId,
+      durationInFrames,
+      width,
+      height,
+    );
 
     // Bundle the composition
     console.log("[RenderEngine] Bundling composition...");
@@ -172,12 +194,20 @@ export async function renderVideo(options: RenderOptions): Promise<RenderResult>
       serveUrl: bundleLocation,
       id: "GeneratedVideo",
       browserExecutable: BROWSER_PATH,
-      chromiumOptions: { enableMultiProcessOnLinux: false },
+      chromiumOptions: { enableMultiProcessOnLinux: true },
     });
 
     // Output path
     const outputFileName = `video-${renderId}.${outputFormat}`;
     const outputPath = join(OUTPUT_DIR, outputFileName);
+
+    // Higher concurrency for 2D videos, lower for ThreeJS (GPU-heavy)
+    const isThreeJS =
+      remotionCode.includes("@react-three") || remotionCode.includes("three/");
+    const renderConcurrency = isThreeJS ? 1 : 2;
+    console.log(
+      `[RenderEngine] Concurrency: ${renderConcurrency} (${isThreeJS ? "ThreeJS" : "2D"})`,
+    );
 
     // Render the video
     console.log(`[RenderEngine] Rendering to ${outputPath}...`);
@@ -187,7 +217,10 @@ export async function renderVideo(options: RenderOptions): Promise<RenderResult>
       codec: outputFormat === "mp4" ? "h264" : "vp8",
       outputLocation: outputPath,
       browserExecutable: BROWSER_PATH,
-      chromiumOptions: { enableMultiProcessOnLinux: false },
+      chromiumOptions: { enableMultiProcessOnLinux: true },
+      concurrency: renderConcurrency,
+      imageFormat: "jpeg",
+      jpegQuality: 90,
       onProgress: ({ progress }) => {
         console.log(`[RenderEngine] Progress: ${Math.round(progress * 100)}%`);
         onProgress?.(progress);

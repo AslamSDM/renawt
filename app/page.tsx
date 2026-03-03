@@ -145,27 +145,14 @@ const VIDEO_TYPES = [
 export default function LandingPage() {
   const router = useRouter();
   const [isPlaying, setIsPlaying] = useState(false);
-  const [galleryItems, setGalleryItems] = useState<
-    { image: string; text: string }[]
-  >([]);
-
-  useEffect(() => {
-    fetch("/api/renders")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.videos && data.videos.length > 0) {
-          // limit to 10 for performance
-          const selected = data.videos
-            .slice(0, 10)
-            .map((url: string, i: number) => ({
-              image: url,
-              text: `Generated Video ${i + 1}`,
-            }));
-          setGalleryItems(selected);
-        }
-      })
-      .catch((err) => console.error("Failed to load videos for gallery:", err));
-  }, []);
+  const galleryItems = [
+    { image: "/r2-videos/5baa7662-566c-4f92-93c3-d80a1fcfb81f/video-87a09b58.mp4", text: "Generated Video 1" },
+    { image: "/r2-videos/4f6384c3-987f-43e7-8002-c63f35d6d59e/video-0e72ea11-309.mp4", text: "Generated Video 2" },
+    { image: "/r2-videos/02ebbcd8-c4f0-4ebb-9461-48d3574a5dc7/video-bdef839d.mp4", text: "Generated Video 3" },
+    { image: "/r2-videos/76fab3c7-9fa4-4ad3-a7db-0dbefd91b740/video-6a0e3f4e.mp4", text: "Generated Video 4" },
+    { image: "/r2-videos/7011733b-3e0a-431e-8353-ac20971cd84a/video-773dc73d.mp4", text: "Generated Video 5" },
+    { image: "/r2-videos/670a9133-555c-496b-b822-6af64d3c87cb/video-ea049ada.mp4", text: "Generated Video 6" },
+  ];
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-white selection:text-black">

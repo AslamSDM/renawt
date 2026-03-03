@@ -473,7 +473,11 @@ const ScenePreview: React.FC<{ scene: VideoScene; isActive?: boolean }> = ({
   );
 };
 
-const SingleScenePlayer: React.FC<{ scene: VideoScene; width?: number; height?: number }> = ({ scene, width = 1920, height = 1080 }) => {
+const SingleScenePlayer: React.FC<{
+  scene: VideoScene;
+  width?: number;
+  height?: number;
+}> = ({ scene, width = 1920, height = 1080 }) => {
   return (
     <Player
       component={() => <ScenePreview scene={scene} />}
@@ -591,11 +595,36 @@ export default function ProjectCreativePage() {
   const [description, setDescription] = useState("");
   // Single preset combines style + videoType + templateStyle
   const PRESETS = {
-    creative:     { style: "professional" as const, videoType: "creative"    as const, templateStyle: "aurora"          as const, label: "Creative" },
-    "fast-paced": { style: "bold"         as const, videoType: "fast-paced"  as const, templateStyle: "blue-clean"      as const, label: "Fast-paced" },
-    cinematic:    { style: "minimal"      as const, videoType: "cinematic"   as const, templateStyle: "floating-glass"  as const, label: "Cinematic" },
-    demo:         { style: "professional" as const, videoType: "demo"        as const, templateStyle: "aurora"          as const, label: "Demo" },
-    freestyle:    { style: "professional" as const, videoType: "freestyle"   as const, templateStyle: "aurora"          as const, label: "Freestyle (Gemini Pro)" },
+    creative: {
+      style: "professional" as const,
+      videoType: "creative" as const,
+      templateStyle: "aurora" as const,
+      label: "Creative",
+    },
+    "fast-paced": {
+      style: "bold" as const,
+      videoType: "fast-paced" as const,
+      templateStyle: "blue-clean" as const,
+      label: "Fast-paced",
+    },
+    cinematic: {
+      style: "minimal" as const,
+      videoType: "cinematic" as const,
+      templateStyle: "floating-glass" as const,
+      label: "Cinematic",
+    },
+    demo: {
+      style: "professional" as const,
+      videoType: "demo" as const,
+      templateStyle: "aurora" as const,
+      label: "Demo",
+    },
+    freestyle: {
+      style: "professional" as const,
+      videoType: "freestyle" as const,
+      templateStyle: "aurora" as const,
+      label: "Freestyle (Gemini Pro)",
+    },
   } as const;
   type PresetKey = keyof typeof PRESETS;
   const [preset, setPreset] = useState<PresetKey>("creative");
@@ -624,6 +653,12 @@ export default function ProjectCreativePage() {
     stockImages: false,
     animatedComponents: true,
   });
+
+  // Credit gating (production only)
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
+  const isProduction = process.env.NODE_ENV === "production";
+  const hasNoCredits =
+    isProduction && creditBalance !== null && creditBalance <= 0;
 
   // Processing states
   const [loading, setLoading] = useState(false);
@@ -754,13 +789,32 @@ export default function ProjectCreativePage() {
     logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [logs]);
 
+  // Fetch credit balance (production only)
+  const fetchCredits = useCallback(async () => {
+    try {
+      const res = await fetch("/api/user/profile");
+      if (res.ok) {
+        const data = await res.json();
+        setCreditBalance(data.user.creditBalance ?? 0);
+      }
+    } catch {
+      // Silently fail — credits will remain null (no gating)
+    }
+  }, []);
+
   // Load project data on mount
   useEffect(() => {
     if (projectId) {
       loadProject();
       loadRecordings();
+      if (isProduction) fetchCredits();
     }
   }, [projectId]);
+
+  // Refresh credits after generation/render completes
+  useEffect(() => {
+    if (!loading && !rendering && isProduction) fetchCredits();
+  }, [loading, rendering]);
 
   // Unified polling for recording processing status (CV detection + video processing)
   useEffect(() => {
@@ -1002,6 +1056,13 @@ export default function ProjectCreativePage() {
   };
 
   const handleGenerate = async () => {
+    if (hasNoCredits) {
+      toast.error("No credits available. Subscribe to get more credits.", {
+        action: { label: "Subscribe", onClick: () => router.push("/pricing") },
+      });
+      return;
+    }
+
     if (!description.trim() && !url.trim()) {
       toast.error("Please enter a URL or description");
       return;
@@ -1382,6 +1443,12 @@ export default function ProjectCreativePage() {
 
   const handleContinueGeneration = useCallback(async () => {
     if (!editableScript) return;
+    if (hasNoCredits) {
+      toast.error("No credits available. Subscribe to get more credits.", {
+        action: { label: "Subscribe", onClick: () => router.push("/pricing") },
+      });
+      return;
+    }
     setLoading(true);
     setScript(editableScript);
     setGenerationProgress(0);
@@ -1714,6 +1781,12 @@ export default function ProjectCreativePage() {
   // Post-render video editing via chat
   const handleVideoEdit = useCallback(async () => {
     if (!videoEditInput.trim() || !remotionCode || videoEditLoading) return;
+    if (hasNoCredits) {
+      toast.error("No credits available. Subscribe to get more credits.", {
+        action: { label: "Subscribe", onClick: () => router.push("/pricing") },
+      });
+      return;
+    }
 
     const message = videoEditInput.trim();
     setVideoEditInput("");
@@ -1899,6 +1972,12 @@ export default function ProjectCreativePage() {
   );
 
   const handleRender = async () => {
+    if (hasNoCredits) {
+      toast.error("No credits available. Subscribe to get more credits.", {
+        action: { label: "Subscribe", onClick: () => router.push("/pricing") },
+      });
+      return;
+    }
     if (!remotionCode) {
       toast.error("No video composition available. Generate a video first!");
       return;
@@ -2122,6 +2201,12 @@ export default function ProjectCreativePage() {
 
   const handleScriptChat = useCallback(async () => {
     if (!scriptChatInput.trim() || !editableScript || scriptChatLoading) return;
+    if (hasNoCredits) {
+      toast.error("No credits available. Subscribe to get more credits.", {
+        action: { label: "Subscribe", onClick: () => router.push("/pricing") },
+      });
+      return;
+    }
     const message = scriptChatInput.trim();
     setScriptChatInput("");
     setScriptChatLoading(true);
@@ -2682,125 +2767,126 @@ export default function ProjectCreativePage() {
         {/* INPUT TAB - Wider Configuration Panel */}
         {activeTab === "input" && (
           <div className="max-w-2xl mx-auto px-6 py-12">
-              <div className="space-y-8">
-                <div>
-                  <h2 className="text-2xl font-light mb-2">
-                    Create Your Video
-                  </h2>
-                  <p className="text-gray-500">
-                    Enter your product details and we'll generate a script
-                  </p>
-                </div>
+            <div className="space-y-8">
+              <div>
+                <h2 className="text-2xl font-light mb-2">Create Your Video</h2>
+                <p className="text-gray-500">
+                  Enter your product details and we'll generate a script
+                </p>
+              </div>
 
-                {/* Floating Progress Indicator - Show during generation */}
-                {loading && generationProgress > 0 && activeTab === "input" && (
-                  <div className="fixed bottom-6 right-6 z-50 bg-[#1a1a1a] border border-white/10 rounded-lg p-4 shadow-2xl max-w-sm">
-                    <ProgressBar
-                      progress={generationProgress}
-                      status={generationStatus}
-                    />
-                  </div>
-                )}
-
-                {/* URL Input */}
-                <div className="space-y-2">
-                  <label className="text-xs tracking-widest text-gray-500 uppercase">
-                    Product URL (Optional)
-                  </label>
-                  <input
-                    type="url"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    placeholder="https://example.com/product"
-                    className="w-full px-4 py-4 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none transition-colors text-base rounded-lg"
+              {/* Floating Progress Indicator - Show during generation */}
+              {loading && generationProgress > 0 && activeTab === "input" && (
+                <div className="fixed bottom-6 right-6 z-50 bg-[#1a1a1a] border border-white/10 rounded-lg p-4 shadow-2xl max-w-sm">
+                  <ProgressBar
+                    progress={generationProgress}
+                    status={generationStatus}
                   />
                 </div>
+              )}
 
-                {/* Description Input - Wider */}
-                <div className="space-y-2">
+              {/* URL Input */}
+              <div className="space-y-2">
+                <label className="text-xs tracking-widest text-gray-500 uppercase">
+                  Product URL (Optional)
+                </label>
+                <input
+                  type="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://example.com/product"
+                  className="w-full px-4 py-4 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none transition-colors text-base rounded-lg"
+                />
+              </div>
+
+              {/* Description Input - Wider */}
+              <div className="space-y-2">
+                <label className="text-xs tracking-widest text-gray-500 uppercase">
+                  Description
+                </label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Describe your product, what it does, and what makes it special..."
+                  rows={6}
+                  className="w-full px-4 py-4 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none transition-colors resize-none text-base rounded-lg"
+                />
+              </div>
+
+              {/* Video Preset */}
+              <div className="space-y-2">
+                <label className="text-xs tracking-widest text-gray-500 uppercase">
+                  Video Preset
+                </label>
+                <select
+                  value={preset}
+                  onChange={(e) => setPreset(e.target.value as PresetKey)}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none rounded-lg"
+                >
+                  {Object.entries(PRESETS).map(([key, p]) => (
+                    <option key={key} value={key}>
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Duration */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
                   <label className="text-xs tracking-widest text-gray-500 uppercase">
-                    Description
+                    Duration
                   </label>
-                  <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Describe your product, what it does, and what makes it special..."
-                    rows={6}
-                    className="w-full px-4 py-4 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none transition-colors resize-none text-base rounded-lg"
-                  />
+                  <span className="text-sm text-gray-400">
+                    {duration}s
+                    {selectedAudio?.duration &&
+                    duration > selectedAudio.duration
+                      ? ` (capped at ${Math.floor(selectedAudio.duration)}s — audio length)`
+                      : selectedAudio?.duration
+                        ? ` / ${Math.floor(selectedAudio.duration)}s max`
+                        : ""}
+                  </span>
                 </div>
-
-                {/* Video Preset */}
-                <div className="space-y-2">
-                  <label className="text-xs tracking-widest text-gray-500 uppercase">
-                    Video Preset
-                  </label>
-                  <select
-                    value={preset}
-                    onChange={(e) => setPreset(e.target.value as PresetKey)}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none rounded-lg"
-                  >
-                    {Object.entries(PRESETS).map(([key, p]) => (
-                      <option key={key} value={key}>{p.label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Duration */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <label className="text-xs tracking-widest text-gray-500 uppercase">
-                      Duration
-                    </label>
-                    <span className="text-sm text-gray-400">
-                      {duration}s
-                      {selectedAudio?.duration &&
-                      duration > selectedAudio.duration
-                        ? ` (capped at ${Math.floor(selectedAudio.duration)}s — audio length)`
-                        : selectedAudio?.duration
-                          ? ` / ${Math.floor(selectedAudio.duration)}s max`
-                          : ""}
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min="10"
-                    max={
-                      selectedAudio?.duration
-                        ? Math.floor(selectedAudio.duration)
-                        : 120
-                    }
-                    step="1"
-                    value={Math.min(
-                      duration,
-                      selectedAudio?.duration
-                        ? Math.floor(selectedAudio.duration)
-                        : 120,
-                    )}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value);
-                      const maxAllowed = selectedAudio?.duration
-                        ? Math.floor(selectedAudio.duration)
-                        : 120;
-                      setDuration(Math.min(val, maxAllowed));
-                    }}
-                    className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
-                  />
-                  {selectedAudio?.duration && (
-                    <p className="text-xs text-gray-600">
-                      Max duration is locked to your selected audio track (
-                      {Math.floor(selectedAudio.duration)}s)
-                    </p>
+                <input
+                  type="range"
+                  min="10"
+                  max={
+                    selectedAudio?.duration
+                      ? Math.floor(selectedAudio.duration)
+                      : 120
+                  }
+                  step="1"
+                  value={Math.min(
+                    duration,
+                    selectedAudio?.duration
+                      ? Math.floor(selectedAudio.duration)
+                      : 120,
                   )}
-                </div>
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value);
+                    const maxAllowed = selectedAudio?.duration
+                      ? Math.floor(selectedAudio.duration)
+                      : 120;
+                    setDuration(Math.min(val, maxAllowed));
+                  }}
+                  className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
+                />
+                {selectedAudio?.duration && (
+                  <p className="text-xs text-gray-600">
+                    Max duration is locked to your selected audio track (
+                    {Math.floor(selectedAudio.duration)}s)
+                  </p>
+                )}
+              </div>
 
-                {/* Aspect Ratio */}
-                <div className="space-y-2">
-                  <label className="text-xs tracking-widest text-gray-500 uppercase">
-                    Aspect Ratio
-                  </label>
-                  <div className="flex gap-2">
-                    {(Object.keys(ASPECT_RATIOS) as AspectRatioKey[]).map((ratio) => (
+              {/* Aspect Ratio */}
+              <div className="space-y-2">
+                <label className="text-xs tracking-widest text-gray-500 uppercase">
+                  Aspect Ratio
+                </label>
+                <div className="flex gap-2">
+                  {(Object.keys(ASPECT_RATIOS) as AspectRatioKey[]).map(
+                    (ratio) => (
                       <button
                         key={ratio}
                         onClick={() => setAspectRatio(ratio)}
@@ -2812,218 +2898,239 @@ export default function ProjectCreativePage() {
                       >
                         {ASPECT_RATIOS[ratio].label}
                       </button>
-                    ))}
-                  </div>
+                    ),
+                  )}
                 </div>
+              </div>
 
-                {/* Feature Toggles */}
-                <div className="space-y-3">
-                  <label className="text-xs tracking-widest text-gray-500 uppercase">
-                    Features
-                  </label>
-                  {[
-                    { key: "nanoBanana" as const, label: "AI Image Gen", desc: "Generate images with Gemini Flash" },
-                    { key: "stockImages" as const, label: "Stock Images", desc: "Include stock photography" },
-                    { key: "animatedComponents" as const, label: "Animated Components", desc: "Use animated UI elements" },
-                  ].map(({ key, label, desc }) => (
-                    <div key={key} className="flex items-center justify-between py-2">
-                      <div>
-                        <div className="text-sm text-gray-300">{label}</div>
-                        <div className="text-xs text-gray-600">{desc}</div>
-                      </div>
-                      <button
-                        onClick={() => setToggles((prev) => ({ ...prev, [key]: !prev[key] }))}
-                        className={`relative w-10 h-5 rounded-full transition-colors ${
-                          toggles[key] ? "bg-white/30" : "bg-white/10"
-                        }`}
-                      >
-                        <div
-                          className={`absolute top-0.5 w-4 h-4 rounded-full transition-transform ${
-                            toggles[key] ? "translate-x-5 bg-white" : "translate-x-0.5 bg-gray-500"
-                          }`}
-                        />
-                      </button>
+              {/* Feature Toggles */}
+              <div className="space-y-3">
+                <label className="text-xs tracking-widest text-gray-500 uppercase">
+                  Features
+                </label>
+                {[
+                  {
+                    key: "nanoBanana" as const,
+                    label: "AI Image Gen",
+                    desc: "Generate images with Gemini Flash",
+                  },
+                  {
+                    key: "stockImages" as const,
+                    label: "Stock Images",
+                    desc: "Include stock photography",
+                  },
+                  {
+                    key: "animatedComponents" as const,
+                    label: "Animated Components",
+                    desc: "Use animated UI elements",
+                  },
+                ].map(({ key, label, desc }) => (
+                  <div
+                    key={key}
+                    className="flex items-center justify-between py-2"
+                  >
+                    <div>
+                      <div className="text-sm text-gray-300">{label}</div>
+                      <div className="text-xs text-gray-600">{desc}</div>
                     </div>
-                  ))}
-                </div>
-
-                {/* Audio Selector */}
-                <AudioSelector
-                  selectedAudio={selectedAudio}
-                  onSelect={setSelectedAudio}
-                />
-
-                {/* Recordings */}
-                <div className="space-y-3">
-                  <label className="text-xs tracking-widest text-gray-500 uppercase">
-                    Screen Recordings
-                  </label>
-                  {recordings.length === 0 ? (
                     <button
-                      onClick={() => setShowRecordingModal(true)}
-                      className="w-full py-4 border-2 border-dashed border-white/10 rounded-lg flex items-center justify-center gap-3 hover:border-white/20 transition-colors text-gray-500"
+                      onClick={() =>
+                        setToggles((prev) => ({ ...prev, [key]: !prev[key] }))
+                      }
+                      className={`relative w-10 h-5 rounded-full transition-colors ${
+                        toggles[key] ? "bg-white/30" : "bg-white/10"
+                      }`}
                     >
-                      <Monitor className="w-5 h-5" />
-                      <span>Add a screen recording</span>
+                      <div
+                        className={`absolute top-0.5 w-4 h-4 rounded-full transition-transform ${
+                          toggles[key]
+                            ? "translate-x-5 bg-white"
+                            : "translate-x-0.5 bg-gray-500"
+                        }`}
+                      />
                     </button>
-                  ) : (
-                    <div className="space-y-3">
-                      {recordings.map((recording) => {
-                        const isProcessing =
-                          recording.processingStatus === "pending" ||
-                          recording.processingStatus === "processing";
-                        const progress = recordingProgress[recording.id] || 0;
-                        const hasProcessedVideo = !!recording.processedVideoUrl;
-                        const isFailed =
-                          recording.processingStatus === "failed";
+                  </div>
+                ))}
+              </div>
 
-                        return (
-                          <div
-                            key={recording.id}
-                            className="bg-white/5 border border-white/10 p-4 rounded-lg"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div
-                                  className={`w-2 h-2 rounded-full ${
-                                    hasProcessedVideo
-                                      ? "bg-green-400"
-                                      : isFailed
-                                        ? "bg-red-400"
-                                        : isProcessing
-                                          ? "bg-yellow-400 animate-pulse"
-                                          : "bg-gray-400"
-                                  }`}
-                                />
-                                <span className="text-sm">
-                                  {recording.featureName}
+              {/* Audio Selector */}
+              <AudioSelector
+                selectedAudio={selectedAudio}
+                onSelect={setSelectedAudio}
+              />
+
+              {/* Recordings */}
+              <div className="space-y-3">
+                <label className="text-xs tracking-widest text-gray-500 uppercase">
+                  Screen Recordings
+                </label>
+                {recordings.length === 0 ? (
+                  <button
+                    onClick={() => setShowRecordingModal(true)}
+                    className="w-full py-4 border-2 border-dashed border-white/10 rounded-lg flex items-center justify-center gap-3 hover:border-white/20 transition-colors text-gray-500"
+                  >
+                    <Monitor className="w-5 h-5" />
+                    <span>Add a screen recording</span>
+                  </button>
+                ) : (
+                  <div className="space-y-3">
+                    {recordings.map((recording) => {
+                      const isProcessing =
+                        recording.processingStatus === "pending" ||
+                        recording.processingStatus === "processing";
+                      const progress = recordingProgress[recording.id] || 0;
+                      const hasProcessedVideo = !!recording.processedVideoUrl;
+                      const isFailed = recording.processingStatus === "failed";
+
+                      return (
+                        <div
+                          key={recording.id}
+                          className="bg-white/5 border border-white/10 p-4 rounded-lg"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`w-2 h-2 rounded-full ${
+                                  hasProcessedVideo
+                                    ? "bg-green-400"
+                                    : isFailed
+                                      ? "bg-red-400"
+                                      : isProcessing
+                                        ? "bg-yellow-400 animate-pulse"
+                                        : "bg-gray-400"
+                                }`}
+                              />
+                              <span className="text-sm">
+                                {recording.featureName}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {formatTime(Math.round(recording.duration))}
+                              </span>
+                              {hasProcessedVideo ? (
+                                <span className="text-xs text-green-400">
+                                  Ready
                                 </span>
-                                <span className="text-xs text-gray-500">
-                                  {formatTime(Math.round(recording.duration))}
+                              ) : isFailed ? (
+                                <span className="text-xs text-red-400">
+                                  Failed
                                 </span>
-                                {hasProcessedVideo ? (
-                                  <span className="text-xs text-green-400">
-                                    Ready
-                                  </span>
-                                ) : isFailed ? (
-                                  <span className="text-xs text-red-400">
-                                    Failed
-                                  </span>
-                                ) : isProcessing ? (
-                                  <span className="text-xs text-yellow-400 flex items-center gap-1">
-                                    <Loader2 className="w-3 h-3 animate-spin" />
-                                    Processing{" "}
-                                    {progress > 0 ? `${progress}%` : ""}
-                                  </span>
-                                ) : null}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => {
-                                    setEditingRecording(recording);
-                                    setEditTrimStart(recording.trimStart);
-                                    setEditTrimEnd(recording.trimEnd);
-                                    setEditMockupFrame(
-                                      recording.mockupFrame || "minimal",
-                                    );
-                                    setEditCursorStyle(
-                                      recording.cursorStyle || "hand",
-                                    );
-                                    setRecordingFeatureName(
-                                      recording.featureName,
-                                    );
-                                    setRecordingDescription(
-                                      recording.description,
-                                    );
-                                    setShowRecordingModal(true);
-                                  }}
-                                  className="text-gray-500 hover:text-white"
-                                  title="Edit recording"
+                              ) : isProcessing ? (
+                                <span className="text-xs text-yellow-400 flex items-center gap-1">
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                  Processing{" "}
+                                  {progress > 0 ? `${progress}%` : ""}
+                                </span>
+                              ) : null}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => {
+                                  setEditingRecording(recording);
+                                  setEditTrimStart(recording.trimStart);
+                                  setEditTrimEnd(recording.trimEnd);
+                                  setEditMockupFrame(
+                                    recording.mockupFrame || "minimal",
+                                  );
+                                  setEditCursorStyle(
+                                    recording.cursorStyle || "hand",
+                                  );
+                                  setRecordingFeatureName(
+                                    recording.featureName,
+                                  );
+                                  setRecordingDescription(
+                                    recording.description,
+                                  );
+                                  setShowRecordingModal(true);
+                                }}
+                                className="text-gray-500 hover:text-white"
+                                title="Edit recording"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
                                 >
-                                  <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                    />
-                                  </svg>
-                                </button>
-                                <button
-                                  onClick={async () => {
-                                    if (
-                                      !confirm(
-                                        `Discard recording "${recording.featureName}"?`,
-                                      )
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                  />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (
+                                    !confirm(
+                                      `Discard recording "${recording.featureName}"?`,
                                     )
-                                      return;
-                                    try {
-                                      await fetch(
-                                        `/api/recordings/${recording.id}`,
-                                        { method: "DELETE" },
-                                      );
-                                    } catch (err) {
-                                      console.error(
-                                        "Failed to delete recording:",
-                                        err,
-                                      );
-                                    }
-                                    setRecordings((prev) =>
-                                      prev.filter((r) => r.id !== recording.id),
+                                  )
+                                    return;
+                                  try {
+                                    await fetch(
+                                      `/api/recordings/${recording.id}`,
+                                      { method: "DELETE" },
                                     );
-                                  }}
-                                  className="text-gray-500 hover:text-red-400"
-                                  title="Discard recording"
-                                >
-                                  <X className="w-4 h-4" />
-                                </button>
-                              </div>
+                                  } catch (err) {
+                                    console.error(
+                                      "Failed to delete recording:",
+                                      err,
+                                    );
+                                  }
+                                  setRecordings((prev) =>
+                                    prev.filter((r) => r.id !== recording.id),
+                                  );
+                                }}
+                                className="text-gray-500 hover:text-red-400"
+                                title="Discard recording"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
                             </div>
                           </div>
-                        );
-                      })}
-                      <button
-                        onClick={() => setShowRecordingModal(true)}
-                        className="w-full py-2 text-sm text-gray-500 hover:text-white transition-colors"
-                      >
-                        + Add Another
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Progress Bar - Show during generation */}
-                {loading && generationProgress > 0 && (
-                  <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-                    <ProgressBar
-                      progress={generationProgress}
-                      status={generationStatus}
-                    />
+                        </div>
+                      );
+                    })}
+                    <button
+                      onClick={() => setShowRecordingModal(true)}
+                      className="w-full py-2 text-sm text-gray-500 hover:text-white transition-colors"
+                    >
+                      + Add Another
+                    </button>
                   </div>
                 )}
-
-                {/* Generate Button */}
-                <Button
-                  onClick={handleGenerate}
-                  disabled={loading || !description.trim()}
-                  className="w-full rounded-lg py-6 text-lg"
-                  size="lg"
-                >
-                  {loading ? (
-                    <span className="flex items-center gap-2">
-                      <Loader2 className="animate-spin h-5 w-5" />
-                      Generating Script...
-                    </span>
-                  ) : (
-                    "Generate Script"
-                  )}
-                </Button>
               </div>
+
+              {/* Progress Bar - Show during generation */}
+              {loading && generationProgress > 0 && (
+                <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+                  <ProgressBar
+                    progress={generationProgress}
+                    status={generationStatus}
+                  />
+                </div>
+              )}
+
+              {/* Generate Button */}
+              <Button
+                onClick={handleGenerate}
+                disabled={loading || !description.trim() || hasNoCredits}
+                className="w-full rounded-lg py-6 text-lg"
+                size="lg"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="animate-spin h-5 w-5" />
+                    Generating Script...
+                  </span>
+                ) : hasNoCredits ? (
+                  "No Credits Available"
+                ) : (
+                  "Generate Script"
+                )}
+              </Button>
+            </div>
           </div>
         )}
 
@@ -3118,8 +3225,20 @@ export default function ProjectCreativePage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <Button
+                      onClick={async () => {
+                        await saveProject({ script: editableScript });
+                        toast.success("Script saved to project");
+                      }}
+                      variant="outline"
+                      disabled={saving || !editableScript}
+                      className="rounded-lg"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      {saving ? "Saving..." : "Save Script"}
+                    </Button>
+                    <Button
                       onClick={handleContinueGeneration}
-                      disabled={loading}
+                      disabled={loading || hasNoCredits}
                       className="rounded-lg"
                       size="lg"
                     >
@@ -3128,6 +3247,8 @@ export default function ProjectCreativePage() {
                           <Loader2 className="animate-spin h-5 w-5" />
                           Generating Video...
                         </span>
+                      ) : hasNoCredits ? (
+                        "No Credits Available"
                       ) : (
                         "Approve & Generate Video"
                       )}

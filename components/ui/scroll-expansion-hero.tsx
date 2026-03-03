@@ -192,7 +192,7 @@ const ScrollExpandMedia = ({
               }}
               priority
             />
-            <div className="absolute inset-0 bg-black/60" />
+            <div className="absolute inset-0 bg-black/10" />
           </motion.div>
 
           <div className="container mx-auto flex flex-col items-center justify-start relative z-10">
