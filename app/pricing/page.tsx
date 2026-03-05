@@ -1,11 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Check, ArrowRight, Coins } from "lucide-react";
+import { Check, ArrowRight, Coins, Building2, Mail, Send } from "lucide-react";
 import { subscriptionPlans } from "@/lib/dodo/subscription";
 import CheckoutButton from "./_components/CheckoutButton";
 
@@ -41,12 +42,32 @@ const FAQS = [
   },
   {
     q: "Do you offer custom packages?",
-    a: "Yes! For teams or agencies needing larger volumes, contact us for custom pricing.",
+    a: "Yes! For teams or agencies needing larger volumes, check out our Enterprise plan or contact us at info@remawt.com for custom pricing.",
   },
 ];
 
 export default function PricingPage() {
   const router = useRouter();
+  const [enterpriseForm, setEnterpriseForm] = useState({
+    email: "",
+    expectedVideos: "",
+    companyName: "",
+    message: "",
+  });
+  const [formSubmitted, setFormSubmitted] = useState(false);
+
+  const handleEnterpriseSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const subject = encodeURIComponent(
+      `Enterprise Inquiry from ${enterpriseForm.companyName || "a potential customer"}`,
+    );
+    const body = encodeURIComponent(
+      `Company: ${enterpriseForm.companyName}\nEmail: ${enterpriseForm.email}\nExpected Videos/Month: ${enterpriseForm.expectedVideos}\n\nMessage:\n${enterpriseForm.message}`,
+    );
+    window.location.href = `mailto:info@remawt.com?subject=${subject}&body=${body}`;
+    setFormSubmitted(true);
+    setTimeout(() => setFormSubmitted(false), 5000);
+  };
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-white selection:text-black">
@@ -146,6 +167,178 @@ export default function PricingPage() {
         </div>
       </section>
 
+      {/* Enterprise Section */}
+      <section className="py-24 px-6 md:px-12 border-b border-white/10">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-px bg-white/10">
+            {/* Enterprise Info */}
+            <Card className="bg-[#0a0a0a] border-0 rounded-none">
+              <CardHeader className="pb-6">
+                <div className="flex items-center gap-2 text-xs text-gray-600 tracking-widest uppercase mb-6">
+                  <Building2 className="w-4 h-4" />
+                  <span>Enterprise</span>
+                </div>
+                <CardTitle className="text-4xl md:text-5xl font-light tracking-wide mb-4">
+                  Custom Pricing
+                </CardTitle>
+                <p className="text-gray-500 leading-relaxed">
+                  For teams and agencies with high-volume needs. Get a tailored
+                  plan that fits your production workflow.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <ul className="space-y-4">
+                  {[
+                    "Unlimited or bulk credits",
+                    "Dedicated account manager",
+                    "Custom rendering pipeline",
+                    "Priority API access & SLA",
+                    "White-label options",
+                    "Custom integrations",
+                    "Volume-based discounts",
+                    "Onboarding & training",
+                  ].map((feature, i) => (
+                    <li key={i} className="flex items-center gap-3 text-sm">
+                      <Check className="w-4 h-4 text-gray-500" />
+                      <span className="text-gray-400">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="pt-4 border-t border-white/10">
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Mail className="w-4 h-4" />
+                    <a
+                      href="mailto:info@remawt.com"
+                      className="hover:text-white transition-colors"
+                    >
+                      info@remawt.com
+                    </a>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Enterprise Form */}
+            <Card className="bg-[#0a0a0a] border-0 rounded-none">
+              <CardHeader className="pb-6">
+                <CardTitle className="text-2xl font-light tracking-wide">
+                  Get in Touch
+                </CardTitle>
+                <p className="text-sm text-gray-500">
+                  Tell us about your needs and we&apos;ll craft a plan for you.
+                </p>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleEnterpriseSubmit} className="space-y-5">
+                  <div>
+                    <label className="block text-xs tracking-widest text-gray-500 uppercase mb-2">
+                      Work Email *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={enterpriseForm.email}
+                      onChange={(e) =>
+                        setEnterpriseForm((prev) => ({
+                          ...prev,
+                          email: e.target.value,
+                        }))
+                      }
+                      className="w-full bg-transparent border border-white/10 px-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30 transition-colors"
+                      placeholder="you@company.com"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs tracking-widest text-gray-500 uppercase mb-2">
+                      Company Name
+                    </label>
+                    <input
+                      type="text"
+                      value={enterpriseForm.companyName}
+                      onChange={(e) =>
+                        setEnterpriseForm((prev) => ({
+                          ...prev,
+                          companyName: e.target.value,
+                        }))
+                      }
+                      className="w-full bg-transparent border border-white/10 px-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30 transition-colors"
+                      placeholder="Acme Inc."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs tracking-widest text-gray-500 uppercase mb-2">
+                      Expected Videos Per Month *
+                    </label>
+                    <select
+                      required
+                      value={enterpriseForm.expectedVideos}
+                      onChange={(e) =>
+                        setEnterpriseForm((prev) => ({
+                          ...prev,
+                          expectedVideos: e.target.value,
+                        }))
+                      }
+                      className="w-full bg-transparent border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:border-white/30 transition-colors appearance-none cursor-pointer"
+                    >
+                      <option value="" disabled className="bg-[#0a0a0a]">
+                        Select volume
+                      </option>
+                      <option value="500-1000" className="bg-[#0a0a0a]">
+                        500 – 1,000
+                      </option>
+                      <option value="1000-5000" className="bg-[#0a0a0a]">
+                        1,000 – 5,000
+                      </option>
+                      <option value="5000-10000" className="bg-[#0a0a0a]">
+                        5,000 – 10,000
+                      </option>
+                      <option value="10000+" className="bg-[#0a0a0a]">
+                        10,000+
+                      </option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs tracking-widest text-gray-500 uppercase mb-2">
+                      Tell Us More
+                    </label>
+                    <textarea
+                      rows={4}
+                      value={enterpriseForm.message}
+                      onChange={(e) =>
+                        setEnterpriseForm((prev) => ({
+                          ...prev,
+                          message: e.target.value,
+                        }))
+                      }
+                      className="w-full bg-transparent border border-white/10 px-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30 transition-colors resize-none"
+                      placeholder="Describe your use case, team size, and any specific requirements…"
+                    />
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full py-4 text-sm tracking-widest uppercase rounded-none bg-white text-black hover:bg-gray-200 transition-all"
+                  >
+                    {formSubmitted ? (
+                      "Opening Mail Client…"
+                    ) : (
+                      <>
+                        Contact Sales
+                        <Send className="ml-2 w-4 h-4" />
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* FAQ Section */}
       <section className="py-24 px-6 md:px-12 border-b border-white/10">
         <div className="max-w-7xl mx-auto">
@@ -179,9 +372,18 @@ export default function PricingPage() {
           <h2 className="text-[8vw] md:text-[6vw] font-light leading-[0.9] mb-8">
             Ready to Create?
           </h2>
-          <p className="text-gray-500 max-w-xl mx-auto mb-12">
+          <p className="text-gray-500 max-w-xl mx-auto mb-8">
             Purchase credits and start creating professional videos with AI.
             Each video costs just 1 credit.
+          </p>
+          <p className="text-gray-600 text-sm mb-12">
+            Need help? Reach out at{" "}
+            <a
+              href="mailto:info@remawt.com"
+              className="text-white hover:underline transition-colors"
+            >
+              info@remawt.com
+            </a>
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
