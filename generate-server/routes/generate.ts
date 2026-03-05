@@ -123,8 +123,14 @@ router.post("/generate", async (req: AuthenticatedRequest, res) => {
       const audioBpm = audio?.bpm || 120;
       const videoDurationSec = duration ? parseInt(duration) : 30;
       const totalFrames = videoDurationSec * 30;
-      state.beatMap = generateBeatMap({ bpm: audioBpm, totalDurationFrames: totalFrames, fps: 30 });
-      console.log(`[GenerateServer] Pre-computed beatmap: ${state.beatMap.beats.length} beats at ${audioBpm} BPM for ${videoDurationSec}s`);
+      state.beatMap = generateBeatMap({
+        bpm: audioBpm,
+        totalDurationFrames: totalFrames,
+        fps: 30,
+      });
+      console.log(
+        `[GenerateServer] Pre-computed beatmap: ${state.beatMap.beats.length} beats at ${audioBpm} BPM for ${videoDurationSec}s`,
+      );
 
       // Step 1: Scraper
       send("status", { step: "scraping", message: "Analyzing product..." });
@@ -149,7 +155,10 @@ router.post("/generate", async (req: AuthenticatedRequest, res) => {
       send("status", { step: "scripting", message: "Writing video script..." });
       const scriptResult = await withAgentLogging(
         "scriptWriter",
-        { productData: state.productData, userPreferences: state.userPreferences },
+        {
+          productData: state.productData,
+          userPreferences: state.userPreferences,
+        },
         () => scriptWriterNode(state as VideoGenerationStateType),
       );
       state = { ...state, ...scriptResult };
@@ -235,8 +244,14 @@ router.post("/continue", async (req: AuthenticatedRequest, res) => {
       // Pre-compute beatmap from audio + video script duration
       const contAudioBpm = (userPreferences as any)?.audio?.bpm || 120;
       const contTotalFrames = videoScript?.totalDuration || 900;
-      state.beatMap = generateBeatMap({ bpm: contAudioBpm, totalDurationFrames: contTotalFrames, fps: 30 });
-      console.log(`[GenerateServer] Continue beatmap: ${state.beatMap.beats.length} beats at ${contAudioBpm} BPM`);
+      state.beatMap = generateBeatMap({
+        bpm: contAudioBpm,
+        totalDurationFrames: contTotalFrames,
+        fps: 30,
+      });
+      console.log(
+        `[GenerateServer] Continue beatmap: ${state.beatMap.beats.length} beats at ${contAudioBpm} BPM`,
+      );
 
       // Step 1: Translate script directly to Remotion (skipping React page generation)
       send("status", {
@@ -245,7 +260,11 @@ router.post("/continue", async (req: AuthenticatedRequest, res) => {
       });
       const translatorResult = await withAgentLogging(
         "remotionTranslator",
-        { videoScript: state.videoScript, productData: state.productData?.name, userPreferences: state.userPreferences },
+        {
+          videoScript: state.videoScript,
+          productData: state.productData?.name,
+          userPreferences: state.userPreferences,
+        },
         () => remotionTranslatorNode(state as VideoGenerationStateType),
       );
       state = { ...state, ...translatorResult };
@@ -278,7 +297,12 @@ router.post("/continue", async (req: AuthenticatedRequest, res) => {
 
         const renderResult = await withAgentLogging(
           "videoRenderer",
-          { remotionCode: state.remotionCode ? `${(state.remotionCode as string).length} chars` : null, attempt: attempts },
+          {
+            remotionCode: state.remotionCode
+              ? `${(state.remotionCode as string).length} chars`
+              : null,
+            attempt: attempts,
+          },
           () => videoRendererNode(state as VideoGenerationStateType),
         );
         state = { ...state, ...renderResult };
@@ -309,7 +333,19 @@ router.post("/continue", async (req: AuthenticatedRequest, res) => {
         }
       }
 
-      send("complete", { success: true, message: "Video generation complete" });
+      if (state.videoUrl) {
+        send("complete", {
+          success: true,
+          message: "Video generation complete",
+        });
+      } else {
+        send("error", {
+          errors: state.errors?.length
+            ? state.errors
+            : ["Video rendering failed after all attempts"],
+        });
+        send("complete", { success: false, message: "Video rendering failed" });
+      }
     } catch (error) {
       console.error("[GenerateServer] Continue stream error:", error);
       send("error", {

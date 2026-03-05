@@ -1615,9 +1615,16 @@ export default function ProjectCreativePage() {
                 addLog(event.data.errors?.[0] || "Error occurred", "error");
                 break;
               case "complete":
-                setGenerationProgress(100);
-                setGenerationStatus("Complete!");
-                addLog("Production complete!", "success");
+                if (event.data.success) {
+                  setGenerationProgress(100);
+                  setGenerationStatus("Complete!");
+                  addLog("Production complete!", "success");
+                } else {
+                  setGenerationProgress(0);
+                  setGenerationStatus("");
+                  toast.error(event.data.message || "Video generation failed");
+                  addLog(event.data.message || "Generation failed", "error");
+                }
                 break;
             }
           } catch (e) {
