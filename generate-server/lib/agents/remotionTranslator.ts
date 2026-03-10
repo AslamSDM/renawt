@@ -530,11 +530,15 @@ Take a React page component and translate it into a Remotion video with a style 
    - NO Math.random() — use deterministic values based on frame number or element index instead (flickering cause)
    - NO Date.now() or new Date() — non-deterministic across rendering tabs (flickering cause)
    - NO CSS background-image for URLs — use Remotion's <Img> component instead (flickering cause)
+   - NO \`backdrop-filter: blur()\` — renders inconsistently across concurrent browser tabs, causing frame-to-frame flicker. Use solid/gradient backgrounds instead.
+   - NO CSS \`transition\` or \`animation\` properties — these are time-based, not frame-based, and flicker when rendered across multiple tabs.
+   - When using \`loadFont\` from \`@remotion/google-fonts\`, call it at the TOP LEVEL (module scope), never inside a component — this ensures the font is loaded once and shared across all concurrent render tabs.
    - NO generic purple+pink aurora (unless brand uses those colors)
    - NO white glass cards (rgba(255,255,255,0.95)) — too generic
    - ALL values computed from frame
    - NO named exports only — MUST have export default
    - NO useFrame from @react-three/fiber
+   - NO relative imports like \`from '../components/...'\` or \`from './utils/...'\` — the render environment has NO local files. ALL helpers MUST be defined inline in the single output file.
 
 6. TEMPLATE LITERAL SYNTAX (CRITICAL):
    When using template literals in style objects, ALWAYS close them properly:
@@ -1064,8 +1068,14 @@ export function hasBasicSyntaxErrors(code: string): string[] {
  * Detect if code appears to be truncated
  */
 export function isCodeTruncated(code: string): boolean {
+  // Strip comments before checking — LLM sometimes puts "export default VideoComposition;"
+  // in a comment, which would fool a naive string search
+  const codeWithoutComments = code
+    .replace(/\/\/[^\n]*/g, "")
+    .replace(/\/\*[\s\S]*?\*\//g, "");
+
   // Check if code has export default (required for Remotion)
-  if (!code.includes("export default")) {
+  if (!codeWithoutComments.includes("export default")) {
     return true;
   }
 
@@ -1633,7 +1643,6 @@ export async function remotionTranslatorNode(
   if (!script && !state.reactPageCode) {
     return {
       errors: [
-        ...state.errors,
         "No video script or React page code available for translation",
       ],
       currentStep: "error",
@@ -1723,6 +1732,31 @@ ${(() => {
 - Transitions should last 1 beat (${Math.round(fpb)} frames)`;
 })()}
 
+## LAYOUT — CRITICAL
+- Resolution: ${videoWidth}x${videoHeight} (${ar})
+- ${videoWidth > videoHeight ? "Landscape" : videoHeight > videoWidth ? "Portrait/vertical" : "Square"} format — design ALL layouts for this aspect ratio
+- ${videoHeight > videoWidth ? "Portrait: use LARGER font sizes (headlines 80-120px), stack elements vertically, use full width. Do NOT center tiny text in a tall frame." : videoWidth > videoHeight ? "Landscape: standard layout, center content." : "Square: use moderate sizes, center content."}
+- Use \`useVideoConfig()\` to get width/height if needed for responsive sizing
+
+## SCENE DURATION — CRITICAL
+The video MUST have content for the ENTIRE ${totalDuration} frames (${Math.round(totalDuration / 30)} seconds). The LAST Sequence MUST end at exactly frame ${totalDuration}. There must be NO empty/blank frames — every frame from 0 to ${totalDuration} must be covered by a Sequence.
+
+**How to plan scenes**: Take the total duration (${totalDuration} frames) and divide it among your scenes. Verify that the last scene's \`from + durationInFrames = ${totalDuration}\`.
+
+Example for ${totalDuration} frames with ${Math.max(5, Math.round(totalDuration / 120))} scenes:
+${(() => {
+  const numScenes = Math.max(5, Math.round(totalDuration / 120));
+  const avgDuration = Math.floor(totalDuration / numScenes);
+  let frame = 0;
+  const lines: string[] = [];
+  for (let i = 0; i < numScenes; i++) {
+    const dur = i === numScenes - 1 ? totalDuration - frame : avgDuration;
+    lines.push("  <Sequence from={" + frame + "} durationInFrames={" + dur + "}> /* scene " + (i + 1) + " */");
+    frame += dur;
+  }
+  return lines.join("\n");
+})()}
+
 ## REQUIREMENTS - PREMIUM DEMO STYLE VIDEO
 1. **VARIABLE SCENE TIMING** (beat-snapped):
    - Intro (first): ~${Math.round(((30 * 60) / audioBpm) * 6)} frames (${Math.round((60 / audioBpm) * 6)}s, 6 beats) — slow, dramatic
@@ -1730,6 +1764,7 @@ ${(() => {
    - Feature cards: ~${Math.round(((30 * 60) / audioBpm) * 4)} frames (${Math.round((60 / audioBpm) * 4)}s, 4 beats) — readable
    - Screenshots: ~${Math.round(((30 * 60) / audioBpm) * 5)} frames (${Math.round((60 / audioBpm) * 5)}s, 5 beats) — see the product
    - CTA (ALWAYS last): ~${Math.round(((30 * 60) / audioBpm) * 6)} frames (${Math.round((60 / audioBpm) * 6)}s, 6 beats) — slow, dramatic close
+   - **SUM of all scene durations MUST equal ${totalDuration} frames exactly**
 2. **DISCRETE SCENES**: Use separate Sequence components with smooth entry animations
 3. **AURORA BACKGROUNDS**: Alternate dark/light aurora backgrounds between scenes
    - Dark aurora: logo scenes, CTA scenes, card scenes
@@ -2169,7 +2204,7 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
   } catch (error) {
     console.error("[RemotionTranslator] Error:", error);
     return {
-      errors: [...state.errors, `Remotion translation failed: ${error}`],
+      errors: [ `Remotion translation failed: ${error}`],
       currentStep: "error",
     };
   }

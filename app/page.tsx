@@ -170,8 +170,7 @@ export default function LandingPage() {
       {/* Hero Section - Renaissance Style using ScrollExpandMedia */}
       <ScrollExpandMedia
         mediaType="video"
-        mediaSrc="https://me7aitdbxq.ufs.sh/f/2wsMIGDMQRdYuZ5R8ahEEZ4aQK56LizRdfBSqeDMsmUIrJN1"
-        posterSrc="https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=800&q=80"
+        mediaSrc="https://pub-d842b814c7c64f5caefc4f21e1f4ef6b.r2.dev/videos/bdf18c40-03eb-4f9d-a35c-10dff7066402/video-70a603d2-2fb.mp4"
         bgImageSrc="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=1920&auto=format&fit=crop"
         title="SaaS Demos in Minutes"
         date="AI-Powered"

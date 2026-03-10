@@ -19,7 +19,7 @@ Analyze the render error below and fix the Remotion code to make it render succe
 1. **"Cannot find module" or import errors:**
    - Ensure all imports are correct
    - Add missing imports from 'remotion'
-   - Fix relative import paths
+   - NEVER import from relative paths like '../components/...' or './utils/...' — the render service has no local files. INLINE all component code directly in the composition file.
 
 2. **"X is not defined" or reference errors:**
    - Define missing variables
@@ -65,6 +65,42 @@ Analyze the render error below and fix the Remotion code to make it render succe
 function autoFixCommonErrors(code: string): { code: string; fixed: boolean } {
   let fixedCode = code;
   let fixed = false;
+
+  // Fix -1: Strip relative imports — single-line and multiline
+  const singleLineRelative =
+    /^import\s+.*?\s+from\s+['"](?:\.\.|\.\/)[^'"]*['"]\s*;?\s*$/gm;
+  if (singleLineRelative.test(fixedCode)) {
+    fixedCode = fixedCode.replace(singleLineRelative, "");
+    fixed = true;
+    console.log("[RenderErrorFixer] Stripped single-line relative imports");
+  }
+  const multiLineRelative =
+    /import\s+(?:type\s+)?\{[^}]*\}\s*from\s*['"](?:\.\.|\.\/)[^'"]*['"]\s*;?/g;
+  if (multiLineRelative.test(fixedCode)) {
+    fixedCode = fixedCode.replace(
+      /import\s+(?:type\s+)?\{[^}]*\}\s*from\s*['"](?:\.\.|\.\/)[^'"]*['"]\s*;?/g,
+      "",
+    );
+    fixed = true;
+    console.log("[RenderErrorFixer] Stripped multiline relative imports");
+  }
+
+  // Fix 0: Strip spread/rest operators from import statements (esbuild rejects `import { X, ...rest }`)
+  fixedCode = fixedCode.replace(
+    /import\s*\{([^}]*)\}\s*from/g,
+    (match, imports) => {
+      const cleaned = imports
+        .split(",")
+        .map((s: string) => s.trim())
+        .filter((s: string) => s && !s.startsWith("..."))
+        .join(", ");
+      if (cleaned !== imports.trim()) {
+        fixed = true;
+        console.log("[RenderErrorFixer] Fixed spread operator in import statement");
+      }
+      return `import { ${cleaned} } from`;
+    },
+  );
 
   // Fix 1: Broken transform template literals like `translate(${x}px`, ${y}px)`
   // Should be: `translate(${x}px, ${y}px)`
@@ -122,14 +158,14 @@ export async function renderErrorFixerNode(
 
   if (!remotionCode) {
     return {
-      errors: [...state.errors, "No Remotion code available to fix"],
+      errors: [ "No Remotion code available to fix"],
       currentStep: "error",
     };
   }
 
   if (!lastError) {
     return {
-      errors: [...state.errors, "No render error to fix"],
+      errors: [ "No render error to fix"],
       currentStep: "error",
     };
   }
@@ -138,7 +174,7 @@ export async function renderErrorFixerNode(
   if (state.renderAttempts >= 3) {
     console.error("[RenderErrorFixer] Max render attempts exceeded");
     return {
-      errors: [...state.errors, "Max render attempts exceeded"],
+      errors: [ "Max render attempts exceeded"],
       currentStep: "error",
     };
   }
@@ -149,6 +185,8 @@ export async function renderErrorFixerNode(
     "TimeoutError",
     "Failed to launch the browser",
     "chrome_crashpad",
+    "ran out of memory",
+    "out of disk space",
   ];
   const isInfraError = infraErrors.some((pattern) =>
     lastError.includes(pattern),
@@ -254,7 +292,7 @@ Output the fixed Remotion code in a TypeScript code block.`;
   } catch (error) {
     console.error("[RenderErrorFixer] Error:", error);
     return {
-      errors: [...state.errors, `Error fixing render: ${error}`],
+      errors: [ `Error fixing render: ${error}`],
       currentStep: "error",
     };
   }

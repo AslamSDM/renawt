@@ -1075,6 +1075,7 @@ export default function ProjectCreativePage() {
     setRenderedVideoUrl(null);
     setActiveTab("script");
     setGenerationProgress(5);
+    toast.info("Starting generation — this process takes 3-5 minutes", { duration: 5000 });
     setGenerationStatus("Initializing AI...");
 
     addLog(`Generating script for "${description}"...`);
@@ -1141,17 +1142,24 @@ export default function ProjectCreativePage() {
                 case "status":
                   addLog(event.data.message || event.data.step);
                   setGenerationStatus(event.data.message || "Processing...");
-                  if (event.data.step === "scraping") setGenerationProgress(15);
-                  else if (event.data.step === "generating")
+                  if (event.data.step === "scraping") {
+                    setGenerationProgress(15);
+                    toast.info("Analyzing your product...", { duration: 3000 });
+                  } else if (event.data.step === "generating") {
                     setGenerationProgress(40);
-                  else if (event.data.step === "code-ready")
+                    toast.info("Generating video composition...", { duration: 3000 });
+                  } else if (event.data.step === "code-ready") {
                     setGenerationProgress(60);
-                  else if (event.data.step === "rendering")
+                    toast.info("Code ready, preparing to render...", { duration: 3000 });
+                  } else if (event.data.step === "rendering") {
                     setGenerationProgress(75);
-                  else if (event.data.step === "fixing")
+                    toast.loading("Rendering video — this may take 2-4 minutes...", { id: "rendering", duration: Infinity });
+                  } else if (event.data.step === "fixing") {
                     setGenerationProgress(80);
-                  else if (event.data.step === "complete")
+                  } else if (event.data.step === "complete") {
                     setGenerationProgress(100);
+                    toast.dismiss("rendering");
+                  }
                   break;
                 case "productData":
                   setProductData(event.data);
@@ -1207,13 +1215,17 @@ export default function ProjectCreativePage() {
                   }
 
                   setActiveTab("preview");
+                  toast.dismiss("rendering");
+                  toast.success("Your video is ready!", { duration: 5000 });
                   addLog("Video rendered!", "success");
                   break;
                 case "error":
+                  toast.dismiss("rendering");
                   toast.error(event.data.errors?.join(", ") || "Error");
                   addLog(event.data.errors?.[0] || "Error occurred", "error");
                   break;
                 case "complete":
+                  toast.dismiss("rendering");
                   addLog(
                     event.data.success
                       ? "Freestyle complete!"
@@ -1314,6 +1326,7 @@ export default function ProjectCreativePage() {
                 ) {
                   setGenerationProgress(25);
                   setGenerationStatus("Extracting product data...");
+                  toast.info("Extracting product data...", { duration: 3000 });
                 } else if (
                   message.includes("analyzing") ||
                   message.includes("processing")
@@ -1326,6 +1339,7 @@ export default function ProjectCreativePage() {
                 ) {
                   setGenerationProgress(60);
                   setGenerationStatus("Generating video script...");
+                  toast.info("Crafting your video script...", { duration: 3000 });
                 } else if (
                   message.includes("finalizing") ||
                   message.includes("optimizing")
@@ -1453,6 +1467,8 @@ export default function ProjectCreativePage() {
     setScript(editableScript);
     setGenerationProgress(0);
     setGenerationStatus("Initializing video generation...");
+    setActiveTab("preview");
+    toast.info("Rendering your video — this takes 2-5 minutes", { duration: 5000 });
     addLog("Starting video production...");
 
     try {
@@ -1543,12 +1559,14 @@ export default function ProjectCreativePage() {
                 ) {
                   setGenerationProgress(25);
                   setGenerationStatus("Preparing video composition...");
+                  toast.info("Creating video composition...", { duration: 3000 });
                 } else if (
                   message.includes("rendering") ||
                   message.includes("processing")
                 ) {
                   setGenerationProgress(60);
                   setGenerationStatus("Rendering video...");
+                  toast.loading("Rendering video — this may take 2-4 minutes...", { id: "rendering", duration: Infinity });
                 } else if (
                   message.includes("finalizing") ||
                   message.includes("encoding")
@@ -1608,13 +1626,17 @@ export default function ProjectCreativePage() {
                 setGenerationProgress(100);
                 setGenerationStatus("Video generation complete!");
                 setActiveTab("preview");
+                toast.dismiss("rendering");
+                toast.success("Your video is ready!", { duration: 5000 });
                 addLog("Video rendered successfully!", "success");
                 break;
               case "error":
+                toast.dismiss("rendering");
                 toast.error(event.data.errors?.join(", ") || "Unknown error");
                 addLog(event.data.errors?.[0] || "Error occurred", "error");
                 break;
               case "complete":
+                toast.dismiss("rendering");
                 if (event.data.success) {
                   setGenerationProgress(100);
                   setGenerationStatus("Complete!");
@@ -1710,8 +1732,13 @@ export default function ProjectCreativePage() {
                 setGenerationStatus(event.data.message || "Rendering...");
                 if (event.data.progress)
                   setGenerationProgress(event.data.progress);
+                if (event.data.progress && event.data.progress <= 10) {
+                  toast.loading("Re-rendering video — this may take 1-3 minutes...", { id: "rerendering", duration: Infinity });
+                }
                 break;
               case "videoUrl":
+                toast.dismiss("rerendering");
+                toast.success("Video updated!", { duration: 5000 });
                 const newVideoUrl = event.data;
                 setRenderedVideoUrl(newVideoUrl);
                 setRenderVersion(Date.now());
@@ -3614,8 +3641,51 @@ export default function ProjectCreativePage() {
         {/* PREVIEW TAB - Final Video */}
         {activeTab === "preview" && (
           <div className="max-w-7xl mx-auto px-6 py-8">
-            {/* Progress Bar - Show during rendering */}
-            {(rendering || (loading && generationProgress > 0)) && (
+            {/* Full Loading State - Show during rendering */}
+            {(rendering || (loading && generationProgress > 0)) && !renderedVideoUrl && (
+              <div className="min-h-[50vh] flex flex-col items-center justify-center mb-8">
+                <div className="w-full max-w-lg space-y-8">
+                  <div className="flex justify-center">
+                    <div className="relative">
+                      <Loader2 className="w-16 h-16 animate-spin text-purple-500" />
+                      <div className="absolute inset-0 w-16 h-16 animate-ping rounded-full bg-purple-500/20" />
+                    </div>
+                  </div>
+                  <div className="text-center space-y-2">
+                    <h2 className="text-2xl font-light">Rendering Your Video</h2>
+                    <p className="text-gray-500">{generationStatus || "Preparing render..."}</p>
+                    <p className="text-gray-600 text-sm">This typically takes 2-4 minutes depending on video length</p>
+                  </div>
+                  <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+                    <ProgressBar
+                      progress={rendering ? renderProgress : generationProgress}
+                      status={generationStatus || "Rendering video..."}
+                    />
+                  </div>
+                  <div className="space-y-3 text-sm">
+                    {[
+                      { label: "Composing scenes", threshold: 20 },
+                      { label: "Rendering frames", threshold: 50 },
+                      { label: "Encoding video", threshold: 80 },
+                      { label: "Uploading", threshold: 95 },
+                    ].map((step, idx) => {
+                      const prog = rendering ? renderProgress : generationProgress;
+                      return (
+                        <div key={idx} className={`flex items-center gap-3 transition-opacity duration-300 ${prog >= step.threshold ? "opacity-100" : "opacity-30"}`}>
+                          <div className={`w-2 h-2 rounded-full ${prog >= step.threshold ? "bg-green-400" : "bg-gray-600"}`} />
+                          <span className={prog >= step.threshold ? "text-gray-300" : "text-gray-600"}>{step.label}</span>
+                          {prog >= step.threshold && prog < step.threshold + 20 && (
+                            <Loader2 className="w-3 h-3 animate-spin ml-auto text-purple-400" />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Compact progress for re-renders */}
+            {(rendering || (loading && generationProgress > 0)) && renderedVideoUrl && (
               <div className="mb-8 bg-white/5 border border-white/10 rounded-lg p-6">
                 <ProgressBar
                   progress={rendering ? renderProgress : generationProgress}

@@ -29,6 +29,19 @@ function createTempComposition(code: string, id: string): string {
 
   let finalCode = code;
 
+  // Strip spread/rest operators from import statements (LLM sometimes generates `import { X, ...rest }`)
+  finalCode = finalCode.replace(
+    /import\s*\{([^}]*)\}\s*from\s+(['"`].*?['"`])/g,
+    (match, imports, fromPath) => {
+      const cleaned = imports
+        .split(",")
+        .map((s: string) => s.trim())
+        .filter((s: string) => s && !s.startsWith("..."))
+        .join(", ");
+      return `import { ${cleaned} } from ${fromPath}`;
+    },
+  );
+
   if (!code.includes("import React") && !code.includes("import * as React")) {
     finalCode = `import React from 'react';\n${finalCode}`;
   }
@@ -69,11 +82,29 @@ function createTempComposition(code: string, id: string): string {
       `[RenderEngine] Fixed ${total - 1} duplicate export default(s)`,
     );
   } else if (!exportDefaultMatches) {
-    const componentMatch = finalCode.match(
-      /(?:const|function|class)\s+([A-Z][a-zA-Z0-9]*)/,
-    );
-    if (componentMatch) {
-      finalCode += `\nexport default ${componentMatch[1]};`;
+    // Find actual React component (mixed-case name, not ALL_CAPS constants like BRAND)
+    // Prefer VideoComposition, then any component with at least one lowercase letter
+    let defaultExportName: string | null = null;
+    const preferredNames = ["VideoComposition", "Main", "App", "Root", "Composition"];
+    for (const name of preferredNames) {
+      if (new RegExp(`(?:const|function)\\s+${name}\\b`).test(finalCode)) {
+        defaultExportName = name;
+        break;
+      }
+    }
+    if (!defaultExportName) {
+      const allMatches = [
+        ...finalCode.matchAll(/(?:const|function|class)\s+([A-Z][a-zA-Z0-9]*)/g),
+      ];
+      for (const m of allMatches) {
+        if (/[a-z]/.test(m[1])) { // must have a lowercase letter (not ALL_CAPS)
+          defaultExportName = m[1];
+          break;
+        }
+      }
+    }
+    if (defaultExportName) {
+      finalCode += `\nexport default ${defaultExportName};`;
     } else {
       finalCode += `
 const DefaultComposition = () => (
@@ -201,10 +232,10 @@ export async function renderVideo(
     const outputFileName = `video-${renderId}.${outputFormat}`;
     const outputPath = join(OUTPUT_DIR, outputFileName);
 
-    // Higher concurrency for 2D videos, lower for ThreeJS (GPU-heavy)
+    // Scale concurrency based on available cores (4 cores / 8GB server)
     const isThreeJS =
       remotionCode.includes("@react-three") || remotionCode.includes("three/");
-    const renderConcurrency = isThreeJS ? 1 : 2;
+    const renderConcurrency = isThreeJS ? 2 : 4;
     console.log(
       `[RenderEngine] Concurrency: ${renderConcurrency} (${isThreeJS ? "ThreeJS" : "2D"})`,
     );
@@ -219,8 +250,7 @@ export async function renderVideo(
       browserExecutable: BROWSER_PATH,
       chromiumOptions: { enableMultiProcessOnLinux: true },
       concurrency: renderConcurrency,
-      imageFormat: "jpeg",
-      jpegQuality: 90,
+      imageFormat: "png", // PNG avoids JPEG compression artifacts that cause flicker with concurrency > 1
       onProgress: ({ progress }) => {
         console.log(`[RenderEngine] Progress: ${Math.round(progress * 100)}%`);
         onProgress?.(progress);

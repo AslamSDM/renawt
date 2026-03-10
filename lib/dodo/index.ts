@@ -30,8 +30,7 @@ export async function createCheckoutSession(
             ],
             metadata: metadata,
 
-            // Where to redirect after successful payment
-            return_url: 'https://yoursite.com/checkout/success',
+            return_url: process.env.DODO_PAYMENTS_RETURN_URL || 'https://remawt.com/projects/',
         });
 
         // Redirect your customer to this URL to complete payment

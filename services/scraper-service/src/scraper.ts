@@ -272,12 +272,95 @@ export async function scrapeWebsite(url: string): Promise<ScrapeResult> {
     await page.setViewport({ width: 1920, height: 1080 });
 
     await page.setUserAgent(
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
     );
+
+    // Dismiss cookie banners and popups after page loads
+    page.on("load", async () => {
+      try {
+        await page.evaluate(() => {
+          const dismissSelectors = [
+            '[class*="cookie"] button',
+            '[id*="cookie"] button',
+            '[class*="consent"] button',
+            '[class*="banner"] button[class*="accept"]',
+            '[class*="banner"] button[class*="close"]',
+            '[class*="modal"] button[class*="close"]',
+            '[class*="popup"] button[class*="close"]',
+            '[aria-label="Close"]',
+            '[aria-label="Accept"]',
+            'button[class*="dismiss"]',
+          ];
+          for (const sel of dismissSelectors) {
+            const btn = document.querySelector<HTMLElement>(sel);
+            if (btn) { btn.click(); break; }
+          }
+        });
+      } catch {}
+    });
+
+    // Collect console errors during page load
+    const pageErrors: string[] = [];
+    page.on("pageerror", (err) => pageErrors.push(String(err)));
 
     console.log(`[Scraper] Navigating to: ${url}`);
     await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
     await waitForPageReady(page);
+
+    // Detect client-side error pages (Next.js, React, Vercel, etc.)
+    const errorState = await page.evaluate(() => {
+      const body = document.body;
+      if (!body) return { isError: true, reason: "No body element" };
+
+      const text = body.innerText.trim().toLowerCase();
+      const errorPatterns = [
+        "application error",
+        "this page could not be found",
+        "500 internal server error",
+        "something went wrong",
+        "an unexpected error has occurred",
+        "this page isn't working",
+        "page not found",
+        "404",
+        "unhandled runtime error",
+      ];
+      const matchedError = errorPatterns.find((p) => text.includes(p));
+      if (matchedError && text.length < 500) {
+        return { isError: true, reason: matchedError };
+      }
+
+      // Detect mostly empty/black pages (body has almost no visible content)
+      const visibleElements = document.querySelectorAll(
+        "h1, h2, h3, p, img, button, a, input, [role='main']"
+      );
+      if (visibleElements.length < 2 && text.length < 100) {
+        return { isError: true, reason: "Page appears empty or failed to render" };
+      }
+
+      return { isError: false, reason: "" };
+    });
+
+    if (errorState.isError) {
+      console.warn(`[Scraper] Error page detected: ${errorState.reason}`);
+      // Try a reload — some SPAs recover on retry
+      console.log("[Scraper] Retrying with full page reload...");
+      await page.reload({ waitUntil: "networkidle2", timeout: 30000 });
+      await waitForPageReady(page, 15000);
+
+      // Check again
+      const retryCheck = await page.evaluate(() => {
+        const text = document.body?.innerText?.trim().toLowerCase() || "";
+        const elements = document.querySelectorAll("h1, h2, h3, p, img, button");
+        return text.length < 100 && elements.length < 2;
+      });
+
+      if (retryCheck) {
+        console.error("[Scraper] Page still broken after reload");
+        if (pageErrors.length > 0) {
+          console.error(`[Scraper] JS errors: ${pageErrors.slice(0, 3).join("; ")}`);
+        }
+      }
+    }
 
     // Capture screenshots
     console.log("[Scraper] Capturing page screenshots...");

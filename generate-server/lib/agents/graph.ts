@@ -101,15 +101,16 @@ function shouldRenderVideo(
 function shouldContinueAfterRender(
   state: VideoGenerationStateType,
 ): "renderErrorFixer" | "__end__" | "error" {
-  if (state.currentStep === "error" || state.errors.length > 0) {
-    return "error";
-  }
-  
   // If render failed, go to error fixer (up to 3 attempts)
+  // Check this BEFORE errors — a failed render always adds to errors array
   if (state.currentStep === "fixing" && state.renderAttempts < 3) {
     return "renderErrorFixer";
   }
-  
+
+  if (state.currentStep === "error") {
+    return "error";
+  }
+
   // If successful or max attempts reached, end
   return "__end__";
 }
@@ -117,7 +118,7 @@ function shouldContinueAfterRender(
 function shouldContinueAfterFix(
   state: VideoGenerationStateType,
 ): "videoRenderer" | "error" {
-  if (state.currentStep === "error" || state.errors.length > 0) {
+  if (state.currentStep === "error") {
     return "error";
   }
   // Go back to rendering with the fixed code

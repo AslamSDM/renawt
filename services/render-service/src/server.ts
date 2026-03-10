@@ -21,6 +21,20 @@ const QUEUE_NAME = "render-jobs";
 
 app.use(express.json({ limit: "50mb" }));
 
+// Shared secret auth — if RENDER_API_KEY is set, all requests (except /health) must include it
+const RENDER_API_KEY = process.env.RENDER_API_KEY;
+if (RENDER_API_KEY) {
+  app.use((req, res, next) => {
+    if (req.path === "/health") return next();
+    const key = req.headers["x-render-key"] || req.headers["authorization"]?.replace("Bearer ", "");
+    if (key !== RENDER_API_KEY) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    next();
+  });
+  console.log("[RenderService] API key auth enabled");
+}
+
 // Redis connection for BullMQ queue
 const connection = new IORedis(REDIS_URL, {
   maxRetriesPerRequest: null,

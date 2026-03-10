@@ -223,7 +223,6 @@ export async function reactPageGeneratorNode(
   if (!script) {
     return {
       errors: [
-        ...state.errors,
         "No video script available for React page generation",
       ],
       currentStep: "error",
@@ -297,7 +296,7 @@ Make it look like a high-energy kinetic typography video!`;
   } catch (error) {
     console.error("[ReactPageGenerator] Error:", error);
     return {
-      errors: [...state.errors, `React page generation failed: ${error}`],
+      errors: [`React page generation failed: ${error}`],
       currentStep: "error",
     };
   }

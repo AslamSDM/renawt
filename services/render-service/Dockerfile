@@ -6,12 +6,12 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 WORKDIR /app
 
 COPY package.json ./
-RUN corepack enable && npm install
+RUN corepack enable && npm install --legacy-peer-deps
 
 COPY tsconfig.json ./
 COPY src ./src
 RUN npx tsc
-RUN npm prune --production
+RUN npm prune --production --legacy-peer-deps
 
 # Final stage
 FROM node:20-slim
@@ -51,6 +51,9 @@ WORKDIR /app
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./
+
+# Copy shared Remotion components (so generated code can import from '../components/...')
+COPY components ./components
 
 # Create temp directories
 RUN mkdir -p /app/.remotion-temp /app/public/renders /app/public/audio && chown -R node:node /app

@@ -7,7 +7,14 @@ import { uploadVideoBufferToR2, isR2Configured } from "../storage/r2";
 
 const RENDER_SERVICE_URL =
   process.env.RENDER_SERVICE_URL || "http://localhost:4002";
+const RENDER_API_KEY = process.env.RENDER_API_KEY || "";
 const POLL_INTERVAL = 2000; // 2 seconds
+
+function authHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (RENDER_API_KEY) headers["x-render-key"] = RENDER_API_KEY;
+  return headers;
+}
 
 export interface RenderJobStatus {
   jobId: string;
@@ -41,7 +48,7 @@ export async function submitRenderJob(
 
   const response = await fetch(`${RENDER_SERVICE_URL}/render`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: authHeaders(),
     body: JSON.stringify(options),
     signal: AbortSignal.timeout(30000),
   });
@@ -72,6 +79,7 @@ export async function pollRenderStatus(
       const response = await fetch(
         `${RENDER_SERVICE_URL}/render/${jobId}/status`,
         {
+          headers: authHeaders(),
           signal: AbortSignal.timeout(10000),
         },
       );
@@ -106,6 +114,7 @@ async function downloadRenderedFile(jobId: string): Promise<Buffer> {
   console.log(`[RenderClient] Downloading file for job ${jobId}...`);
 
   const response = await fetch(`${RENDER_SERVICE_URL}/render/${jobId}/file`, {
+    headers: authHeaders(),
     signal: AbortSignal.timeout(60000), // 1 minute for large files
   });
 
@@ -130,6 +139,7 @@ async function cleanupRenderJob(jobId: string): Promise<void> {
   try {
     await fetch(`${RENDER_SERVICE_URL}/render/${jobId}/cleanup`, {
       method: "DELETE",
+      headers: authHeaders(),
       signal: AbortSignal.timeout(10000),
     });
     console.log(`[RenderClient] Cleanup sent for job ${jobId}`);
