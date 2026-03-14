@@ -15,10 +15,27 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Remawt | AI-Powered Video Creation",
-  description: "Create stunning motion graphics, product launch videos, info videos, and explainer videos in minutes with AI.",
-  keywords: ["video creation", "AI video", "motion graphics", "explainer videos", "product videos"],
-  authors: [{ name: "Remawt" }],
+  title: {
+    default: "Remawt — AI Video Creation Platform for SaaS",
+    template: "%s | Remawt",
+  },
+  description:
+    "Create professional product demos, explainer videos, and motion graphics in minutes. Remawt uses AI to transform your SaaS website or idea into stunning videos — no timeline editing required.",
+  keywords: [
+    "AI video generator",
+    "SaaS demo video",
+    "product demo creator",
+    "AI motion graphics",
+    "explainer video maker",
+    "automated video production",
+    "SaaS marketing videos",
+    "product launch video",
+    "AI video creation platform",
+    "no-code video maker",
+    "remotion video",
+    "video from URL",
+  ],
+  authors: [{ name: "Remawt", url: "https://remawt.com" }],
   creator: "Remawt",
   publisher: "Remawt",
   metadataBase: new URL("https://remawt.com"),
@@ -26,9 +43,7 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   icons: {
-    icon: [
-      { url: "/logo/remawt logo .svg", type: "image/svg+xml" },
-    ],
+    icon: [{ url: "/logo/remawt logo .svg", type: "image/svg+xml" }],
     shortcut: "/logo/remawt logo .svg",
     apple: "/logo/remawt logo .svg",
   },
@@ -37,23 +52,26 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://remawt.com",
     siteName: "Remawt",
-    title: "Remawt | AI-Powered Video Creation",
-    description: "Create stunning motion graphics, product launch videos, info videos, and explainer videos in minutes with AI.",
+    title: "Remawt — AI Video Creation Platform for SaaS",
+    description:
+      "Create professional product demos, explainer videos, and motion graphics in minutes with AI. No timeline editing required.",
     images: [
       {
         url: "/logo/remwat full logo .svg",
         width: 1116,
         height: 479,
-        alt: "Remawt - AI-Powered Video Creation Platform",
+        alt: "Remawt — AI-Powered Video Creation Platform",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Remawt | AI-Powered Video Creation",
-    description: "Create stunning motion graphics, product launch videos, info videos, and explainer videos in minutes with AI.",
-    images: ["/logo/remwat full logo .svg"],
+    site: "@remawt",
     creator: "@remawt",
+    title: "Remawt — AI Video Creation Platform for SaaS",
+    description:
+      "Create professional product demos, explainer videos, and motion graphics in minutes with AI.",
+    images: ["/logo/remwat full logo .svg"],
   },
   robots: {
     index: true,
@@ -66,6 +84,7 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  category: "technology",
 };
 
 import { Providers } from "@/components/Providers";
@@ -80,8 +99,34 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <head>
         <link rel="icon" type="image/svg+xml" href="/logo/remawt logo .svg" />
-        <link rel="shortcut icon" type="image/svg+xml" href="/logo/remawt logo .svg" />
-        <link rel="apple-touch-icon" type="image/svg+xml" href="/logo/remawt logo .svg" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              name: "Remawt",
+              url: "https://remawt.com",
+              applicationCategory: "MultimediaApplication",
+              operatingSystem: "Web",
+              description:
+                "AI-powered video creation platform for SaaS. Create professional product demos, explainer videos, and motion graphics in minutes.",
+              offers: {
+                "@type": "AggregateOffer",
+                lowPrice: "20",
+                highPrice: "149",
+                priceCurrency: "USD",
+                offerCount: 3,
+              },
+              creator: {
+                "@type": "Organization",
+                name: "Remawt",
+                url: "https://remawt.com",
+                email: "info@remawt.com",
+              },
+            }),
+          }}
+        />
       </head>
       <body className="antialiased">
         <Providers>

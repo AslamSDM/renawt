@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Navbar } from "@/components/Navbar";
@@ -9,15 +10,6 @@ import { Footer } from "@/components/Footer";
 import { Check, ArrowRight, Coins, Building2, Mail, Send } from "lucide-react";
 import { subscriptionPlans } from "@/lib/dodo/subscription";
 import CheckoutButton from "./_components/CheckoutButton";
-
-// Credit packages - based on the credit system implementation
-
-// Cost per video breakdown
-const COST_BREAKDOWN = [
-  { package: "Starter", credits: 100, price: 20, costPerVideo: "$0.20" },
-  { package: "Creator", credits: 500, price: 39, costPerVideo: "$0.078" },
-  { package: "Studio", credits: 2000, price: 149, costPerVideo: "$0.075" },
-];
 
 const FAQS = [
   {
@@ -44,10 +36,15 @@ const FAQS = [
     q: "Do you offer custom packages?",
     a: "Yes! For teams or agencies needing larger volumes, check out our Enterprise plan or contact us at info@remawt.com for custom pricing.",
   },
+  {
+    q: "What's the difference between monthly and annual?",
+    a: "Annual plans give you 10% off compared to paying monthly. You get the same credits each month, just at a lower total cost.",
+  },
 ];
 
 export default function PricingPage() {
   const router = useRouter();
+  const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
   const [enterpriseForm, setEnterpriseForm] = useState({
     email: "",
     expectedVideos: "",
@@ -79,7 +76,6 @@ export default function PricingPage() {
         }}
       />
 
-      {/* Navigation with Logo */}
       <Navbar />
 
       {/* Hero Section */}
@@ -91,16 +87,46 @@ export default function PricingPage() {
                 Pricing
               </span>
               <h1 className="text-[10vw] md:text-[6vw] font-light leading-[0.9]">
-                Credit
+                Simple
               </h1>
               <h1 className="text-[10vw] md:text-[6vw] font-light leading-[0.9]">
-                System
+                Pricing
               </h1>
             </div>
             <div className="text-sm tracking-widest text-gray-600 uppercase mt-8 md:mt-0 text-right">
-              <span className="block">Pay As You Go</span>
-              <span className="block">Credits Never Expire</span>
+              <span className="block">Pay Monthly or Annually</span>
+              <span className="block">Save 10% with Annual</span>
             </div>
+          </div>
+
+          {/* Billing Toggle */}
+          <div className="flex items-center justify-center gap-4 mt-12">
+            <span
+              className={`text-sm tracking-widest uppercase cursor-pointer transition-colors ${billing === "monthly" ? "text-white" : "text-gray-600"}`}
+              onClick={() => setBilling("monthly")}
+            >
+              Monthly
+            </span>
+            <button
+              onClick={() => setBilling(billing === "monthly" ? "annual" : "monthly")}
+              className="relative w-14 h-7 rounded-full border border-white/20 transition-colors cursor-pointer"
+              style={{ backgroundColor: billing === "annual" ? "#fff" : "transparent" }}
+            >
+              <span
+                className={`absolute top-0.5 w-6 h-6 rounded-full transition-all duration-300 ${
+                  billing === "annual"
+                    ? "left-7 bg-black"
+                    : "left-0.5 bg-white"
+                }`}
+              />
+            </button>
+            <span
+              className={`text-sm tracking-widest uppercase cursor-pointer transition-colors ${billing === "annual" ? "text-white" : "text-gray-600"}`}
+              onClick={() => setBilling("annual")}
+            >
+              Annual
+              <span className="ml-2 text-xs text-green-400 normal-case">Save 10%</span>
+            </span>
           </div>
         </div>
       </section>
@@ -109,60 +135,77 @@ export default function PricingPage() {
       <section className="py-24 px-6 md:px-12 border-b border-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-px bg-white/10">
-            {subscriptionPlans.map((pkg) => (
-              <Card
-                key={pkg.title}
-                className={`bg-[#0a0a0a] border-0 rounded-none ${pkg.popular ? "relative" : ""}`}
-              >
-                {pkg.popular && (
-                  <div className="absolute top-0 left-0 right-0 bg-white text-black text-center py-2 text-xs tracking-widest uppercase">
-                    Most Popular
-                  </div>
-                )}
+            {subscriptionPlans.map((pkg) => {
+              const monthlyPrice = parseInt(pkg.price);
+              const annualTotal = pkg.annualPrice || String(Math.round(monthlyPrice * 12 * 0.9));
+              const annualMonthly = (parseInt(annualTotal.replace(/,/g, "")) / 12).toFixed(0);
+              const displayPrice = billing === "annual" ? annualMonthly : pkg.price;
+              const displayTotal = billing === "annual" ? annualTotal : null;
 
-                <CardHeader className={`${pkg.popular ? "pt-16" : ""} pb-8`}>
-                  <div className="flex items-center gap-2 text-xs text-gray-600 tracking-widest uppercase mb-6">
-                    <Coins className="w-4 h-4" />
-                    <span>One-time purchase</span>
-                  </div>
+              return (
+                <Card
+                  key={pkg.title}
+                  className={`bg-[#0a0a0a] border-0 rounded-none ${pkg.popular ? "relative" : ""}`}
+                >
+                  {pkg.popular && (
+                    <div className="absolute top-0 left-0 right-0 bg-white text-black text-center py-2 text-xs tracking-widest uppercase">
+                      Most Popular
+                    </div>
+                  )}
 
-                  <div className="flex items-baseline gap-2 mb-4">
-                    <span className="text-6xl font-light">${pkg.price}</span>
-                  </div>
+                  <CardHeader className={`${pkg.popular ? "pt-16" : ""} pb-8`}>
+                    <div className="flex items-center gap-2 text-xs text-gray-600 tracking-widest uppercase mb-6">
+                      <Coins className="w-4 h-4" />
+                      <span>{billing === "annual" ? "Billed annually" : "Billed monthly"}</span>
+                    </div>
 
-                  <CardTitle className="text-2xl font-light tracking-wide">
-                    {pkg.title}
-                  </CardTitle>
-                  <div className="mt-2">
-                    <span className="text-3xl font-light text-white">
-                      {pkg.creditsPerCycle}
-                    </span>
-                    <span className="text-sm text-gray-500 ml-2">credits</span>
-                  </div>
-                  <p className="text-sm text-gray-500 mt-2">
-                    {pkg.description}
-                  </p>
-                </CardHeader>
+                    <div className="flex items-baseline gap-2 mb-1">
+                      <span className="text-6xl font-light">${displayPrice}</span>
+                      <span className="text-sm text-gray-500">/mo</span>
+                    </div>
 
-                <CardContent className="flex flex-col justify-between space-y-6 h-full">
-                  <ul className="space-y-4">
-                    {pkg.features.map((feature, i) => (
-                      <li key={i} className="flex items-center gap-3 text-sm">
-                        <Check className="w-4 h-4 text-gray-500" />
-                        <span className="text-gray-400">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+                    {displayTotal && (
+                      <p className="text-xs text-gray-500">
+                        ${displayTotal}/year
+                        <span className="ml-2 text-green-400">Save ${Math.round(monthlyPrice * 12 - parseInt(annualTotal.replace(/,/g, "")))}/yr</span>
+                      </p>
+                    )}
 
-                  <CheckoutButton
-                    text={pkg.cta}
-                    isPopular={pkg.popular}
-                    product={pkg}
-                    quantity={1}
-                  />
-                </CardContent>
-              </Card>
-            ))}
+                    <CardTitle className="text-2xl font-light tracking-wide mt-4">
+                      {pkg.title}
+                    </CardTitle>
+                    <div className="mt-2">
+                      <span className="text-3xl font-light text-white">
+                        {pkg.creditsPerCycle}
+                      </span>
+                      <span className="text-sm text-gray-500 ml-2">credits/month</span>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-2">
+                      {pkg.description}
+                    </p>
+                  </CardHeader>
+
+                  <CardContent className="flex flex-col justify-between space-y-6 h-full">
+                    <ul className="space-y-4">
+                      {pkg.features.map((feature, i) => (
+                        <li key={i} className="flex items-center gap-3 text-sm">
+                          <Check className="w-4 h-4 text-gray-500" />
+                          <span className="text-gray-400">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <CheckoutButton
+                      text={pkg.cta}
+                      isPopular={pkg.popular}
+                      product={pkg}
+                      quantity={1}
+                      billing={billing}
+                    />
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -315,7 +358,7 @@ export default function PricingPage() {
                         }))
                       }
                       className="w-full bg-transparent border border-white/10 px-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30 transition-colors resize-none"
-                      placeholder="Describe your use case, team size, and any specific requirements…"
+                      placeholder="Describe your use case, team size, and any specific requirements..."
                     />
                   </div>
 
@@ -324,7 +367,7 @@ export default function PricingPage() {
                     className="w-full py-4 text-sm tracking-widest uppercase rounded-none bg-white text-black hover:bg-gray-200 transition-all"
                   >
                     {formSubmitted ? (
-                      "Opening Mail Client…"
+                      "Opening Mail Client..."
                     ) : (
                       <>
                         Contact Sales
@@ -385,7 +428,7 @@ export default function PricingPage() {
               info@remawt.com
             </a>
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button
               onClick={() => router.push("/creative")}
               className="px-12 py-4 text-lg tracking-wider uppercase rounded-none"
@@ -403,10 +446,20 @@ export default function PricingPage() {
               View Projects
             </Button>
           </div>
+
+          {/* Legal Links */}
+          <div className="flex items-center justify-center gap-6 text-xs text-gray-600">
+            <Link href="/privacy" className="hover:text-white transition-colors">
+              Privacy Policy
+            </Link>
+            <span>|</span>
+            <Link href="/terms" className="hover:text-white transition-colors">
+              Terms & Conditions
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Footer with Logo */}
       <Footer />
     </div>
   );

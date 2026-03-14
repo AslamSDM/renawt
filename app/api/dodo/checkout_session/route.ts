@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { product, quantity } = await request.json();
+    const { product, quantity, billing = "monthly" } = await request.json();
 
     if (!product || !quantity) {
       return NextResponse.json({ error: 'Missing product or quantity' }, { status: 400 });
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Use authenticated user's ID, not client-supplied userId
-    const checkoutSession = await createCheckoutSession(session.user.id, product, parsedQuantity);
+    const checkoutSession = await createCheckoutSession(session.user.id, product, parsedQuantity, billing);
 
     return NextResponse.json({ checkout_url: checkoutSession.checkout_url });
   } catch (error) {
