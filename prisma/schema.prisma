@@ -17,6 +17,8 @@ model Project {
   script      String?
   composition String?
   audioUrl    String?
+  videoUrl    String?
+  currentVersionId String?
   status      String   @default("DRAFT")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

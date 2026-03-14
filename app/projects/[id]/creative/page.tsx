@@ -930,37 +930,42 @@ export default function ProjectCreativePage() {
       if (data.project.composition) {
         setRemotionCode(data.project.composition);
       }
-      if (data.project.audioUrl) {
-        setRenderedVideoUrl(data.project.audioUrl);
+      // Restore video URL: prefer videoUrl, fallback to audioUrl
+      const savedVideoUrl = data.project.videoUrl || data.project.audioUrl;
+      if (savedVideoUrl) {
+        setRenderedVideoUrl(savedVideoUrl);
       }
-      // Load version history from project or R2
-      if (data.project.versions) {
-        setVersions(data.project.versions);
-        if (data.project.currentVersionId) {
-          setCurrentVersionId(data.project.currentVersionId);
-        }
-      } else {
-        // Try to load from R2 if not in project
-        try {
-          const versionsResponse = await fetch(
-            `/api/versions?projectId=${projectId}`,
-          );
-          if (versionsResponse.ok) {
-            const versionsData = await versionsResponse.json();
-            if (versionsData.versions && versionsData.versions.length > 0) {
-              setVersions(versionsData.versions);
-              // Find the active version
-              const activeVersion = versionsData.versions.find(
-                (v: VideoVersion) => v.isActive,
-              );
-              if (activeVersion) {
-                setCurrentVersionId(activeVersion.id);
+      // Restore currentVersionId from DB
+      if (data.project.currentVersionId) {
+        setCurrentVersionId(data.project.currentVersionId);
+      }
+      // Load version history from R2
+      try {
+        const versionsResponse = await fetch(
+          `/api/versions?projectId=${projectId}`,
+        );
+        if (versionsResponse.ok) {
+          const versionsData = await versionsResponse.json();
+          if (versionsData.versions && versionsData.versions.length > 0) {
+            setVersions(versionsData.versions);
+            // Find the active version and restore its video
+            const activeVersion = versionsData.versions.find(
+              (v: VideoVersion) => v.isActive,
+            );
+            if (activeVersion) {
+              setCurrentVersionId(activeVersion.id);
+              // If the active version has a video URL, use it
+              if (activeVersion.videoUrl) {
+                setRenderedVideoUrl(activeVersion.videoUrl);
+              }
+              if (activeVersion.remotionCode) {
+                setRemotionCode(activeVersion.remotionCode);
               }
             }
           }
-        } catch (err) {
-          console.warn("Failed to load versions from R2:", err);
         }
+      } catch (err) {
+        console.warn("Failed to load versions from R2:", err);
       }
     } catch (err) {
       addLog("Failed to load project", "error");
@@ -1178,6 +1183,7 @@ export default function ProjectCreativePage() {
                   setRenderedVideoUrl(event.data);
                   await saveProject({
                     videoUrl: event.data,
+                    audioUrl: event.data,
                     status: "RENDERED",
                   });
 
@@ -1199,7 +1205,7 @@ export default function ProjectCreativePage() {
                   setVersions(freestyleVersions);
                   setCurrentVersionId(freestyleVersion.id);
 
-                  await saveProject({ versions: freestyleVersions });
+                  await saveProject({ currentVersionId: freestyleVersion.id });
 
                   try {
                     await fetch("/api/versions", {
@@ -1398,6 +1404,7 @@ export default function ProjectCreativePage() {
                 setRenderedVideoUrl(generatedVideoUrl);
                 await saveProject({
                   audioUrl: generatedVideoUrl,
+                  videoUrl: generatedVideoUrl,
                   status: "READY",
                 });
                 const genVersion: VideoVersion = {
@@ -1416,7 +1423,7 @@ export default function ProjectCreativePage() {
                 genVersions.push(genVersion);
                 setVersions(genVersions);
                 setCurrentVersionId(genVersion.id);
-                await saveProject({ versions: genVersions });
+                await saveProject({ currentVersionId: genVersion.id });
                 try {
                   await fetch("/api/versions", {
                     method: "POST",
@@ -1588,7 +1595,7 @@ export default function ProjectCreativePage() {
                 break;
               case "videoUrl":
                 setRenderedVideoUrl(event.data);
-                await saveProject({ audioUrl: event.data, status: "READY" });
+                await saveProject({ audioUrl: event.data, videoUrl: event.data, status: "READY" });
 
                 const initialVersion: VideoVersion = {
                   id: `v-${Date.now()}`,
@@ -1608,7 +1615,7 @@ export default function ProjectCreativePage() {
                 setVersions(initialVersions);
                 setCurrentVersionId(initialVersion.id);
 
-                await saveProject({ versions: initialVersions });
+                await saveProject({ currentVersionId: initialVersion.id });
 
                 try {
                   await fetch("/api/versions", {
@@ -1742,7 +1749,7 @@ export default function ProjectCreativePage() {
                 const newVideoUrl = event.data;
                 setRenderedVideoUrl(newVideoUrl);
                 setRenderVersion(Date.now());
-                await saveProject({ audioUrl: newVideoUrl, status: "READY" });
+                await saveProject({ audioUrl: newVideoUrl, videoUrl: newVideoUrl, status: "READY" });
 
                 const newVersion: VideoVersion = {
                   id: `v-${Date.now()}`,
@@ -1764,7 +1771,7 @@ export default function ProjectCreativePage() {
                 setVersions(updatedVersions);
                 setCurrentVersionId(newVersion.id);
 
-                await saveProject({ versions: updatedVersions });
+                await saveProject({ currentVersionId: newVersion.id });
 
                 try {
                   await fetch("/api/versions", {
@@ -1996,9 +2003,20 @@ export default function ProjectCreativePage() {
       await saveProject({
         composition: version.remotionCode,
         audioUrl: version.videoUrl,
-        versions: updatedVersions,
+        videoUrl: version.videoUrl,
         currentVersionId: version.id,
       });
+
+      // Save updated versions to R2
+      try {
+        await fetch("/api/versions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ projectId, versions: updatedVersions }),
+        });
+      } catch (err) {
+        console.warn("Failed to save versions to R2:", err);
+      }
 
       addLog(`Switched to version ${version.versionNumber}`, "success");
     },
@@ -2059,6 +2077,46 @@ export default function ProjectCreativePage() {
         setRenderProgress(100);
         setGenerationStatus("Render complete!");
         setRenderedVideoUrl(result.videoUrl);
+        setRenderVersion(Date.now());
+
+        // Persist video URL to DB
+        await saveProject({
+          audioUrl: result.videoUrl,
+          videoUrl: result.videoUrl,
+          status: "READY",
+        });
+
+        // Create a version for this render
+        const renderVersion: VideoVersion = {
+          id: `v-${Date.now()}`,
+          versionNumber: versions.length + 1,
+          timestamp: Date.now(),
+          editMessage: "Manual render",
+          remotionCode: remotionCode || "",
+          videoUrl: result.videoUrl,
+          isActive: true,
+        };
+
+        const renderVersions = versions.map((v) => ({
+          ...v,
+          isActive: false,
+        }));
+        renderVersions.push(renderVersion);
+        setVersions(renderVersions);
+        setCurrentVersionId(renderVersion.id);
+
+        await saveProject({ currentVersionId: renderVersion.id });
+
+        try {
+          await fetch("/api/versions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ projectId, versions: renderVersions }),
+          });
+        } catch (err) {
+          console.warn("Failed to save versions to R2:", err);
+        }
+
         addLog(
           `Video rendered in ${Math.round(result.renderTime / 1000)}s`,
           "success",
