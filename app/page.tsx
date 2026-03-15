@@ -10,7 +10,6 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import dynamic from "next/dynamic";
 import { ComponentType } from "react";
-import ScrollExpandMedia from "@/components/ui/scroll-expansion-hero";
 import { ArrowRight, Play, Pause } from "lucide-react";
 
 const CircularGallery = dynamic(
@@ -167,49 +166,55 @@ export default function LandingPage() {
       {/* Navigation with Logo */}
       <Navbar transparent={true} />
 
-      {/* Hero Section - Renaissance Style using ScrollExpandMedia */}
-      <ScrollExpandMedia
-        mediaType="video"
-        mediaSrc="https://pub-d842b814c7c64f5caefc4f21e1f4ef6b.r2.dev/videos/bdf18c40-03eb-4f9d-a35c-10dff7066402/video-70a603d2-2fb.mp4"
-        bgImageSrc="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=1920&auto=format&fit=crop"
-        title="SaaS Demos in Minutes"
-        date="AI-Powered"
-        scrollToExpand="Scroll to Experience"
-        textBlend={true}
-      >
-        <div className="flex flex-col items-center text-center max-w-4xl mx-auto mt-24">
-          <div className="text-sm tracking-widest text-gray-500 uppercase mb-8">
-            <span className="block">AI Video Production</span>
+      {/* Hero Section - Renaissance Theme */}
+      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 px-6 overflow-hidden min-h-[90vh] flex items-center">
+        {/* Subtle Classical Background */}
+        <div className="absolute inset-0 pointer-events-none opacity-20">
+          <img 
+            src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=1920&auto=format&fit=crop" 
+            alt="Renaissance Texture" 
+            className="w-full h-full object-cover grayscale mix-blend-screen"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/60 via-[#0a0a0a]/90 to-[#0a0a0a]" />
+        </div>
+
+        <div className="relative z-10 max-w-5xl mx-auto text-center flex flex-col items-center mt-12">
+          <div className="text-xs tracking-[0.3em] text-gray-500 uppercase mb-8">
+            <span className="block border-b border-white/10 pb-4">AI Video Production</span>
           </div>
 
-          <div className="mb-12">
-            <p className="text-lg md:text-2xl text-gray-300 mb-4 font-light">
+          <div className="mb-10">
+            <p className="text-xl md:text-2xl text-gray-400 font-light mb-4">
               Create stunning
             </p>
-            <div className="text-3xl md:text-5xl font-light mb-4 text-white">
-              <TypewriterText />
-            </div>
-            <p className="text-lg md:text-2xl text-gray-300 font-light">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-light mb-6 text-white leading-tight">
+              <span className="italic">
+                <TypewriterText />
+              </span>
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-400 font-light">
               in minutes with AI
             </p>
           </div>
 
-          <p className="text-lg text-gray-400 leading-relaxed mb-12 max-w-2xl">
+          <p className="text-lg text-gray-500 leading-relaxed mb-12 max-w-2xl font-light">
             The world&apos;s first AI-powered video generation platform for
             SaaS. Transform screen recordings and URLs into professional motion
             graphics and product demos in under 5 minutes. No timeline editing
             required.
           </p>
 
-          <button
-            onClick={() => router.push("/projects")}
-            className="group flex items-center gap-4 text-xl tracking-wider uppercase text-white hover:text-gray-300 transition-colors border border-white/20 px-8 py-4 rounded-full hover:bg-white/5 bg-black/50 backdrop-blur-sm"
-          >
-            <span>Start Creating</span>
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
-          </button>
+          <div className="flex flex-col sm:flex-row items-center gap-6 w-full sm:w-auto">
+            <button
+              onClick={() => router.push("/projects")}
+              className="group flex items-center justify-center gap-4 text-sm tracking-[0.2em] uppercase text-black bg-white px-10 py-5 hover:bg-gray-200 transition-colors"
+            >
+              <span>Start Creating</span>
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+            </button>
+          </div>
         </div>
-      </ScrollExpandMedia>
+      </section>
 
       {/* Video Gallery Section - Circular WebGL Showcase */}
       {galleryItems.length > 0 && (
@@ -428,7 +433,7 @@ export default function LandingPage() {
             onClick={() => router.push("/projects")}
             className="px-12 py-4 border border-white text-lg tracking-wider uppercase hover:bg-white hover:text-black transition-all"
           >
-            Start For Free
+            Start Creating
           </button>
         </div>
       </section>
