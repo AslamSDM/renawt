@@ -3,8 +3,8 @@ import { VideoGenerationState, type VideoGenerationStateType } from "./state";
 import { scraperNode } from "./scraper";
 import { scriptWriterNode } from "./scriptWriter";
 import { demoScriptWriterNode } from "./demoScriptWriter";
-// Two-step code generation: React page first, then Remotion translation
-import { reactPageGeneratorNode } from "./reactPageGenerator";
+import { creativeDirectorNode } from "./creativeDirector";
+// Single-step code generation: VideoScript → Remotion directly (no intermediate React page)
 import { remotionTranslatorNode, generateFallbackComposition } from "./remotionTranslator";
 // Video rendering with error fixing
 import { videoRendererNode } from "./videoRenderer";
@@ -32,9 +32,9 @@ function shouldContinue(
  * and use the deterministic fallback composition directly.
  * This saves 20-35s by eliminating 2-3 LLM calls.
  */
-function shouldGenerateReactPage(
+function shouldGenerateCode(
   state: VideoGenerationStateType,
-): "reactPageGenerator" | "templateShortCircuit" | "error" {
+): "remotionTranslator" | "templateShortCircuit" | "error" {
   if (state.currentStep === "error" || state.errors.length > 0) {
     return "error";
   }
@@ -44,11 +44,12 @@ function shouldGenerateReactPage(
   const useTemplate = process.env.ENABLE_TEMPLATE_SHORTCIRCUIT === "true";
 
   if (useTemplate && state.productData && (videoType === "creative" || videoType === "fast-paced")) {
-    console.log("[Graph] Template short-circuit: skipping reactPageGenerator + remotionTranslator");
+    console.log("[Graph] Template short-circuit: skipping LLM code generation");
     return "templateShortCircuit";
   }
 
-  return "reactPageGenerator";
+  // Go directly to Remotion translator (single-step: VideoScript → Remotion)
+  return "remotionTranslator";
 }
 
 /**
@@ -78,15 +79,6 @@ async function templateShortCircuitNode(
     remotionCode,
     currentStep: "complete",
   };
-}
-
-function shouldTranslateToRemotion(
-  state: VideoGenerationStateType,
-): "remotionTranslator" | "error" {
-  if (state.currentStep === "error" || state.errors.length > 0) {
-    return "error";
-  }
-  return "remotionTranslator";
 }
 
 function shouldRenderVideo(
@@ -136,17 +128,17 @@ async function errorHandlerNode(
 }
 
 // Build the graph with video rendering and error fixing
-// Flow: scraper → scriptWriter → reactPageGenerator → remotionTranslator → videoRenderer → (error fixer → videoRenderer)* → end
+// Flow: scraper → scriptWriter → creativeDirector → remotionTranslator → videoRenderer → (error fixer → videoRenderer)* → end
 const workflow = new StateGraph(VideoGenerationState)
   // Add nodes
   .addNode("scraper", scraperNode)
   .addNode("scriptWriter", scriptWriterNode)
   .addNode("demoScriptWriter", demoScriptWriterNode)
+  .addNode("creativeDirector", creativeDirectorNode) // Enriches script with creative directions
   .addNode("templateShortCircuit", templateShortCircuitNode) // Template path (skips LLM)
-  .addNode("reactPageGenerator", reactPageGeneratorNode) // Step 1: Generate React page
-  .addNode("remotionTranslator", remotionTranslatorNode) // Step 2: Translate to Remotion
-  .addNode("videoRenderer", videoRendererNode) // Step 3: Render video
-  .addNode("renderErrorFixer", renderErrorFixerNode) // Step 4: Fix render errors
+  .addNode("remotionTranslator", remotionTranslatorNode) // Single-step: VideoScript → Remotion
+  .addNode("videoRenderer", videoRendererNode) // Render video
+  .addNode("renderErrorFixer", renderErrorFixerNode) // Fix render errors
   .addNode("errorHandler", errorHandlerNode)
 
   // Add edges
@@ -159,14 +151,13 @@ const workflow = new StateGraph(VideoGenerationState)
     error: "errorHandler",
   })
 
-  // After script writing, go to React page generator OR template short-circuit
-  .addConditionalEdges("scriptWriter", shouldGenerateReactPage, {
-    reactPageGenerator: "reactPageGenerator",
-    templateShortCircuit: "templateShortCircuit",
-    error: "errorHandler",
-  })
-  .addConditionalEdges("demoScriptWriter", shouldGenerateReactPage, {
-    reactPageGenerator: "reactPageGenerator",
+  // After script writing, run creative director to enrich the script
+  .addEdge("scriptWriter", "creativeDirector")
+  .addEdge("demoScriptWriter", "creativeDirector")
+
+  // After creative direction, go to Remotion translator OR template short-circuit
+  .addConditionalEdges("creativeDirector", shouldGenerateCode, {
+    remotionTranslator: "remotionTranslator",
     templateShortCircuit: "templateShortCircuit",
     error: "errorHandler",
   })
@@ -174,12 +165,6 @@ const workflow = new StateGraph(VideoGenerationState)
   // Template short-circuit goes directly to video renderer
   .addConditionalEdges("templateShortCircuit", shouldRenderVideo, {
     videoRenderer: "videoRenderer",
-    error: "errorHandler",
-  })
-
-  // After React page generation, translate to Remotion
-  .addConditionalEdges("reactPageGenerator", shouldTranslateToRemotion, {
-    remotionTranslator: "remotionTranslator",
     error: "errorHandler",
   })
 

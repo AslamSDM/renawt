@@ -8,7 +8,9 @@ import { uploadVideoBufferToR2, isR2Configured } from "../storage/r2";
 const RENDER_SERVICE_URL =
   process.env.RENDER_SERVICE_URL || "http://localhost:4002";
 const RENDER_API_KEY = process.env.RENDER_API_KEY || "";
-const POLL_INTERVAL = 2000; // 2 seconds
+const POLL_INTERVAL_MIN = 2000; // Start at 2 seconds
+const POLL_INTERVAL_MAX = 10000; // Cap at 10 seconds
+const POLL_BACKOFF_FACTOR = 1.3; // Exponential backoff factor
 
 function authHeaders(): Record<string, string> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
@@ -73,6 +75,7 @@ export async function pollRenderStatus(
   timeoutMs: number = 20 * 60 * 1000, // 20 minutes for slow VPS renders
 ): Promise<RenderJobStatus> {
   const startTime = Date.now();
+  let pollInterval = POLL_INTERVAL_MIN;
 
   while (Date.now() - startTime < timeoutMs) {
     try {
@@ -96,11 +99,13 @@ export async function pollRenderStatus(
         return status;
       }
 
-      // Wait before polling again
-      await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
+      // Exponential backoff: start at 2s, grow to 10s max
+      await new Promise((resolve) => setTimeout(resolve, pollInterval));
+      pollInterval = Math.min(pollInterval * POLL_BACKOFF_FACTOR, POLL_INTERVAL_MAX);
     } catch (error) {
       console.warn(`[RenderClient] Poll error for ${jobId}:`, error);
-      await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
+      await new Promise((resolve) => setTimeout(resolve, pollInterval));
+      pollInterval = Math.min(pollInterval * POLL_BACKOFF_FACTOR, POLL_INTERVAL_MAX);
     }
   }
 

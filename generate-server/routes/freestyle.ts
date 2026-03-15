@@ -12,6 +12,8 @@ import {
   validateAndFixCodeWithRetry,
   fixBrokenTemplateLiterals,
   isCodeTruncated,
+  validateBeforeRender,
+  enforceDuration,
 } from "../lib/agents/remotionTranslator";
 import { FREESTYLE_SYSTEM_PROMPT, buildFreestylePrompt } from "../lib/prompts";
 import {
@@ -375,6 +377,18 @@ router.post("/freestyle", async (req: AuthenticatedRequest, res) => {
         step: "code-ready",
         message: "Composition generated! Rendering...",
       });
+
+      // Step 2.5: Pre-render static analysis
+      const staticAnalysis = validateBeforeRender(code);
+      if (staticAnalysis.errors.length > 0 || staticAnalysis.warnings.length > 0) {
+        console.log(`[Freestyle] Static analysis: ${staticAnalysis.errors.length} errors, ${staticAnalysis.warnings.length} warnings — auto-fixing`);
+        code = staticAnalysis.autoFixed;
+      }
+
+      // Enforce duration coverage
+      const freestyleTargetFrames = duration ? parseInt(duration) * 30 : 900;
+      code = enforceDuration(code, freestyleTargetFrames);
+      send("remotionCode", code);
 
       // Step 3: Render the video with retry loop
       const maxAttempts = 3;

@@ -5,7 +5,7 @@
  * Analyzes the error and asks the LLM to fix the code.
  */
 
-import { chatWithGeminiFlash } from "./model";
+import { chatWithGeminiPro } from "./model";
 import type { VideoGenerationStateType } from "./state";
 
 const RENDER_ERROR_FIXER_SYSTEM_PROMPT = `You are a Remotion and TypeScript expert who fixes rendering errors.
@@ -50,6 +50,12 @@ Analyze the render error below and fix the Remotion code to make it render succe
    - Ensure interpolate() receives valid numbers
    - Check frame ranges are valid
    - Ensure spring() config is valid
+
+8. **React Error #130 — "Objects are not valid as React children":**
+   - This means you are rendering a plain object in JSX — e.g., \`{someObject}\` instead of \`{someObject.text}\`
+   - Find places where objects/arrays are rendered directly in JSX and convert to string: \`{String(value)}\` or access the right property
+   - Common cause: rendering style objects, config objects, or array elements that are objects
+   - Fix by accessing the specific string/number property or using JSON.stringify() as a last resort
 
 ## RULES
 
@@ -207,8 +213,12 @@ export async function renderErrorFixerNode(
   if (fixed) {
     console.log("[RenderErrorFixer] Auto-fixed common syntax errors");
     remotionCode = autoFixedCode;
+  }
 
-    // Return immediately with fixed code to retry rendering
+  // For runtime errors (React #130, etc.), always call LLM even if auto-fix ran
+  const isRuntimeError = lastError.includes("#130") || lastError.includes("is not a function") || lastError.includes("Cannot read properties");
+  if (fixed && !isRuntimeError) {
+    // Pure syntax fix — retry without LLM
     return {
       remotionCode: autoFixedCode,
       currentStep: "rendering",
@@ -239,7 +249,7 @@ Output the fixed Remotion code in a TypeScript code block.`;
 
   try {
     console.log("[RenderErrorFixer] Calling Gemini Flash to fix errors...");
-    const response = await chatWithGeminiFlash(
+    const response = await chatWithGeminiPro(
       [{ role: "user", content: prompt }],
       {
         temperature: 0.2,
@@ -283,6 +293,18 @@ Output the fixed Remotion code in a TypeScript code block.`;
       fixedCode.length,
       "chars",
     );
+
+    // Guard: reject if LLM gutted the code (returned < 40% of original size)
+    if (fixedCode.length < remotionCode.length * 0.4) {
+      console.warn(
+        `[RenderErrorFixer] Fixed code too short (${fixedCode.length} vs original ${remotionCode.length}), keeping original`,
+      );
+      return {
+        remotionCode,
+        currentStep: "rendering",
+        lastRenderError: null,
+      };
+    }
 
     return {
       remotionCode: fixedCode,

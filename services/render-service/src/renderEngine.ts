@@ -232,10 +232,12 @@ export async function renderVideo(
     const outputFileName = `video-${renderId}.${outputFormat}`;
     const outputPath = join(OUTPUT_DIR, outputFileName);
 
-    // Scale concurrency based on available cores (4 cores / 8GB server)
+    // Concurrency: use 1 to eliminate flicker from non-deterministic rendering
+    // across concurrent browser tabs (backdrop-filter, anti-aliasing, sub-pixel diffs)
     const isThreeJS =
       remotionCode.includes("@react-three") || remotionCode.includes("three/");
-    const renderConcurrency = isThreeJS ? 2 : 4;
+    const hasBackdropFilter = remotionCode.includes("backdropFilter") || remotionCode.includes("backdrop-filter");
+    const renderConcurrency = isThreeJS || hasBackdropFilter ? 1 : 2;
     console.log(
       `[RenderEngine] Concurrency: ${renderConcurrency} (${isThreeJS ? "ThreeJS" : "2D"})`,
     );

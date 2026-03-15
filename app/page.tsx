@@ -12,15 +12,6 @@ import dynamic from "next/dynamic";
 import { ComponentType } from "react";
 import { ArrowRight, Play, Pause } from "lucide-react";
 
-const CircularGallery = dynamic(
-  () =>
-    import("@/components/ui/CircularGallery").then(
-      (mod) => mod.default as ComponentType<any>,
-    ),
-  {
-    ssr: false,
-  },
-);
 
 const TYPING_TEXTS = [
   "SaaS product demos",
@@ -144,14 +135,6 @@ const VIDEO_TYPES = [
 export default function LandingPage() {
   const router = useRouter();
   const [isPlaying, setIsPlaying] = useState(false);
-  const galleryItems = [
-    { image: "/r2-videos/5baa7662-566c-4f92-93c3-d80a1fcfb81f/video-87a09b58.mp4", text: "Generated Video 1" },
-    { image: "/r2-videos/4f6384c3-987f-43e7-8002-c63f35d6d59e/video-0e72ea11-309.mp4", text: "Generated Video 2" },
-    { image: "/r2-videos/02ebbcd8-c4f0-4ebb-9461-48d3574a5dc7/video-bdef839d.mp4", text: "Generated Video 3" },
-    { image: "/r2-videos/76fab3c7-9fa4-4ad3-a7db-0dbefd91b740/video-6a0e3f4e.mp4", text: "Generated Video 4" },
-    { image: "/r2-videos/7011733b-3e0a-431e-8353-ac20971cd84a/video-773dc73d.mp4", text: "Generated Video 5" },
-    { image: "/r2-videos/670a9133-555c-496b-b822-6af64d3c87cb/video-ea049ada.mp4", text: "Generated Video 6" },
-  ];
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-white selection:text-black">
@@ -216,30 +199,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Video Gallery Section - Circular WebGL Showcase */}
-      {galleryItems.length > 0 && (
-        <section className="py-24 md:py-32 px-6 md:px-0 border-t border-white/10 relative overflow-hidden">
-          <div className="max-w-7xl mx-auto px-6 md:px-12 mb-16 relative z-10 pointer-events-none">
-            <span className="text-xs tracking-[0.3em] text-gray-600 uppercase">
-              Gallery
-            </span>
-            <h2 className="text-4xl md:text-5xl font-light mt-4">
-              Made with ReMawt
-            </h2>
-          </div>
 
-          <div className="w-full relative h-[600px] mt-8 bg-black">
-            <CircularGallery
-              items={galleryItems}
-              bend={3}
-              textColor="#ffffff"
-              borderRadius={0.05}
-              scrollSpeed={3}
-              className="absolute inset-0"
-            />
-          </div>
-        </section>
-      )}
 
       {/* Video Types Grid - Bruegel Style */}
       <section className="py-24 md:py-32 px-6 md:px-12 border-t border-white/10">
@@ -377,47 +337,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Audio/Visual Section - Bruegel Style */}
-      <section className="py-24 md:py-32 px-6 md:px-12 border-t border-white/10">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <span className="text-xs tracking-[0.3em] text-gray-600 uppercase">
-                Audio Guide
-              </span>
-              <h2 className="text-4xl md:text-5xl font-light mt-4 mb-8">
-                Experience the Process
-              </h2>
-              <p className="text-gray-500 leading-relaxed mb-8">
-                Listen to how our AI transforms simple descriptions into
-                cinematic video content. From script to screen in minutes.
-              </p>
 
-              <button
-                onClick={() => setIsPlaying(!isPlaying)}
-                className="flex items-center gap-4 text-sm tracking-wider uppercase hover:text-gray-400 transition-colors"
-              >
-                <div className="w-10 h-10 border border-white/30 flex items-center justify-center">
-                  {isPlaying ? (
-                    <Pause className="w-5 h-5 text-white" />
-                  ) : (
-                    <Play className="w-5 h-5 text-white" />
-                  )}
-                </div>
-                <span>{isPlaying ? "Pause" : "Play"} Introduction</span>
-              </button>
-            </div>
-
-            <div className="aspect-video bg-white/5 flex items-center justify-center border border-white/10 overflow-hidden">
-              <img
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Vincent_van_Gogh_-_Almond_blossom_-_Google_Art_Project.jpg/640px-Vincent_van_Gogh_-_Almond_blossom_-_Google_Art_Project.jpg"
-                alt="Video Preview"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Large CTA Section */}
       <section className="py-32 md:py-48 px-6 md:px-12 border-t border-white/10">

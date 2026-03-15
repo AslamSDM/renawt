@@ -4,12 +4,17 @@ import { setupSSE, createSSESend } from "../lib/sse";
 import { checkAndDeductCredits, COSTS } from "../lib/billing";
 import { scraperNode } from "../lib/agents/scraper";
 import { scriptWriterNode } from "../lib/agents/scriptWriter";
-import { remotionTranslatorNode } from "../lib/agents/remotionTranslator";
+import { creativeDirectorNode } from "../lib/agents/creativeDirector";
+import { remotionTranslatorNode, validateBeforeRender, enforceDuration } from "../lib/agents/remotionTranslator";
 import { videoRendererNode } from "../lib/agents/videoRenderer";
 import { renderErrorFixerNode } from "../lib/agents/renderErrorFixer";
 import type { VideoGenerationStateType } from "../lib/agents/state";
 import { withAgentLogging } from "../lib/agentLogger";
 import { generateBeatMap } from "../lib/audio/beatSync";
+import {
+  inferBrandStyleFromText,
+  formatBrandStyleForPrompt,
+} from "../lib/agents/brandAnalyser";
 
 const router: Router = Router();
 
@@ -151,6 +156,27 @@ router.post("/generate", async (req: AuthenticatedRequest, res) => {
         return res.end();
       }
 
+      // Step 1.5: Brand style inference (runs fast, enriches script generation)
+      if (state.productData) {
+        try {
+          const brandStyle = await inferBrandStyleFromText(
+            state.productData.name || "Product",
+            state.productData.description || "",
+            state.productData.tone || "professional",
+            state.productData.colors || {},
+          );
+          // Attach brand insights to productData for script writer and code gen
+          (state.productData as any).brandStyle = brandStyle;
+          (state.productData as any).designInsights = brandStyle.designInsights;
+          (state.productData as any).visualMood = brandStyle.mood?.tone;
+          console.log(
+            `[GenerateServer] Brand analysis: ${brandStyle.videoStyle?.recommended}, font: ${brandStyle.typography?.primaryFont}`,
+          );
+        } catch (e) {
+          console.warn("[GenerateServer] Brand inference failed (non-fatal):", e);
+        }
+      }
+
       // Step 2: Script Writer
       send("status", { step: "scripting", message: "Writing video script..." });
       const scriptResult = await withAgentLogging(
@@ -253,7 +279,19 @@ router.post("/continue", async (req: AuthenticatedRequest, res) => {
         `[GenerateServer] Continue beatmap: ${state.beatMap.beats.length} beats at ${contAudioBpm} BPM`,
       );
 
-      // Step 1: Translate script directly to Remotion (skipping React page generation)
+      // Step 1: Creative Director — enrich script with creative direction
+      send("status", {
+        step: "directing",
+        message: "Adding creative direction...",
+      });
+      const directorResult = await withAgentLogging(
+        "creativeDirector",
+        { videoScript: state.videoScript, style: state.userPreferences?.style },
+        () => creativeDirectorNode(state as VideoGenerationStateType),
+      );
+      state = { ...state, ...directorResult };
+
+      // Step 2: Translate script directly to Remotion (skipping React page generation)
       send("status", {
         step: "translating",
         message: "Translating to Remotion...",
@@ -281,6 +319,20 @@ router.post("/continue", async (req: AuthenticatedRequest, res) => {
         send("error", { errors: state.errors });
         send("complete", { success: false });
         return res.end();
+      }
+
+      // Step 2.5: Pre-render static analysis — catch forbidden patterns before expensive render
+      if (state.remotionCode) {
+        const analysis = validateBeforeRender(state.remotionCode as string);
+        if (analysis.errors.length > 0 || analysis.warnings.length > 0) {
+          console.log(`[GenerateServer] Static analysis: ${analysis.errors.length} errors, ${analysis.warnings.length} warnings — auto-fixing`);
+          state.remotionCode = analysis.autoFixed;
+        }
+
+        // Enforce scene durations fill the target video duration
+        const targetFrames = videoScript?.totalDuration || 900;
+        state.remotionCode = enforceDuration(state.remotionCode as string, targetFrames);
+        send("remotionCode", state.remotionCode);
       }
 
       // Step 3: Video rendering with retry loop

@@ -1,39 +1,42 @@
 import { getDodoClient } from "./client";
-import { productToIdMap, Product } from "./subscription";
+import { productToIdMap, annualProductToIdMap, Product } from "./subscription";
 
 export type Metadata = {
     userId: string
     product: Product
     quantity: string
+    billing?: string
 }
 
 export async function createCheckoutSession(
     userId: string,
     product: Product,
-    quantity: number
+    quantity: number,
+    billing: "monthly" | "annual" = "monthly"
 ) {
 
     const metadata = {
         userId,
         product,
-        quantity: quantity.toString()
+        quantity: quantity.toString(),
+        billing,
     }
+
+    const idMap = billing === "annual" ? annualProductToIdMap : productToIdMap;
 
     try {
         const dodo = getDodoClient();
         const session = await dodo.checkoutSessions.create({
             product_cart: [
                 {
-                    product_id: productToIdMap[product],
+                    product_id: idMap[product],
                     quantity: quantity
                 }
             ],
             metadata: metadata,
-
             return_url: process.env.DODO_PAYMENTS_RETURN_URL || 'https://remawt.com/projects/',
         });
 
-        // Redirect your customer to this URL to complete payment
         console.log('Checkout URL:', session.checkout_url);
         console.log('Session ID:', session.session_id);
 

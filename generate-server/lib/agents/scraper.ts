@@ -170,8 +170,9 @@ async function scrapeWebsiteFallback(url: string): Promise<ScrapeResult> {
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     );
 
-    await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
-    await new Promise((r) => setTimeout(r, 2000));
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+    // Wait for rendering to settle after DOM is ready
+    await new Promise((r) => setTimeout(r, 3000));
 
     // Take hero screenshot as buffer and upload to R2
     const heroBuffer = await page.screenshot({ fullPage: false, type: "png" });

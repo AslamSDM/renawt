@@ -164,6 +164,39 @@ function suggestVideoStyle(tone: string): string {
   return "STYLE A -- Dark Cinematic";
 }
 
+// Mood modifiers that add creative variety orthogonal to the 4 base styles
+const MOOD_MODIFIERS: Record<string, string> = {
+  retro: "Add retro/vintage feel: use muted warm tones, film grain overlay (subtle noise), rounded fonts, analog-style transitions (wipe, iris). Typography should feel 70s/80s inspired.",
+  futuristic: "Add futuristic feel: use holographic gradients, thin geometric lines, monospace accent text, data-visualization elements. Think sci-fi UI.",
+  organic: "Add organic feel: use soft curves, flowing shapes, warm earth tones as accents, gentle breathing animations (sine-wave scale). Typography should feel human and approachable.",
+  brutalist: "Add brutalist feel: use harsh contrasts, oversized bold type (200px+), raw grid layouts, thick borders, no gradients. Confrontational, attention-grabbing.",
+  cinematic: "Add cinematic feel: use wide letterbox format feel, dramatic lighting (dark with single light source), slow camera movements, film-quality color grading.",
+};
+
+/**
+ * Build a style modifier section based on product characteristics.
+ * Picks a primary style + optional mood modifier for creative variety.
+ */
+function buildStyleModifier(tone: string, videoType?: string): string {
+  // Pick a mood modifier based on product characteristics
+  const t = (tone || "").toLowerCase();
+  let mood = "";
+
+  if (t.includes("retro") || t.includes("vintage") || t.includes("classic")) {
+    mood = MOOD_MODIFIERS.retro;
+  } else if (t.includes("futur") || t.includes("ai") || t.includes("tech")) {
+    mood = MOOD_MODIFIERS.futuristic;
+  } else if (t.includes("organic") || t.includes("natural") || t.includes("wellness")) {
+    mood = MOOD_MODIFIERS.organic;
+  } else if (videoType === "fast-paced") {
+    mood = MOOD_MODIFIERS.brutalist;
+  } else if (videoType === "cinematic") {
+    mood = MOOD_MODIFIERS.cinematic;
+  }
+
+  return mood ? `\n\n## MOOD MODIFIER\n${mood}` : "";
+}
+
 export async function scriptWriterNode(
   state: VideoGenerationStateType,
 ): Promise<Partial<VideoGenerationStateType>> {
@@ -283,7 +316,7 @@ IMPORTANT FOR SAAS PRODUCTS:
 ` : ""}
 
 Consider timing transitions to align with beats (every ${Math.round(1800 / bpm)} frames at ${bpm} BPM).
-
+${buildStyleModifier(productData.tone, preferences.videoType)}
 ${(preferences as any)?.nanoBanana ? `\nAI IMAGE GENERATION ENABLED: You can include AI-generated images in scenes. Add "aiImagePrompt" field to scene content with a descriptive prompt for image generation.` : ""}
 ${(preferences as any)?.stockImages ? `\nSTOCK IMAGES ENABLED: You can reference stock photography. Add "stockImageQuery" field to scene content with a search query.` : ""}
 ${!(preferences as any)?.animatedComponents ? `\nANIMATED COMPONENTS DISABLED: Use simpler, static layouts. Minimize complex animations and stagger effects.` : ""}

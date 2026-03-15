@@ -1,13 +1,14 @@
 /**
  * REMOTION TRANSLATOR AGENT
  *
- * Takes a React page component and translates it into Remotion code.
- * This is step 2 of the two-step code generation process.
+ * Converts a VideoScript directly into Remotion composition code.
+ * Single-step generation — no intermediate React page.
  *
- * Enhanced with Remotion Best Practices from .agent/skills/remotion/
+ * Uses modular skill injection: only the relevant style + animation
+ * skills are injected per generation, keeping prompt size under 20KB.
  */
 
-import { chatWithGeminiPro, chatWithGeminiFlash } from "./model";
+import { chatWithGeminiPro } from "./model";
 import type { VideoGenerationStateType } from "./state";
 import {
   analyzeRecording,
@@ -15,149 +16,76 @@ import {
 } from "./recordingAnalyzer";
 
 // ============================================================================
-// REMOTION SKILLS - Best practices embedded in prompt
+// MODULAR REMOTION SKILLS - Only inject relevant sections per generation
 // ============================================================================
 
-const REMOTION_SKILLS = `
-## REMOTION BEST PRACTICES - FOLLOW THESE EXACTLY
+// Core skills always included (~3KB) — essential Remotion patterns
+const SKILL_CORE = `
+## REMOTION CORE RULES
 
-### CRITICAL: FAST-PACED VIDEO REQUIREMENTS
-- Each text element: MAX 2 seconds (60 frames at 30fps)
-- Rapid sequences - text appears and disappears quickly
-- Multiple text elements on screen simultaneously
-- NO long static displays - everything moves constantly
+### ANIMATIONS (CRITICAL)
+All animations MUST use \`useCurrentFrame()\` + \`interpolate()\` or \`spring()\`.
+⚠️ CSS transitions/animations are FORBIDDEN — they flicker in Remotion rendering.
+⚠️ Tailwind animation classes are FORBIDDEN.
+⚠️ NO Math.random(), Date.now(), backdrop-filter, WebkitBackdropFilter, setTimeout, setInterval.
 
-### 1. ANIMATIONS (CRITICAL)
-All animations MUST be driven by \`useCurrentFrame()\` hook.
-Write animations in seconds and multiply by \`fps\` from \`useVideoConfig()\`.
+### ANTI-FLICKER (CRITICAL)
+Remotion renders frames concurrently in parallel browser tabs. Any non-deterministic or sub-pixel operation causes flicker:
+- NEVER use \`backdropFilter\` or \`WebkitBackdropFilter\` — use solid semi-transparent backgrounds instead (\`rgba()\`)
+- Round ALL computed pixel values: \`Math.round(interpolate(...))\` for transforms/positions
+- Avoid excessive \`filter: blur()\` — max 2-3 blur elements per scene
+- Use \`willChange: 'transform'\` on animated elements for GPU compositing consistency
+- Keep \`textShadow\` to max 2 layers — large multi-layer glow shadows flicker
 
 \`\`\`tsx
-import { useCurrentFrame, useVideoConfig, interpolate } from "remotion";
-
-export const FadeIn = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  const opacity = interpolate(frame, [0, 2 * fps], [0, 1], {
-    extrapolateRight: "clamp",
-  });
-
-  return <div style={{ opacity }}>Hello World!</div>;
-};
-\`\`\`
-
-⚠️ CSS transitions or animations are FORBIDDEN - they will not render correctly.
-⚠️ Tailwind animation class names are FORBIDDEN - they will not render correctly.
-
-### 2. INTERPOLATION & TIMING
-
-Linear interpolation:
-\`\`\`tsx
-const opacity = interpolate(frame, [0, 100], [0, 1], {
-  extrapolateRight: "clamp",
-  extrapolateLeft: "clamp",
-});
-\`\`\`
-
-Spring animations (natural motion):
-\`\`\`tsx
-import { spring, useCurrentFrame, useVideoConfig } from "remotion";
-
+import { useCurrentFrame, useVideoConfig, interpolate, spring, Easing } from "remotion";
 const frame = useCurrentFrame();
 const { fps } = useVideoConfig();
-
-const scale = spring({ frame, fps });
+const opacity = interpolate(frame, [0, 2 * fps], [0, 1], { extrapolateRight: "clamp" });
+const scale = spring({ frame, fps, config: { damping: 200 } });
 \`\`\`
 
-Spring configurations:
+### SEQUENCING
+Use \`<Sequence>\` with premountFor. Overlap sequences for continuous motion:
 \`\`\`tsx
-const smooth = { damping: 200 };                    // Smooth, no bounce (subtle reveals)
-const snappy = { damping: 20, stiffness: 200 };    // Snappy, minimal bounce (UI elements)
-const bouncy = { damping: 8 };                      // Bouncy entrance (playful animations)
-const heavy = { damping: 15, stiffness: 80, mass: 2 }; // Heavy, slow, small bounce
+<Sequence from={0} durationInFrames={90} premountFor={15}><Scene1 /></Sequence>
+<Sequence from={75} durationInFrames={90} premountFor={15}><Scene2 /></Sequence>
 \`\`\`
 
-Easing options:
-\`\`\`tsx
-import { interpolate, Easing } from "remotion";
-
-const value = interpolate(frame, [0, 100], [0, 1], {
-  easing: Easing.inOut(Easing.quad),
-  extrapolateLeft: "clamp",
-  extrapolateRight: "clamp",
-});
-\`\`\`
-
-### 3. SEQUENCING - FAST PACED
-
-Use \`<Sequence>\` with SHORT durations (max 2 seconds):
-\`\`\`tsx
-import { Sequence } from "remotion";
-
-const { fps } = useVideoConfig();
-
-// Text appears for only 2 seconds max!
-<Sequence from={0 * fps} durationInFrames={2 * fps} premountFor={0.5 * fps}>
-  <Text1 />
-</Sequence>
-<Sequence from={1.5 * fps} durationInFrames={2 * fps} premountFor={0.5 * fps}>
-  <Text2 />
-</Sequence>
-<Sequence from={3 * fps} durationInFrames={2 * fps} premountFor={0.5 * fps}>
-  <Text3 />
-</Sequence>
-\`\`\`
-
-⚠️ Always premount any \`<Sequence>\`!
-⚠️ Overlap sequences for continuous motion!
-
-Use \`<Series>\` when elements play one after another:
-\`\`\`tsx
-import { Series } from "remotion";
-
-<Series>
-  <Series.Sequence durationInFrames={45}>
-    <Intro />
-  </Series.Sequence>
-  <Series.Sequence durationInFrames={60}>
-    <MainContent />
-  </Series.Sequence>
-</Series>
-\`\`\`
-
-Inside a Sequence, \`useCurrentFrame()\` returns local frame (starting from 0).
-
-### 4. TRANSITIONS
-
-Use TransitionSeries for crossfades, slides, wipes:
+### TRANSITIONS
 \`\`\`tsx
 import { TransitionSeries, linearTiming } from "@remotion/transitions";
 import { fade } from "@remotion/transitions/fade";
 import { slide } from "@remotion/transitions/slide";
-
-<TransitionSeries>
-  <TransitionSeries.Sequence durationInFrames={60}>
-    <SceneA />
-  </TransitionSeries.Sequence>
-  <TransitionSeries.Transition
-    presentation={fade()}
-    timing={linearTiming({ durationInFrames: 15 })}
-  />
-  <TransitionSeries.Sequence durationInFrames={60}>
-    <SceneB />
-  </TransitionSeries.Sequence>
-</TransitionSeries>
 \`\`\`
 
-Available transitions: fade, slide, wipe, flip, clockWipe
-Slide directions: "from-left", "from-right", "from-top", "from-bottom"
-
-### 5. TEXT ANIMATIONS - DEMO STYLE
-
-#### WORD-BY-WORD BLUR REVEAL (Primary text animation):
+### FONTS
 \`\`\`tsx
-const WordByWordBlur: React.FC<{ words: string[]; fontSize?: number; color?: string; delay?: number; staggerFrames?: number; gradientWordIndices?: number[]; gradientColors?: [string, string] }> = ({
-  words, fontSize = 48, color = '#ffffff', delay = 0, staggerFrames = 5, gradientWordIndices = [], gradientColors = [BRAND.primary, BRAND.secondary]
+import { loadFont } from "@remotion/google-fonts/Montserrat";
+const { fontFamily } = loadFont("normal", { weights: ["400","600","700","800","900"], subsets: ["latin"] });
+\`\`\`
+Call loadFont at TOP LEVEL (module scope), never inside a component.
+
+### TEXT SPACING (CRITICAL)
+Word-by-word \`<span>\` elements MUST use parent: display:'flex', flexWrap:'wrap', gap:'0.3em'.
+
+### STRICTLY FORBIDDEN
+- NO CSS transitions/animations, NO Tailwind animation classes
+- NO setTimeout/setInterval, NO Math.random(), NO Date.now()
+- NO backdrop-filter (flickers), NO CSS background-image for URLs (use <Img>)
+- NO relative imports (render service has no local files)
+- NO useFrame from @react-three/fiber
+- MUST have export default VideoComposition;
+`;
+
+// Text animation skills (~2KB)
+const SKILL_TEXT_ANIMATIONS = `
+### TEXT ANIMATIONS
+
+#### WordByWordBlur (primary text animation):
+\`\`\`tsx
+const WordByWordBlur: React.FC<{ words: string[]; fontSize?: number; color?: string; delay?: number; staggerFrames?: number }> = ({
+  words, fontSize = 48, color = '#ffffff', delay = 0, staggerFrames = 5,
 }) => {
   const frame = useCurrentFrame();
   return (
@@ -167,13 +95,11 @@ const WordByWordBlur: React.FC<{ words: string[]; fontSize?: number; color?: str
         const op = interpolate(f, [0, 15], [0, 1], { extrapolateRight: "clamp" });
         const blur = interpolate(f, [0, 15], [10, 0], { extrapolateRight: "clamp" });
         const ty = interpolate(f, [0, 15], [30, 0], { extrapolateRight: "clamp" });
-        const isGradient = gradientWordIndices.includes(i);
         return (
           <span key={i} style={{
-            fontSize, fontFamily: montserrat, fontWeight: 600,
-            opacity: op, filter: \`blur(\${blur}px)\`, transform: \`translateY(\${ty}px)\`,
-            display: 'inline-block',
-            ...(isGradient ? { background: \`linear-gradient(135deg, \${gradientColors[0]}, \${gradientColors[1]})\`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } : { color }),
+            fontSize, fontWeight: 600, opacity: op,
+            filter: \\\`blur(\\\${blur}px)\\\`, transform: \\\`translateY(\\\${ty}px)\\\`,
+            display: 'inline-block', ...(color ? { color } : {}),
           }}>{word}</span>
         );
       })}
@@ -182,381 +108,217 @@ const WordByWordBlur: React.FC<{ words: string[]; fontSize?: number; color?: str
 };
 \`\`\`
 
-#### LOGO WITH GLOW:
+#### GradientAccentText: brand-colored gradient text with scale pop entrance.
+#### LogoWithGlow: fade in + expanding glow halo behind brand name.
+#### SweepLine: animated width 0→full line accent.
+`;
+
+// Camera movement skills (~1.5KB)
+const SKILL_CAMERA = `
+### CINEMATIC CAMERA MOVEMENTS (MANDATORY IN EVERY SCENE)
+Alternate zoom in ↔ zoom out across scenes. Every scene wrapper MUST have interpolated camera transform.
+
+#### Ken Burns Zoom In:
+const camScale = interpolate(frame, [0, duration], [1.0, 1.12], { extrapolateRight: 'clamp' });
+<AbsoluteFill style={{ transform: "scale(" + camScale + ")", transformOrigin: 'center center' }}>
+
+#### Ken Burns Zoom Out (alternate scenes):
+const camScale = interpolate(frame, [0, duration], [1.14, 1.0], { extrapolateRight: 'clamp' });
+
+#### Parallax Pan (multi-layer depth):
+const bgX = interpolate(frame, [0, 450], [0, -60], { extrapolateRight: 'clamp' });
+const fgX = interpolate(frame, [0, 450], [0, -160], { extrapolateRight: 'clamp' });
+
+#### Continuous Drift (background elements):
+const drift = Math.sin(frame / 40) * 18;
+const driftY = Math.cos(frame / 60) * 12;
+`;
+
+// Style-specific skills — only ONE injected per generation
+const STYLE_SKILLS: Record<string, string> = {
+  "dark-cinematic": `
+### STYLE: DARK CINEMATIC
+- Background: near-black (#080810) with slow-moving bokeh circles (blurred divs, opacity 0.15-0.4, drifting via Math.sin/cos)
+- Headline: oversized (140-200px), tight letter-spacing (-4px), white or brand color
+- Accent lines: thin 1-2px horizontal rules that sweep in from left
+- Cards: dark glass (rgba(255,255,255,0.04)) with subtle border (rgba(255,255,255,0.08))
+- Moving background: bokeh circles with filter:blur(80-200px), pulsing opacity
+- Scene transitions: fade in/out over 12 frames at scene edges
+`,
+  "vibrant-brand": `
+### STYLE: VIBRANT BRAND
+- Background: rich brand color fills, NOT black — use product's actual primary color
+- Big bold text that FILLS the frame — poster typography (120-200px)
+- Shapes: geometric rectangles, diagonal slices, full-bleed color blocks
+- Text: high contrast, complementary colors, never grey on grey
+- Moving background: sliding color blocks, rotating geometric elements
+- Energy: fast cuts (1-2s scenes), scale pop entrances, bold wipes
+`,
+  "editorial-clean": `
+### STYLE: EDITORIAL CLEAN
+- Background: warm off-white (#FAFAF7) or slate (#F1F5F8)
+- Typography: tight columns, large numerics (stats), small caps for labels
+- Thin lines and data-viz style graphics
+- Minimal palette: 2 colors max + background
+- Subtle camera: gentle drift, minimal zoom (1.0→1.04 max)
+- Transitions: clean fades, horizontal wipes
+`,
+  "neon-glow": `
+### STYLE: NEON GLOW
+- Background: deep navy/black with scanline overlay (1px lines, opacity 0.04, repeating-linear-gradient)
+- Glowing text: textShadow with brand color, boxShadow glow on elements
+- Neon palette: one dominant glow color + accents (cyan, magenta, electric green)
+- Pulsing glow effects synced to beat
+- Camera: aggressive zooms, quick pans, energy-matched to beat
+`,
+};
+
+// Beat sync skills — injected when audio BPM is available
+const SKILL_BEAT_SYNC = `
+### BEAT SYNC
+Use beat pulse (exponential decay) for subtle animation effects synced to music:
 \`\`\`tsx
-const LogoWithGlow: React.FC<{ brandName: string; accentSuffix?: string; fontSize?: number; delay?: number }> = ({
-  brandName, accentSuffix, fontSize = 80, delay = 0,
-}) => {
+const useBeatSync = (bpm: number) => {
   const frame = useCurrentFrame();
-  const f = Math.max(0, frame - delay);
-  const opacity = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
-  const glowScale = interpolate(f, [0, 30], [0.5, 1.5], { extrapolateRight: "clamp" });
-  return (
-    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity }}>
-      <div style={{
-        position: 'absolute', width: '120%', height: '120%',
-        background: \`linear-gradient(135deg, \${BRAND.primary}66, \${BRAND.secondary}66)\`,
-        filter: 'blur(40px)', borderRadius: '50%',
-        transform: \`scale(\${glowScale})\`, opacity: 0.6,
-      }} />
-      <span style={{ fontFamily: montserrat, fontWeight: 700, fontSize, color: '#fff', position: 'relative', zIndex: 1 }}>{brandName}</span>
-      {accentSuffix && (
-        <span style={{ fontFamily: montserrat, fontWeight: 700, fontSize, position: 'relative', zIndex: 1, marginLeft: 12, background: \`linear-gradient(135deg, \${BRAND.primary}, \${BRAND.secondary})\`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{accentSuffix}</span>
-      )}
-    </div>
-  );
+  const { fps } = useVideoConfig();
+  const framesPerBeat = (60 / bpm) * fps;
+  const beatPulse = Math.exp(-((frame % framesPerBeat) / framesPerBeat) * 4);
+  return { beatPulse, framesPerBeat };
 };
+// Usage: scale elements by (1 + beatPulse * 0.015) for subtle breathing effect
 \`\`\`
+Snap scene durations to beat boundaries. Align stagger delays to beat subdivisions (1/2, 1/4 beat).
+`;
 
-### 6. AURORA BACKGROUNDS
-
-Dark aurora (for logo, CTA, and card scenes) — uses BRAND colors:
-\`\`\`tsx
-const AuroraBackground: React.FC<{ variant?: 'dark' | 'light' }> = ({ variant = 'dark' }) => {
-  if (variant === 'light') {
-    return (
-      <AbsoluteFill style={{
-        background: \`radial-gradient(ellipse at 30% 30%, \${BRAND.primary}33 0%, transparent 50%), radial-gradient(ellipse at 70% 70%, \${BRAND.secondary}33 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, \${BRAND.primary}26 0%, transparent 60%), linear-gradient(135deg, #faf5ff 0%, #fff5f8 50%, #f5f0ff 100%)\`,
-      }} />
-    );
-  }
-  return (
-    <AbsoluteFill style={{
-      background: \`radial-gradient(ellipse at 20% 20%, \${BRAND.primary}4D 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, \${BRAND.secondary}4D 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, \${BRAND.primary}33 0%, transparent 70%), \${BRAND.dark}\`,
-    }} />
-  );
-};
-\`\`\`
-
-White glass card with 3D perspective entry:
-\`\`\`tsx
-const WhiteGlassCard: React.FC<{ children: React.ReactNode; maxWidth?: number; delay?: number; entryAnimation?: 'slide-up' | 'perspective' | 'scale'; padding?: number }> = ({
-  children, maxWidth = 800, delay = 0, entryAnimation = 'perspective', padding = 48,
-}) => {
-  const frame = useCurrentFrame();
-  const f = Math.max(0, frame - delay);
-  const progress = interpolate(f, [0, 20], [0, 1], { extrapolateRight: "clamp" });
-  const opacity = interpolate(f, [0, 15], [0, 1], { extrapolateRight: "clamp" });
-  let transform = '';
-  if (entryAnimation === 'perspective') {
-    const rotateX = interpolate(progress, [0, 1], [-20, 0]);
-    const ty = interpolate(progress, [0, 1], [100, 0]);
-    transform = "perspective(1000px) rotateX(" + rotateX + "deg) translateY(" + ty + "px)";
-  } else if (entryAnimation === 'slide-up') {
-    const ty = interpolate(progress, [0, 1], [80, 0]);
-    transform = "translateY(" + ty + "px)";
-  } else {
-    const s = interpolate(progress, [0, 1], [0.8, 1]);
-    transform = "scale(" + s + ")";
-  }
-  return (
-    <div style={{
-      maxWidth, padding, opacity, transform,
-      background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(24px)',
-      borderRadius: 24, boxShadow: '0 25px 50px rgba(0,0,0,0.25)',
-      border: '1px solid rgba(255,255,255,0.3)',
-    }}>{children}</div>
-  );
-};
-\`\`\`
-
-Gradient accent text (uses brand colors):
-\`\`\`tsx
-const GradientAccentText: React.FC<{ text: string; fontSize?: number; delay?: number }> = ({
-  text, fontSize = 56, delay = 0,
-}) => {
-  const frame = useCurrentFrame();
-  const f = Math.max(0, frame - delay);
-  const opacity = interpolate(f, [0, 15], [0, 1], { extrapolateRight: "clamp" });
-  const scale = interpolate(f, [0, 15], [0.9, 1], { extrapolateRight: "clamp" });
-  return (
-    <span style={{
-      display: 'inline-block', fontSize, fontFamily: montserrat, fontWeight: 700,
-      background: \`linear-gradient(135deg, \${BRAND.primary}, \${BRAND.secondary})\`,
-      WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-      opacity, transform: \`scale(\${scale})\`,
-    }}>{text}</span>
-  );
-};
-\`\`\`
-
-Scene progress dots:
-\`\`\`tsx
-const SceneProgressDots: React.FC<{ totalScenes: number; sceneBoundaries: number[] }> = ({
-  totalScenes, sceneBoundaries,
-}) => {
-  const frame = useCurrentFrame();
-  let currentScene = 0;
-  for (let i = 0; i < sceneBoundaries.length; i++) {
-    if (frame >= sceneBoundaries[i]) currentScene = i;
-  }
-  return (
-    <div style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 8, zIndex: 100 }}>
-      {Array.from({ length: totalScenes }).map((_, i) => (
-        <div key={i} style={{
-          height: 8, borderRadius: 4,
-          width: i === currentScene ? 24 : 8,
-          background: i === currentScene ? BRAND.primary : i < currentScene ? \`\${BRAND.primary}80\` : 'rgba(255,255,255,0.3)',
-        }} />
-      ))}
-    </div>
-  );
-};
-\`\`\`
-
-### 7. SCREEN RECORDING PLAYBACK
-
-For scenes with screen recordings, use the \`<Video>\` component from Remotion:
+// Screen recording skills — only injected when recordings exist
+const SKILL_RECORDINGS = `
+### SCREEN RECORDING PLAYBACK
 \`\`\`tsx
 import { Video } from 'remotion';
-
-// Recording scene with feature label overlay
 const RecordingScene: React.FC<{ videoUrl: string; featureName: string }> = ({ videoUrl, featureName }) => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
   const labelOpacity = interpolate(frame, [0, 30, durationInFrames - 30, durationInFrames], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   return (
-    <AbsoluteFill style={{ backgroundColor: BRAND.dark }}>
+    <AbsoluteFill style={{ backgroundColor: '#0a0a0f' }}>
       <Video src={videoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
       <div style={{ position: 'absolute', bottom: 60, left: 0, right: 0, display: 'flex', justifyContent: 'center', opacity: labelOpacity, zIndex: 10 }}>
-        <div style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)', borderRadius: 12, padding: '12px 28px', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: \`linear-gradient(135deg, \${BRAND.primary}, \${BRAND.secondary})\` }} />
-          <span style={{ fontFamily: montserrat, fontWeight: 600, fontSize: 20, color: '#ffffff' }}>{featureName}</span>
+        <div style={{ background: 'rgba(0,0,0,0.7)', borderRadius: 12, padding: '12px 28px' }}>
+          <span style={{ fontWeight: 600, fontSize: 20, color: '#ffffff' }}>{featureName}</span>
         </div>
       </div>
     </AbsoluteFill>
   );
 };
 \`\`\`
+`;
 
-### 8. DEMO-STYLE COMPOSITION STRUCTURE
-
-Create discrete scenes with aurora backgrounds alternating dark/light:
+// Cursor animation skills — optional, for demo-style videos
+const SKILL_CURSOR = `
+### CURSOR ANIMATION (for demo feel)
+Add an animated SVG cursor that moves to a CTA and clicks:
 \`\`\`tsx
-const VideoComposition: React.FC = () => {
-  const { fps } = useVideoConfig();
-  const sceneDuration = 2;
-  const sceneBoundaries = [0, 2 * fps, 4 * fps, 6 * fps, 8 * fps, 10 * fps];
-
-  return (
-    <AbsoluteFill>
-      <Audio src={/* audio src provided at generation time */} volume={1} />
-
-      {/* Scene 1: Logo on dark aurora */}
-      <Sequence from={0} durationInFrames={sceneDuration * fps}>
-        <AbsoluteFill>
-          <AuroraBackground variant="dark" />
-          <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <LogoWithGlow brandName="ProductName" fontSize={80} delay={5} />
-          </AbsoluteFill>
-        </AbsoluteFill>
-      </Sequence>
-
-      {/* Scene 2: Tagline on light aurora */}
-      <Sequence from={2 * fps} durationInFrames={sceneDuration * fps}>
-        <AbsoluteFill>
-          <AuroraBackground variant="light" />
-          <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 80 }}>
-            <WordByWordBlur words={["The", "Future", "of", "Innovation"]} fontSize={64} color="#0a0a0f" delay={5} gradientWordIndices={[1, 3]} />
-          </AbsoluteFill>
-        </AbsoluteFill>
-      </Sequence>
-
-      {/* Scene 3: Feature card on dark aurora */}
-      <Sequence from={4 * fps} durationInFrames={sceneDuration * fps}>
-        <AbsoluteFill>
-          <AuroraBackground variant="dark" />
-          <AbsoluteFill style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <WhiteGlassCard delay={5} entryAnimation="perspective">
-              <GradientAccentText text="Powerful Features" fontSize={48} delay={10} />
-            </WhiteGlassCard>
-          </AbsoluteFill>
-        </AbsoluteFill>
-      </Sequence>
-
-      <SceneProgressDots totalScenes={6} sceneBoundaries={sceneBoundaries} />
-    </AbsoluteFill>
-  );
-};
-\`\`\`
-
-### 9. CINEMATIC CAMERA MOVEMENTS (MANDATORY IN EVERY SCENE)
-
-EVERY scene wrapper MUST have an interpolated camera transform. Use variety across scenes.
-
-#### Ken Burns Zoom In:
-\`\`\`tsx
-const frame = useCurrentFrame();
-const duration = 90; // scene length
-const camScale = interpolate(frame, [0, duration], [1.0, 1.12], { extrapolateRight: 'clamp' });
-const camX = interpolate(frame, [0, duration], [0, -20], { extrapolateRight: 'clamp' });
-<AbsoluteFill style={{ transform: "scale(" + camScale + ") translateX(" + camX + "px)", transformOrigin: 'center center' }}>
-  {/* content */}
-</AbsoluteFill>
-\`\`\`
-
-#### Ken Burns Zoom Out (alternate scenes):
-\`\`\`tsx
-const camScale = interpolate(frame, [0, duration], [1.14, 1.0], { extrapolateRight: 'clamp' });
-const camY = interpolate(frame, [0, duration], [30, 0], { extrapolateRight: 'clamp' });
-<AbsoluteFill style={{ transform: "scale(" + camScale + ") translateY(" + camY + "px)", transformOrigin: 'top left' }}>
-\`\`\`
-
-#### Parallax Pan (multi-layer depth):
-\`\`\`tsx
-// Background moves slower than foreground
-const bgX = interpolate(frame, [0, 450], [0, -60], { extrapolateRight: 'clamp' });
-const fgX = interpolate(frame, [0, 450], [0, -160], { extrapolateRight: 'clamp' });
-// Apply bgX to bg layer, fgX to text/fg layer
-\`\`\`
-
-#### Continuous Drift (background elements):
-\`\`\`tsx
-// Background blobs / bokeh circles that never stop moving
-const drift = Math.sin(frame / 40) * 18;
-const driftY = Math.cos(frame / 60) * 12;
-<div style={{ transform: "translateX(" + drift + "px) translateY(" + driftY + "px)" }}>
-\`\`\`
-
-### 10. CURSOR ANIMATION (adds realism to product demo videos)
-
-Add an animated SVG cursor that moves to a CTA button and clicks it. This makes the video feel like a real product demo.
-
-\`\`\`tsx
-import { Easing } from 'remotion';
-
-// SVG Cursor component
-const Cursor: React.FC<{ x: number; y: number; opacity: number; clicking: boolean }> = ({ x, y, opacity, clicking }) => (
-  <div style={{ position: 'absolute', left: x, top: y, opacity, zIndex: 200, transform: clicking ? 'scale(0.85)' : 'scale(1)', transition: 'none' }}>
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-      <path d="M5.5 3.21V20.8C5.5 21.46 6.26 21.84 6.78 21.43L11.64 17.65C11.83 17.5 12.07 17.42 12.31 17.42H18.73C19.39 17.42 19.76 16.65 19.34 16.15L6.68 3.12C6.23 2.65 5.5 2.97 5.5 3.21Z" fill="white" stroke="black" strokeWidth="1.5" strokeLinejoin="round"/>
-    </svg>
-  </div>
-);
-
-// Usage: animate cursor from starting position to CTA button
-const cursorStartFrame = 35; // cursor appears after panel entrance
-const cursorMoveEnd = cursorStartFrame + 30; // 1 second to move
-const clickFrame = cursorMoveEnd + 5;
-const cursorOpacity = interpolate(frame, [cursorStartFrame, cursorStartFrame + 8], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-const cursorX = interpolate(frame, [cursorStartFrame, cursorMoveEnd], [startX, targetX], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) });
-const cursorY = interpolate(frame, [cursorStartFrame, cursorMoveEnd], [startY, targetY], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) });
-const isClicking = frame >= clickFrame && frame < clickFrame + 5;
-
-// Button glow after click
-const glowOpacity = interpolate(frame, [clickFrame, clickFrame + 15], [0, 0.8], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-// Apply boxShadow: \`0 0 30px \${BRAND.primary}CC\` with glowOpacity
+const cursorX = interpolate(frame, [startFrame, endFrame], [startX, targetX], { extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) });
+const cursorY = interpolate(frame, [startFrame, endFrame], [startY, targetY], { extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) });
 \`\`\`
 `;
 
-const REMOTION_TRANSLATOR_SYSTEM_PROMPT = `You are a Remotion expert who converts React components into polished product demo video compositions with a cinematic, brand-matched style.
+/**
+ * Build a focused prompt by selecting only relevant skills for this generation.
+ * Reduces prompt from ~86KB to ~8-15KB depending on features used.
+ */
+function buildSkillsPrompt(state: VideoGenerationStateType): string {
+  const parts: string[] = [SKILL_CORE];
 
-${REMOTION_SKILLS}
+  // Always include text animations and camera
+  parts.push(SKILL_TEXT_ANIMATIONS);
+  parts.push(SKILL_CAMERA);
+
+  // Select style-specific skills based on brand analysis or user preference
+  const tone = (state.productData as any)?.tone || state.userPreferences?.style || "professional";
+  const designInsights = ((state.productData as any)?.designInsights || "").toLowerCase();
+  const videoType = state.userPreferences?.videoType || "creative";
+
+  let styleKey = "dark-cinematic"; // default
+  if (tone === "playful" || tone === "bold" || videoType === "fast-paced") {
+    styleKey = "vibrant-brand";
+  } else if (tone === "minimal" || designInsights.includes("editorial") || designInsights.includes("clean")) {
+    styleKey = "editorial-clean";
+  } else if (designInsights.includes("neon") || designInsights.includes("glow") || designInsights.includes("gaming")) {
+    styleKey = "neon-glow";
+  }
+  parts.push(STYLE_SKILLS[styleKey]);
+  console.log(`[RemotionTranslator] Selected style: ${styleKey}`);
+
+  // Beat sync — always useful when audio is present
+  if (state.userPreferences?.audio?.bpm) {
+    parts.push(SKILL_BEAT_SYNC);
+  }
+
+  // Recordings — only when recordings exist
+  if (state.recordings && state.recordings.length > 0) {
+    parts.push(SKILL_RECORDINGS);
+  }
+
+  // Cursor — for demo-style videos
+  if (videoType === "demo") {
+    parts.push(SKILL_CURSOR);
+  }
+
+  const combined = parts.join("\n");
+  console.log(`[RemotionTranslator] Skills prompt size: ${(combined.length / 1024).toFixed(1)}KB (was ~86KB)`);
+  return combined;
+}
+
+// Keep legacy REMOTION_SKILLS reference for backward compatibility (used in system prompt)
+const REMOTION_SKILLS = `(Skills injected dynamically per generation — see buildSkillsPrompt)`;
+
+const REMOTION_SKILLS_PLACEHOLDER = REMOTION_SKILLS; // suppress unused warning
+
+// NOTE: Old monolithic REMOTION_SKILLS content was removed.
+// Skills are now modularly injected via buildSkillsPrompt().
+
+// Old content from lines 270-690 deleted (aurora backgrounds, glass cards,
+// recording playback, cursor animation code examples, camera movements).
+// These patterns are now in the modular SKILL_* constants above.
+
+/**
+ * Build the system prompt dynamically with only relevant skills injected.
+ * This reduces prompt size from ~86KB to ~8-15KB per call.
+ */
+function buildSystemPrompt(skills: string): string {
+  return `You are a Remotion expert who creates polished product demo video compositions with a cinematic, brand-matched style.
+
+${skills}
 
 ---
 
 ## YOUR TASK
 
-Take a React page component and translate it into a Remotion video with a style that MATCHES the brand — not a generic template.
+Create a Remotion video from a VideoScript with a style that MATCHES the brand — not a generic template.
 
-## CRITICAL: CINEMATIC STYLE REQUIREMENTS
+## REQUIREMENTS
 
-1. **MANDATORY CAMERA MOVEMENT**: Every scene wrapper MUST include an interpolated zoom or pan (see §9 above). Alternate zoom in / zoom out / pan left / pan right across scenes.
-
-2. **FONT via @remotion/google-fonts** (use brand font if specified, otherwise Montserrat):
-   \`\`\`tsx
-   import { loadFont } from "@remotion/google-fonts/Montserrat";
-   const { fontFamily } = loadFont("normal", { weights: ["400", "600", "700", "800", "900"], subsets: ["latin"] });
-   \`\`\`
-   Other good options: Oswald, Bebas Neue, Poppins, Inter, Playfair Display, Space Grotesk, DM Sans.
-   Choose based on brand personality (serif for luxury, geometric sans for tech, condensed for bold/energetic).
-   - Headlines: 100-180px, fontWeight 700-900, letterSpacing -2 to -4px
-   - Supporting: 36-60px, fontWeight 400-500
-   - Max 3 text elements per scene
-
-3. **BRAND-MATCHED COLORS**: Define a BRAND constant at the top of the file (after imports) with the brand colors provided in the prompt. Use BRAND.primary, BRAND.secondary, BRAND.dark throughout. Example:
+1. **BRAND-MATCHED COLORS**: Define a BRAND constant at top of file:
    \`\`\`tsx
    const BRAND = { primary: '#...', secondary: '#...', accent: '#...', dark: '#0a0a0f' };
    \`\`\`
    Do NOT default to purple+pink unless those ARE the brand colors.
 
-4. **MOVING BACKGROUND (MANDATORY)**: Every background MUST move:
-   - Bokeh circles: blurred divs (filter: blur(80-200px)), drifting via Math.sin/cos
-   - Slow gradient pan: translate the background layer
-   - Pulsing opacity: interpolate opacity in a sine wave pattern
+2. **MOVING BACKGROUND (MANDATORY)**: Every background MUST move (bokeh, gradient pan, or pulsing opacity).
 
-5. **SCENE TRANSITIONS**: Each scene fades out (opacity 1→0) over last 12 frames. Each scene fades in (opacity 0→1) over first 12 frames.
+3. **SCENE TRANSITIONS**: Fade in/out over 12 frames at scene edges.
 
-6. **TEXT ANIMATIONS**:
-   - WordByWordBlur: staggered word-by-word reveal (blur 10→0, translateY 30→0)
-   - Line sweep: width 0→100% on a color bar under a headline
-   - Scale pop: spring() for bouncy entrances
-
-7. **TEXT SPACING (CRITICAL)**:
-   - When rendering text as individual word <span> elements, the parent container MUST have: display: 'flex', flexWrap: 'wrap', gap: '0.3em'
-   - NEVER render adjacent <span> elements without explicit spacing (gap or margin)
-   - For inline text that is NOT split into words, use normal text with proper whitespace
-   - WordReveal/WordByWordBlur components MUST always use gap: '0.3em' on the flex container
-
-8. **SCENE STRUCTURE**: Use <Sequence> for discrete scenes. Each scene gets its own camera direction.
-
-## CRITICAL TRANSLATION RULES
-
-1. CONVERT EVERY CSS ANIMATION:
-   - CSS transition/animation → interpolate() with useCurrentFrame()
-   - transform animations → spring() for bouncy, interpolate() for smooth
-
-2. REQUIRED IMPORTS:
+4. **REQUIRED IMPORTS**:
    \`\`\`tsx
    import React from 'react';
-   import { AbsoluteFill, Sequence, useCurrentFrame, useVideoConfig, interpolate, spring, Easing, Img, delayRender, continueRender } from 'remotion';
+   import { AbsoluteFill, Sequence, useCurrentFrame, useVideoConfig, interpolate, spring, Easing } from 'remotion';
    \`\`\`
 
-3. STRUCTURE:
-   - Main component uses AbsoluteFill as root
-   - Use <Sequence> for discrete scenes with smooth entry/exit animations
-   - ALWAYS use premountFor on Sequences
-   - Camera transform on EVERY scene wrapper
+5. **OUTPUT FORMAT**: Main component = "VideoComposition". MUST end with: export default VideoComposition;
 
-4. OUTPUT FORMAT (CRITICAL):
-   - Return complete Remotion composition in a code block
-   - Main component MUST be named "VideoComposition"
-   - MUST end with: export default VideoComposition;
-
-5. STRICTLY FORBIDDEN:
-   - NO CSS animations or transitions
-   - NO Tailwind animation classes
-   - NO setTimeout or setInterval
-   - NO Math.random() — use deterministic values based on frame number or element index instead (flickering cause)
-   - NO Date.now() or new Date() — non-deterministic across rendering tabs (flickering cause)
-   - NO CSS background-image for URLs — use Remotion's <Img> component instead (flickering cause)
-   - NO \`backdrop-filter: blur()\` — renders inconsistently across concurrent browser tabs, causing frame-to-frame flicker. Use solid/gradient backgrounds instead.
-   - NO CSS \`transition\` or \`animation\` properties — these are time-based, not frame-based, and flicker when rendered across multiple tabs.
-   - When using \`loadFont\` from \`@remotion/google-fonts\`, call it at the TOP LEVEL (module scope), never inside a component — this ensures the font is loaded once and shared across all concurrent render tabs.
-   - NO generic purple+pink aurora (unless brand uses those colors)
-   - NO white glass cards (rgba(255,255,255,0.95)) — too generic
-   - ALL values computed from frame
-   - NO named exports only — MUST have export default
-   - NO useFrame from @react-three/fiber
-   - NO relative imports like \`from '../components/...'\` or \`from './utils/...'\` — the render environment has NO local files. ALL helpers MUST be defined inline in the single output file.
-
-6. TEMPLATE LITERAL SYNTAX (CRITICAL):
-   When using template literals in style objects, ALWAYS close them properly:
-
-   CORRECT:
-   \`\`\`tsx
-   style={{ filter: \`blur(\${blur}px)\`, transform: \`translateY(\${y}px)\` }}
-   \`\`\`
-
-   WRONG (will cause syntax errors):
-   \`\`\`tsx
-   style={{ filter: \`blur(\${blur}px), transform: \`translateY(\${y}px)\` }}
-   \`\`\`
-
-   RULES:
-   - Every opening backtick \` MUST have a closing backtick \`
-   - Template literals inside style objects must be complete before the comma
-   - Never split template literals across multiple properties`;
+6. **TEMPLATE LITERAL SYNTAX**: Every opening backtick MUST have a closing backtick. Complete template literals before commas in style objects.`;
+}
 
 // ============================================================================
 // CODE VALIDATION AND FIXING
@@ -942,6 +704,180 @@ export function validateAndFixCodeWithRetry(
   return { code: currentCode, issues: allIssues };
 }
 
+// ============================================================================
+// PRE-RENDER STATIC ANALYSIS — Catches forbidden patterns before render
+// ============================================================================
+
+interface StaticAnalysisResult {
+  valid: boolean;
+  errors: string[];    // Must-fix issues (will cause render failure)
+  warnings: string[];  // May cause issues (flicker, inconsistency)
+  autoFixed: string;   // Code with auto-fixable issues resolved
+}
+
+/**
+ * Pre-render static analysis that catches forbidden patterns BEFORE
+ * submitting to the render service. Much faster than a render round-trip.
+ *
+ * Catches: relative imports, CSS transitions, Tailwind, setTimeout,
+ * Math.random, Date.now, backdrop-filter, missing export default.
+ */
+export function validateBeforeRender(code: string): StaticAnalysisResult {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+  let fixedCode = code;
+
+  // ---- ERRORS (will definitely fail render) ----
+
+  // 1. Missing export default
+  const codeWithoutComments = code.replace(/\/\/[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "");
+  if (!codeWithoutComments.includes("export default")) {
+    errors.push("Missing 'export default' — required by Remotion render service");
+    // Auto-fix: add export default for common component names
+    const componentMatch = code.match(/(?:const|function)\s+([A-Z][a-zA-Z0-9]*)/);
+    if (componentMatch) {
+      fixedCode += `\n\nexport default ${componentMatch[1]};`;
+    }
+  }
+
+  // 2. Relative imports (render service has no local files)
+  const relativeImportPattern = /import\s+(?:type\s+)?(?:\{[^}]*\}|\w+)\s+from\s+['"](?:\.\.\/|\.\/)[^'"]*['"]/g;
+  const relativeImports = code.match(relativeImportPattern);
+  if (relativeImports) {
+    errors.push(`Relative imports found (${relativeImports.length}) — render service has no local files`);
+    // Auto-fix: strip relative imports
+    fixedCode = fixedCode.replace(/import\s+(?:type\s+)?(?:\{[^}]*\}|\w+)\s+from\s+['"](?:\.\.|\.\/)[^'"]*['"]\s*;?\n?/g, "");
+  }
+
+  // 3. useFrame from @react-three/fiber (incompatible with Remotion SSR)
+  if (code.includes("useFrame") && code.includes("@react-three/fiber")) {
+    errors.push("useFrame from @react-three/fiber — incompatible with Remotion SSR rendering");
+  }
+
+  // ---- WARNINGS (may cause flicker or inconsistency) ----
+
+  // 4. CSS transition property
+  const cssTransitionPattern = /transition\s*:\s*['"`][^'"`]*['"`]/g;
+  const cssTransitions = code.match(cssTransitionPattern);
+  if (cssTransitions) {
+    warnings.push(`CSS 'transition' property found (${cssTransitions.length}) — time-based, causes flicker in Remotion`);
+    // Auto-fix: remove transition properties from style objects
+    fixedCode = fixedCode.replace(/,?\s*transition\s*:\s*['"`][^'"`]*['"`]\s*,?/g, (match) => {
+      return match.startsWith(",") && match.endsWith(",") ? "," : "";
+    });
+  }
+
+  // 5. CSS animation property
+  const cssAnimationPattern = /animation\s*:\s*['"`][^'"`]*['"`]/g;
+  if (cssAnimationPattern.test(code)) {
+    warnings.push("CSS 'animation' property found — use interpolate()/spring() instead");
+  }
+
+  // 6. Math.random() — non-deterministic, causes flicker
+  if (/Math\.random\s*\(/.test(code)) {
+    warnings.push("Math.random() found — non-deterministic across render tabs, causes flicker. Use frame-based or index-based values.");
+  }
+
+  // 7. Date.now() / new Date() — non-deterministic
+  if (/Date\.now\s*\(|new Date\s*\(/.test(code)) {
+    warnings.push("Date.now()/new Date() found — non-deterministic, causes flicker");
+  }
+
+  // 8. setTimeout / setInterval
+  if (/setTimeout\s*\(|setInterval\s*\(/.test(code)) {
+    warnings.push("setTimeout/setInterval found — use frame-based timing instead");
+  }
+
+  // 9. backdrop-filter — biggest flicker cause with concurrent rendering
+  if (/backdrop-?[Ff]ilter/.test(code)) {
+    warnings.push("backdrop-filter found — renders inconsistently across concurrent tabs, causes flicker");
+    // Auto-fix: strip backdropFilter and WebkitBackdropFilter
+    fixedCode = fixedCode.replace(/,?\s*backdropFilter\s*:\s*['"`][^'"`]*['"`]\s*,?/g, (match) => {
+      return match.startsWith(",") && match.endsWith(",") ? "," : "";
+    });
+    fixedCode = fixedCode.replace(/,?\s*WebkitBackdropFilter\s*:\s*['"`][^'"`]*['"`]\s*,?/g, (match) => {
+      return match.startsWith(",") && match.endsWith(",") ? "," : "";
+    });
+  }
+
+  // 10. Tailwind animation classes
+  if (/className=.*(?:animate-|transition-)/g.test(code)) {
+    warnings.push("Tailwind animation classes found — not supported in Remotion");
+  }
+
+  // 10b. filter: blur() on elements (not backdrop) — can cause sub-pixel flicker with concurrency
+  // Only warn, don't auto-fix as it's often intentional
+  const blurFilterCount = (code.match(/filter\s*:\s*['"`]blur\(/g) || []).length;
+  if (blurFilterCount > 5) {
+    warnings.push(`Excessive blur filters (${blurFilterCount}) — may cause flicker with concurrent rendering`);
+  }
+
+  // 11. loadFont inside component (should be module-level)
+  const loadFontInsideComponent = /(?:const|function)\s+[A-Z][\s\S]*?loadFont\s*\(/;
+  if (loadFontInsideComponent.test(code)) {
+    warnings.push("loadFont() called inside component — move to module scope for consistent rendering");
+  }
+
+  const valid = errors.length === 0;
+
+  if (errors.length > 0 || warnings.length > 0) {
+    console.log(`[StaticAnalysis] ${errors.length} errors, ${warnings.length} warnings`);
+    errors.forEach(e => console.log(`  ERROR: ${e}`));
+    warnings.forEach(w => console.log(`  WARN: ${w}`));
+  }
+
+  return { valid, errors, warnings, autoFixed: fixedCode };
+}
+
+/**
+ * Enforce that Sequences fill the full target duration.
+ * Parses `<Sequence from={N} durationInFrames={N}>` and scales them to fill targetFrames.
+ */
+export function enforceDuration(code: string, targetFrames: number): string {
+  // Find all Sequence tags with numeric from/durationInFrames
+  const seqPattern = /<Sequence\s+from=\{(\d+)\}\s+durationInFrames=\{(\d+)\}/g;
+  const sequences: Array<{ from: number; dur: number; match: string }> = [];
+  let m;
+  while ((m = seqPattern.exec(code)) !== null) {
+    sequences.push({ from: parseInt(m[1]), dur: parseInt(m[2]), match: m[0] });
+  }
+
+  if (sequences.length === 0) return code;
+
+  // Compute the last frame covered by any sequence
+  const lastFrame = Math.max(...sequences.map(s => s.from + s.dur));
+  const coverage = lastFrame / targetFrames;
+
+  // If within 5% of target, no fix needed
+  if (coverage >= 0.95 && coverage <= 1.05) return code;
+
+  console.log(
+    `[DurationEnforce] Content covers ${lastFrame} frames but target is ${targetFrames} (${(coverage * 100).toFixed(0)}%). Scaling...`,
+  );
+
+  const scaleFactor = targetFrames / lastFrame;
+
+  // Scale all from/durationInFrames proportionally
+  let fixedCode = code;
+  let frameAccumulator = 0;
+
+  // Sort by from to process in order
+  const sorted = [...sequences].sort((a, b) => a.from - b.from);
+  for (let i = 0; i < sorted.length; i++) {
+    const seq = sorted[i];
+    const newFrom = Math.round(seq.from * scaleFactor);
+    const isLast = i === sorted.length - 1;
+    const newDur = isLast
+      ? targetFrames - newFrom // Last sequence fills remaining frames exactly
+      : Math.max(15, Math.round(seq.dur * scaleFactor)); // Min 0.5s
+    const replacement = `<Sequence from={${newFrom}} durationInFrames={${newDur}}`;
+    fixedCode = fixedCode.replace(seq.match, replacement);
+  }
+
+  console.log(`[DurationEnforce] Scaled ${sorted.length} sequences to fill ${targetFrames} frames`);
+  return fixedCode;
+}
+
 /**
  * More aggressive syntax fixer for broken template literals
  */
@@ -1284,8 +1220,8 @@ const CineBg: React.FC<{ seed?: number }> = ({ seed = 0 }) => {
   return (
     <AbsoluteFill style={{ background: C.bg, overflow: 'hidden' }}>
       {blobs.map((b, i) => {
-        const drift = Math.sin((frame + seed * 30 + i * 40) / (50 + i * 10)) * 30;
-        const driftY = Math.cos((frame + seed * 30 + i * 25) / (60 + i * 12)) * 20;
+        const drift = Math.round(Math.sin((frame + seed * 30 + i * 40) / (50 + i * 10)) * 30);
+        const driftY = Math.round(Math.cos((frame + seed * 30 + i * 25) / (60 + i * 12)) * 20);
         return (
           <div key={i} style={{
             position: 'absolute',
@@ -1294,7 +1230,8 @@ const CineBg: React.FC<{ seed?: number }> = ({ seed = 0 }) => {
             borderRadius: '50%',
             background: b.color,
             filter: 'blur(120px)',
-            transform: 'translate(-50%,-50%) translateX(' + drift + 'px) translateY(' + driftY + 'px)',
+            willChange: 'transform',
+            transform: 'translate(-50%,-50%) translate(' + drift + 'px,' + driftY + 'px)',
           }} />
         );
       })}
@@ -1640,10 +1577,10 @@ export async function remotionTranslatorNode(
   );
 
   const script = state.videoScript;
-  if (!script && !state.reactPageCode) {
+  if (!script) {
     return {
       errors: [
-        "No video script or React page code available for translation",
+        "No video script available for Remotion code generation",
       ],
       currentStep: "error",
     };
@@ -1675,15 +1612,8 @@ export async function remotionTranslatorNode(
   const audioBpm =
     state.userPreferences?.audio?.bpm || state.videoScript?.music?.tempo || 120;
 
-  // Build source section: use videoScript directly if no reactPageCode
-  const reactCode = state.reactPageCode;
-  const sourceSection = reactCode
-    ? `## TRANSLATE THIS REACT PAGE TO REMOTION
-
-\`\`\`tsx
-${reactCode}
-\`\`\``
-    : `## CREATE REMOTION VIDEO FROM THIS SCRIPT
+  // Build source section directly from videoScript (single-step generation)
+  const sourceSection = `## CREATE REMOTION VIDEO FROM THIS SCRIPT
 
 **Product**: ${state.productData?.name || "Product"}
 **Description**: ${state.productData?.description || state.description || ""}
@@ -1702,7 +1632,11 @@ Create a complete Remotion composition that follows the scene structure from the
 Each scene in the script should become a \`<Sequence>\` with appropriate animations.
 Use the product name, tagline, features, and description from the product data.`;
 
-  const prompt = `${REMOTION_TRANSLATOR_SYSTEM_PROMPT}
+  // Build dynamic system prompt with only relevant skills
+  const dynamicSkills = buildSkillsPrompt(state);
+  const systemPrompt = buildSystemPrompt(dynamicSkills);
+
+  const prompt = `${systemPrompt}
 
 ---
 
@@ -1899,11 +1833,21 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
 
   try {
     console.log("[RemotionTranslator] Calling Gemini Pro...");
+    // Dynamic temperature: conservative for professional, creative for bold/playful
+    const styleTemp: Record<string, number> = {
+      professional: 0.3,
+      minimal: 0.3,
+      bold: 0.6,
+      playful: 0.6,
+    };
+    const temperature = styleTemp[state.userPreferences?.style || "professional"] || 0.5;
+    console.log(`[RemotionTranslator] Using temperature ${temperature} for style "${state.userPreferences?.style}"`);
+
     const response = await chatWithGeminiPro(
       [{ role: "user", content: prompt }],
       {
-        temperature: 0.5,
-        maxTokens: 16000, // Increased to prevent truncation
+        temperature,
+        maxTokens: 16000,
       },
     );
 
@@ -2028,7 +1972,7 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
           "7. MUST end with: export default VideoComposition;";
 
         try {
-          const fixResponse = await chatWithGeminiFlash(
+          const fixResponse = await chatWithGeminiPro(
             [{ role: "user", content: fixPrompt }],
             {
               temperature: 0.2,
@@ -2052,9 +1996,10 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
             ? fixedCodeMatch[1].trim()
             : fixResponse.content;
 
-          // Validate the fixed code - must be non-trivial (at least 100 chars)
+          // Validate the fixed code - must be non-trivial and not drastically shorter
           const remainingErrors = hasBasicSyntaxErrors(fixedCode);
-          if (fixedCode.length < 100) {
+          const minAcceptableLength = Math.max(100, validatedCode.length * 0.4);
+          if (fixedCode.length < minAcceptableLength) {
             console.warn(
               "[RemotionTranslator] Fix returned empty/trivial code, using fallback",
             );
@@ -2095,7 +2040,7 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
               "\n\n" +
               "Return ONLY valid TypeScript/React code with ALL errors fixed. Ensure perfect syntax.";
 
-            const secondResponse = await chatWithGeminiFlash(
+            const secondResponse = await chatWithGeminiPro(
               [{ role: "user", content: secondFixPrompt }],
               {
                 temperature: 0.2,
@@ -2120,7 +2065,7 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
               : secondResponse.content;
 
             const finalCheck = hasBasicSyntaxErrors(secondFixed);
-            if (secondFixed.length < 100) {
+            if (secondFixed.length < minAcceptableLength) {
               console.warn(
                 "[RemotionTranslator] Second fix returned empty/trivial code, using fallback",
               );
