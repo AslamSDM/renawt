@@ -591,6 +591,16 @@ export default function ProjectCreativePage() {
   const [editingProjectName, setEditingProjectName] = useState(false);
   const [tempProjectName, setTempProjectName] = useState("");
 
+  // Mode: "product-demo" (current flow) or "reference-video" (new flow)
+  type FlowMode = "product-demo" | "reference-video";
+  const [flowMode, setFlowMode] = useState<FlowMode>("product-demo");
+
+  // Reference video states
+  const [referenceVideoFile, setReferenceVideoFile] = useState<File | null>(null);
+  const [referenceVideoUrl, setReferenceVideoUrl] = useState<string | null>(null);
+  const [referenceVideoPreview, setReferenceVideoPreview] = useState<string | null>(null);
+  const [uploadingReference, setUploadingReference] = useState(false);
+
   // Input states
   const [description, setDescription] = useState("");
   // Single preset combines style + videoType + templateStyle
@@ -1443,6 +1453,223 @@ export default function ProjectCreativePage() {
       addLog(message, "error");
     } finally {
       setLoading(false);
+      setGenerationProgress(0);
+      setGenerationStatus("");
+    }
+  };
+
+  // Handle reference video file selection
+  const handleReferenceVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setReferenceVideoFile(file);
+    setReferenceVideoUrl(null);
+    // Create local preview URL
+    const previewUrl = URL.createObjectURL(file);
+    setReferenceVideoPreview(previewUrl);
+  };
+
+  // Handle reference video generation
+  const handleReferenceGenerate = async () => {
+    if (hasNoCredits) {
+      toast.error("No credits available. Subscribe to get more credits.", {
+        action: { label: "Subscribe", onClick: () => router.push("/pricing") },
+      });
+      return;
+    }
+
+    if (!referenceVideoFile && !referenceVideoUrl) {
+      toast.error("Please upload a reference video");
+      return;
+    }
+
+    if (!description.trim()) {
+      toast.error("Please enter a description of the content to use");
+      return;
+    }
+
+    setLoading(true);
+    setLogs([]);
+    setScript(null);
+    setRemotionCode(null);
+    setRenderedVideoUrl(null);
+    setActiveTab("logs");
+    setGenerationProgress(5);
+    setGenerationStatus("Uploading reference video...");
+    toast.info("Starting reference video generation — this takes 3-5 minutes", { duration: 5000 });
+
+    addLog("Reference Video mode — Gemini Pro will analyze and recreate");
+
+    try {
+      const token = await getVpsToken();
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      // Step 1: Upload reference video to R2 if not already uploaded
+      let videoUrl = referenceVideoUrl;
+      if (!videoUrl && referenceVideoFile) {
+        setUploadingReference(true);
+        setGenerationProgress(10);
+        addLog("Uploading reference video...");
+
+        const formData = new FormData();
+        formData.append("video", referenceVideoFile);
+
+        const uploadRes = await fetch("/api/reference-video", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!uploadRes.ok) {
+          const errData = await uploadRes.json().catch(() => ({}));
+          throw new Error(errData.error || "Failed to upload reference video");
+        }
+
+        const uploadData = await uploadRes.json();
+        videoUrl = uploadData.url;
+        setReferenceVideoUrl(videoUrl);
+        setUploadingReference(false);
+        addLog("Reference video uploaded", "success");
+        setGenerationProgress(15);
+      }
+
+      // Step 2: Call the reference-video endpoint
+      const response = await fetch(`${VPS_API_URL}/api/creative/reference-video`, {
+        method: "POST",
+        headers: vpsHeaders(token),
+        body: JSON.stringify({
+          referenceVideoUrl: videoUrl,
+          description,
+          duration,
+          aspectRatio,
+          audio: selectedAudio
+            ? {
+                url: selectedAudio.url,
+                bpm: selectedAudio.bpm,
+                duration: selectedAudio.duration,
+              }
+            : undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || "Reference video generation failed");
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No response body");
+      const decoder = new TextDecoder();
+      let buf = "";
+      let currentRemotionCode = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split("\n");
+        buf = lines.pop() || "";
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const event = JSON.parse(line);
+            switch (event.type) {
+              case "status":
+                addLog(event.data.message || event.data.step);
+                setGenerationStatus(event.data.message || "Processing...");
+                if (event.data.step === "analyzing") {
+                  setGenerationProgress(25);
+                  toast.info("Analyzing reference video...", { duration: 3000 });
+                } else if (event.data.step === "analyzed") {
+                  setGenerationProgress(40);
+                } else if (event.data.step === "generating") {
+                  setGenerationProgress(50);
+                  toast.info("Generating video composition...", { duration: 3000 });
+                } else if (event.data.step === "code-ready") {
+                  setGenerationProgress(60);
+                } else if (event.data.step === "rendering") {
+                  setGenerationProgress(75);
+                  toast.loading("Rendering video...", { id: "rendering", duration: Infinity });
+                } else if (event.data.step === "fixing") {
+                  setGenerationProgress(80);
+                } else if (event.data.step === "complete") {
+                  setGenerationProgress(100);
+                  toast.dismiss("rendering");
+                }
+                break;
+              case "remotionCode":
+                currentRemotionCode = event.data;
+                setRemotionCode(event.data);
+                addLog("Composition generated", "success");
+                break;
+              case "videoUrl":
+                setRenderedVideoUrl(event.data);
+                await saveProject({
+                  videoUrl: event.data,
+                  audioUrl: event.data,
+                  status: "RENDERED",
+                });
+
+                const refVersion: VideoVersion = {
+                  id: `v-${Date.now()}`,
+                  versionNumber: versions.length + 1,
+                  timestamp: Date.now(),
+                  editMessage: "Reference video render",
+                  remotionCode: currentRemotionCode,
+                  videoUrl: event.data,
+                  isActive: true,
+                };
+
+                const refVersions = versions.map((v) => ({
+                  ...v,
+                  isActive: false,
+                }));
+                refVersions.push(refVersion);
+                setVersions(refVersions);
+                setCurrentVersionId(refVersion.id);
+                await saveProject({ currentVersionId: refVersion.id });
+
+                try {
+                  await fetch("/api/versions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ projectId, versions: refVersions }),
+                  });
+                } catch (err) {
+                  console.warn("Failed to save versions to R2:", err);
+                }
+
+                setActiveTab("preview");
+                setShowGenerationsSidebar(true);
+                addLog("Video rendered successfully!", "success");
+                toast.dismiss("rendering");
+                toast.success("Reference video recreated!", { duration: 5000 });
+                break;
+              case "error":
+                toast.dismiss("rendering");
+                toast.error(event.data.errors?.join(", ") || "Error");
+                addLog(event.data.errors?.[0] || "Error occurred", "error");
+                break;
+              case "complete":
+                toast.dismiss("rendering");
+                addLog(
+                  event.data.success ? "Reference video complete!" : "Generation had errors",
+                  event.data.success ? "success" : "error",
+                );
+                break;
+            }
+          } catch {}
+        }
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      toast.error(message);
+      addLog(message, "error");
+    } finally {
+      setLoading(false);
+      setUploadingReference(false);
       setGenerationProgress(0);
       setGenerationStatus("");
     }
@@ -2857,8 +3084,47 @@ export default function ProjectCreativePage() {
               <div>
                 <h2 className="text-2xl font-light mb-2">Create Your Video</h2>
                 <p className="text-gray-500">
-                  Enter your product details and we'll generate a script
+                  {flowMode === "product-demo"
+                    ? "Enter your product details and we'll generate a script"
+                    : "Upload a reference video and describe the content to recreate"}
                 </p>
+              </div>
+
+              {/* Mode Switcher */}
+              <div className="space-y-2">
+                <label className="text-xs tracking-widest text-gray-500 uppercase">
+                  Generation Mode
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setFlowMode("product-demo")}
+                    className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all ${
+                      flowMode === "product-demo"
+                        ? "bg-white/15 text-white border border-white/30 shadow-lg shadow-white/5"
+                        : "bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10"
+                    }`}
+                  >
+                    <div className="flex flex-col items-center gap-1">
+                      <Film className="w-4 h-4" />
+                      <span>Product Demo</span>
+                      <span className="text-[10px] text-gray-500">1-5 credits</span>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setFlowMode("reference-video")}
+                    className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all ${
+                      flowMode === "reference-video"
+                        ? "bg-white/15 text-white border border-white/30 shadow-lg shadow-white/5"
+                        : "bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10"
+                    }`}
+                  >
+                    <div className="flex flex-col items-center gap-1">
+                      <Upload className="w-4 h-4" />
+                      <span>Reference Video</span>
+                      <span className="text-[10px] text-gray-500">5 credits</span>
+                    </div>
+                  </button>
+                </div>
               </div>
 
               {/* Floating Progress Indicator - Show during generation */}
@@ -2871,51 +3137,121 @@ export default function ProjectCreativePage() {
                 </div>
               )}
 
-              {/* URL Input */}
-              <div className="space-y-2">
-                <label className="text-xs tracking-widest text-gray-500 uppercase">
-                  Product URL (Optional)
-                </label>
-                <input
-                  type="url"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  placeholder="https://example.com/product"
-                  className="w-full px-4 py-4 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none transition-colors text-base rounded-lg"
-                />
-              </div>
+              {/* === REFERENCE VIDEO MODE === */}
+              {flowMode === "reference-video" && (
+                <>
+                  {/* Reference Video Upload */}
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-widest text-gray-500 uppercase">
+                      Reference Video
+                    </label>
+                    {referenceVideoPreview ? (
+                      <div className="relative rounded-lg overflow-hidden border border-white/10">
+                        <video
+                          src={referenceVideoPreview}
+                          className="w-full max-h-48 object-contain bg-black"
+                          controls
+                          muted
+                        />
+                        <button
+                          onClick={() => {
+                            setReferenceVideoFile(null);
+                            setReferenceVideoUrl(null);
+                            if (referenceVideoPreview) URL.revokeObjectURL(referenceVideoPreview);
+                            setReferenceVideoPreview(null);
+                          }}
+                          className="absolute top-2 right-2 p-1 bg-black/60 rounded-full hover:bg-black/80 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                        <div className="p-2 text-xs text-gray-400">
+                          {referenceVideoFile?.name} ({referenceVideoFile ? `${(referenceVideoFile.size / 1024 / 1024).toFixed(1)}MB` : ""})
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="w-full py-8 border-2 border-dashed border-white/10 rounded-lg flex flex-col items-center justify-center gap-3 hover:border-white/20 transition-colors text-gray-500 cursor-pointer">
+                        <Upload className="w-8 h-8" />
+                        <span className="text-sm">Click to upload a reference video</span>
+                        <span className="text-xs text-gray-600">MP4, WebM, MOV — max 100MB</span>
+                        <input
+                          type="file"
+                          accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
+                          onChange={handleReferenceVideoSelect}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
+                  </div>
 
-              {/* Description Input - Wider */}
-              <div className="space-y-2">
-                <label className="text-xs tracking-widest text-gray-500 uppercase">
-                  Description
-                </label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Describe your product, what it does, and what makes it special..."
-                  rows={6}
-                  className="w-full px-4 py-4 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none transition-colors resize-none text-base rounded-lg"
-                />
-              </div>
+                  {/* Description for reference video */}
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-widest text-gray-500 uppercase">
+                      Content Description
+                    </label>
+                    <textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Describe the content to use in the recreated video. E.g. product name, features, taglines, colors, brand style..."
+                      rows={6}
+                      className="w-full px-4 py-4 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none transition-colors resize-none text-base rounded-lg"
+                    />
+                    <p className="text-xs text-gray-600">
+                      Gemini Pro will analyze the reference video's style and recreate it with your content
+                    </p>
+                  </div>
+                </>
+              )}
 
-              {/* Video Preset */}
-              <div className="space-y-2">
-                <label className="text-xs tracking-widest text-gray-500 uppercase">
-                  Video Preset
-                </label>
-                <select
-                  value={preset}
-                  onChange={(e) => setPreset(e.target.value as PresetKey)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none rounded-lg"
-                >
-                  {Object.entries(PRESETS).map(([key, p]) => (
-                    <option key={key} value={key}>
-                      {p.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* === PRODUCT DEMO MODE === */}
+              {flowMode === "product-demo" && (
+                <>
+                  {/* URL Input */}
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-widest text-gray-500 uppercase">
+                      Product URL (Optional)
+                    </label>
+                    <input
+                      type="url"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      placeholder="https://example.com/product"
+                      className="w-full px-4 py-4 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none transition-colors text-base rounded-lg"
+                    />
+                  </div>
+
+                  {/* Description Input - Wider */}
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-widest text-gray-500 uppercase">
+                      Description
+                    </label>
+                    <textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Describe your product, what it does, and what makes it special..."
+                      rows={6}
+                      className="w-full px-4 py-4 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none transition-colors resize-none text-base rounded-lg"
+                    />
+                  </div>
+
+                  {/* Video Preset */}
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-widest text-gray-500 uppercase">
+                      Video Preset
+                    </label>
+                    <select
+                      value={preset}
+                      onChange={(e) => setPreset(e.target.value as PresetKey)}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none rounded-lg"
+                    >
+                      {Object.entries(PRESETS).map(([key, p]) => (
+                        <option key={key} value={key}>
+                          {p.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
 
               {/* Duration */}
               <div className="space-y-2">
@@ -2989,55 +3325,57 @@ export default function ProjectCreativePage() {
                 </div>
               </div>
 
-              {/* Feature Toggles */}
-              <div className="space-y-3">
-                <label className="text-xs tracking-widest text-gray-500 uppercase">
-                  Features
-                </label>
-                {[
-                  {
-                    key: "nanoBanana" as const,
-                    label: "AI Image Gen",
-                    desc: "Generate images with Gemini Flash",
-                  },
-                  {
-                    key: "stockImages" as const,
-                    label: "Stock Images",
-                    desc: "Include stock photography",
-                  },
-                  {
-                    key: "animatedComponents" as const,
-                    label: "Animated Components",
-                    desc: "Use animated UI elements",
-                  },
-                ].map(({ key, label, desc }) => (
-                  <div
-                    key={key}
-                    className="flex items-center justify-between py-2"
-                  >
-                    <div>
-                      <div className="text-sm text-gray-300">{label}</div>
-                      <div className="text-xs text-gray-600">{desc}</div>
-                    </div>
-                    <button
-                      onClick={() =>
-                        setToggles((prev) => ({ ...prev, [key]: !prev[key] }))
-                      }
-                      className={`relative w-10 h-5 rounded-full transition-colors ${
-                        toggles[key] ? "bg-white/30" : "bg-white/10"
-                      }`}
+              {/* Feature Toggles — Product Demo only */}
+              {flowMode === "product-demo" && (
+                <div className="space-y-3">
+                  <label className="text-xs tracking-widest text-gray-500 uppercase">
+                    Features
+                  </label>
+                  {[
+                    {
+                      key: "nanoBanana" as const,
+                      label: "AI Image Gen",
+                      desc: "Generate images with Gemini Flash",
+                    },
+                    {
+                      key: "stockImages" as const,
+                      label: "Stock Images",
+                      desc: "Include stock photography",
+                    },
+                    {
+                      key: "animatedComponents" as const,
+                      label: "Animated Components",
+                      desc: "Use animated UI elements",
+                    },
+                  ].map(({ key, label, desc }) => (
+                    <div
+                      key={key}
+                      className="flex items-center justify-between py-2"
                     >
-                      <div
-                        className={`absolute top-0.5 w-4 h-4 rounded-full transition-transform ${
-                          toggles[key]
-                            ? "translate-x-5 bg-white"
-                            : "translate-x-0.5 bg-gray-500"
+                      <div>
+                        <div className="text-sm text-gray-300">{label}</div>
+                        <div className="text-xs text-gray-600">{desc}</div>
+                      </div>
+                      <button
+                        onClick={() =>
+                          setToggles((prev) => ({ ...prev, [key]: !prev[key] }))
+                        }
+                        className={`relative w-10 h-5 rounded-full transition-colors ${
+                          toggles[key] ? "bg-white/30" : "bg-white/10"
                         }`}
-                      />
-                    </button>
-                  </div>
-                ))}
-              </div>
+                      >
+                        <div
+                          className={`absolute top-0.5 w-4 h-4 rounded-full transition-transform ${
+                            toggles[key]
+                              ? "translate-x-5 bg-white"
+                              : "translate-x-0.5 bg-gray-500"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Audio Selector */}
               <AudioSelector
@@ -3045,7 +3383,9 @@ export default function ProjectCreativePage() {
                 onSelect={setSelectedAudio}
               />
 
-              {/* Recordings */}
+              {/* Recordings — Product Demo only */}
+              {flowMode !== "reference-video" && (
+              /* Recordings */
               <div className="space-y-3">
                 <label className="text-xs tracking-widest text-gray-500 uppercase">
                   Screen Recordings
@@ -3187,6 +3527,7 @@ export default function ProjectCreativePage() {
                   </div>
                 )}
               </div>
+              )}
 
               {/* Progress Bar - Show during generation */}
               {loading && generationProgress > 0 && (
@@ -3200,18 +3541,25 @@ export default function ProjectCreativePage() {
 
               {/* Generate Button */}
               <Button
-                onClick={handleGenerate}
-                disabled={loading || !description.trim() || hasNoCredits}
+                onClick={flowMode === "reference-video" ? handleReferenceGenerate : handleGenerate}
+                disabled={
+                  loading ||
+                  !description.trim() ||
+                  hasNoCredits ||
+                  (flowMode === "reference-video" && !referenceVideoFile && !referenceVideoUrl)
+                }
                 className="w-full rounded-lg py-6 text-lg"
                 size="lg"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="animate-spin h-5 w-5" />
-                    Generating Script...
+                    {uploadingReference ? "Uploading Video..." : flowMode === "reference-video" ? "Recreating Video..." : "Generating Script..."}
                   </span>
                 ) : hasNoCredits ? (
                   "No Credits Available"
+                ) : flowMode === "reference-video" ? (
+                  "Recreate from Reference (5 credits)"
                 ) : (
                   "Generate Script"
                 )}

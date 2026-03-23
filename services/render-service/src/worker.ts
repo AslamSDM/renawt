@@ -1,6 +1,7 @@
 /**
  * BullMQ worker for processing render jobs.
- * Concurrency: 2 on 4-core/8GB server (each render uses ~3GB peak).
+ * Concurrency: 1 — each render uses ~1.5GB peak; 2 concurrent jobs would OOM
+ * with renderConcurrency=3 per job (6 Chromium tabs on 3GB container).
  */
 
 import { Worker, Job } from "bullmq";
@@ -103,7 +104,7 @@ export function startWorker() {
     },
     {
       connection: connection as any,
-      concurrency: 2, // Two renders in parallel on 4-core/8GB server
+      concurrency: 1, // One render at a time to stay within 3GB container memory
     }
   );
 

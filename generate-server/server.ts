@@ -13,6 +13,7 @@ import generateRouter from "./routes/generate";
 import editRouter from "./routes/edit";
 import freestyleRouter from "./routes/freestyle";
 import devRouter from "./routes/dev";
+import referenceVideoRouter from "./routes/referenceVideo";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -49,6 +50,7 @@ app.use("/webhooks", webhooksRouter);
 app.use("/api/creative", jwtAuth, generateRouter);
 app.use("/api/creative", jwtAuth, editRouter);
 app.use("/api/creative", jwtAuth, freestyleRouter);
+app.use("/api/creative", jwtAuth, referenceVideoRouter);
 
 // Development Playground (No auth, restricted by NODE_ENV)
 if (process.env.NODE_ENV !== "production") {

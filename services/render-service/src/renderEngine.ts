@@ -225,21 +225,24 @@ export async function renderVideo(
       serveUrl: bundleLocation,
       id: "GeneratedVideo",
       browserExecutable: BROWSER_PATH,
-      chromiumOptions: { enableMultiProcessOnLinux: true },
+      chromiumOptions: {
+        enableMultiProcessOnLinux: true,
+      },
     });
 
     // Output path
     const outputFileName = `video-${renderId}.${outputFormat}`;
     const outputPath = join(OUTPUT_DIR, outputFileName);
 
-    // Concurrency: use 1 to eliminate flicker from non-deterministic rendering
-    // across concurrent browser tabs (backdrop-filter, anti-aliasing, sub-pixel diffs)
+    // Concurrency: capped at 2 to stay within container memory limits.
+    // Worker runs 1 job at a time; each Chromium tab needs ~500MB.
+    // concurrency=2 means 2 tabs per job (1GB); concurrency=1 for heavy scenes.
     const isThreeJS =
-      remotionCode.includes("@react-three") || remotionCode.includes("three/");
+      remotionCode.includes("@react-three") || remotionCode.includes("three/") || remotionCode.includes("ThreeCanvas") || remotionCode.includes("@remotion/three");
     const hasBackdropFilter = remotionCode.includes("backdropFilter") || remotionCode.includes("backdrop-filter");
-    const renderConcurrency = isThreeJS || hasBackdropFilter ? 1 : 2;
+    const renderConcurrency = 1; // Always 1 to prevent OOM in containerized env
     console.log(
-      `[RenderEngine] Concurrency: ${renderConcurrency} (${isThreeJS ? "ThreeJS" : "2D"})`,
+      `[RenderEngine] Concurrency: ${renderConcurrency}`,
     );
 
     // Render the video
@@ -250,9 +253,11 @@ export async function renderVideo(
       codec: outputFormat === "mp4" ? "h264" : "vp8",
       outputLocation: outputPath,
       browserExecutable: BROWSER_PATH,
-      chromiumOptions: { enableMultiProcessOnLinux: true },
+      chromiumOptions: {
+        enableMultiProcessOnLinux: true,
+      },
       concurrency: renderConcurrency,
-      imageFormat: "png", // PNG avoids JPEG compression artifacts that cause flicker with concurrency > 1
+      imageFormat: "jpeg", // JPEG for smaller disk usage (PNG OOMs on 1080x1920 @ 165 frames)
       onProgress: ({ progress }) => {
         console.log(`[RenderEngine] Progress: ${Math.round(progress * 100)}%`);
         onProgress?.(progress);

@@ -14,6 +14,7 @@ import {
   analyzeRecording,
   type RecordingAnalysisResult,
 } from "./recordingAnalyzer";
+import type { BrandStyle } from "./brandAnalyser";
 
 // ============================================================================
 // MODULAR REMOTION SKILLS - Only inject relevant sections per generation
@@ -33,17 +34,24 @@ All animations MUST use \`useCurrentFrame()\` + \`interpolate()\` or \`spring()\
 Remotion renders frames concurrently in parallel browser tabs. Any non-deterministic or sub-pixel operation causes flicker:
 - NEVER use \`backdropFilter\` or \`WebkitBackdropFilter\` — use solid semi-transparent backgrounds instead (\`rgba()\`)
 - Round ALL computed pixel values: \`Math.round(interpolate(...))\` for transforms/positions
-- Avoid excessive \`filter: blur()\` — max 2-3 blur elements per scene
-- Use \`willChange: 'transform'\` on animated elements for GPU compositing consistency
+- NEVER use \`filter: blur()\` with values above 60px — large blurs (80px+) flicker badly. Use solid semi-transparent \`rgba()\` backgrounds or subtle gradients instead.
+- For soft glow/bokeh effects, use \`radial-gradient()\` with transparent edges instead of blur filters.
+- Avoid per-word \`filter: blur()\` animations — use opacity + translateY only for word reveals.
 - Keep \`textShadow\` to max 2 layers — large multi-layer glow shadows flicker
+- CRITICAL: After entry animations complete, SNAP to exact final values. \`interpolate\` and \`spring\` produce floating-point micro-variations that cause jitter on static elements:
 
 \`\`\`tsx
 import { useCurrentFrame, useVideoConfig, interpolate, spring, Easing } from "remotion";
 const frame = useCurrentFrame();
 const { fps } = useVideoConfig();
-const opacity = interpolate(frame, [0, 2 * fps], [0, 1], { extrapolateRight: "clamp" });
-const scale = spring({ frame, fps, config: { damping: 200 } });
+const ENTRY_DUR = 20;
+const done = frame >= ENTRY_DUR; // snap after animation
+const opacity = done ? 1 : interpolate(frame, [0, ENTRY_DUR], [0, 1], { extrapolateRight: "clamp" });
+const scale = done ? 1 : spring({ frame, fps, config: { damping: 200 } });
+// Use transform: 'none' when done — removes sub-pixel jitter
+const style = { opacity, transform: done ? 'none' : \\\`scale(\\\${scale})\\\` };
 \`\`\`
+- Remove \`willChange\` after animation completes — it forces GPU compositing which amplifies sub-pixel jitter on static elements
 
 ### SEQUENCING
 Use \`<Sequence>\` with premountFor. Overlap sequences for continuous motion:
@@ -78,29 +86,31 @@ Word-by-word \`<span>\` elements MUST use parent: display:'flex', flexWrap:'wrap
 - MUST have export default VideoComposition;
 `;
 
-// Text animation skills (~2KB)
+// Text animation skills (~3KB)
 const SKILL_TEXT_ANIMATIONS = `
-### TEXT ANIMATIONS
+### TEXT ANIMATIONS — LANDING PAGE TYPOGRAPHY
 
-#### WordByWordBlur (primary text animation):
+Think like a top-tier landing page designer. Text is NOT just information — it's a visual element. Use scale, weight, spacing, and timing to create hierarchy and drama.
+
+#### WordByWord (staggered word reveal — primary headline animation):
 \`\`\`tsx
-const WordByWordBlur: React.FC<{ words: string[]; fontSize?: number; color?: string; delay?: number; staggerFrames?: number }> = ({
+const WordByWord: React.FC<{ words: string[]; fontSize?: number; color?: string; delay?: number; staggerFrames?: number }> = ({
   words, fontSize = 48, color = '#ffffff', delay = 0, staggerFrames = 5,
 }) => {
   const frame = useCurrentFrame();
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3em', justifyContent: 'center' }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: Math.round(fontSize * 0.3), justifyContent: 'center' }}>
       {words.map((word, i) => {
         const f = Math.max(0, frame - delay - i * staggerFrames);
-        const op = interpolate(f, [0, 15], [0, 1], { extrapolateRight: "clamp" });
-        const blur = interpolate(f, [0, 15], [10, 0], { extrapolateRight: "clamp" });
-        const ty = interpolate(f, [0, 15], [30, 0], { extrapolateRight: "clamp" });
+        const done = f >= 15;
+        const op = done ? 1 : interpolate(f, [0, 15], [0, 1], { extrapolateRight: "clamp" });
+        const ty = done ? 0 : Math.round(interpolate(f, [0, 15], [30, 0], { extrapolateRight: "clamp" }));
         return (
           <span key={i} style={{
             fontSize, fontWeight: 600, opacity: op,
-            filter: \\\`blur(\\\${blur}px)\\\`, transform: \\\`translateY(\\\${ty}px)\\\`,
+            transform: done ? 'none' : \\\`translateY(\\\${ty}px)\\\`,
             display: 'inline-block', ...(color ? { color } : {}),
-          }}>{word}</span>
+          }}>{word}{' '}</span>
         );
       })}
     </div>
@@ -108,86 +118,179 @@ const WordByWordBlur: React.FC<{ words: string[]; fontSize?: number; color?: str
 };
 \`\`\`
 
-#### GradientAccentText: brand-colored gradient text with scale pop entrance.
-#### LogoWithGlow: fade in + expanding glow halo behind brand name.
-#### SweepLine: animated width 0→full line accent.
+#### Typography patterns to use:
+- **Hero headlines**: 120-180px, tight letter-spacing (-3 to -6px), font-weight 900. Split into 2 lines with accent color on key words.
+- **Accent text**: Use \`background: linear-gradient(...)\` + \`WebkitBackgroundClip: 'text'\` + \`WebkitTextFillColor: 'transparent'\` for gradient text on key phrases.
+- **Counters/stats**: Oversized numbers (80-120px, weight 900) with small uppercase labels below (14-18px, letter-spacing 4-6px, weight 600, rgba(255,255,255,0.5)).
+- **Subtext**: 24-32px, weight 400, rgba(255,255,255,0.6), line-height 1.6. Never same size as headline.
+- **SweepLine**: Thin 2-3px accent line that animates width 0→200px. Use between headline and subtext.
+- **Clip-path reveal**: Reveal text with \`clipPath: 'inset(0 '+pct+'% 0 0)'\` animating from 100% to 0%.
 `;
 
-// Camera movement skills (~1.5KB)
+// Camera movement skills (~2.5KB)
 const SKILL_CAMERA = `
-### CINEMATIC CAMERA MOVEMENTS (MANDATORY IN EVERY SCENE)
-Alternate zoom in ↔ zoom out across scenes. Every scene wrapper MUST have interpolated camera transform.
+### CINEMATIC CAMERA & SCENE CONTINUITY (MANDATORY)
 
-#### Ken Burns Zoom In:
+Every scene MUST have continuous motion — nothing should ever be static. Think of the camera as always moving, like a Steadicam dolly shot in a film. Alternate between these techniques per scene:
+
+#### 1. Ken Burns (slow zoom — hero/CTA scenes):
+\`\`\`tsx
 const camScale = interpolate(frame, [0, duration], [1.0, 1.12], { extrapolateRight: 'clamp' });
-<AbsoluteFill style={{ transform: "scale(" + camScale + ")", transformOrigin: 'center center' }}>
+style={{ transform: 'scale(' + camScale + ')', transformOrigin: 'center center' }}
+\`\`\`
 
-#### Ken Burns Zoom Out (alternate scenes):
-const camScale = interpolate(frame, [0, duration], [1.14, 1.0], { extrapolateRight: 'clamp' });
+#### 2. Parallax Layers (depth — feature scenes):
+Create 2-3 layers moving at different speeds. Background moves slow, foreground moves fast:
+\`\`\`tsx
+const bgX = Math.round(interpolate(frame, [0, dur], [0, -40], { extrapolateRight: 'clamp' }));
+const midX = Math.round(interpolate(frame, [0, dur], [0, -90], { extrapolateRight: 'clamp' }));
+const fgX = Math.round(interpolate(frame, [0, dur], [0, -160], { extrapolateRight: 'clamp' }));
+// Apply to 3 stacked AbsoluteFill layers
+\`\`\`
 
-#### Parallax Pan (multi-layer depth):
-const bgX = interpolate(frame, [0, 450], [0, -60], { extrapolateRight: 'clamp' });
-const fgX = interpolate(frame, [0, 450], [0, -160], { extrapolateRight: 'clamp' });
+#### 3. Reveal Pan (content slides into frame):
+Content starts off-screen and pans into view. Great for feature cards and text blocks:
+\`\`\`tsx
+const slideX = Math.round(interpolate(frame, [0, 25], [200, 0], { extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) }));
+\`\`\`
 
-#### Continuous Drift (background elements):
-const drift = Math.sin(frame / 40) * 18;
-const driftY = Math.cos(frame / 60) * 12;
+#### 4. Diagonal Drift (ambient background motion):
+Background elements drift on diagonal paths. Creates depth without being distracting:
+\`\`\`tsx
+const driftX = Math.round(Math.sin(frame / 60) * 30);
+const driftY = Math.round(Math.cos(frame / 80) * 20);
+\`\`\`
+
+#### 5. Scale-to-Reveal (dramatic entrances):
+Element starts scaled up large and zooms out to reveal context:
+\`\`\`tsx
+const revealScale = interpolate(frame, [0, 30], [2.5, 1.0], { extrapolateRight: 'clamp', easing: Easing.out(Easing.expo) });
+\`\`\`
+
+#### Scene-to-Scene Flow:
+- Scene 1 (intro): Ken Burns zoom IN + diagonal drift background
+- Scene 2 (tagline): Ken Burns zoom OUT + parallax pan
+- Scene 3 (feature): Pan LEFT reveal + parallax layers
+- Scene 4 (feature): Pan RIGHT reveal + parallax layers (mirror)
+- Scene 5 (demo/stats): Scale-to-reveal + floating elements
+- Scene 6 (CTA): Slow Ken Burns zoom IN + drift
+- Overlap sequences by 15 frames for crossfade continuity
 `;
 
 // Style-specific skills — only ONE injected per generation
+// IMPORTANT: No hardcoded colors here — all colors come from the BRAND constant
+// which is populated from the actual website's extracted color palette.
 const STYLE_SKILLS: Record<string, string> = {
   "dark-cinematic": `
 ### STYLE: DARK CINEMATIC
-- Background: near-black (#080810) with slow-moving bokeh circles (blurred divs, opacity 0.15-0.4, drifting via Math.sin/cos)
-- Headline: oversized (140-200px), tight letter-spacing (-4px), white or brand color
-- Accent lines: thin 1-2px horizontal rules that sweep in from left
-- Cards: dark glass (rgba(255,255,255,0.04)) with subtle border (rgba(255,255,255,0.08))
-- Moving background: bokeh circles with filter:blur(80-200px), pulsing opacity
-- Scene transitions: fade in/out over 12 frames at scene edges
+
+**Visual Language:**
+- Background: use BRAND.bg (dark from website). NEVER pure black. Add subtle noise texture via repeating-linear-gradient with 1px lines at 0.02 opacity.
+- Gradient mesh backgrounds: 2-3 large radial-gradient circles (800-1200px), using BRAND.primary and BRAND.secondary at 0.08-0.15 opacity, slowly drifting via Math.sin/cos.
+- Accent elements: thin horizontal lines (2px height, 100-300px width, BRAND gradient fill) that sweep in from left.
+
+**Typography (Premium Feel):**
+- Hero text: 140-180px, weight 900, letter-spacing -5px, line-height 0.9. Split across 2 lines. First line BRAND.text color, second line gradient (BRAND.primary → BRAND.secondary).
+- Feature headlines: 64-80px, weight 800, letter-spacing -2px.
+- Body/subtext: 24-28px, weight 400, BRAND.textMuted color, line-height 1.6.
+- Stats: 80-120px weight 900 number + 16px uppercase label below with letter-spacing 4px.
+
+**Layout (Landing Page Grid):**
+- Generous whitespace — padding: 80-120px on sides. Content should breathe.
+- Feature scenes: split layout — text on left (60%), visual on right (40%), or centered with card below.
+- Stat scenes: 3-4 stats in a row with equal spacing, centered.
+- CTA: centered, stacked — small label → big headline → accent line → button.
+
+**Cards:**
+- Background: BRAND.primary at 0.03-0.06 opacity with 1px border at 0.06 opacity.
+- Subtle inner glow: boxShadow with BRAND.primary at low opacity for top edge highlight.
+- Entry: scale 0.95→1 + translateY 30→0 over 20 frames, snap to final.
 `,
   "vibrant-brand": `
 ### STYLE: VIBRANT BRAND
-- Background: rich brand color fills, NOT black — use product's actual primary color
-- Big bold text that FILLS the frame — poster typography (120-200px)
-- Shapes: geometric rectangles, diagonal slices, full-bleed color blocks
-- Text: high contrast, complementary colors, never grey on grey
-- Moving background: sliding color blocks, rotating geometric elements
-- Energy: fast cuts (1-2s scenes), scale pop entrances, bold wipes
+
+**Visual Language:**
+- Background: bold BRAND color fills. Use BRAND.primary as full-bleed background for some scenes.
+- Alternate scenes between BRAND.bg and BRAND.primary backgrounds for visual variety.
+- Geometric shapes: large rounded rectangles, circles, diagonal color blocks using BRAND colors. Animate them (slide in, scale up, rotate).
+
+**Typography:**
+- MASSIVE headlines: 160-220px, weight 900, fills the viewport. Text IS the design.
+- High contrast: BRAND.text on BRAND.primary, or white on BRAND.bg. Never grey on grey.
+- Short punchy copy: 3-5 words max per headline. Let each word breathe.
+
+**Animation Energy:**
+- Faster cuts: 2-3 second scenes, punchy timing.
+- Scale pop entrances: spring with damping:8 stiffness:200 for snappy feel.
+- Wipe reveals: clipPath 'inset(0 100% 0 0)' → 'inset(0 0% 0 0)' for bold reveals.
+- Color block transitions: BRAND-colored div slides across to reveal next scene.
 `,
   "editorial-clean": `
 ### STYLE: EDITORIAL CLEAN
-- Background: warm off-white (#FAFAF7) or slate (#F1F5F8)
-- Typography: tight columns, large numerics (stats), small caps for labels
-- Thin lines and data-viz style graphics
-- Minimal palette: 2 colors max + background
-- Subtle camera: gentle drift, minimal zoom (1.0→1.04 max)
-- Transitions: clean fades, horizontal wipes
+
+**Visual Language:**
+- Background: use BRAND.bg (light backgrounds work best for this style). Never pure white.
+- Accent: BRAND.accent used sparingly — thin lines, small dots, text highlights.
+- Minimal decoration: no glows, no heavy gradients. Clean flat surfaces using BRAND colors.
+
+**Typography:**
+- Clean font feel. Large numerics (96-140px) in BRAND.primary, paired with small labels in BRAND.textMuted.
+- Text columns: left-aligned, max-width 800px, generous line-height (1.7).
+- Small caps for category labels: 14px, weight 600, letter-spacing 6px, text-transform uppercase.
+
+**Animation:**
+- Subtle: gentle fades (25-30 frames), minimal scale change (1.0→1.03 max).
+- Horizontal wipes for transitions. Vertical reveals for text.
+- Clean spacing: 80-120px margins. Content area centered, max 1200px wide.
 `,
   "neon-glow": `
 ### STYLE: NEON GLOW
-- Background: deep navy/black with scanline overlay (1px lines, opacity 0.04, repeating-linear-gradient)
-- Glowing text: textShadow with brand color, boxShadow glow on elements
-- Neon palette: one dominant glow color + accents (cyan, magenta, electric green)
-- Pulsing glow effects synced to beat
-- Camera: aggressive zooms, quick pans, energy-matched to beat
+
+**Visual Language:**
+- Background: BRAND.bg with subtle scan lines via repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(255,255,255,0.02) 2px, rgba(255,255,255,0.02) 3px).
+- Glow effects: textShadow with 2 layers — inner glow (0 0 10px BRAND.accent) + outer glow (0 0 40px BRAND.accent at 0.3 opacity). Max 2 layers.
+- Neon accents: borders with boxShadow using BRAND.accent at 0.4 and 0.1 opacity.
+- Grid lines: thin 1px lines in a grid pattern at 0.03 opacity using BRAND.primary.
+
+**Typography:**
+- Sharp, technical: weight 700-900, tight tracking. Numbers look great in this style.
+- Glow on key words only — not every element. Glow color = BRAND.accent.
+
+**Animation:**
+- Quick, sharp: damping:6 stiffness:300 for snappy springs.
+- Glitch-style reveals: rapid opacity flicker over 5 frames then settle.
+- Aggressive camera: zoom ranges 1.0→1.15, faster pans.
 `,
 };
 
 // Beat sync skills — injected when audio BPM is available
 const SKILL_BEAT_SYNC = `
 ### BEAT SYNC
-Use beat pulse (exponential decay) for subtle animation effects synced to music:
+Use beat timing for scene transitions and motion timing — NOT for pulsing static elements:
 \`\`\`tsx
 const useBeatSync = (bpm: number) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const framesPerBeat = (60 / bpm) * fps;
-  const beatPulse = Math.exp(-((frame % framesPerBeat) / framesPerBeat) * 4);
-  return { beatPulse, framesPerBeat };
+  const beatProgress = (frame % framesPerBeat) / framesPerBeat;
+  const beatPulse = Math.exp(-beatProgress * 4);
+  return { beatPulse, beatProgress, framesPerBeat };
 };
-// Usage: scale elements by (1 + beatPulse * 0.015) for subtle breathing effect
 \`\`\`
-Snap scene durations to beat boundaries. Align stagger delays to beat subdivisions (1/2, 1/4 beat).
+
+**CORRECT uses of beatPulse:**
+- Scene transition timing: start sequences on beat boundaries
+- Camera movement speed: vary dolly/orbit speed on beats
+- Element entry timing: stagger card/word entries to beat subdivisions (1/2, 1/4 beat)
+- Moving elements: floating meshes, cursor speed, particle drift
+
+**WRONG uses (causes visible flicker/jitter):**
+- ❌ Scale text by \`(1 + beatPulse * 0.015)\` — makes words visibly jitter
+- ❌ Pulse opacity of static text/cards — creates strobe effect
+- ❌ Any beatPulse on elements that should be still after entry animation
+- ❌ Beat-driven glow/shadow changes on text
+
+Snap scene durations to beat boundaries. Align stagger delays to beat subdivisions.
 `;
 
 // Screen recording skills — only injected when recordings exist
@@ -215,12 +318,246 @@ const RecordingScene: React.FC<{ videoUrl: string; featureName: string }> = ({ v
 
 // Cursor animation skills — optional, for demo-style videos
 const SKILL_CURSOR = `
-### CURSOR ANIMATION (for demo feel)
-Add an animated SVG cursor that moves to a CTA and clicks:
+### ANIMATED CURSOR WITH CLICK EFFECTS (MUST include in at least 1 scene)
+
+Inline these SVG cursor components and use them for a demo-like feel:
+
 \`\`\`tsx
-const cursorX = interpolate(frame, [startFrame, endFrame], [startX, targetX], { extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) });
-const cursorY = interpolate(frame, [startFrame, endFrame], [startY, targetY], { extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) });
+// --- MAC CURSOR SVG (paste at module level) --- a classic Mac arrow pointer
+const MacCursorSVG = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M8.5 2.5L8.5 22.5L13.5 17.5L18.5 25.5L22.5 23.5L17.5 15.5L24.5 14.5L8.5 2.5Z" fill="white" stroke="black" strokeWidth="1.5"/>
+  </svg>
+);
+
+// --- CLICK RIPPLE (paste at module level) ---
+const ClickRipple: React.FC<{ frame: number; fps: number }> = ({ frame, fps }) => {
+  const rings = [
+    { delay: 0, maxScale: 1.5, dur: 15, color: 'rgba(255,255,255,0.9)', sw: 3 },
+    { delay: 3, maxScale: 2.2, dur: 20, color: 'rgba(255,107,157,0.7)', sw: 2.5 },
+    { delay: 6, maxScale: 3.0, dur: 25, color: 'rgba(59,130,246,0.5)', sw: 2 },
+  ];
+  return (<>{rings.map((r, i) => {
+    const f = Math.max(0, frame - r.delay);
+    const s = spring({ frame: f, fps, config: { damping: 12, stiffness: 80 } });
+    const o = Math.max(0, 1 - f / r.dur);
+    return (<div key={i} style={{ position: 'absolute', left: '50%', top: '50%', width: 40, height: 40, marginLeft: -20, marginTop: -20, borderRadius: '50%', border: r.sw + 'px solid ' + r.color, transform: 'scale(' + (1 + s * (r.maxScale - 1)) + ')', opacity: o, pointerEvents: 'none' }} />);
+  })}</>);
+};
+
+// --- USAGE in a scene: cursor moves to button then clicks ---
+const CursorDemo: React.FC<{ startFrame: number }> = ({ startFrame }) => {
+  const frame = useCurrentFrame();
+  const f = Math.max(0, frame - startFrame);
+  // Move: frames 0-30, Pause: 30-40, Click: 40+
+  const moveEnd = 30;
+  const clickFrame = 40;
+  const cx = Math.round(interpolate(f, [0, moveEnd], [200, 960], { extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) }));
+  const cy = Math.round(interpolate(f, [0, moveEnd], [700, 540], { extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) }));
+  const isClick = f >= clickFrame;
+  const clickScale = isClick ? spring({ frame: f - clickFrame, fps: 30, config: { damping: 8, stiffness: 200 } }) : 1;
+  return (
+    <div style={{ position: 'absolute', left: cx, top: cy, transform: 'translate(-10px,-10px) scale(' + clickScale + ')', zIndex: 100, filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.25))' }}>
+      <MacCursorSVG />
+      {isClick && <ClickRipple frame={f - clickFrame} fps={30} />}
+    </div>
+  );
+};
 \`\`\`
+
+**Rules**:
+- Add cursor animation in at least ONE scene (CTA or feature demo)
+- Cursor should move from off-screen or corner → towards a CTA button → click with ripple
+- Use \`Easing.out(Easing.cubic)\` for natural cursor movement
+- Round all cursor positions with \`Math.round()\` to avoid sub-pixel flicker
+`;
+
+const SKILL_3D = `
+### 3D SCENE BACKGROUNDS (use ThreeCanvas for hero/intro/CTA scenes)
+
+Use \`@remotion/three\` + \`three\` for 3D floating geometry backgrounds. Inline these components:
+
+\`\`\`tsx
+import { ThreeCanvas } from '@remotion/three';
+import { useThree } from '@react-three/fiber';
+import * as THREE from 'three';
+
+// --- 3D SCENE WRAPPER (module level) ---
+const ThreeScene: React.FC<{ children?: React.ReactNode; cameraPosition?: [number,number,number]; cameraFov?: number }> = ({ children, cameraPosition = [0,2,8], cameraFov = 50 }) => {
+  const { width, height } = useVideoConfig();
+  return (
+    <ThreeCanvas orthographic={false} width={width} height={height}
+      camera={{ position: cameraPosition, fov: cameraFov }}
+      style={{ position: 'absolute', top: 0, left: 0 }}
+      gl={{ alpha: true }}>
+      <ambientLight intensity={0.6} />
+      <pointLight position={[10, 10, 10]} intensity={1} />
+      <pointLight position={[-10, -5, 5]} intensity={0.4} color="#8888ff" />
+      {children}
+    </ThreeCanvas>
+  );
+};
+
+// --- ANIMATED CAMERA (inside ThreeScene) ---
+const AnimatedCamera: React.FC<{ orbitSpeed?: number; dollyRange?: [number,number] }> = ({ orbitSpeed = 0.5, dollyRange = [8, 5] }) => {
+  const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
+  const { camera } = useThree();
+  const progress = frame / durationInFrames;
+  const angle = progress * Math.PI * 2 * orbitSpeed;
+  const radius = interpolate(frame, [0, durationInFrames], dollyRange, { extrapolateRight: 'clamp' });
+  camera.position.x = Math.sin(angle) * radius;
+  camera.position.z = Math.cos(angle) * radius;
+  camera.position.y = interpolate(progress, [0, 1], [1.5, 2.5], { extrapolateRight: 'clamp' });
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
+  camera.updateProjectionMatrix();
+  return null;
+};
+
+// --- FLOATING 3D SHAPES (inside ThreeScene) ---
+const FloatingMesh: React.FC<{ geo: 'torus'|'icosahedron'|'octahedron'|'torusKnot'; pos: [number,number,number]; color: string; scale?: number; wireframe?: boolean; idx?: number }> = ({ geo, pos, color, scale = 0.6, wireframe = false, idx = 0 }) => {
+  const frame = useCurrentFrame();
+  const rx = frame * 0.015 * (1 + idx * 0.3);
+  const ry = frame * 0.01 * (1 + idx * 0.2);
+  const dx = Math.sin(frame * 0.02 + idx * 2) * 0.4;
+  const dy = Math.cos(frame * 0.016 + idx * 1.5) * 0.3;
+  const breathe = 1 + Math.sin(frame * 0.03 + idx) * 0.08;
+  const Geo = geo === 'torus' ? <torusGeometry args={[1, 0.4, 16, 32]} />
+    : geo === 'torusKnot' ? <torusKnotGeometry args={[0.8, 0.3, 64, 16]} />
+    : geo === 'octahedron' ? <octahedronGeometry args={[1, 0]} />
+    : <icosahedronGeometry args={[1, 0]} />;
+  return (
+    <mesh position={[pos[0]+dx, pos[1]+dy, pos[2]]} rotation={[rx, ry, 0]} scale={[scale*breathe, scale*breathe, scale*breathe]}>
+      {Geo}
+      <meshStandardMaterial color={color} wireframe={wireframe} transparent opacity={0.65} roughness={0.3} metalness={0.6} />
+    </mesh>
+  );
+};
+\`\`\`
+
+**Usage in a scene** (layer 3D behind 2D text):
+\`\`\`tsx
+<Sequence from={0} durationInFrames={90}>
+  <AbsoluteFill>
+    <ThreeScene>
+      <AnimatedCamera orbitSpeed={0.3} dollyRange={[10, 6]} />
+      <FloatingMesh geo="torus" pos={[-3,1,0]} color={C.accent} idx={0} />
+      <FloatingMesh geo="icosahedron" pos={[3,-1,2]} color={C.accentAlt} wireframe idx={1} />
+      <FloatingMesh geo="torusKnot" pos={[0,2,-2]} color={C.accent} scale={0.4} idx={2} />
+    </ThreeScene>
+    {/* 2D overlay text on top */}
+    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+      <h1 style={{ fontSize: 120, color: '#fff', fontWeight: 800 }}>Your Brand</h1>
+    </div>
+  </AbsoluteFill>
+</Sequence>
+\`\`\`
+
+**Rules**:
+- Use 3D scenes for intro/hero and CTA scenes (1-2 scenes per video, NOT every scene)
+- NEVER use \`useFrame\` from @react-three/fiber — use \`useCurrentFrame()\` from remotion
+- Layer: ThreeScene behind, 2D text/cards on top with zIndex
+- 3-5 floating meshes max per scene to keep render fast
+- Mix wireframe and solid meshes for variety
+`;
+
+const SKILL_COMPONENTS = `
+### UI COMPONENTS — LANDING PAGE QUALITY (inline these)
+
+Design every scene like a section on a $50K landing page. NO plain divs with text — every content block should have structure, depth, and polish.
+
+\`\`\`tsx
+// --- SPOTLIGHT CARD (moving gradient spotlight — for feature highlights) ---
+const SpotlightCard: React.FC<{ children: React.ReactNode; width?: number; height?: number; delay?: number }> = ({ children, width = 600, height = 400, delay = 0 }) => {
+  const frame = useCurrentFrame();
+  const f = Math.max(0, frame - delay);
+  const done = f >= 20;
+  const angle = (f / 60) * Math.PI * 2;
+  const spotX = Math.round(50 + Math.cos(angle) * 30);
+  const spotY = Math.round(50 + Math.sin(angle) * 30);
+  const opacity = done ? 1 : interpolate(f, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
+  const ty = done ? 0 : Math.round(interpolate(f, [0, 20], [40, 0], { extrapolateRight: 'clamp' }));
+  return (
+    <div style={{ width, height, borderRadius: 24, background: 'rgba(255,255,255,0.02)', position: 'relative', overflow: 'hidden', opacity, transform: done ? 'none' : 'translateY('+ty+'px)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)' }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle 250px at '+spotX+'% '+spotY+'%, rgba(var(--brandRgb), 0.12), transparent 70%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'relative', zIndex: 1, padding: 48, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>{children}</div>
+    </div>
+  );
+};
+
+// --- TILT CARD (continuous 3D perspective — for hero content) ---
+const TiltCard: React.FC<{ children: React.ReactNode; width?: number; height?: number; maxTilt?: number; delay?: number }> = ({ children, width = 600, height = 400, maxTilt = 8, delay = 0 }) => {
+  const frame = useCurrentFrame();
+  const f = Math.max(0, frame - delay);
+  const t = f / 50;
+  const rotY = Math.round(Math.sin(t) * maxTilt);
+  const rotX = Math.round(Math.sin(t * 2) * (maxTilt / 2));
+  const done = f >= 25;
+  const opacity = done ? 1 : interpolate(f, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
+  const s = done ? 1 : interpolate(f, [0, 25], [0.85, 1], { extrapolateRight: 'clamp' });
+  return (
+    <div style={{ perspective: '1200px' }}>
+      <div style={{ width, height, borderRadius: 24, background: 'linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))', transform: 'rotateX('+rotX+'deg) rotateY('+rotY+'deg)' + (done ? '' : ' scale('+s+')'), opacity, padding: 48, border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        {children}
+      </div>
+    </div>
+  );
+};
+
+// --- FEATURE ROW (icon + title + description — horizontal layout) ---
+const FeatureRow: React.FC<{ icon: string; title: string; desc: string; color: string; delay?: number }> = ({ icon, title, desc, color, delay = 0 }) => {
+  const frame = useCurrentFrame();
+  const f = Math.max(0, frame - delay);
+  const done = f >= 20;
+  const op = done ? 1 : interpolate(f, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
+  const tx = done ? 0 : Math.round(interpolate(f, [0, 20], [60, 0], { extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) }));
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 28, opacity: op, transform: done ? 'none' : 'translateX('+tx+'px)' }}>
+      <div style={{ width: 64, height: 64, borderRadius: 16, background: 'linear-gradient(135deg, '+color+', '+color+'80)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, flexShrink: 0 }}>{icon}</div>
+      <div>
+        <div style={{ fontSize: 28, fontWeight: 700, color: '#fff', fontFamily }}>{title}</div>
+        <div style={{ fontSize: 18, fontWeight: 400, color: 'rgba(255,255,255,0.5)', marginTop: 4, fontFamily, lineHeight: 1.5 }}>{desc}</div>
+      </div>
+    </div>
+  );
+};
+
+// --- STAT COUNTER (animated number with snap) ---
+const StatCounter: React.FC<{ value: number; label: string; suffix?: string; color?: string; delay?: number }> = ({ value, label, suffix = '', color = '#ffffff', delay = 0 }) => {
+  const frame = useCurrentFrame();
+  const f = Math.max(0, frame - delay);
+  const done = f >= 45;
+  const num = done ? value : interpolate(f, [0, 45], [0, value], { extrapolateRight: 'clamp' });
+  const op = f >= 15 ? 1 : interpolate(f, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
+  return (
+    <div style={{ textAlign: 'center', opacity: op }}>
+      <div style={{ fontSize: 96, fontWeight: 900, fontFamily, color, letterSpacing: '-3px' }}>{Math.floor(num).toLocaleString()}{suffix}</div>
+      <div style={{ fontSize: 16, fontWeight: 600, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: 5, marginTop: 12, fontFamily }}>{label}</div>
+    </div>
+  );
+};
+
+// --- PILL BADGE (small label above headlines) ---
+const PillBadge: React.FC<{ text: string; color: string; delay?: number }> = ({ text, color, delay = 0 }) => {
+  const frame = useCurrentFrame();
+  const f = Math.max(0, frame - delay);
+  const done = f >= 15;
+  const op = done ? 1 : interpolate(f, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
+  const ty = done ? 0 : Math.round(interpolate(f, [0, 15], [15, 0], { extrapolateRight: 'clamp' }));
+  return (
+    <div style={{ display: 'inline-flex', padding: '8px 20px', borderRadius: 100, border: '1px solid '+color+'40', background: color+'15', opacity: op, transform: done ? 'none' : 'translateY('+ty+'px)', marginBottom: 24 }}>
+      <span style={{ fontSize: 14, fontWeight: 600, color: color, textTransform: 'uppercase', letterSpacing: 3, fontFamily }}>{text}</span>
+    </div>
+  );
+};
+\`\`\`
+
+**Scene Composition Rules (landing page design):**
+- Every feature scene: PillBadge label → Large headline → SweepLine → Subtext. Stagger entries by 10-15 frames.
+- Feature cards: SpotlightCard with FeatureRow items inside, staggered by 8 frames.
+- Stats scene: 3-4 StatCounters in a horizontal flexbox, gap: 80-120px, staggered by 10 frames.
+- CTA: PillBadge → Big headline → accent line → gradient button with cursor click.
+- NEVER use plain text without a visual container — always wrap in cards, use accent lines, or pair with icons.
 `;
 
 /**
@@ -235,12 +572,23 @@ function buildSkillsPrompt(state: VideoGenerationStateType): string {
   parts.push(SKILL_CAMERA);
 
   // Select style-specific skills based on brand analysis or user preference
-  const tone = (state.productData as any)?.tone || state.userPreferences?.style || "professional";
+  const brandStyle = (state.productData as any)?.brandStyle as BrandStyle | undefined;
+  const tone = brandStyle?.mood?.tone || (state.productData as any)?.tone || state.userPreferences?.style || "professional";
   const designInsights = ((state.productData as any)?.designInsights || "").toLowerCase();
   const videoType = state.userPreferences?.videoType || "creative";
 
+  // Prefer brandStyle.videoStyle.recommended if available
   let styleKey = "dark-cinematic"; // default
-  if (tone === "playful" || tone === "bold" || videoType === "fast-paced") {
+  const recommended = brandStyle?.videoStyle?.recommended?.toLowerCase() || "";
+  if (recommended.includes("vibrant") || recommended.includes("style b")) {
+    styleKey = "vibrant-brand";
+  } else if (recommended.includes("editorial") || recommended.includes("style c")) {
+    styleKey = "editorial-clean";
+  } else if (recommended.includes("neon") || recommended.includes("style d")) {
+    styleKey = "neon-glow";
+  } else if (recommended.includes("cinematic") || recommended.includes("style a")) {
+    styleKey = "dark-cinematic";
+  } else if (tone === "playful" || tone === "bold" || tone === "energetic" || videoType === "fast-paced") {
     styleKey = "vibrant-brand";
   } else if (tone === "minimal" || designInsights.includes("editorial") || designInsights.includes("clean")) {
     styleKey = "editorial-clean";
@@ -248,7 +596,7 @@ function buildSkillsPrompt(state: VideoGenerationStateType): string {
     styleKey = "neon-glow";
   }
   parts.push(STYLE_SKILLS[styleKey]);
-  console.log(`[RemotionTranslator] Selected style: ${styleKey}`);
+  console.log(`[RemotionTranslator] Selected style: ${styleKey} (recommended: ${recommended || "none"})`);
 
   // Beat sync — always useful when audio is present
   if (state.userPreferences?.audio?.bpm) {
@@ -260,10 +608,16 @@ function buildSkillsPrompt(state: VideoGenerationStateType): string {
     parts.push(SKILL_RECORDINGS);
   }
 
-  // Cursor — for demo-style videos
-  if (videoType === "demo") {
-    parts.push(SKILL_CURSOR);
+  // Cursor — include for all video types (adds demo polish)
+  parts.push(SKILL_CURSOR);
+
+  // 3D backgrounds — for cinematic/creative/bold videos
+  if (videoType !== "demo" || tone === "bold" || tone === "playful" || styleKey === "dark-cinematic" || styleKey === "neon-glow") {
+    parts.push(SKILL_3D);
   }
+
+  // UI components — always include for polished card/stat scenes
+  parts.push(SKILL_COMPONENTS);
 
   const combined = parts.join("\n");
   console.log(`[RemotionTranslator] Skills prompt size: ${(combined.length / 1024).toFixed(1)}KB (was ~86KB)`);
@@ -286,26 +640,74 @@ const REMOTION_SKILLS_PLACEHOLDER = REMOTION_SKILLS; // suppress unused warning
  * Build the system prompt dynamically with only relevant skills injected.
  * This reduces prompt size from ~86KB to ~8-15KB per call.
  */
-function buildSystemPrompt(skills: string): string {
-  return `You are a Remotion expert who creates polished product demo video compositions with a cinematic, brand-matched style.
+function buildSystemPrompt(skills: string, brandStyle?: BrandStyle): string {
+  const brandDesignGuidance = brandStyle ? `
+
+## BRAND STYLE GUIDE (extracted from the actual website — follow this closely)
+
+### COLORS (use these EXACTLY in the BRAND constant — do NOT invent colors):
+\`\`\`tsx
+const BRAND = {
+  primary: '${brandStyle.colors.primary}',
+  secondary: '${brandStyle.colors.secondary}',
+  accent: '${brandStyle.colors.accent}',
+  bg: '${brandStyle.colors.background}',
+  text: '${brandStyle.colors.text}',
+  textMuted: '${brandStyle.colors.textMuted}',${brandStyle.colors.gradient ? `\n  gradient: '${brandStyle.colors.gradient}',` : ""}
+};
+\`\`\`
+
+### TYPOGRAPHY:
+- Load "${brandStyle.videoStyle.fontRecommendation || brandStyle.typography.primaryFont}" from @remotion/google-fonts
+- Heading weight: ${brandStyle.typography.headingWeight}
+- Letter spacing: ${brandStyle.typography.letterSpacing === "tight" ? "-2 to -4px" : brandStyle.typography.letterSpacing === "wide" ? "2-4px" : "normal"}
+- Text transform: ${brandStyle.typography.textTransform}
+
+### DESIGN LANGUAGE (match the website's actual design):
+- Design style: ${brandStyle.design.style}${brandStyle.design.usesGradients ? " with gradients" : ""}
+- Dark mode: ${brandStyle.design.usesDarkMode ? "yes — use dark backgrounds" : "no — use light backgrounds"}
+- Corner radius: ${brandStyle.design.cornerRadius}
+- Shadows: ${brandStyle.design.shadowStyle}
+- Dominant shapes: ${brandStyle.design.dominantShapes}
+
+### MOOD & ENERGY:
+- Tone: ${brandStyle.mood.tone}, Energy: ${brandStyle.mood.energy}
+- Keywords: ${brandStyle.mood.keywords.join(", ")}
+
+### VIDEO DIRECTION:
+- Camera: ${brandStyle.videoStyle.cameraMovement}
+- Text style: ${brandStyle.videoStyle.textStyle}
+- Background approach: ${brandStyle.videoStyle.backgroundApproach}
+
+**CRITICAL: The video must look like it was made BY the brand's own design team. Match the website's colors, typography feel, and visual personality. Every video should look UNIQUE to the brand.**
+` : "";
+
+  return `You are a Remotion expert who creates premium product videos that look like they were designed by each brand's own creative team.
+
+CRITICAL DESIGN PHILOSOPHY:
+- Every video must look DIFFERENT — tailored to the specific brand's visual identity.
+- Extract the design DNA from the brand's colors, typography, and mood. Mirror their website's aesthetic.
+- Do NOT fall back to generic purple/pink gradients or cookie-cutter layouts.
+- Use the BRAND constant colors throughout — backgrounds, text, accents, gradients, glows, cards.
+- If the brand uses light backgrounds, the video should use light backgrounds. If dark, use dark. Match them.
 
 ${skills}
-
+${brandDesignGuidance}
 ---
 
 ## YOUR TASK
 
-Create a Remotion video from a VideoScript with a style that MATCHES the brand — not a generic template.
+Create a Remotion video from a VideoScript that looks like the brand's OWN marketing video — not a generic template. Study the brand colors, typography, and design patterns provided, then create something that feels native to that brand.
 
 ## REQUIREMENTS
 
-1. **BRAND-MATCHED COLORS**: Define a BRAND constant at top of file:
+1. **BRAND-MATCHED COLORS**: Define a BRAND constant at top of file using the EXACT colors from the brand guide above:
    \`\`\`tsx
-   const BRAND = { primary: '#...', secondary: '#...', accent: '#...', dark: '#0a0a0f' };
+   const BRAND = { primary: '#...', secondary: '#...', accent: '#...', bg: '#...', text: '#...', textMuted: '#...' };
    \`\`\`
-   Do NOT default to purple+pink unless those ARE the brand colors.
+   ALL visual elements must use BRAND colors. No hardcoded generic colors.
 
-2. **MOVING BACKGROUND (MANDATORY)**: Every background MUST move (bokeh, gradient pan, or pulsing opacity).
+2. **MOVING BACKGROUND (MANDATORY)**: Every background MUST move (gradient drift, mesh animation, or organic motion). Use BRAND colors for all background elements.
 
 3. **SCENE TRANSITIONS**: Fade in/out over 12 frames at scene edges.
 
@@ -334,6 +736,40 @@ export function validateAndFixCode(code: string): {
   const issues: string[] = [];
   let fixedCode = code;
 
+  // Fix 0: Auto-add missing 3D imports
+  // If code uses useThree/useFrame but doesn't import them, add import
+  const firstImportEnd = fixedCode.indexOf("from 'remotion';") || fixedCode.indexOf('from "remotion";');
+  if (firstImportEnd > 0) {
+    const importSection = fixedCode.slice(0, fixedCode.indexOf('\n\n', firstImportEnd) || firstImportEnd + 100);
+
+    if (fixedCode.includes('useThree') && !importSection.includes("'@react-three/fiber'") && !importSection.includes('"@react-three/fiber"')) {
+      const insertPos = fixedCode.indexOf("from '@remotion/three';") || fixedCode.indexOf('from "@remotion/three";');
+      if (insertPos > 0) {
+        const lineEnd = fixedCode.indexOf('\n', insertPos);
+        fixedCode = fixedCode.slice(0, lineEnd + 1) + "import { useThree } from '@react-three/fiber';\n" + fixedCode.slice(lineEnd + 1);
+        issues.push("Fixed: Added missing useThree import from @react-three/fiber");
+      }
+    }
+
+    if (fixedCode.includes('THREE.') && !importSection.includes("* as THREE")) {
+      const insertPos = fixedCode.indexOf("from '@remotion/three';") || fixedCode.indexOf('from "@remotion/three";');
+      if (insertPos > 0) {
+        const lineEnd = fixedCode.indexOf('\n', insertPos);
+        fixedCode = fixedCode.slice(0, lineEnd + 1) + "import * as THREE from 'three';\n" + fixedCode.slice(lineEnd + 1);
+        issues.push("Fixed: Added missing THREE import from three");
+      }
+    }
+
+    if ((fixedCode.includes('useFrame(') || fixedCode.includes('useFrame ')) && !importSection.includes('useFrame') && !importSection.includes("'@react-three/fiber'")) {
+      const insertPos = fixedCode.indexOf("from '@remotion/three';") || fixedCode.indexOf('from "@remotion/three";');
+      if (insertPos > 0) {
+        const lineEnd = fixedCode.indexOf('\n', insertPos);
+        fixedCode = fixedCode.slice(0, lineEnd + 1) + "import { useFrame } from '@react-three/fiber';\n" + fixedCode.slice(lineEnd + 1);
+        issues.push("Fixed: Added missing useFrame import from @react-three/fiber");
+      }
+    }
+  }
+
   // Fix 1: Fix unterminated template literals
   // Count backticks - should be even
   const backtickCount = (fixedCode.match(/`/g) || []).length;
@@ -348,6 +784,29 @@ export function validateAndFixCode(code: string): {
   fixedCode = fixedCode.replace(
     /filter:\s*`blur\(\$\{([^}]+)\}px\)(?!`)/g,
     "filter: `blur(${$1}px)`",
+  );
+
+  // Fix 2b: Fix broken backtick inside CSS values like translate(-10px`,-10px) → translate(-10px, -10px)
+  // The LLM inserts a backtick mid-value, splitting the template literal
+  fixedCode = fixedCode.replace(
+    /(-?\d+px)`,\s*(-?\d+px?\)?)/g,
+    (match, before, after) => {
+      issues.push("Fixed: Stray backtick inside CSS translate value");
+      return `${before}, ${after}`;
+    },
+  );
+  // Also fix: `translate(-10px`, -10px) scale(...)` → `translate(-10px, -10px) scale(...)`
+  // Pattern: backtick followed by comma and a CSS continuation then backtick at end
+  fixedCode = fixedCode.replace(
+    /`(translate[^`]*?)`,\s*([^`]*?)`/g,
+    (match, part1, part2) => {
+      // Only fix if part2 looks like a CSS continuation (not a new template)
+      if (part2.includes('translate') || part2.includes('scale') || part2.includes('rotate') || /^-?\d/.test(part2)) {
+        issues.push("Fixed: Broken template literal in CSS transform");
+        return `\`${part1}, ${part2}\``;
+      }
+      return match;
+    },
   );
 
   // Fix 3: Fix broken transform template literals
@@ -668,6 +1127,65 @@ export function validateAndFixCode(code: string): {
     }
   }
 
+  // Fix 13: Cap large blur values to prevent flicker (blur > 60px causes rendering inconsistency)
+  fixedCode = fixedCode.replace(
+    /filter:\s*['"`]blur\((\d+)px\)['"`]/g,
+    (match, val) => {
+      const num = parseInt(val);
+      if (num > 60) {
+        issues.push(`Fixed: Capped blur(${num}px) to blur(60px) to prevent flicker`);
+        return match.replace(`blur(${val}px)`, `blur(60px)`);
+      }
+      return match;
+    },
+  );
+
+  // Also cap dynamic blur template literals: filter: `blur(${expr}px)`
+  // Replace per-word blur animations with opacity-only (blur on many elements flickers)
+  fixedCode = fixedCode.replace(
+    /filter:\s*`blur\(\$\{([^}]+)\}px\)`/g,
+    (match, expr) => {
+      // If it's a simple interpolate/variable for text reveal blur, remove it
+      if (expr.includes("interpolate") || expr.includes("blur")) {
+        issues.push("Fixed: Removed dynamic blur filter (causes flicker) — use opacity instead");
+        return "filter: 'none'";
+      }
+      return match;
+    },
+  );
+
+  // Fix 14: Replace HandCursorSVG with MacCursorSVG if the LLM used the wrong name
+  if (fixedCode.includes("HandCursorSVG") && !fixedCode.includes("const HandCursorSVG")) {
+    // LLM referenced HandCursorSVG but didn't define it — rename to MacCursorSVG
+    fixedCode = fixedCode.replace(/HandCursorSVG/g, "MacCursorSVG");
+    issues.push("Fixed: Renamed HandCursorSVG to MacCursorSVG");
+  }
+
+  // Fix 15: Fix JSX expressions like {displayNum}suffix} → {displayNum}{suffix}
+  // LLM sometimes forgets to wrap adjacent text in JSX curly braces
+  fixedCode = fixedCode.replace(
+    /\{(\w+)\}(\w+)\}/g,
+    (match, expr, text) => {
+      issues.push(`Fixed: Broken JSX expression {${expr}}${text}} → {${expr}}{${text}}`);
+      return `{${expr}}{${text}}`;
+    },
+  );
+
+  // Fix 15b: Fix pattern like {value}suffix where suffix has no closing } — wrap suffix
+  // This catches: {displayNum}suffix → {displayNum}{suffix}  (when inside JSX text)
+  fixedCode = fixedCode.replace(
+    /(\{[^}]+\})([a-zA-Z_]\w*)\b(?!\s*[{=:(.])/g,
+    (match, expr, ident) => {
+      // Only fix if this looks like it's in JSX content (not in JS code)
+      // Check if ident is a known JSX/variable pattern, not a keyword
+      if (['const', 'let', 'var', 'function', 'return', 'if', 'else', 'for', 'while', 'import', 'export', 'from', 'true', 'false', 'null', 'undefined'].includes(ident)) {
+        return match;
+      }
+      issues.push(`Fixed: Unwrapped JSX text after expression: ${expr}${ident} → ${expr}{${ident}}`);
+      return `${expr}{${ident}}`;
+    },
+  );
+
   if (issues.length > 0) {
     console.log("[CodeValidator] Fixed issues:", issues);
   }
@@ -733,10 +1251,31 @@ export function validateBeforeRender(code: string): StaticAnalysisResult {
   const codeWithoutComments = code.replace(/\/\/[^\n]*/g, "").replace(/\/\*[\s\S]*?\*\//g, "");
   if (!codeWithoutComments.includes("export default")) {
     errors.push("Missing 'export default' — required by Remotion render service");
-    // Auto-fix: add export default for common component names
-    const componentMatch = code.match(/(?:const|function)\s+([A-Z][a-zA-Z0-9]*)/);
-    if (componentMatch) {
-      fixedCode += `\n\nexport default ${componentMatch[1]};`;
+    // Auto-fix: prefer known names, then main composition patterns, then first PascalCase
+    const knownNames = ["VideoComposition", "MainComposition", "Composition", "MyVideo", "Video"];
+    let exportName: string | null = null;
+    for (const name of knownNames) {
+      if (code.includes(`const ${name}`) || code.includes(`function ${name}`)) {
+        exportName = name;
+        break;
+      }
+    }
+    if (!exportName) {
+      // Look for components that return JSX with <AbsoluteFill> or <Sequence> at root
+      const mainCompMatch = code.match(/(?:const|export const)\s+([A-Z][a-zA-Z0-9]*)\s*(?::\s*React\.FC)?\s*=\s*\(\)\s*(?::\s*\w+)?\s*(?:=>|{)/g);
+      if (mainCompMatch && mainCompMatch.length > 0) {
+        // Pick the last no-props component (most likely the composition)
+        const last = mainCompMatch[mainCompMatch.length - 1];
+        const nameMatch = last.match(/(?:const|export const)\s+([A-Z][a-zA-Z0-9]*)/);
+        if (nameMatch) exportName = nameMatch[1];
+      }
+    }
+    if (!exportName) {
+      const componentMatch = code.match(/(?:const|function)\s+([A-Z][a-zA-Z0-9]*)/);
+      if (componentMatch) exportName = componentMatch[1];
+    }
+    if (exportName) {
+      fixedCode += `\n\nexport default ${exportName};`;
     }
   }
 
@@ -944,24 +1483,51 @@ export function fixBrokenTemplateLiterals(code: string): string {
 export function hasBasicSyntaxErrors(code: string): string[] {
   const errors: string[] = [];
 
-  // Check for balanced braces
-  const braces = { "{": 0, "[": 0, "(": 0, "<": 0 };
+  // Only track braces that are reliable in JSX/TS (skip < > — too ambiguous)
+  const braces = { "{": 0, "[": 0, "(": 0 };
   const closingBraces: Record<string, keyof typeof braces> = {
     "}": "{",
     "]": "[",
     ")": "(",
-    ">": "<",
   };
 
   let inString = false;
   let stringChar = "";
   let inTemplateString = false;
+  let templateDepth = 0; // Track ${} nesting inside template strings
+  let inLineComment = false;
+  let inBlockComment = false;
 
   for (let i = 0; i < code.length; i++) {
     const char = code[i];
+    const nextChar = i < code.length - 1 ? code[i + 1] : "";
     const prevChar = i > 0 ? code[i - 1] : "";
 
-    // Track string state
+    // Handle newlines — end line comments
+    if (char === "\n") {
+      inLineComment = false;
+      continue;
+    }
+
+    // Skip line comment content
+    if (inLineComment) continue;
+
+    // Handle block comments
+    if (inBlockComment) {
+      if (char === "*" && nextChar === "/") {
+        inBlockComment = false;
+        i++; // skip /
+      }
+      continue;
+    }
+
+    // Detect comment starts (only outside strings)
+    if (!inString && !inTemplateString && char === "/") {
+      if (nextChar === "/") { inLineComment = true; i++; continue; }
+      if (nextChar === "*") { inBlockComment = true; i++; continue; }
+    }
+
+    // Track string state — only toggle when not already in the OTHER string type
     if ((char === '"' || char === "'") && prevChar !== "\\") {
       if (!inString && !inTemplateString) {
         inString = true;
@@ -969,19 +1535,36 @@ export function hasBasicSyntaxErrors(code: string): string[] {
       } else if (inString && char === stringChar) {
         inString = false;
       }
+      continue;
     }
 
+    // Skip everything inside regular strings
+    if (inString) continue;
+
+    // Track template strings — but NOT when inside a regular string
     if (char === "`" && prevChar !== "\\") {
       inTemplateString = !inTemplateString;
+      continue;
     }
 
-    // Only count braces outside strings
-    if (!inString && !inTemplateString) {
-      if (char in braces) {
-        braces[char as keyof typeof braces]++;
-      } else if (char in closingBraces) {
-        braces[closingBraces[char]]--;
+    // Inside template strings, only track ${} expression braces
+    if (inTemplateString) {
+      if (char === "$" && nextChar === "{") {
+        templateDepth++;
+        braces["{"]++;
+        i++; // skip {
+      } else if (templateDepth > 0 && char === "}") {
+        templateDepth--;
+        braces["{"]--;
       }
+      continue;
+    }
+
+    // Count braces outside all strings/comments
+    if (char in braces) {
+      braces[char as keyof typeof braces]++;
+    } else if (char in closingBraces) {
+      braces[closingBraces[char]]--;
     }
   }
 
@@ -1129,6 +1712,29 @@ function extractScriptText(videoScript: any): {
 }
 
 /**
+ * Extract full brand color palette from state, merging brandStyle (7 colors) with basic scraper colors.
+ */
+function extractBrandColors(state: VideoGenerationStateType): {
+  primary?: string; secondary?: string; accent?: string; dark?: string;
+  background?: string; text?: string; textMuted?: string;
+} {
+  const brandStyle = (state.productData as any)?.brandStyle as BrandStyle | undefined;
+  const basicColors = (state.productData as any)?.colors;
+  if (brandStyle?.colors) {
+    return {
+      primary: brandStyle.colors.primary,
+      secondary: brandStyle.colors.secondary,
+      accent: brandStyle.colors.accent,
+      dark: brandStyle.colors.background,
+      background: brandStyle.colors.background,
+      text: brandStyle.colors.text,
+      textMuted: brandStyle.colors.textMuted,
+    };
+  }
+  return basicColors || {};
+}
+
+/**
  * Generate fallback composition code when LLM output is truncated or invalid
  */
 export function generateFallbackComposition(
@@ -1147,6 +1753,9 @@ export function generateFallbackComposition(
     secondary?: string;
     accent?: string;
     dark?: string;
+    background?: string;
+    text?: string;
+    textMuted?: string;
   },
   videoScript?: any,
 ): string {
@@ -1198,11 +1807,11 @@ import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
 
 const { fontFamily: mont } = loadMontserrat("normal", { weights: ["400", "600", "700", "800", "900"], subsets: ["latin"] });
 
-// BRAND COLOR PALETTE
+// BRAND COLOR PALETTE — extracted from the actual website
 const C = {
-  bg: '${brandColors?.dark || "#08080f"}',
-  text: '#ffffff',
-  sub: 'rgba(255,255,255,0.65)',
+  bg: '${brandColors?.dark || brandColors?.background || "#08080f"}',
+  text: '${brandColors?.text || "#ffffff"}',
+  sub: '${brandColors?.textMuted || "rgba(255,255,255,0.65)"}',
   accent: '${brandColors?.primary || "#3b82f6"}',
   accentAlt: '${brandColors?.secondary || "#06b6d4"}',
   line: 'rgba(255,255,255,0.15)',
@@ -1280,21 +1889,19 @@ const SweepLine: React.FC<{ delay?: number; color?: string; width?: number | str
 };
 
 
-// SCENE 1: Logo intro — zoom IN slowly + beat pulse
+// SCENE 1: Logo intro — zoom IN slowly
 const Scene1: React.FC = () => {
   const frame = useCurrentFrame();
-  const { beatPulse } = useBeatSync(${bpm});
   const camScale = interpolate(frame, [0, ${introFrames}], [1.0, 1.10], { extrapolateRight: 'clamp' });
-  const camX = interpolate(frame, [0, ${introFrames}], [0, -15], { extrapolateRight: 'clamp' });
+  const camX = Math.round(interpolate(frame, [0, ${introFrames}], [0, -15], { extrapolateRight: 'clamp' }));
   const titleOp = interpolate(frame, [0, 10], [0, 1], { extrapolateRight: 'clamp' });
   const subOp = interpolate(Math.max(0, frame - 18), [0, 15], [0, 1], { extrapolateRight: 'clamp' });
-  const lineW = interpolate(Math.max(0, frame - 12), [0, 25], [0, 260], { extrapolateRight: 'clamp' });
-  const beatScale = 1 + beatPulse * 0.012;
+  const lineW = Math.round(interpolate(Math.max(0, frame - 12), [0, 25], [0, 260], { extrapolateRight: 'clamp' }));
   return (
     <AbsoluteFill>
       <CineBg seed={0} />
       <FadeWrapper duration={${introFrames}}>
-        <AbsoluteFill style={{ transform: 'scale(' + (camScale * beatScale) + ') translateX(' + camX + 'px)', transformOrigin: 'center center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+        <AbsoluteFill style={{ transform: 'scale(' + camScale + ') translateX(' + camX + 'px)', transformOrigin: 'center center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
           <div style={{ opacity: titleOp }}>
             <div style={{ fontFamily: mont, fontWeight: 900, fontSize: 140, color: C.text, letterSpacing: '-5px', lineHeight: 0.95, textAlign: 'center' }}>
               ${productName}
@@ -1310,18 +1917,16 @@ const Scene1: React.FC = () => {
   );
 };
 
-// SCENE 2: Tagline — zoom OUT from top-left + beat pulse
+// SCENE 2: Tagline — zoom OUT from top-left
 const Scene2: React.FC = () => {
   const frame = useCurrentFrame();
-  const { beatPulse } = useBeatSync(${bpm});
   const camScale = interpolate(frame, [0, ${fastFrames}], [1.12, 1.0], { extrapolateRight: 'clamp' });
-  const camY = interpolate(frame, [0, ${fastFrames}], [20, 0], { extrapolateRight: 'clamp' });
-  const beatScale = 1 + beatPulse * 0.01;
+  const camY = Math.round(interpolate(frame, [0, ${fastFrames}], [20, 0], { extrapolateRight: 'clamp' }));
   return (
     <AbsoluteFill>
       <CineBg seed={1} />
       <FadeWrapper duration={${fastFrames}}>
-        <AbsoluteFill style={{ transform: 'scale(' + (camScale * beatScale) + ') translateY(' + camY + 'px)', transformOrigin: 'top left', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 100 }}>
+        <AbsoluteFill style={{ transform: 'scale(' + camScale + ') translateY(' + camY + 'px)', transformOrigin: 'top left', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 100 }}>
           <WordReveal words={[${taglineWords.map((w) => `'${w.replace(/'/g, "\\'")}'`).join(", ")}]} fontSize={120} delay={8} stagger={${Math.round(framesPerBeat / 3)}} />
         </AbsoluteFill>
       </FadeWrapper>
@@ -1415,23 +2020,20 @@ const Scene5: React.FC = () => {
   );
 };
 
-// SCENE 6: CTA — slow dramatic zoom IN + beat pulse
+// SCENE 6: CTA — slow dramatic zoom IN
 const Scene6: React.FC = () => {
   const frame = useCurrentFrame();
-  const { beatPulse } = useBeatSync(${bpm});
   const camScale = interpolate(frame, [0, ${ctaFrames}], [1.0, 1.08], { extrapolateRight: 'clamp' });
   const labelOp = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
   const subOp = interpolate(Math.max(0, frame - 20), [0, 15], [0, 1], { extrapolateRight: 'clamp' });
-  const lineW = interpolate(Math.max(0, frame - 15), [0, 20], [0, 320], { extrapolateRight: 'clamp' });
-  const beatScale = 1 + beatPulse * 0.015;
-  const beatGlow = beatPulse * 0.3;
+  const lineW = Math.round(interpolate(Math.max(0, frame - 15), [0, 20], [0, 320], { extrapolateRight: 'clamp' }));
   return (
     <AbsoluteFill>
       <CineBg seed={5} />
       <FadeWrapper duration={${ctaFrames}}>
-        <AbsoluteFill style={{ transform: 'scale(' + (camScale * beatScale) + ')', transformOrigin: 'center center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+        <AbsoluteFill style={{ transform: 'scale(' + camScale + ')', transformOrigin: 'center center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
           <div style={{ opacity: labelOp, fontFamily: mont, fontWeight: 400, fontSize: 22, color: C.sub, letterSpacing: '6px', textTransform: 'uppercase' }}>${ctaHeadline}</div>
-          <div style={{ fontFamily: mont, fontWeight: 900, fontSize: 130, color: C.text, letterSpacing: '-4px', lineHeight: 0.9, textAlign: 'center', opacity: labelOp, filter: 'drop-shadow(0 0 ' + (20 + beatGlow * 30) + 'px ' + C.accent + ')' }}>
+          <div style={{ fontFamily: mont, fontWeight: 900, fontSize: 130, color: C.text, letterSpacing: '-4px', lineHeight: 0.9, textAlign: 'center', opacity: labelOp, filter: 'drop-shadow(0 0 20px ' + C.accent + ')' }}>
             ${productName}
           </div>
           <div style={{ height: 3, width: lineW, background: 'linear-gradient(90deg, ' + C.accent + ', ' + C.accentAlt + ')', borderRadius: 2 }} />
@@ -1455,13 +2057,13 @@ ${
 const RecordingScene${i + 1}: React.FC = () => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
-  const { beatPulse } = useBeatSync(${bpm});
-  const entryScale = interpolate(frame, [0, ${halfBeat}], [0.85, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const entryOpacity = interpolate(frame, [0, ${quarterBeat}], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const entryDone = frame >= ${halfBeat};
+  const entryScale = entryDone ? 1 : interpolate(frame, [0, ${halfBeat}], [0.85, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const entryOpacity = entryDone ? 1 : interpolate(frame, [0, ${quarterBeat}], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   const labelOpacity = interpolate(frame, [0, 30, durationInFrames - 30, durationInFrames], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   return (
     <AbsoluteFill style={{ backgroundColor: C.bg }}>
-      <div style={{ width: '100%', height: '100%', transform: "scale(" + (entryScale * (1 + beatPulse * 0.008)) + ")", opacity: entryOpacity }}>
+      <div style={{ width: '100%', height: '100%', transform: entryDone ? 'none' : "scale(" + entryScale + ")", opacity: entryOpacity }}>
         <Video src={${videoSrc}} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
       </div>
       <div style={{ position: 'absolute', bottom: 60, left: 0, right: 0, display: 'flex', justifyContent: 'center', opacity: labelOpacity, zIndex: 10 }}>
@@ -1634,7 +2236,8 @@ Use the product name, tagline, features, and description from the product data.`
 
   // Build dynamic system prompt with only relevant skills
   const dynamicSkills = buildSkillsPrompt(state);
-  const systemPrompt = buildSystemPrompt(dynamicSkills);
+  const brandStyle = (state.productData as any)?.brandStyle as BrandStyle | undefined;
+  const systemPrompt = buildSystemPrompt(dynamicSkills, brandStyle);
 
   const prompt = `${systemPrompt}
 
@@ -1658,7 +2261,7 @@ ${(() => {
 - Frames per measure (4 beats): ${(fpb * 4).toFixed(1)}
 - Measure start frames: [${measures.join(", ")}]
 - SNAP all scene boundaries to the nearest measure frame from the list above
-- Use beat pulse (exponential decay) on text scale and opacity for rhythm: Math.exp(-((frame % ${Math.round(fpb)}) / ${Math.round(fpb)}) * 4)
+- Use beat timing for transitions and motion ONLY — NEVER pulse static text/cards with beatPulse (causes jitter)
 - Transition effects (fade, slide) should last exactly 1 beat (${Math.round(fpb)} frames)`;
   }
   return `- Frames per beat: ${fpb.toFixed(1)} (${audioBpm} BPM at 30fps)
@@ -1691,7 +2294,7 @@ ${(() => {
   return lines.join("\n");
 })()}
 
-## REQUIREMENTS - PREMIUM DEMO STYLE VIDEO
+## REQUIREMENTS - PREMIUM CINEMATIC VIDEO
 1. **VARIABLE SCENE TIMING** (beat-snapped):
    - Intro (first): ~${Math.round(((30 * 60) / audioBpm) * 6)} frames (${Math.round((60 / audioBpm) * 6)}s, 6 beats) — slow, dramatic
    - Middle scenes: ~${Math.round(((30 * 60) / audioBpm) * 3)} frames (${Math.round((60 / audioBpm) * 3)}s, 3 beats) — fast, punchy
@@ -1700,18 +2303,38 @@ ${(() => {
    - CTA (ALWAYS last): ~${Math.round(((30 * 60) / audioBpm) * 6)} frames (${Math.round((60 / audioBpm) * 6)}s, 6 beats) — slow, dramatic close
    - **SUM of all scene durations MUST equal ${totalDuration} frames exactly**
 2. **DISCRETE SCENES**: Use separate Sequence components with smooth entry animations
-3. **AURORA BACKGROUNDS**: Alternate dark/light aurora backgrounds between scenes
-   - Dark aurora: logo scenes, CTA scenes, card scenes
-   - Light aurora: text reveal scenes, tagline scenes, screenshot scenes
+3. **3D BACKGROUNDS**: Use ThreeScene with FloatingMesh for intro/hero AND CTA scenes (at least 2 scenes with 3D). Layer 2D text on top with zIndex.
+   - Other scenes: use CineBg-style bokeh or gradient backgrounds
 4. **TEXT ANIMATIONS**:
-   - Use WordByWordBlur for headlines and taglines (with gradientWordIndices for emphasis)
+   - Use WordByWord for headlines and taglines (with gradientWordIndices for emphasis)
    - Use GradientAccentText for highlighted/accent text
    - Use LogoWithGlow for brand name/logo scenes
-5. **WHITE GLASS CARDS**: Use WhiteGlassCard with perspective/slide-up entry for feature content
-   - Card text: #111827 (dark gray), card subtext: #4b5563
-6. **SCENE PROGRESS DOTS**: Add SceneProgressDots overlay at the root level
-7. **FONT**: Montserrat only (400-800 weights), normal case (NOT uppercase)
+5. **UI COMPONENTS**: Use SpotlightCard or TiltCard for feature scenes, StatCounter for metrics, FloatingCard for secondary content. Do NOT use plain divs for feature content.
+6. **CURSOR + CLICK**: Include animated cursor (HandCursorSVG + ClickRipple) in at least ONE scene — cursor moves to CTA button and clicks with ripple effect
+7. **FONT**: ${(() => {
+    if (brandStyle?.videoStyle?.fontRecommendation) {
+      return `Use "${brandStyle.videoStyle.fontRecommendation}" from @remotion/google-fonts (400-900 weights), normal case (NOT uppercase)`;
+    }
+    return `Montserrat (400-800 weights), normal case (NOT uppercase)`;
+  })()}
 8. **COLOR PALETTE**: ${(() => {
+    // Prefer full brandStyle with 7 colors + design context
+    if (brandStyle?.colors) {
+      return `Use the BRAND colors extracted from the website (EXACT values — do NOT modify):
+   \`\`\`tsx
+   const BRAND = {
+     primary: '${brandStyle.colors.primary}',
+     secondary: '${brandStyle.colors.secondary}',
+     accent: '${brandStyle.colors.accent}',
+     bg: '${brandStyle.colors.background}',
+     text: '${brandStyle.colors.text}',
+     textMuted: '${brandStyle.colors.textMuted}',
+   };
+   \`\`\`
+   ${brandStyle.colors.gradient ? `Brand gradient: ${brandStyle.colors.gradient}` : ""}
+   EVERY visual element must use BRAND colors. Backgrounds = BRAND.bg. Text = BRAND.text. Accents/glows/gradients = BRAND.primary/secondary/accent. NO generic purple/pink/blue.`;
+    }
+    // Fallback to basic 3-color palette from scraper
     const colors = (state.productData as any)?.colors;
     if (colors && (colors.primary || colors.secondary || colors.accent)) {
       return `Use the BRAND colors from the website:
@@ -1719,13 +2342,12 @@ ${(() => {
    - Secondary: ${colors.secondary || "#ec4899"}
    - Accent: ${colors.accent || colors.primary || "#3b82f6"}
    - Dark background: ${colors.dark || "#0a0a0f"}
-   Use these colors for gradients, glows, accents, and backgrounds. Do NOT use generic purple/pink unless those ARE the brand colors.`;
+   Use these colors for ALL visual elements. Do NOT use generic purple/pink unless those ARE the brand colors.`;
     }
-    return `Purple #a855f7, Pink #ec4899, Dark #0a0a0f (no brand colors available)`;
+    return `No brand colors extracted — analyze the product description and choose colors that match the brand's industry and tone. Do NOT default to purple/pink.`;
   })()}
-9. **CTA**: The LAST scene MUST always be a call-to-action
-10. **CURSOR ANIMATION**: Include an animated SVG cursor in at least one scene (see §10 above). The cursor should move to a CTA button and click it for a realistic demo feel.
-11. Convert ALL CSS animations to interpolate() or spring()
+9. **CTA**: The LAST scene MUST always be a call-to-action with cursor click animation
+10. Convert ALL CSS animations to interpolate() or spring()
 11. CRITICAL: Include Audio component at root level with the EXACT src provided:
     \`\`\`tsx
     import { Audio${!isR2Audio ? ", staticFile" : ""} } from 'remotion';
@@ -1901,7 +2523,7 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
         audioUrl,
         audioBpm,
         state.recordings,
-        (state.productData as any)?.colors,
+        extractBrandColors(state),
         state.videoScript,
       );
       console.log("[RemotionTranslator] Using fallback composition");
@@ -1925,7 +2547,54 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
 
     // Check for remaining syntax errors
     let finalCode = validatedCode;
-    const syntaxErrors = hasBasicSyntaxErrors(validatedCode);
+    let syntaxErrors = hasBasicSyntaxErrors(validatedCode);
+
+    // Auto-balance: close unclosed template strings and braces before asking LLM
+    // Safety: skip auto-balance if code already ends cleanly (export default + semicolon)
+    const trimmedEnd = validatedCode.trimEnd();
+    const looksComplete = /export\s+default\s+\w+;?\s*$/.test(trimmedEnd);
+    if (syntaxErrors.length > 0 && !looksComplete) {
+      let balanced = validatedCode;
+      if (syntaxErrors.some(e => e.includes("Unclosed template"))) {
+        balanced += "\n`";
+        console.log("[RemotionTranslator] Auto-closed unclosed template string");
+      }
+      // Count and close unbalanced braces
+      const recheck = hasBasicSyntaxErrors(balanced);
+      for (const err of recheck) {
+        const extraCurly = err.match(/Unbalanced curly braces: (\d+) extra/);
+        if (extraCurly) {
+          const n = parseInt(extraCurly[1]);
+          balanced += "\n" + "}".repeat(n);
+          console.log(`[RemotionTranslator] Auto-closed ${n} unclosed curly braces`);
+        }
+        const extraParen = err.match(/Unbalanced parentheses: (\d+) extra/);
+        if (extraParen) {
+          const n = parseInt(extraParen[1]);
+          balanced += ")".repeat(n);
+          console.log(`[RemotionTranslator] Auto-closed ${n} unclosed parentheses`);
+        }
+      }
+      // Ensure export default is at the end
+      if (!balanced.includes("export default")) {
+        const compMatch = balanced.match(/(?:const|export const)\s+((?:Video|Main)?Composition|MyVideo)\b/);
+        if (compMatch) {
+          balanced += `\n\nexport default ${compMatch[1]};`;
+        }
+      }
+      syntaxErrors = hasBasicSyntaxErrors(balanced);
+      if (syntaxErrors.length === 0) {
+        console.log("[RemotionTranslator] Auto-balance fixed all syntax errors");
+        finalCode = balanced;
+      } else {
+        // Use the balanced version as input for LLM fix (closer to valid)
+        finalCode = balanced;
+      }
+    } else if (syntaxErrors.length > 0 && looksComplete) {
+      console.log("[RemotionTranslator] Code ends cleanly but syntax checker reports errors — likely false positives, skipping auto-balance");
+      console.log("[RemotionTranslator] Reported errors:", syntaxErrors);
+    }
+
     if (syntaxErrors.length > 0) {
       console.warn(
         "[RemotionTranslator] Remaining syntax issues:",
@@ -2008,7 +2677,7 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
               audioUrl,
               audioBpm,
               state.recordings,
-              (state.productData as any)?.colors,
+              extractBrandColors(state),
               state.videoScript,
             );
           } else if (remainingErrors.length === 0) {
@@ -2074,6 +2743,8 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
                 audioUrl,
                 audioBpm,
                 state.recordings,
+                extractBrandColors(state),
+                state.videoScript,
               );
             } else if (finalCheck.length === 0) {
               console.log(
@@ -2089,6 +2760,8 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
                 audioUrl,
                 audioBpm,
                 state.recordings,
+                extractBrandColors(state),
+                state.videoScript,
               );
             }
           }
@@ -2102,7 +2775,7 @@ Output the complete Remotion composition code with FAST-PACED text animations. M
             audioUrl,
             audioBpm,
             state.recordings,
-            (state.productData as any)?.colors,
+            extractBrandColors(state),
             state.videoScript,
           );
         }

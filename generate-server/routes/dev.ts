@@ -1,6 +1,23 @@
 import { Router } from "express";
 import { setupSSE, createSSESend } from "../lib/sse";
 import { submitAndWaitForRender } from "../lib/render/renderClient";
+import { scraperNode } from "../lib/agents/scraper";
+import { scriptWriterNode } from "../lib/agents/scriptWriter";
+import { creativeDirectorNode } from "../lib/agents/creativeDirector";
+import {
+  remotionTranslatorNode,
+  validateBeforeRender,
+  enforceDuration,
+} from "../lib/agents/remotionTranslator";
+import { videoRendererNode } from "../lib/agents/videoRenderer";
+import { renderErrorFixerNode } from "../lib/agents/renderErrorFixer";
+import type { VideoGenerationStateType } from "../lib/agents/state";
+import { generateBeatMap } from "../lib/audio/beatSync";
+import {
+  analyseBrand,
+  inferBrandStyleFromText,
+} from "../lib/agents/brandAnalyser";
+import type { ScreenshotData } from "../lib/scraper/scraperClient";
 
 const router: Router = Router();
 
@@ -186,6 +203,13 @@ router.post("/render", async (req, res) => {
     return res.status(400).json({ error: "remotionCode is required" });
   }
 
+  // Auto-fix common LLM syntax issues before rendering
+  const analysis = validateBeforeRender(remotionCode);
+  const fixedCode = analysis.autoFixed;
+  if (analysis.errors.length > 0 || analysis.warnings.length > 0) {
+    console.log(`[DevRender] Auto-fixed: ${analysis.errors.length} errors, ${analysis.warnings.length} warnings`);
+  }
+
   setupSSE(res);
   const send = createSSESend(res);
 
@@ -198,7 +222,7 @@ router.post("/render", async (req, res) => {
 
     const status = await submitAndWaitForRender(
       {
-        remotionCode,
+        remotionCode: fixedCode,
         durationInFrames,
         outputFormat: format as "mp4" | "webm",
         width,
@@ -233,6 +257,185 @@ router.post("/render", async (req, res) => {
     send("error", {
       errors: [error instanceof Error ? error.message : "Unknown error"],
     });
+    send("complete", { success: false });
+  } finally {
+    res.end();
+  }
+});
+
+// ============================================================
+// POST /generate — Full pipeline: scrape → brand → script → code → render (no auth)
+// ============================================================
+router.post("/generate", async (req, res) => {
+  console.log("[DevGenerate] POST /dev/generate — full pipeline test");
+
+  const {
+    url,
+    description,
+    style = "professional",
+    videoType = "creative",
+    duration = 10,
+    aspectRatio = "16:9",
+    audio,
+  } = req.body;
+
+  if (!url && !description) {
+    return res.status(400).json({ error: "Either url or description is required" });
+  }
+
+  setupSSE(res);
+  const send = createSSESend(res);
+
+  try {
+    const audioBpm = audio?.bpm || 120;
+    const videoDurationSec = typeof duration === "string" ? parseInt(duration) : duration;
+    const totalFrames = videoDurationSec * 30;
+
+    let state: Partial<VideoGenerationStateType> = {
+      sourceUrl: url || null,
+      description: description || null,
+      userPreferences: {
+        style: style as any,
+        videoType: videoType as any,
+        duration: videoDurationSec,
+        aspectRatio: aspectRatio || "16:9",
+        useImages: false,
+        audio: audio ? { url: audio.url, bpm: audioBpm, duration: audio.duration || videoDurationSec } : undefined,
+      } as any,
+      recordings: [],
+      productData: null,
+      videoScript: null,
+      reactPageCode: null,
+      remotionCode: null,
+      currentStep: "scraping",
+      errors: [],
+      renderAttempts: 0,
+      lastRenderError: null,
+      videoUrl: null,
+      beatMap: generateBeatMap({ bpm: audioBpm, totalDurationFrames: totalFrames, fps: 30 }),
+      r2Key: null,
+      projectId: null,
+    };
+
+    // Step 1: Scrape
+    send("status", { step: "scraping", message: `Scraping ${url || "description"}...` });
+    const scraperResult = await scraperNode(state as VideoGenerationStateType);
+    state = { ...state, ...scraperResult };
+
+    if (state.currentStep === "error") {
+      send("error", { errors: state.errors });
+      send("complete", { success: false });
+      return res.end();
+    }
+    send("status", { step: "scraping", message: `Scraped: ${state.productData?.name}` });
+
+    // Step 1.5: Brand analysis (vision if screenshots available, text fallback)
+    if (state.productData) {
+      try {
+        const screenshots = (state.productData as any)?.screenshots || [];
+        const heroScreenshot = screenshots.find((s: any) => s.section === "hero") || screenshots[0];
+        let brandStyle;
+        if (heroScreenshot) {
+          brandStyle = await analyseBrand(
+            heroScreenshot as ScreenshotData,
+            state.productData.name || "Product",
+            state.productData.description,
+          );
+          send("status", { step: "brand", message: `Brand analyzed (vision): ${brandStyle?.videoStyle?.recommended || "done"}` });
+        }
+        if (!brandStyle) {
+          brandStyle = await inferBrandStyleFromText(
+            state.productData.name || "Product",
+            state.productData.description || "",
+            state.productData.tone || "professional",
+            state.productData.colors || {},
+          );
+          send("status", { step: "brand", message: `Brand inferred: ${brandStyle?.videoStyle?.recommended || "done"}` });
+        }
+        (state.productData as any).brandStyle = brandStyle;
+        (state.productData as any).designInsights = brandStyle.designInsights;
+        (state.productData as any).visualMood = brandStyle.mood?.tone;
+        console.log(`[DevGenerate] Brand: ${brandStyle.videoStyle?.recommended}, colors: ${brandStyle.colors?.primary}/${brandStyle.colors?.secondary}`);
+      } catch (e) {
+        console.warn("[DevGenerate] Brand analysis failed (non-fatal):", e);
+      }
+    }
+
+    // Step 2: Script
+    send("status", { step: "scripting", message: "Writing video script..." });
+    const scriptResult = await scriptWriterNode(state as VideoGenerationStateType);
+    state = { ...state, ...scriptResult };
+    if (state.videoScript) {
+      send("videoScript", state.videoScript);
+    }
+
+    // Step 2.5: Creative Director
+    send("status", { step: "directing", message: "Adding creative direction..." });
+    const dirResult = await creativeDirectorNode(state as VideoGenerationStateType);
+    state = { ...state, ...dirResult };
+
+    // Step 3: Remotion Translator
+    send("status", { step: "translating", message: "Generating Remotion code..." });
+    const translatorResult = await remotionTranslatorNode(state as VideoGenerationStateType);
+    state = { ...state, ...translatorResult };
+
+    if (state.remotionCode) {
+      send("remotionCode", state.remotionCode);
+      // Pre-render validation
+      const analysis = validateBeforeRender(state.remotionCode as string);
+      if (analysis.errors.length > 0 || analysis.warnings.length > 0) {
+        state.remotionCode = analysis.autoFixed;
+      }
+      const targetFrames = state.videoScript?.totalDuration || totalFrames;
+      state.remotionCode = enforceDuration(state.remotionCode as string, targetFrames);
+    }
+
+    if (state.currentStep === "error") {
+      send("error", { errors: state.errors });
+      send("complete", { success: false });
+      return res.end();
+    }
+
+    // Step 4: Render with retry
+    let attempts = 0;
+    const maxAttempts = 3;
+
+    while (attempts < maxAttempts) {
+      attempts++;
+      state.renderAttempts = attempts;
+      send("status", { step: "rendering", message: `Rendering video (attempt ${attempts})...` });
+
+      const renderResult = await videoRendererNode(state as VideoGenerationStateType);
+      state = { ...state, ...renderResult };
+
+      if (state.videoUrl) {
+        send("videoUrl", state.videoUrl);
+        send("status", { step: "complete", message: "Video rendered!" });
+        break;
+      }
+
+      if (state.currentStep === "fixing" && attempts < maxAttempts) {
+        send("status", { step: "fixing", message: `Fixing render errors (attempt ${attempts})...` });
+        const fixResult = await renderErrorFixerNode(state as VideoGenerationStateType);
+        state = { ...state, ...fixResult };
+        if (fixResult.remotionCode) {
+          send("remotionCode", fixResult.remotionCode);
+        }
+      } else if (state.currentStep === "error") {
+        send("error", { errors: state.errors });
+        break;
+      }
+    }
+
+    if (state.videoUrl) {
+      send("complete", { success: true, message: "Video generation complete" });
+    } else {
+      send("error", { errors: state.errors?.length ? state.errors : ["Rendering failed"] });
+      send("complete", { success: false });
+    }
+  } catch (error) {
+    console.error("[DevGenerate] Error:", error);
+    send("error", { errors: [error instanceof Error ? error.message : "Unknown error"] });
     send("complete", { success: false });
   } finally {
     res.end();
