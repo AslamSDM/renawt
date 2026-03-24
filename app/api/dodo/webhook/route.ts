@@ -1,5 +1,6 @@
-// import { updateUserSubscription } from "@/lib/db";
 import { addCredits, updateUserSubscription } from "@/lib/db";
+import { prisma } from "@/lib/db/prisma";
+import { sendSubscriptionEmail } from "@/lib/email";
 import { Metadata } from "@/lib/dodo";
 import { productToCreditMap } from "@/lib/dodo/subscription";
 import { Webhooks } from "@dodopayments/nextjs";
@@ -45,11 +46,10 @@ export const POST = async (req: NextRequest) => {
         await addCredits(webhookEventId, userId, creditsToAdd, payment_id);
       },
       onSubscriptionUpdated: async (payload) => {
-        console.log("[+] Subscription renewed");
         const { userId, product } = payload.data.metadata as Metadata;
         const { status, subscription_id } = payload.data;
 
-        console.log(userId, product, status, subscription_id);
+        console.log("[+] Subscription updated:", { userId, product, status, subscription_id });
 
         await updateUserSubscription(
           userId,
@@ -57,6 +57,24 @@ export const POST = async (req: NextRequest) => {
           status,
           subscription_id
         );
+
+        // Add credits for active subscriptions
+        if (status === "active") {
+          const credits = productToCreditMap[product];
+          if (credits !== undefined) {
+            await addCredits(webhookEventId, userId, credits, subscription_id);
+            console.log("[+] Subscription credits added:", { userId, product, credits });
+          }
+        }
+
+        // Send subscription confirmation email
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { email: true, name: true },
+        });
+        if (user?.email) {
+          await sendSubscriptionEmail(user.email, user.name, product);
+        }
       },
     })(req)
     : NextResponse.json({ error: "Webhook not configured" }, { status: 503 });
