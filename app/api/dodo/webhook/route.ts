@@ -76,6 +76,27 @@ export const POST = async (req: NextRequest) => {
           await sendSubscriptionEmail(user.email, user.name, product);
         }
       },
+      onSubscriptionRenewed: async (payload) => {
+        const { userId, product } = payload.data.metadata as Metadata;
+        const { subscription_id, status } = payload.data;
+
+        if (!userId || !product) {
+          console.error("[Webhook] subscription.renewed missing metadata", { subscription_id });
+          return;
+        }
+
+        const credits = productToCreditMap[product];
+        if (credits === undefined) {
+          console.error(`[Webhook] subscription.renewed unknown product: ${product}`);
+          return;
+        }
+
+        console.log("[+] Subscription renewed:", { userId, product, status, subscription_id, credits });
+
+        await updateUserSubscription(userId, product, status, subscription_id);
+        await addCredits(webhookEventId, userId, credits, subscription_id);
+        console.log("[+] Renewal credits added:", { userId, product, credits });
+      },
     })(req)
     : NextResponse.json({ error: "Webhook not configured" }, { status: 503 });
 }
