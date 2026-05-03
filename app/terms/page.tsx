@@ -180,7 +180,7 @@ export default function TermsPage() {
               <h2 className="text-xl font-light text-white mb-4">14. Contact</h2>
               <p>
                 For questions about these Terms & Conditions, contact us at:{" "}
-                <a href="mailto:info@remawt.com" className="text-white hover:underline">info@remawt.com</a>
+                <a href="mailto:support@remawt.com" className="text-white hover:underline">support@remawt.com</a>
               </p>
             </div>
           </div>

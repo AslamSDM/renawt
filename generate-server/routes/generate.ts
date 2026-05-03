@@ -67,6 +67,7 @@ router.post("/generate", async (req: AuthenticatedRequest, res) => {
       duration,
       aspectRatio,
       audio,
+      narration,
       recordings,
       useImages = false,
       nanoBanana = false,
@@ -84,7 +85,7 @@ router.post("/generate", async (req: AuthenticatedRequest, res) => {
       `[GenerateServer] User: ${req.userId} | "${description || url}" | Style: ${style}`,
     );
 
-    setupSSE(res);
+    const stopHeartbeat = setupSSE(res);
     const send = createSSESend(res);
 
     try {
@@ -107,6 +108,9 @@ router.post("/generate", async (req: AuthenticatedRequest, res) => {
                 bpm: audio.bpm || 120,
                 duration: audio.duration || 30,
               }
+            : undefined,
+          narration: narration?.audioUrl
+            ? { audioUrl: narration.audioUrl }
             : undefined,
         },
         recordings: Array.isArray(recordings) ? recordings : [],
@@ -205,6 +209,7 @@ router.post("/generate", async (req: AuthenticatedRequest, res) => {
       });
       send("complete", { success: false });
     } finally {
+      stopHeartbeat();
       res.end();
     }
   } catch (error) {
@@ -244,7 +249,7 @@ router.post("/continue", async (req: AuthenticatedRequest, res) => {
       return res.status(400).json({ error: "videoScript is required" });
     }
 
-    setupSSE(res);
+    const stopHeartbeatCont = setupSSE(res);
     const send = createSSESend(res);
 
     try {
@@ -405,6 +410,7 @@ router.post("/continue", async (req: AuthenticatedRequest, res) => {
       });
       send("complete", { success: false });
     } finally {
+      stopHeartbeatCont();
       res.end();
     }
   } catch (error) {

@@ -122,7 +122,7 @@ export default function RootLayout({
                 "@type": "Organization",
                 name: "Remawt",
                 url: "https://remawt.com",
-                email: "info@remawt.com",
+                email: "support@remawt.com",
               },
             }),
           }}

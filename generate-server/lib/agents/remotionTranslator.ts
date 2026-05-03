@@ -1346,7 +1346,7 @@ export function validateBeforeRender(code: string): StaticAnalysisResult {
 
   // 10b. filter: blur() on elements (not backdrop) — can cause sub-pixel flicker with concurrency
   // Only warn, don't auto-fix as it's often intentional
-  const blurFilterCount = (code.match(/filter\s*:\s*['"`]blur\(/g) || []).length;
+  const blurFilterCount = (code.match(/filter\s*:\s*['\"`]blur\(/g) || []).length;
   if (blurFilterCount > 5) {
     warnings.push(`Excessive blur filters (${blurFilterCount}) — may cause flicker with concurrent rendering`);
   }
@@ -1355,6 +1355,94 @@ export function validateBeforeRender(code: string): StaticAnalysisResult {
   const loadFontInsideComponent = /(?:const|function)\s+[A-Z][\s\S]*?loadFont\s*\(/;
   if (loadFontInsideComponent.test(code)) {
     warnings.push("loadFont() called inside component — move to module scope for consistent rendering");
+  }
+
+  // 11b. CSS kebab-case properties in style objects → camelCase
+  // LLM generates e.g. `font-size: 16` instead of `fontSize: 16` — causes esbuild "Expected identifier but found '-'"
+  const kebabCssProps: Record<string, string> = {
+    "font-size": "fontSize", "font-weight": "fontWeight", "font-family": "fontFamily",
+    "font-style": "fontStyle", "line-height": "lineHeight", "letter-spacing": "letterSpacing",
+    "text-align": "textAlign", "text-decoration": "textDecoration", "text-transform": "textTransform",
+    "text-shadow": "textShadow", "word-spacing": "wordSpacing", "word-break": "wordBreak",
+    "white-space": "whiteSpace", "overflow-wrap": "overflowWrap",
+    "background-color": "backgroundColor", "background-image": "backgroundImage",
+    "background-size": "backgroundSize", "background-position": "backgroundPosition",
+    "background-repeat": "backgroundRepeat", "background-clip": "backgroundClip",
+    "border-radius": "borderRadius", "border-color": "borderColor", "border-width": "borderWidth",
+    "border-style": "borderStyle", "border-top": "borderTop", "border-bottom": "borderBottom",
+    "border-left": "borderLeft", "border-right": "borderRight",
+    "border-top-left-radius": "borderTopLeftRadius", "border-top-right-radius": "borderTopRightRadius",
+    "border-bottom-left-radius": "borderBottomLeftRadius", "border-bottom-right-radius": "borderBottomRightRadius",
+    "box-shadow": "boxShadow", "box-sizing": "boxSizing",
+    "margin-top": "marginTop", "margin-bottom": "marginBottom",
+    "margin-left": "marginLeft", "margin-right": "marginRight",
+    "padding-top": "paddingTop", "padding-bottom": "paddingBottom",
+    "padding-left": "paddingLeft", "padding-right": "paddingRight",
+    "max-width": "maxWidth", "max-height": "maxHeight",
+    "min-width": "minWidth", "min-height": "minHeight",
+    "object-fit": "objectFit", "object-position": "objectPosition",
+    "z-index": "zIndex", "flex-direction": "flexDirection",
+    "flex-wrap": "flexWrap", "flex-grow": "flexGrow", "flex-shrink": "flexShrink",
+    "align-items": "alignItems", "align-self": "alignSelf",
+    "justify-content": "justifyContent", "justify-self": "justifySelf",
+    "gap": "gap", "row-gap": "rowGap", "column-gap": "columnGap",
+    "grid-template-columns": "gridTemplateColumns", "grid-template-rows": "gridTemplateRows",
+    "grid-column": "gridColumn", "grid-row": "gridRow",
+    "backdrop-filter": "backdropFilter", "clip-path": "clipPath",
+    "mix-blend-mode": "mixBlendMode", "pointer-events": "pointerEvents",
+    "transform-origin": "transformOrigin", "animation-delay": "animationDelay",
+    "transition-duration": "transitionDuration",
+  };
+  for (const [kebab, camel] of Object.entries(kebabCssProps)) {
+    // Match kebab-case property as an object key (not inside a string)
+    const kebabRegex = new RegExp(`(?<=[{,;\\s])${kebab.replace(/-/g, "\\-")}\\s*:`, "g");
+    if (kebabRegex.test(fixedCode)) {
+      fixedCode = fixedCode.replace(kebabRegex, `${camel}:`);
+      errors.push(`Auto-fixed: Converted CSS '${kebab}' to '${camel}'`);
+    }
+  }
+
+  // 12. Bracket/syntax validation — catch unbalanced braces before render
+  const syntaxErrors = hasBasicSyntaxErrors(fixedCode);
+  if (syntaxErrors.length > 0) {
+    const trimmedEnd = fixedCode.trimEnd();
+    const looksComplete = /export\s+default\s+\w+;?\s*$/.test(trimmedEnd);
+
+    if (!looksComplete) {
+      // Auto-balance unclosed brackets
+      for (const err of syntaxErrors) {
+        if (err.includes("Unclosed template")) {
+          fixedCode += "\n`";
+          errors.push("Auto-fixed: Closed unclosed template string");
+        }
+        const extraCurly = err.match(/Unbalanced curly braces: (\d+) extra/);
+        if (extraCurly) {
+          const n = parseInt(extraCurly[1]);
+          fixedCode += "\n" + "}".repeat(n);
+          errors.push(`Auto-fixed: Closed ${n} unclosed curly braces`);
+        }
+        const extraParen = err.match(/Unbalanced parentheses: (\d+) extra/);
+        if (extraParen) {
+          const n = parseInt(extraParen[1]);
+          fixedCode += ")".repeat(n);
+          errors.push(`Auto-fixed: Closed ${n} unclosed parentheses`);
+        }
+        const extraBracket = err.match(/Unbalanced square brackets: (\d+) extra/);
+        if (extraBracket) {
+          const n = parseInt(extraBracket[1]);
+          fixedCode += "]".repeat(n);
+          errors.push(`Auto-fixed: Closed ${n} unclosed square brackets`);
+        }
+      }
+      // Re-check — if still broken, flag as error (LLM fix loop will handle it)
+      const remaining = hasBasicSyntaxErrors(fixedCode);
+      if (remaining.length > 0) {
+        errors.push(...remaining.map(e => `Syntax: ${e}`));
+      }
+    } else {
+      // Code ends cleanly but checker reports errors — likely false positives
+      warnings.push(...syntaxErrors.map(e => `Possible syntax issue (code ends cleanly): ${e}`));
+    }
   }
 
   const valid = errors.length === 0;
@@ -2201,6 +2289,7 @@ export async function remotionTranslatorNode(
     ASPECT_DIMS[ar] || ASPECT_DIMS["16:9"];
 
   // Compute audio source early so it can be injected into the prompt
+  const narrationUrl = (state.userPreferences as any)?.narration?.audioUrl || "";
   const rawAudioUrl = state.userPreferences?.audio?.url || "";
   const audioUrl = rawAudioUrl.startsWith("http")
     ? rawAudioUrl
@@ -2348,13 +2437,15 @@ ${(() => {
   })()}
 9. **CTA**: The LAST scene MUST always be a call-to-action with cursor click animation
 10. Convert ALL CSS animations to interpolate() or spring()
-11. CRITICAL: Include Audio component at root level with the EXACT src provided:
+11. CRITICAL: Include Audio components at root level with the EXACT sources provided:
     \`\`\`tsx
-    import { Audio${!isR2Audio ? ", staticFile" : ""} } from 'remotion';
+    import { Audio${!isR2Audio && !narrationUrl ? ", staticFile" : ""} } from 'remotion';
     // Inside VideoComposition:
-    <Audio src={${audioSrcCode}} volume={1} />
+${narrationUrl ? `    <Audio src={"${narrationUrl}"} volume={0.9} />  {/* narration voice-over */}` : ""}
+    <Audio src={${audioSrcCode}} volume={${narrationUrl ? "0.12" : "1"}} ${narrationUrl ? "loop " : ""}/>  {/* background music */}
     \`\`\`
-    DO NOT use staticFile("audio/audio1.mp3") — use the exact audio source shown above.
+    DO NOT use staticFile("audio/audio1.mp3") — use the exact audio sources shown above.
+${narrationUrl ? "    IMPORTANT: Narration plays throughout the whole video — sync scene pacing to narration timing (≈2.5 words/sec)." : ""}
 
 ## IMAGES / SCREENSHOTS
 ${(() => {

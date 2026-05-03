@@ -11,8 +11,10 @@ import {
   validateBeforeRender,
   enforceDuration,
 } from "../lib/agents/remotionTranslator";
-import { FREESTYLE_SYSTEM_PROMPT } from "../lib/prompts";
 import { withAgentLogging, logAgentOutput } from "../lib/agentLogger";
+import { scrapeUrl, isScraperServiceAvailable } from "../lib/scraper/scraperClient";
+import { extractAudio } from "../lib/video/videoStitcher";
+import { uploadAudioFileToR2, isR2Configured } from "../lib/storage/r2";
 
 const router: Router = Router();
 
@@ -73,7 +75,14 @@ router.post("/reference-video", async (req: AuthenticatedRequest, res) => {
       duration = 15,
       aspectRatio = "16:9",
       audio,
+      narration,
+      images = [] as string[],
+      sourceUrl,
+      stripAudio = false,
     } = req.body;
+
+    // narration: { audioUrl?: string, text?: string, voiceId?: string }
+    const narrationAudioUrl: string = narration?.audioUrl || "";
 
     const ASPECT_DIMS: Record<string, { width: number; height: number }> = {
       "16:9": { width: 1920, height: 1080 },
@@ -90,18 +99,59 @@ router.post("/reference-video", async (req: AuthenticatedRequest, res) => {
       return res.status(400).json({ error: "description is required" });
     }
 
-    setupSSE(res);
+    const stopHeartbeat = setupSSE(res);
     const send = createSSESend(res);
 
     try {
       const durationInFrames = duration * 30;
-      const audioUrl = audio?.url || "";
-      const isR2Audio = audioUrl.startsWith("http");
-      const audioSrcCode = audioUrl
-        ? isR2Audio
-          ? `"${audioUrl}"`
-          : `staticFile("${audioUrl}")`
-        : "";
+
+      // Extract audio from reference video if requested and no user audio
+      let audioUrl = audio?.url || "";
+      let audioBpm = audio?.bpm;
+      if (stripAudio && !audioUrl && referenceVideoUrl) {
+        send("status", { step: "extracting-audio", message: "Extracting audio from reference video..." });
+        try {
+          const result = await extractAudio(referenceVideoUrl);
+          if (result) {
+            // Upload extracted audio to R2 so Remotion can access it via HTTP
+            if (isR2Configured()) {
+              const uploadResult = await uploadAudioFileToR2(result.audioPath);
+              if (uploadResult.success && uploadResult.url) {
+                audioUrl = uploadResult.url;
+                console.log("[ReferenceVideo] Extracted audio uploaded to R2:", audioUrl);
+              } else {
+                console.warn("[ReferenceVideo] Audio R2 upload failed, skipping audio:", uploadResult.error);
+              }
+            } else {
+              console.warn("[ReferenceVideo] R2 not configured, skipping extracted audio");
+            }
+          } else {
+            console.log("[ReferenceVideo] Reference video has no audio track");
+          }
+        } catch (e) {
+          console.warn("[ReferenceVideo] Audio extraction failed (non-fatal):", e);
+        }
+      }
+
+      const bgMusicSrcCode = audioUrl.startsWith("http") ? `"${audioUrl}"` : "";
+
+      // Optional: Scrape website for brand data
+      let scrapedContext = "";
+      if (sourceUrl) {
+        send("status", { step: "scraping", message: "Scraping website for brand data..." });
+        try {
+          const scraperAvailable = await isScraperServiceAvailable();
+          if (scraperAvailable) {
+            const scrapeResult = await scrapeUrl(sourceUrl);
+            scrapedContext = `\n## BRAND CONTEXT (from ${sourceUrl}):\n- Website text: ${scrapeResult.text.slice(0, 1500)}\n- Images available: ${scrapeResult.images.slice(0, 5).join(", ")}\n`;
+            console.log("[ReferenceVideo] Scraped brand data from:", sourceUrl);
+          } else {
+            console.warn("[ReferenceVideo] Scraper service unavailable, skipping");
+          }
+        } catch (e) {
+          console.warn("[ReferenceVideo] Scraping failed (non-fatal):", e);
+        }
+      }
 
       // Step 1: Analyze the reference video with Gemini Pro Vision
       send("status", {
@@ -139,20 +189,41 @@ Be very specific about timing, colors (hex values if possible), and animation cu
       });
 
       // Step 2: Generate Remotion code based on analysis + user description
+      const imagesSection = images.length > 0
+        ? `\n## USER IMAGES/LOGOS (use <Img> from 'remotion'):\n${images.map((url: string, i: number) => `- Image ${i + 1}: <Img src="${url}" />`).join("\n")}\nIncorporate these images naturally into the composition (e.g. as logos, hero images, or decorative elements).`
+        : "";
+
+      // Build audio section for code prompt
+      const audioLines: string[] = [];
+      if (narrationAudioUrl) {
+        audioLines.push(`- Narration (voice-over): Import { Audio } from 'remotion'. Add <Audio src={"${narrationAudioUrl}"} volume={0.9} /> at the start of the composition so it plays throughout.`);
+      }
+      if (bgMusicSrcCode) {
+        audioLines.push(`- Background music: Add <Audio src={${bgMusicSrcCode}} volume={${narrationAudioUrl ? "0.12" : "0.4"}} loop /> for ambient music.`);
+        if (audioBpm) {
+          audioLines.push(`- Music BPM: ${audioBpm} (sync animations to beat: ${Math.round((60 / audioBpm) * 30)} frames per beat)`);
+        }
+      }
+      const audioSection = audioLines.length > 0
+        ? audioLines.join("\n")
+        : "- No audio track";
+
       const codePrompt = `## REFERENCE VIDEO ANALYSIS:
 ${videoAnalysis}
 
 ## USER'S CONTENT DESCRIPTION:
 ${description}
+${scrapedContext}${imagesSection}
 
 ## VIDEO SPECIFICATIONS:
 - Duration: ${durationInFrames} frames (${duration} seconds) at 30fps
 - Resolution: ${renderWidth}x${renderHeight}
-${audioSrcCode ? `- Audio: Include <Audio src={${audioSrcCode}} /> in the composition` : "- No audio track"}
-${audio?.bpm ? `- Music BPM: ${audio.bpm} (sync animations to beat: ${Math.round((60 / audio.bpm) * 30)} frames per beat)` : ""}
+${audioSection}
 
 ## INSTRUCTIONS:
 Recreate the visual style and animation patterns from the reference video analysis above, but use the user's content description for all text and thematic content. The output should look like a recreation of the reference video with new content.
+${narrationAudioUrl ? "IMPORTANT: The narration audio plays throughout the video — sync visual scene changes to the narration timing (words per second ≈ 2.5)." : ""}
+${images.length > 0 ? "IMPORTANT: You MUST use the provided images in the composition using <Img src=\"...\"> from 'remotion'. Import { Img } from 'remotion'." : ""}
 
 Return ONLY the complete TSX code. No markdown, no explanation.`;
 
@@ -230,8 +301,6 @@ Return ONLY the complete TSX code. No markdown, no explanation.`;
       // Step 3: Render with retry loop
       const maxAttempts = 3;
       let currentCode = code;
-      let renderSuccess = false;
-
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         send("status", {
           step: "rendering",
@@ -270,7 +339,6 @@ Return ONLY the complete TSX code. No markdown, no explanation.`;
           send("videoUrl", renderResult.videoUrl);
           send("status", { step: "complete", message: "Video rendered!" });
           send("complete", { success: true });
-          renderSuccess = true;
           break;
         }
 
@@ -332,6 +400,7 @@ Return ONLY the fixed TSX code.`;
       });
       send("complete", { success: false });
     } finally {
+      stopHeartbeat();
       res.end();
     }
   } catch (error) {

@@ -47,10 +47,10 @@ export function Footer() {
               stunning motion graphics, product launches, and explainer videos.
             </p>
             <a
-              href="mailto:info@remawt.com"
+              href="mailto:support@remawt.com"
               className="text-gray-500 hover:text-white transition-colors text-sm mb-6 inline-block"
             >
-              info@remawt.com
+              support@remawt.com
             </a>
             {/* Social Links */}
             <div className="flex gap-4">

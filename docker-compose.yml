@@ -57,9 +57,9 @@ services:
     restart: unless-stopped
     read_only: true
     tmpfs:
-      - /tmp:size=256m,uid=1000,gid=1000
-      - /app/.remotion-temp:size=512m,uid=1000,gid=1000
-      - /app/public/renders:size=512m,uid=1000,gid=1000
+      - /tmp:size=1g,uid=1000,gid=1000
+      - /app/.remotion-temp:size=1g,uid=1000,gid=1000
+      - /app/public/renders:size=1g,uid=1000,gid=1000
       - /app/node_modules/.remotion:size=256m,uid=1000,gid=1000
       - /home/node:size=64m,uid=1000,gid=1000
     security_opt:

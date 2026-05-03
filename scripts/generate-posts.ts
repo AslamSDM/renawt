@@ -1,6 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { config } from "dotenv";
 import * as fs from "fs";
 import * as path from "path";
+
+config(); // load .env
 
 const POSTS_DIR = path.join(process.cwd(), "posts");
 const TOTAL_POSTS = 100;

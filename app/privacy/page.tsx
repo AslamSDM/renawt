@@ -108,7 +108,7 @@ export default function PrivacyPolicyPage() {
               </ul>
               <p className="mt-3">
                 To exercise any of these rights, contact us at{" "}
-                <a href="mailto:info@remawt.com" className="text-white hover:underline">info@remawt.com</a>.
+                <a href="mailto:support@remawt.com" className="text-white hover:underline">support@remawt.com</a>.
               </p>
             </div>
 
@@ -151,7 +151,7 @@ export default function PrivacyPolicyPage() {
               <h2 className="text-xl font-light text-white mb-4">11. Contact Us</h2>
               <p>
                 If you have any questions about this Privacy Policy, please contact us at:{" "}
-                <a href="mailto:info@remawt.com" className="text-white hover:underline">info@remawt.com</a>
+                <a href="mailto:support@remawt.com" className="text-white hover:underline">support@remawt.com</a>
               </p>
             </div>
           </div>

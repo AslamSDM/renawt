@@ -14,6 +14,8 @@ import editRouter from "./routes/edit";
 import freestyleRouter from "./routes/freestyle";
 import devRouter from "./routes/dev";
 import referenceVideoRouter from "./routes/referenceVideo";
+import reelRouter from "./routes/reel";
+import narrateRouter from "./routes/narrate";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -23,7 +25,9 @@ app.use(cors({
   origin: process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(",")
     : ["http://localhost:3000"],
-  methods: ["GET", "POST", "PATCH", "DELETE"],
+  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
 }));
 app.use(express.json({ limit: "10mb" }));
 
@@ -51,6 +55,8 @@ app.use("/api/creative", jwtAuth, generateRouter);
 app.use("/api/creative", jwtAuth, editRouter);
 app.use("/api/creative", jwtAuth, freestyleRouter);
 app.use("/api/creative", jwtAuth, referenceVideoRouter);
+app.use("/api/creative", jwtAuth, reelRouter);
+app.use("/api/creative", jwtAuth, narrateRouter);
 
 // Development Playground (No auth, restricted by NODE_ENV)
 if (process.env.NODE_ENV !== "production") {
@@ -77,6 +83,9 @@ app.listen(PORT, () => {
   );
   console.log(
     `  POST /api/creative/freestyle     — ${COSTS.freestyle} credits`,
+  );
+  console.log(
+    `  POST /api/creative/reel          — ${COSTS.reel} credits`,
   );
   if (process.env.NODE_ENV !== "production") {
     console.log(`  GET  /dev/render                 — 🧪 playground (no auth)`);

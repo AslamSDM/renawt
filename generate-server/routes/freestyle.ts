@@ -138,7 +138,7 @@ router.post("/freestyle", async (req: AuthenticatedRequest, res) => {
       });
     }
 
-    setupSSE(res);
+    const stopHeartbeat = setupSSE(res);
     const send = createSSESend(res);
 
     try {
@@ -393,7 +393,6 @@ router.post("/freestyle", async (req: AuthenticatedRequest, res) => {
       // Step 3: Render the video with retry loop
       const maxAttempts = 3;
       let currentCode = code;
-      let renderSuccess = false;
 
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         send("status", {
@@ -438,7 +437,6 @@ router.post("/freestyle", async (req: AuthenticatedRequest, res) => {
           send("videoUrl", renderResult.videoUrl);
           send("status", { step: "complete", message: "Video rendered!" });
           send("complete", { success: true });
-          renderSuccess = true;
           break;
         }
 
@@ -531,6 +529,7 @@ Return ONLY the fixed TSX code.`;
       });
       send("complete", { success: false });
     } finally {
+      stopHeartbeat();
       res.end();
     }
   } catch (error) {

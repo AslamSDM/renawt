@@ -34,7 +34,7 @@ const FAQS = [
   },
   {
     q: "Do you offer custom packages?",
-    a: "Yes! For teams or agencies needing larger volumes, check out our Enterprise plan or contact us at info@remawt.com for custom pricing.",
+    a: "Yes! For teams or agencies needing larger volumes, check out our Enterprise plan or contact us at support@remawt.com for custom pricing.",
   },
   {
     q: "What's the difference between monthly and annual?",
@@ -61,7 +61,7 @@ export default function PricingPage() {
     const body = encodeURIComponent(
       `Company: ${enterpriseForm.companyName}\nEmail: ${enterpriseForm.email}\nExpected Videos/Month: ${enterpriseForm.expectedVideos}\n\nMessage:\n${enterpriseForm.message}`,
     );
-    window.location.href = `mailto:info@remawt.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:support@remawt.com?subject=${subject}&body=${body}`;
     setFormSubmitted(true);
     setTimeout(() => setFormSubmitted(false), 5000);
   };
@@ -252,10 +252,10 @@ export default function PricingPage() {
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <Mail className="w-4 h-4" />
                     <a
-                      href="mailto:info@remawt.com"
+                      href="mailto:support@remawt.com"
                       className="hover:text-white transition-colors"
                     >
-                      info@remawt.com
+                      support@remawt.com
                     </a>
                   </div>
                 </div>
@@ -422,10 +422,10 @@ export default function PricingPage() {
           <p className="text-gray-600 text-sm mb-12">
             Need help? Reach out at{" "}
             <a
-              href="mailto:info@remawt.com"
+              href="mailto:support@remawt.com"
               className="text-white hover:underline transition-colors"
             >
-              info@remawt.com
+              support@remawt.com
             </a>
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">

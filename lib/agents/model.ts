@@ -1,8 +1,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { ChatAnthropic } from "@langchain/anthropic";
-import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
+import { GoogleAIFileManager, FileState } from "@google/generative-ai/server";
 import OpenAI from "openai";
 import * as fs from "fs";
+import * as os from "os";
 import * as path from "path";
 
 // Configuration for model provider
@@ -126,19 +126,6 @@ export async function chatWithGeminiMultiTurn(
   return response.content;
 }
 
-// LangChain model for direct Anthropic usage (production)
-export function getAnthropicModel(config: ModelConfig = {}): BaseChatModel {
-  const { temperature = 0.7, maxTokens } = config;
-
-  console.log("[Model] Using Anthropic Claude API");
-  return new ChatAnthropic({
-    model: "claude-sonnet-4-20250514",
-    temperature,
-    maxTokens,
-    apiKey: process.env.ANTHROPIC_API_KEY,
-  });
-}
-
 // Helper to determine which provider to use
 export function isUsingGemini(): boolean {
   return USE_GEMINI;
@@ -156,12 +143,16 @@ export const CODE_GENERATOR_CONFIG: ModelConfig = {
   temperature: 0.3,
   maxTokens: 8000,
 };
-export const FAST_FIX_CONFIG: ModelConfig = { temperature: 0.2, maxTokens: 16000 };
+export const FAST_FIX_CONFIG: ModelConfig = {
+  temperature: 0.2,
+  maxTokens: 16000,
+};
 
 // ============================================
 // Gemini Flash (Google AI SDK) — fast, cheap
 // ============================================
-const GEMINI_FLASH_MODEL = process.env.GEMINI_FLASH_MODEL || "gemini-2.0-flash";
+const GEMINI_FLASH_MODEL =
+  process.env.GEMINI_FLASH_MODEL || "gemini-2.0-flash";
 
 export async function chatWithGeminiFlash(
   messages: ChatMessage[],
@@ -210,7 +201,8 @@ export async function chatWithGeminiFlash(
 // ============================================
 // Gemini Pro (Google AI SDK) — smart, for code gen
 // ============================================
-const GEMINI_PRO_MODEL = process.env.GEMINI_PRO_MODEL || "gemini-2.5-pro-preview-06-05";
+const GEMINI_PRO_MODEL =
+  process.env.GEMINI_PRO_MODEL || "gemini-2.5-pro-preview-05-06";
 
 export async function chatWithGeminiPro(
   messages: ChatMessage[],
@@ -299,11 +291,11 @@ export async function chatWithFastModel(
 }
 
 // ============================================
-// OpenRouter Integration (Kimi K2.5 via OpenRouter)
+// OpenRouter Integration (Gemini Flash via OpenRouter)
 // ============================================
 
-// Use Kimi K2.5 for all agents (text and vision)
-const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "moonshotai/kimi-k2.5";
+// Use Gemini Flash for all agents (text and vision)
+const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-exp";
 
 // OpenRouter client singleton
 let openRouterClient: OpenAI | null = null;
@@ -378,8 +370,222 @@ function encodeMediaToDataUrl(filePath: string, type: MediaType): string {
   return `data:${mimePrefix}/${ext};base64,${data.toString("base64")}`;
 }
 
-// Chat with vision model using video or image input
-export async function chatWithKimiVision(
+// Threshold for inline vs File API (15MB)
+const INLINE_SIZE_LIMIT = 15 * 1024 * 1024;
+
+// File API manager singleton
+let fileManager: GoogleAIFileManager | null = null;
+function getFileManager(): GoogleAIFileManager {
+  if (!fileManager) {
+    const apiKey = process.env.GOOGLE_AI_API_KEY;
+    if (!apiKey) throw new Error("GOOGLE_AI_API_KEY environment variable is required");
+    fileManager = new GoogleAIFileManager(apiKey);
+  }
+  return fileManager;
+}
+
+/**
+ * Prepare media for Gemini API — uses inline data for small files,
+ * File API for large files (>15MB) to avoid 413 errors.
+ * Returns the content part and an optional cleanup function.
+ */
+async function prepareMediaForGemini(
+  media: MediaInput,
+): Promise<{
+  part: { inlineData: { data: string; mimeType: string } } | { fileData: { fileUri: string; mimeType: string } };
+  cleanup: (() => Promise<void>) | null;
+}> {
+  const getMimeType = (ext: string, type: MediaType) =>
+    `${type === "image" ? "image" : "video"}/${ext}`;
+
+  // Case 1: Already have base64 data
+  if (media.base64 && media.mimeType) {
+    const sizeBytes = Math.ceil(media.base64.length * 3 / 4);
+    if (sizeBytes < INLINE_SIZE_LIMIT) {
+      return {
+        part: { inlineData: { data: media.base64, mimeType: media.mimeType } },
+        cleanup: null,
+      };
+    }
+    // Too large for inline — write to temp file and use File API
+    const tmpPath = path.join(os.tmpdir(), `gemini-upload-${Date.now()}`);
+    fs.writeFileSync(tmpPath, Buffer.from(media.base64, "base64"));
+    return uploadViaFileAPI(tmpPath, media.mimeType, true);
+  }
+
+  if (!media.path) {
+    throw new Error("Media input must have either path or base64+mimeType");
+  }
+
+  // Case 2: URL — download first
+  if (media.path.startsWith("http")) {
+    const response = await fetch(media.path);
+    const buffer = Buffer.from(await response.arrayBuffer());
+    const ext = path.extname(new URL(media.path).pathname).slice(1) || (media.type === "image" ? "png" : "mp4");
+    const mimeType = getMimeType(ext, media.type);
+
+    if (buffer.length < INLINE_SIZE_LIMIT) {
+      return {
+        part: { inlineData: { data: buffer.toString("base64"), mimeType } },
+        cleanup: null,
+      };
+    }
+
+    // Large file — save to temp and use File API
+    const tmpPath = path.join(os.tmpdir(), `gemini-upload-${Date.now()}.${ext}`);
+    fs.writeFileSync(tmpPath, buffer);
+    return uploadViaFileAPI(tmpPath, mimeType, true);
+  }
+
+  // Case 3: Local file path
+  const stats = fs.statSync(media.path);
+  const ext = path.extname(media.path).slice(1);
+  const mimeType = getMimeType(ext, media.type);
+
+  if (stats.size < INLINE_SIZE_LIMIT) {
+    const data = fs.readFileSync(media.path);
+    return {
+      part: { inlineData: { data: data.toString("base64"), mimeType } },
+      cleanup: null,
+    };
+  }
+
+  return uploadViaFileAPI(media.path, mimeType, false);
+}
+
+/**
+ * Upload a file via Gemini File API, wait for it to become ACTIVE.
+ */
+async function uploadViaFileAPI(
+  filePath: string,
+  mimeType: string,
+  deleteTmpAfter: boolean,
+): Promise<{
+  part: { fileData: { fileUri: string; mimeType: string } };
+  cleanup: () => Promise<void>;
+}> {
+  const fm = getFileManager();
+  console.log(`[GeminiFileAPI] Uploading ${filePath} (${mimeType})...`);
+
+  const uploadResult = await fm.uploadFile(filePath, {
+    mimeType,
+    displayName: path.basename(filePath),
+  });
+
+  // Wait for processing
+  let file = uploadResult.file;
+  while (file.state === FileState.PROCESSING) {
+    console.log("[GeminiFileAPI] Waiting for file processing...");
+    await new Promise((r) => setTimeout(r, 2000));
+    file = await fm.getFile(file.name);
+  }
+
+  if (file.state === FileState.FAILED) {
+    throw new Error(`[GeminiFileAPI] File processing failed: ${file.name}`);
+  }
+
+  console.log(`[GeminiFileAPI] File ready: ${file.uri}`);
+
+  if (deleteTmpAfter) {
+    try { fs.unlinkSync(filePath); } catch {}
+  }
+
+  const fileName = file.name;
+  return {
+    part: { fileData: { fileUri: file.uri, mimeType } },
+    cleanup: async () => {
+      try {
+        await fm.deleteFile(fileName);
+        console.log(`[GeminiFileAPI] Cleaned up file: ${fileName}`);
+      } catch {}
+    },
+  };
+}
+
+// Vision via Gemini Flash (Google AI SDK) — primary vision model
+export async function chatWithGeminiFlashVision(
+  media: MediaInput,
+  textPrompt: string,
+  systemPrompt?: string,
+  config: ModelConfig = {},
+): Promise<ChatResponse> {
+  const { temperature = 0.7, maxTokens } = config;
+  const client = getGeminiClient();
+
+  console.log("[GeminiFlashVision] Calling Google AI Studio with media...");
+  console.log("[GeminiFlashVision] Media type:", media.type);
+  console.log("[GeminiFlashVision] Model:", GEMINI_FLASH_MODEL);
+
+  const model = client.getGenerativeModel({
+    model: GEMINI_FLASH_MODEL,
+    generationConfig: {
+      temperature,
+      maxOutputTokens: maxTokens,
+    },
+  });
+
+  const fullPrompt = systemPrompt
+    ? `${systemPrompt}\n\n---\n\n${textPrompt}`
+    : textPrompt;
+
+  const { part: mediaPart, cleanup } = await prepareMediaForGemini(media);
+
+  try {
+    const result = await model.generateContent([fullPrompt, mediaPart]);
+    const text = result.response.text();
+    console.log("[GeminiFlashVision] Response length:", text?.length || 0);
+    return { content: text || "" };
+  } catch (error) {
+    console.error("[GeminiFlashVision] API Error, falling back to Kimi vision:", error);
+    return chatWithKimiVisionDirect(media, textPrompt, systemPrompt, config);
+  } finally {
+    if (cleanup) await cleanup();
+  }
+}
+
+// Vision via Gemini Pro (Google AI SDK) — for complex video analysis
+export async function chatWithGeminiProVision(
+  media: MediaInput,
+  textPrompt: string,
+  systemPrompt?: string,
+  config: ModelConfig = {},
+): Promise<ChatResponse> {
+  const { temperature = 0.7, maxTokens } = config;
+  const client = getGeminiClient();
+
+  console.log("[GeminiProVision] Calling Google AI Studio with media...");
+  console.log("[GeminiProVision] Media type:", media.type);
+  console.log("[GeminiProVision] Model:", GEMINI_PRO_MODEL);
+
+  const model = client.getGenerativeModel({
+    model: GEMINI_PRO_MODEL,
+    generationConfig: {
+      temperature,
+      maxOutputTokens: maxTokens,
+    },
+  });
+
+  const fullPrompt = systemPrompt
+    ? `${systemPrompt}\n\n---\n\n${textPrompt}`
+    : textPrompt;
+
+  const { part: mediaPart, cleanup } = await prepareMediaForGemini(media);
+
+  try {
+    const result = await model.generateContent([fullPrompt, mediaPart]);
+    const text = result.response.text();
+    console.log("[GeminiProVision] Response length:", text?.length || 0);
+    return { content: text || "" };
+  } catch (error) {
+    console.error("[GeminiProVision] API Error:", error);
+    return chatWithGeminiFlashVision(media, textPrompt, systemPrompt, config);
+  } finally {
+    if (cleanup) await cleanup();
+  }
+}
+
+// Kimi vision fallback (OpenRouter)
+async function chatWithKimiVisionDirect(
   media: MediaInput,
   textPrompt: string,
   systemPrompt?: string,
@@ -388,7 +594,7 @@ export async function chatWithKimiVision(
   const { temperature = 0.7, maxTokens } = config;
   const client = getOpenRouterClient();
 
-  console.log("[OpenRouter Vision] Calling API with media...");
+  console.log("[OpenRouter Vision] Fallback — Calling API with media...");
   console.log("[OpenRouter Vision] Media type:", media.type);
   console.log("[OpenRouter Vision] Model:", OPENROUTER_MODEL);
 
@@ -397,7 +603,16 @@ export async function chatWithKimiVision(
   if (media.base64 && media.mimeType) {
     dataUrl = `data:${media.mimeType};base64,${media.base64}`;
   } else if (media.path) {
-    dataUrl = encodeMediaToDataUrl(media.path, media.type);
+    if (media.path.startsWith("http")) {
+      // For URLs, fetch and convert to base64
+      const resp = await fetch(media.path);
+      const buffer = Buffer.from(await resp.arrayBuffer());
+      const ext = path.extname(new URL(media.path).pathname).slice(1) || "png";
+      const mimePrefix = media.type === "image" ? "image" : "video";
+      dataUrl = `data:${mimePrefix}/${ext};base64,${buffer.toString("base64")}`;
+    } else {
+      dataUrl = encodeMediaToDataUrl(media.path, media.type);
+    }
   } else {
     throw new Error("Media input must have either path or base64+mimeType");
   }
@@ -437,7 +652,8 @@ export async function chatWithKimiVision(
   try {
     const completion = await client.chat.completions.create({
       model: OPENROUTER_MODEL,
-      messages: messages as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
+      messages:
+        messages as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
       temperature,
       max_tokens: maxTokens,
     });
@@ -451,6 +667,16 @@ export async function chatWithKimiVision(
     console.error("[OpenRouter Vision] API Error:", error);
     throw error;
   }
+}
+
+// Public vision function — routes to Gemini Flash first, falls back to Kimi
+export async function chatWithKimiVision(
+  media: MediaInput,
+  textPrompt: string,
+  systemPrompt?: string,
+  config: ModelConfig = {},
+): Promise<ChatResponse> {
+  return chatWithGeminiFlashVision(media, textPrompt, systemPrompt, config);
 }
 
 // Convenience function for image analysis

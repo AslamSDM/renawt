@@ -1,198 +1,151 @@
-import { StateGraph, END } from "@langchain/langgraph";
-import { VideoGenerationState, type VideoGenerationStateType } from "./state";
+import { createStep, createWorkflow } from "@mastra/core/workflows";
+import {
+  VideoGenerationStateSchema,
+  type VideoGenerationStateType,
+} from "./state";
 import { scraperNode } from "./scraper";
 import { scriptWriterNode } from "./scriptWriter";
 import { demoScriptWriterNode } from "./demoScriptWriter";
 import { creativeDirectorNode } from "./creativeDirector";
-// Single-step code generation: VideoScript → Remotion directly (no intermediate React page)
-import { remotionTranslatorNode, generateFallbackComposition } from "./remotionTranslator";
-// Video rendering with error fixing
+import { jsonComposerNode } from "./jsonComposer";
 import { videoRendererNode } from "./videoRenderer";
 import { renderErrorFixerNode } from "./renderErrorFixer";
 
-// Conditional routing based on video type and errors
-function shouldContinue(
-  state: VideoGenerationStateType,
-): "scriptWriter" | "demoScriptWriter" | "error" {
-  if (state.currentStep === "error" || state.errors.length > 0) {
-    return "error";
-  }
-
-  // Route to appropriate script writer based on video type
-  const videoType = state.userPreferences.videoType;
-  if (videoType === "demo") {
-    return "demoScriptWriter";
-  }
-  return "scriptWriter";
-}
-
-/**
- * Template short-circuit: if video type is "creative" or "fast-paced" and
- * we have product data, skip LLM-based reactPageGenerator + remotionTranslator
- * and use the deterministic fallback composition directly.
- * This saves 20-35s by eliminating 2-3 LLM calls.
- */
-function shouldGenerateCode(
-  state: VideoGenerationStateType,
-): "remotionTranslator" | "templateShortCircuit" | "error" {
-  if (state.currentStep === "error" || state.errors.length > 0) {
-    return "error";
-  }
-
-  // Use template short-circuit for creative/fast-paced videos with product data
-  const videoType = state.userPreferences.videoType;
-  const useTemplate = process.env.ENABLE_TEMPLATE_SHORTCIRCUIT === "true";
-
-  if (useTemplate && state.productData && (videoType === "creative" || videoType === "fast-paced")) {
-    console.log("[Graph] Template short-circuit: skipping LLM code generation");
-    return "templateShortCircuit";
-  }
-
-  // Go directly to Remotion translator (single-step: VideoScript → Remotion)
-  return "remotionTranslator";
-}
-
-/**
- * Template short-circuit node: generates Remotion code directly from product data
- * without going through reactPageGenerator + remotionTranslator LLM calls.
- */
-async function templateShortCircuitNode(
-  state: VideoGenerationStateType,
-): Promise<Partial<VideoGenerationStateType>> {
-  console.log("[TemplateShortCircuit] Generating composition from template...");
-
-  const productName = state.productData?.name || "Product";
-  const audio = state.userPreferences.audio;
-  const audioUrl = audio?.url || "audio/audio1.mp3";
-  const audioBpm = audio?.bpm || 120;
-
-  const remotionCode = generateFallbackComposition(
-    productName,
-    audioUrl,
-    audioBpm,
-    state.recordings,
-  );
-
-  console.log(`[TemplateShortCircuit] Generated ${remotionCode.length} chars of Remotion code`);
-
+function mergeState(
+  prev: VideoGenerationStateType,
+  partial: Partial<VideoGenerationStateType>,
+): VideoGenerationStateType {
   return {
-    remotionCode,
-    currentStep: "complete",
+    ...prev,
+    ...partial,
+    errors: [...prev.errors, ...(partial.errors ?? [])],
   };
 }
 
-function shouldRenderVideo(
-  state: VideoGenerationStateType,
-): "videoRenderer" | "error" {
-  if (state.currentStep === "error" || state.errors.length > 0) {
-    return "error";
-  }
-  return "videoRenderer";
+function isHalted(state: VideoGenerationStateType): boolean {
+  return state.currentStep === "error" || state.errors.length > 0;
 }
 
-function shouldContinueAfterRender(
-  state: VideoGenerationStateType,
-): "renderErrorFixer" | "__end__" | "error" {
-  // If render failed, go to error fixer (up to 3 attempts)
-  // Check this BEFORE errors — a failed render always adds to errors array
-  if (state.currentStep === "fixing" && state.renderAttempts < 3) {
-    return "renderErrorFixer";
-  }
+const scraperStep = createStep({
+  id: "scraper",
+  inputSchema: VideoGenerationStateSchema,
+  outputSchema: VideoGenerationStateSchema,
+  execute: async ({ inputData }) => {
+    if (isHalted(inputData)) return inputData;
+    const partial = await scraperNode(inputData);
+    return mergeState(inputData, partial);
+  },
+});
 
-  if (state.currentStep === "error") {
-    return "error";
-  }
+const scriptStep = createStep({
+  id: "script",
+  inputSchema: VideoGenerationStateSchema,
+  outputSchema: VideoGenerationStateSchema,
+  execute: async ({ inputData }) => {
+    if (isHalted(inputData)) return inputData;
+    const fn =
+      inputData.userPreferences.videoType === "demo"
+        ? demoScriptWriterNode
+        : scriptWriterNode;
+    const partial = await fn(inputData);
+    return mergeState(inputData, partial);
+  },
+});
 
-  // If successful or max attempts reached, end
-  return "__end__";
-}
+const creativeDirectorStep = createStep({
+  id: "creativeDirector",
+  inputSchema: VideoGenerationStateSchema,
+  outputSchema: VideoGenerationStateSchema,
+  execute: async ({ inputData }) => {
+    if (isHalted(inputData)) return inputData;
+    const partial = await creativeDirectorNode(inputData);
+    return mergeState(inputData, partial);
+  },
+});
 
-function shouldContinueAfterFix(
-  state: VideoGenerationStateType,
-): "videoRenderer" | "error" {
-  if (state.currentStep === "error") {
-    return "error";
-  }
-  // Go back to rendering with the fixed code
-  return "videoRenderer";
-}
+const codeGenStep = createStep({
+  id: "codeGen",
+  inputSchema: VideoGenerationStateSchema,
+  outputSchema: VideoGenerationStateSchema,
+  execute: async ({ inputData }) => {
+    if (isHalted(inputData)) return inputData;
+    const partial = await jsonComposerNode(inputData);
+    return mergeState(inputData, partial);
+  },
+});
 
-// Error handler node
-async function errorHandlerNode(
-  state: VideoGenerationStateType,
-): Promise<Partial<VideoGenerationStateType>> {
-  console.log("[ErrorHandler] Handling errors:", state.errors);
+const renderStep = createStep({
+  id: "render",
+  inputSchema: VideoGenerationStateSchema,
+  outputSchema: VideoGenerationStateSchema,
+  execute: async ({ inputData }) => {
+    if (inputData.currentStep === "error") return inputData;
+
+    let state = inputData;
+
+    if (
+      state.currentStep === "fixing" &&
+      state.renderAttempts > 0 &&
+      state.renderAttempts < 3
+    ) {
+      const fixed = await renderErrorFixerNode(state);
+      state = mergeState(state, fixed);
+      if (state.currentStep === "error") return state;
+    }
+
+    const rendered = await videoRendererNode(state);
+    return mergeState(state, rendered);
+  },
+});
+
+export const videoGenerationWorkflow = createWorkflow({
+  id: "videoGeneration",
+  inputSchema: VideoGenerationStateSchema,
+  outputSchema: VideoGenerationStateSchema,
+})
+  .then(scraperStep)
+  .then(scriptStep)
+  .then(creativeDirectorStep)
+  .then(codeGenStep)
+  .dountil(renderStep, async ({ inputData }) => {
+    return (
+      inputData.currentStep === "complete" ||
+      inputData.currentStep === "error" ||
+      inputData.renderAttempts >= 3
+    );
+  })
+  .commit();
+
+function buildInitialState(input: {
+  sourceUrl?: string | null;
+  description?: string | null;
+  userPreferences: {
+    style: "professional" | "playful" | "minimal" | "bold";
+    videoType?: "demo" | "creative" | "fast-paced" | "cinematic";
+  };
+  recordings?: VideoGenerationStateType["recordings"];
+  projectId?: string;
+}): VideoGenerationStateType {
   return {
-    currentStep: "error",
+    sourceUrl: input.sourceUrl ?? null,
+    description: input.description ?? null,
+    userPreferences: input.userPreferences as VideoGenerationStateType["userPreferences"],
+    recordings: input.recordings ?? [],
+    productData: null,
+    videoScript: null,
+    reactPageCode: null,
+    remotionCode: null,
+    beatMap: null,
+    currentStep: "scraping",
+    errors: [],
+    projectId: input.projectId ?? null,
+    renderAttempts: 0,
+    lastRenderError: null,
+    videoUrl: null,
+    r2Key: null,
   };
 }
 
-// Build the graph with video rendering and error fixing
-// Flow: scraper → scriptWriter → creativeDirector → remotionTranslator → videoRenderer → (error fixer → videoRenderer)* → end
-const workflow = new StateGraph(VideoGenerationState)
-  // Add nodes
-  .addNode("scraper", scraperNode)
-  .addNode("scriptWriter", scriptWriterNode)
-  .addNode("demoScriptWriter", demoScriptWriterNode)
-  .addNode("creativeDirector", creativeDirectorNode) // Enriches script with creative directions
-  .addNode("templateShortCircuit", templateShortCircuitNode) // Template path (skips LLM)
-  .addNode("remotionTranslator", remotionTranslatorNode) // Single-step: VideoScript → Remotion
-  .addNode("videoRenderer", videoRendererNode) // Render video
-  .addNode("renderErrorFixer", renderErrorFixerNode) // Fix render errors
-  .addNode("errorHandler", errorHandlerNode)
-
-  // Add edges
-  .addEdge("__start__", "scraper")
-
-  // After scraping, go to script writer
-  .addConditionalEdges("scraper", shouldContinue, {
-    scriptWriter: "scriptWriter",
-    demoScriptWriter: "demoScriptWriter",
-    error: "errorHandler",
-  })
-
-  // After script writing, run creative director to enrich the script
-  .addEdge("scriptWriter", "creativeDirector")
-  .addEdge("demoScriptWriter", "creativeDirector")
-
-  // After creative direction, go to Remotion translator OR template short-circuit
-  .addConditionalEdges("creativeDirector", shouldGenerateCode, {
-    remotionTranslator: "remotionTranslator",
-    templateShortCircuit: "templateShortCircuit",
-    error: "errorHandler",
-  })
-
-  // Template short-circuit goes directly to video renderer
-  .addConditionalEdges("templateShortCircuit", shouldRenderVideo, {
-    videoRenderer: "videoRenderer",
-    error: "errorHandler",
-  })
-
-  // After Remotion translation, render the video
-  .addConditionalEdges("remotionTranslator", shouldRenderVideo, {
-    videoRenderer: "videoRenderer",
-    error: "errorHandler",
-  })
-
-  // After rendering, either end (success) or fix errors (failure)
-  .addConditionalEdges("videoRenderer", shouldContinueAfterRender, {
-    renderErrorFixer: "renderErrorFixer",
-    __end__: END,
-    error: "errorHandler",
-  })
-
-  // After fixing errors, try rendering again
-  .addConditionalEdges("renderErrorFixer", shouldContinueAfterFix, {
-    videoRenderer: "videoRenderer",
-    error: "errorHandler",
-  })
-
-  .addEdge("errorHandler", END);
-
-// Compile and export the graph
-export const videoGenerationGraph = workflow.compile();
-
-// Helper function to run the graph with initial state
 export async function runVideoGeneration(input: {
   sourceUrl?: string | null;
   description?: string | null;
@@ -200,39 +153,24 @@ export async function runVideoGeneration(input: {
     style: "professional" | "playful" | "minimal" | "bold";
     videoType?: "demo" | "creative" | "fast-paced" | "cinematic";
   };
-  recordings?: Array<{
-    id: string;
-    videoUrl: string;
-    duration: number;
-    featureName: string;
-    description: string;
-    trimStart: number;
-    trimEnd: number;
-    mockupFrame?: "browser" | "macbook" | "minimal";
-  }>;
+  recordings?: VideoGenerationStateType["recordings"];
   projectId?: string;
-}) {
-  const initialState = {
-    sourceUrl: input.sourceUrl || null,
-    description: input.description || null,
-    userPreferences: input.userPreferences,
-    recordings: input.recordings || [],
-    productData: null,
-    videoScript: null,
-    reactPageCode: null,
-    remotionCode: null,
-    currentStep: "scraping" as const,
-    errors: [],
-    projectId: input.projectId || null,
-    renderAttempts: 0,
-    lastRenderError: null,
-    videoUrl: null,
-  };
+}): Promise<VideoGenerationStateType> {
+  const initialState = buildInitialState(input);
+  const run = await videoGenerationWorkflow.createRun();
+  const result = await run.start({ inputData: initialState });
 
-  return videoGenerationGraph.invoke(initialState);
+  if (result.status === "success" && result.result) {
+    return result.result as VideoGenerationStateType;
+  }
+
+  const errMsg =
+    result.status === "failed"
+      ? result.error?.message || "Workflow failed"
+      : `Workflow ended with status: ${result.status}`;
+  throw new Error(errMsg);
 }
 
-// Stream version for real-time updates
 export async function* streamVideoGeneration(input: {
   sourceUrl?: string | null;
   description?: string | null;
@@ -240,38 +178,21 @@ export async function* streamVideoGeneration(input: {
     style: "professional" | "playful" | "minimal" | "bold";
     videoType?: "demo" | "creative" | "fast-paced" | "cinematic";
   };
-  recordings?: Array<{
-    id: string;
-    videoUrl: string;
-    duration: number;
-    featureName: string;
-    description: string;
-    trimStart: number;
-    trimEnd: number;
-    mockupFrame?: "browser" | "macbook" | "minimal";
-  }>;
+  recordings?: VideoGenerationStateType["recordings"];
   projectId?: string;
 }) {
-  const initialState = {
-    sourceUrl: input.sourceUrl || null,
-    description: input.description || null,
-    userPreferences: input.userPreferences,
-    recordings: input.recordings || [],
-    productData: null,
-    videoScript: null,
-    reactPageCode: null,
-    remotionCode: null,
-    currentStep: "scraping" as const,
-    errors: [],
-    projectId: input.projectId || null,
-    renderAttempts: 0,
-    lastRenderError: null,
-    videoUrl: null,
-  };
+  const initialState = buildInitialState(input);
+  const run = await videoGenerationWorkflow.createRun();
+  const { stream } = run.stream({ inputData: initialState });
 
-  const stream = await videoGenerationGraph.stream(initialState);
-
-  for await (const chunk of stream) {
-    yield chunk;
+  const reader = stream.getReader();
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      yield value;
+    }
+  } finally {
+    reader.releaseLock();
   }
 }

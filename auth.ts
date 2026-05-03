@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db/prisma";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -29,6 +30,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             clientSecret: process.env.AUTH_GOOGLE_SECRET!,
         }),
     ] : [],
+    events: {
+        async createUser({ user }) {
+            if (user.email) {
+                await sendWelcomeEmail(user.email, user.name ?? null);
+            }
+        },
+    },
     callbacks: {
         authorized({ auth, request }) {
             const isLoggedIn = !!auth?.user;

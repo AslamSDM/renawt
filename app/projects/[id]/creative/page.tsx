@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AudioSelector, AudioFile } from "@/components/audio/AudioSelector";
+import { NarrationPanel, NarrationState } from "@/components/audio/NarrationPanel";
 import {
   Download,
   Copy,
@@ -600,6 +601,10 @@ export default function ProjectCreativePage() {
   const [referenceVideoUrl, setReferenceVideoUrl] = useState<string | null>(null);
   const [referenceVideoPreview, setReferenceVideoPreview] = useState<string | null>(null);
   const [uploadingReference, setUploadingReference] = useState(false);
+  const [referenceImages, setReferenceImages] = useState<{ url: string; name: string }[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [referenceSourceUrl, setReferenceSourceUrl] = useState("");
+  const [stripReferenceAudio, setStripReferenceAudio] = useState(false);
 
   // Input states
   const [description, setDescription] = useState("");
@@ -644,6 +649,13 @@ export default function ProjectCreativePage() {
   const [duration, setDuration] = useState<number>(38);
   const [url, setUrl] = useState("");
   const [selectedAudio, setSelectedAudio] = useState<AudioFile | null>(null);
+  const [narration, setNarration] = useState<NarrationState>({
+    enabled: false,
+    text: "",
+    voiceId: "21m00Tcm4TlvDq8ikWAM",
+    audioUrl: null,
+    duration: null,
+  });
 
   // Aspect ratio
   const ASPECT_RATIOS = {
@@ -1300,6 +1312,9 @@ export default function ProjectCreativePage() {
                   processedVideoUrl: r.processedVideoUrl,
                 }))
               : undefined,
+          narration: narration.enabled && narration.audioUrl
+            ? { audioUrl: narration.audioUrl }
+            : undefined,
         }),
       });
 
@@ -1469,6 +1484,39 @@ export default function ProjectCreativePage() {
     setReferenceVideoPreview(previewUrl);
   };
 
+  // Handle reference image uploads
+  const handleReferenceImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingImages(true);
+    try {
+      const formData = new FormData();
+      for (const file of Array.from(files)) {
+        formData.append("files", file);
+      }
+
+      const res = await fetch("/api/assets", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to upload images");
+      }
+
+      const data = await res.json();
+      setReferenceImages((prev) => [...prev, ...data.assets]);
+      toast.success(`${data.assets.length} image(s) uploaded`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploadingImages(false);
+      e.target.value = "";
+    }
+  };
+
   // Handle reference video generation
   const handleReferenceGenerate = async () => {
     if (hasNoCredits) {
@@ -1550,6 +1598,12 @@ export default function ProjectCreativePage() {
                 bpm: selectedAudio.bpm,
                 duration: selectedAudio.duration,
               }
+            : undefined,
+          images: referenceImages.map((img) => img.url),
+          sourceUrl: referenceSourceUrl || undefined,
+          stripAudio: stripReferenceAudio,
+          narration: narration.enabled && narration.audioUrl
+            ? { audioUrl: narration.audioUrl }
             : undefined,
         }),
       });
@@ -3196,8 +3250,91 @@ export default function ProjectCreativePage() {
                       className="w-full px-4 py-4 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none transition-colors resize-none text-base rounded-lg"
                     />
                     <p className="text-xs text-gray-600">
-                      Gemini Pro will analyze the reference video's style and recreate it with your content
+                      Gemini Pro will analyze the reference video&apos;s style and recreate it with your content
                     </p>
+                  </div>
+
+                  {/* Images / Logos Upload */}
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-widest text-gray-500 uppercase">
+                      Images &amp; Logos (Optional)
+                    </label>
+                    {referenceImages.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {referenceImages.map((img, i) => (
+                          <div key={i} className="relative group">
+                            <img
+                              src={img.url}
+                              alt={img.name}
+                              className="w-16 h-16 object-cover rounded-lg border border-white/10"
+                            />
+                            <button
+                              onClick={() => setReferenceImages((prev) => prev.filter((_, idx) => idx !== i))}
+                              className="absolute -top-1 -right-1 p-0.5 bg-red-500/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                            <p className="text-[10px] text-gray-500 truncate max-w-[64px]">{img.name}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <label className="w-full py-4 border border-dashed border-white/10 rounded-lg flex items-center justify-center gap-2 hover:border-white/20 transition-colors text-gray-500 cursor-pointer text-sm">
+                      {uploadingImages ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <ImageIcon className="w-4 h-4" />
+                      )}
+                      {uploadingImages ? "Uploading..." : "Add images or logos"}
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                        multiple
+                        onChange={handleReferenceImageUpload}
+                        className="hidden"
+                        disabled={uploadingImages}
+                      />
+                    </label>
+                  </div>
+
+                  {/* Website URL (Optional) */}
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-widest text-gray-500 uppercase">
+                      Website URL (Optional)
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                      <input
+                        type="url"
+                        value={referenceSourceUrl}
+                        onChange={(e) => setReferenceSourceUrl(e.target.value)}
+                        placeholder="https://yourproduct.com"
+                        className="w-full px-3 py-2 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none transition-colors text-sm rounded-lg"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-600">
+                      Scrape brand colors, copy, and style from your website
+                    </p>
+                  </div>
+
+                  {/* Strip Reference Audio */}
+                  <div className="flex items-center justify-between py-2">
+                    <div>
+                      <p className="text-sm text-gray-300">Use reference audio</p>
+                      <p className="text-xs text-gray-600">Extract and reuse the audio from the reference video</p>
+                    </div>
+                    <button
+                      onClick={() => setStripReferenceAudio(!stripReferenceAudio)}
+                      className={`relative w-10 h-5 rounded-full transition-colors ${
+                        stripReferenceAudio ? "bg-white" : "bg-white/10"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full transition-transform ${
+                          stripReferenceAudio ? "translate-x-5 bg-black" : "translate-x-0 bg-gray-500"
+                        }`}
+                      />
+                    </button>
                   </div>
                 </>
               )}
@@ -3376,6 +3513,14 @@ export default function ProjectCreativePage() {
                   ))}
                 </div>
               )}
+
+              {/* Narration (ElevenLabs voice-over) */}
+              <NarrationPanel
+                state={narration}
+                onChange={setNarration}
+                vpsApiUrl={VPS_API_URL}
+                getToken={getVpsToken}
+              />
 
               {/* Audio Selector */}
               <AudioSelector

@@ -149,6 +149,82 @@ export async function uploadVideoBufferToR2(
 }
 
 /**
+ * Upload an audio file to R2 (for extracted reference audio, etc.)
+ */
+export async function uploadAudioFileToR2(
+  filePath: string,
+  mimeType: string = "audio/aac",
+): Promise<UploadResult> {
+  try {
+    const client = getR2Client();
+    const fileName = filePath.split("/").pop() || `audio-${Date.now()}.aac`;
+    const key = `audio/extracted/${fileName}`;
+    const buffer = readFileSync(filePath);
+
+    const command = new PutObjectCommand({
+      Bucket: R2_BUCKET_NAME,
+      Key: key,
+      Body: buffer,
+      ContentType: mimeType,
+      Metadata: { "uploaded-at": new Date().toISOString() },
+    });
+
+    await client.send(command);
+
+    const publicUrl = R2_PUBLIC_URL
+      ? `${R2_PUBLIC_URL}/${key}`
+      : `https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${key}`;
+
+    console.log(`[R2] Audio uploaded: ${key}`);
+    return { success: true, url: publicUrl, key };
+  } catch (error) {
+    console.error("[R2] Audio upload failed:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown upload error",
+    };
+  }
+}
+
+/**
+ * Upload an audio buffer directly to R2 (no temp file needed)
+ */
+export async function uploadAudioBufferToR2(
+  buffer: Buffer,
+  mimeType: string = "audio/mpeg",
+  prefix: string = "narrations",
+): Promise<UploadResult> {
+  try {
+    const client = getR2Client();
+    const ext = mimeType === "audio/mpeg" ? "mp3" : "aac";
+    const key = `audio/${prefix}/${randomUUID()}.${ext}`;
+
+    const command = new PutObjectCommand({
+      Bucket: R2_BUCKET_NAME,
+      Key: key,
+      Body: buffer,
+      ContentType: mimeType,
+      Metadata: { "uploaded-at": new Date().toISOString() },
+    });
+
+    await client.send(command);
+
+    const publicUrl = R2_PUBLIC_URL
+      ? `${R2_PUBLIC_URL}/${key}`
+      : `https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${key}`;
+
+    console.log(`[R2] Audio buffer uploaded: ${key}`);
+    return { success: true, url: publicUrl, key };
+  } catch (error) {
+    console.error("[R2] Audio buffer upload failed:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown upload error",
+    };
+  }
+}
+
+/**
  * Upload screenshot buffer to R2 (for scraper use)
  */
 export async function uploadScreenshotBufferToR2(

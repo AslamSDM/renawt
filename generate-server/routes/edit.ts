@@ -47,7 +47,7 @@ router.post("/render", async (req: AuthenticatedRequest, res) => {
     };
     const { width, height } = ASPECT_DIMS[aspectRatio] || ASPECT_DIMS["16:9"];
 
-    setupSSE(res);
+    const stopHeartbeat = setupSSE(res);
     const send = createSSESend(res);
 
     try {
@@ -96,6 +96,7 @@ router.post("/render", async (req: AuthenticatedRequest, res) => {
       });
       send("complete", { success: false });
     } finally {
+      stopHeartbeat();
       res.end();
     }
   } catch (error) {
@@ -139,7 +140,7 @@ router.post("/edit-video", async (req: AuthenticatedRequest, res) => {
         .json({ error: "message and remotionCode are required" });
     }
 
-    setupSSE(res);
+    const stopHeartbeatEdit = setupSSE(res);
     const send = createSSESend(res);
 
     try {
@@ -240,6 +241,7 @@ router.post("/edit-video", async (req: AuthenticatedRequest, res) => {
       });
       send("complete", { success: false });
     } finally {
+      stopHeartbeatEdit();
       res.end();
     }
   } catch (error) {
