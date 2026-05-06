@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { ProductData, VideoScript, UserPreferences } from "../types";
 import type { BeatMap } from "../audio/beatSync";
+import type { VideoJson } from "../video/videoJson";
 
 const recordingSchema = z.object({
   id: z.string(),
@@ -54,6 +55,7 @@ export const VideoGenerationStateSchema = z.object({
   videoScript: z.custom<VideoScript>().nullable(),
   reactPageCode: z.string().nullable(),
   remotionCode: z.string().nullable(),
+  videoJson: z.custom<VideoJson>().nullable(),
   beatMap: z.custom<BeatMap>().nullable(),
   currentStep: z.enum([
     "idle",

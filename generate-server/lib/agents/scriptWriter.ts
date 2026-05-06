@@ -8,7 +8,19 @@ import { v4 as uuidv4 } from "uuid";
 import { generateBeatMap } from "../audio/beatSync";
 
 const SCRIPT_WRITER_SYSTEM_PROMPT = `You are a PREMIUM video scriptwriter specializing in polished product demo videos.
-Create visually impressive 30-60 second videos (30fps = 900-1800 frames) with DISCRETE SCENES using smooth entry/exit animations.
+Create visually impressive videos with DISCRETE SCENES using smooth entry/exit animations.
+
+## CRITICAL: MATCH THE PRODUCT VERTICAL
+The brief specifies \`Product Type\` (saas | ecommerce | service | other). Your script MUST match the vertical:
+- **ecommerce / physical / hardware**: lead with product in the world. Use materials, build quality, in-use moments. Headlines describe the physical object, not "workflows" or "dashboards". Feature scenes show specs (weight, battery, finish), not API endpoints.
+- **saas**: dashboard / UI demo angle is fine. Feature scenes can reference screenshots, integrations, automations.
+- **service**: lead with outcome (clients served, results, before/after). Testimonials carry weight.
+- **other**: stay strictly grounded in the description. Do NOT inject SaaS clichés.
+
+NEVER substitute the actual product features with generic SaaS copy. Quote the product's own words from the description / features list verbatim where possible.
+
+## CRITICAL: HIT THE EXACT TARGET DURATION
+The brief specifies \`Target Duration\` in frames. Sum of (endFrame - startFrame) across all scenes MUST equal that exact number. Do not under-fill (silence at end) or over-fill (audio cut mid-beat). A downstream pass will scale rounding drift, but the LLM script should aim within ±30 frames.
 
 ## CRITICAL: MATCH THE BRAND STYLE
 Choose the visual style that best fits the product's brand colors and tone. DO NOT default to purple/pink.
@@ -280,12 +292,36 @@ For each recording, create a "recording" scene with:
 `;
     }
 
-    const userMessage = `Create a video script for this product:
+    const productType = (productData as any).productType || "unknown";
+    const verticalHint = (() => {
+      switch (productType) {
+        case "ecommerce":
+          return "ECOMMERCE / PHYSICAL PRODUCT — lead with product imagery + tactile language (materials, build, finish, in-use). NO dashboards / API / workflows. Headlines describe the object.";
+        case "service":
+          return "SERVICE BUSINESS — lead with outcomes, results, before/after, testimonials. Avoid product UI references.";
+        case "saas":
+          return "SAAS — feature cards, screenshot mockups, KPI stats are appropriate.";
+        default:
+          return "GENERIC — stay strictly grounded in the description below. NO SaaS clichés.";
+      }
+    })();
 
-Product Name: ${productData.name}
+    const userMessage = `Create a video script for this product.
+
+## VERTICAL DIRECTIVE
+Product Type: ${productType}
+${verticalHint}
+
+## TARGET DURATION (HARD CONSTRAINT)
+Total = ${targetFrames} frames (${targetSeconds}s @ 30fps). Scene durations must sum to this number. Do not over- or under-fill.
+
+## PRODUCT
+Name: ${productData.name}
 Tagline: ${productData.tagline}
 Description: ${productData.description}
-Product Type: ${(productData as any).productType || "unknown"}${isSaaSProduct ? " (SaaS - use screenshots for visual scenes)" : ""}
+${isSaaSProduct ? "Note: SaaS — use screenshots for visual scenes." : ""}
+
+QUOTE the description and feature wording verbatim where possible. Do NOT translate hardware/service copy into SaaS framing.
 
 Features:
 ${productData.features.map((f, i) => `${i + 1}. ${f.title}: ${f.description}`).join("\n")}
@@ -421,10 +457,12 @@ Return ONLY valid JSON.`;
     }
 
     // =========================================================================
-    // DURATION ENFORCEMENT: Ensure video meets target duration
+    // DURATION ENFORCEMENT: Always make total === targetFrames exactly.
+    // Earlier this only ran when actualTotal < 0.8 * target, which let the
+    // video end before the audio. Now we always reconcile.
     // =========================================================================
     const actualTotal = videoScript.totalDuration;
-    if (actualTotal < targetFrames * 0.8) {
+    if (actualTotal !== targetFrames) {
       console.log(
         `[ScriptWriter] Duration too short: ${actualTotal} frames vs target ${targetFrames}. Enforcing...`,
       );
@@ -579,12 +617,13 @@ Return ONLY valid JSON.`;
         }
       }
 
-      // Step 2: Scale all scene durations proportionally
+      // Step 2: Scale all scene durations proportionally to hit targetFrames
+      // (always run, in either direction — shrink or stretch).
       const currentTotal = videoScript.scenes.reduce(
         (sum, s) => sum + (s.endFrame - s.startFrame),
         0,
       );
-      if (currentTotal > 0 && currentTotal < targetFrames * 0.9) {
+      if (currentTotal > 0 && videoScript.scenes.length > 0) {
         const scaleFactor = targetFrames / currentTotal;
         for (const scene of videoScript.scenes) {
           const duration = scene.endFrame - scene.startFrame;
@@ -604,10 +643,18 @@ Return ONLY valid JSON.`;
         frame += duration;
       }
 
-      // Step 4: Update totalDuration
+      // Step 4: Reconcile rounding drift — last scene absorbs the remainder.
+      const drift = targetFrames - frame;
+      if (drift !== 0 && videoScript.scenes.length > 0) {
+        const last = videoScript.scenes[videoScript.scenes.length - 1];
+        last.endFrame = Math.max(last.startFrame + 30, last.endFrame + drift);
+        frame = last.endFrame;
+      }
+
+      // Step 5: Update totalDuration
       videoScript.totalDuration = frame;
       console.log(
-        `[ScriptWriter] Adjusted duration: ${videoScript.totalDuration} frames (${(videoScript.totalDuration / 30).toFixed(1)}s) with ${videoScript.scenes.length} scenes`,
+        `[ScriptWriter] Locked duration: ${videoScript.totalDuration} frames (${(videoScript.totalDuration / 30).toFixed(1)}s) with ${videoScript.scenes.length} scenes`,
       );
     }
 

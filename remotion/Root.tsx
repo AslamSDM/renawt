@@ -6,6 +6,10 @@ import ReelsFlyVideoContent from "./compositions/ReelsFlyVideo";
 import TeambleDemoVideo from "./compositions/TeambleDemo";
 import TechProductDemo from "./compositions/TechProductDemo";
 import PremiumShowcase from "./compositions/PremiumShowcase";
+import {
+  JsonComposition,
+  type VideoJsonInputProps,
+} from "./compositions/JsonComposition";
 
 // Wrapper components to satisfy Remotion's type requirements
 const TechLaunchWrapper: React.FC<Record<string, unknown>> = (props) => {
@@ -286,6 +290,45 @@ export const RemotionRoot: React.FC = () => {
         fps={30}
         width={1920}
         height={1080}
+      />
+
+      {/* JSON-driven composition — primary entry for the new pipeline.
+          fps/width/height/durationInFrames derived per-render from inputProps. */}
+      <Composition
+        id="JsonComposition"
+        component={JsonComposition}
+        durationInFrames={300}
+        fps={30}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          fps: 30,
+          width: 1920,
+          height: 1080,
+          audio: null,
+          scenes: [
+            {
+              id: "preview",
+              durationInFrames: 90,
+              layers: [
+                { component: "GradientBg", props: { from: "#0f172a", to: "#7c3aed" } },
+                { component: "Title", props: { text: "JsonComposition preview", delay: 5 } },
+              ],
+            },
+          ],
+        } satisfies VideoJsonInputProps}
+        calculateMetadata={({ props }) => {
+          const total = props.scenes.reduce(
+            (s, x) => s + x.durationInFrames,
+            0,
+          );
+          return {
+            durationInFrames: Math.max(1, total),
+            width: props.width || 1920,
+            height: props.height || 1080,
+            fps: props.fps || 30,
+          };
+        }}
       />
     </>
   );

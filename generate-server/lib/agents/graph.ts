@@ -135,6 +135,7 @@ function buildInitialState(input: {
     videoScript: null,
     reactPageCode: null,
     remotionCode: null,
+    videoJson: null,
     beatMap: null,
     currentStep: "scraping",
     errors: [],

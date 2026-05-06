@@ -43,10 +43,24 @@ OUTPUT a single JSON object matching this shape (no commentary, no markdown):
   "customComponents": []
 }
 
+DURATION RULE (STRICT):
+- The brief specifies a TARGET duration in frames. The sum of \`scenes[].durationInFrames\` MUST equal this target EXACTLY.
+- If audio BPM is given, snap each scene to a multiple of framesPerBeat AND ensure the total still hits the target (use one final adjustment scene to absorb remainder).
+- Do NOT under-fill (silent end) or over-fill (cut audio mid-beat).
+
+PRODUCT FIT RULE:
+- The brief includes \`productType\` ("saas" | "ecommerce" | "service" | "other") and a raw description.
+- Match the visual language to the product — do NOT default to a SaaS dashboard pitch.
+  - ecommerce / hardware / physical: lead with product imagery (ImageBg with product photos), tactile language, materials, usage scenes. Avoid "dashboards", "API", "workflows".
+  - saas: feature cards, screenshot mockups (BrowserMockup), KPI stats.
+  - service: testimonials, outcome metrics (NumberCounter), trust signals.
+  - other: stay grounded in the actual description; no SaaS clichés.
+- Pull every concrete noun and benefit verbatim from the product description and features. Do not invent generic copy.
+
 RULES:
 - Each scene is a stack of layers rendered in order (first = bottom).
 - Always start a scene with a background layer (GradientBg/SolidBg/ImageBg) unless intentional.
-- durationInFrames at 30fps: 30 = 1s. Snap to multiples of \`framesPerBeat\` if BPM provided.
+- durationInFrames at 30fps: 30 = 1s.
 - Reference each component by EXACT name; props must match the listed shape.
 - Coordinates: x/y accept "50%" or "120px". Center is "50%"/"50%".
 - If a built-in cannot express the design, define a customComponent and reference it by name.
@@ -75,19 +89,74 @@ function extractScriptText(videoScript: any): {
   };
 }
 
+function resolveTargetFrames(state: VideoGenerationStateType): number {
+  const fromScript = (state.videoScript as any)?.totalDuration;
+  if (typeof fromScript === "number" && fromScript > 0) return fromScript;
+  const fromPrefs = (state.userPreferences as any)?.duration;
+  if (typeof fromPrefs === "number" && fromPrefs > 0) return fromPrefs * 30;
+  return 900; // 30s fallback
+}
+
+function vertictalGuidance(productType: string | undefined): string {
+  switch (productType) {
+    case "ecommerce":
+      return "VERTICAL: ecommerce / physical product. Lead with product imagery via ImageBg + Title overlay. Use Quote / TestimonialCard for social proof, NumberCounter for stats (units sold, ratings). AVOID BrowserMockup, CodeBlock, dashboards. Materials, build, in-use shots are the focus.";
+    case "service":
+      return "VERTICAL: service business. Lead with outcomes (NumberCounter, StatCard, ProgressBar). TestimonialCard is essential. CTABanner with booking/contact framing.";
+    case "saas":
+      return "VERTICAL: SaaS. BrowserMockup or screenshot ImageBg, FeatureCard list, NumberCounter for KPIs, CodeBlock if developer-facing.";
+    default:
+      return "VERTICAL: generic. Stay strictly grounded in the product description — do NOT invent SaaS-style features.";
+  }
+}
+
 function buildContextPrompt(state: VideoGenerationStateType): string {
   const scriptText = extractScriptText(state.videoScript);
   const audio = state.userPreferences.audio;
   const recordings = state.recordings || [];
+  const pd: any = state.productData || {};
+  const targetFrames = resolveTargetFrames(state);
+  const targetSeconds = (targetFrames / 30).toFixed(1);
 
   const lines: string[] = [
     "## VIDEO BRIEF",
-    `Product: ${state.productData?.name || "Untitled"}`,
+    `TARGET DURATION: ${targetFrames} frames (${targetSeconds}s @ 30fps) — sum(scenes[].durationInFrames) MUST equal ${targetFrames}.`,
     `Style: ${state.userPreferences.style}`,
     `Video type: ${state.userPreferences.videoType || "creative"}`,
     `Aspect ratio: ${(state.userPreferences as any).aspectRatio || "16:9"}`,
     "",
-    "## SCRIPT",
+    "## PRODUCT",
+    `Name: ${pd.name || "Untitled"}`,
+    `Tagline: ${pd.tagline || "(none)"}`,
+    `Type: ${pd.productType || "unknown"}`,
+    vertictalGuidance(pd.productType),
+    `Description: ${pd.description || "(none)"}`,
+  ];
+
+  if (Array.isArray(pd.features) && pd.features.length) {
+    lines.push("Features (use these EXACT terms — no SaaS substitutions):");
+    for (const f of pd.features) {
+      lines.push(`  - ${f.title}: ${f.description}`);
+    }
+  }
+
+  if (Array.isArray(pd.testimonials) && pd.testimonials.length) {
+    lines.push("Testimonials:");
+    for (const t of pd.testimonials) {
+      lines.push(`  - "${t.quote}" — ${t.author}, ${t.role}`);
+    }
+  }
+
+  if (Array.isArray(pd.images) && pd.images.length) {
+    lines.push(
+      "Product images (use as ImageBg.src or PhoneMockup.src for physical-product visuals):",
+      ...pd.images.slice(0, 6).map((u: string) => `  - ${u}`),
+    );
+  }
+
+  lines.push(
+    "",
+    "## SCRIPT (text content from upstream writer)",
     `Tagline: ${scriptText.tagline}`,
     `Intro subtext: ${scriptText.introSubtext}`,
     `Features:`,
@@ -95,22 +164,27 @@ function buildContextPrompt(state: VideoGenerationStateType): string {
       (f, i) => `  ${i + 1}. ${f.title} — ${f.description}`,
     ),
     `CTA: ${scriptText.ctaHeadline} (${scriptText.ctaSubtext})`,
-  ];
+  );
 
-  if (state.productData) {
-    const pd: any = state.productData;
-    if (pd.colors) {
-      lines.push("", "## BRAND COLORS");
-      for (const [k, v] of Object.entries(pd.colors)) {
-        lines.push(`  ${k}: ${v}`);
-      }
+  if (pd.colors) {
+    lines.push("", "## BRAND COLORS");
+    for (const [k, v] of Object.entries(pd.colors)) {
+      lines.push(`  ${k}: ${v}`);
     }
   }
 
   if (audio) {
     lines.push("", "## AUDIO");
     lines.push(`URL: ${audio.url}`);
-    if (audio.bpm) lines.push(`BPM: ${audio.bpm} (framesPerBeat at 30fps = ${(60 / audio.bpm) * 30})`);
+    if (audio.bpm) {
+      const fpb = (60 / audio.bpm) * 30;
+      lines.push(
+        `BPM: ${audio.bpm} (framesPerBeat at 30fps = ${fpb.toFixed(2)})`,
+      );
+      lines.push(
+        `BEAT-SNAP: aim each scene at a multiple of ${Math.round(fpb)} frames; absorb the remainder so totals still hit ${targetFrames}.`,
+      );
+    }
   }
 
   if (recordings.length) {
@@ -124,6 +198,68 @@ function buildContextPrompt(state: VideoGenerationStateType): string {
   }
 
   return lines.join("\n");
+}
+
+const MIN_SCENE_FRAMES = 15;
+
+/**
+ * Force sum(scenes[].durationInFrames) === targetFrames.
+ * Scales proportionally; the last scene absorbs rounding remainder.
+ * Single-scene videos snap directly.
+ */
+function enforceVideoDuration(json: VideoJson, targetFrames: number): VideoJson {
+  if (!json.scenes.length) return json;
+  const current = json.scenes.reduce((s, x) => s + x.durationInFrames, 0);
+  if (current === targetFrames) return json;
+
+  if (json.scenes.length === 1) {
+    json.scenes[0].durationInFrames = Math.max(MIN_SCENE_FRAMES, targetFrames);
+    return json;
+  }
+
+  if (current === 0) {
+    const each = Math.max(
+      MIN_SCENE_FRAMES,
+      Math.floor(targetFrames / json.scenes.length),
+    );
+    let allocated = 0;
+    for (let i = 0; i < json.scenes.length - 1; i++) {
+      json.scenes[i].durationInFrames = each;
+      allocated += each;
+    }
+    json.scenes[json.scenes.length - 1].durationInFrames = Math.max(
+      MIN_SCENE_FRAMES,
+      targetFrames - allocated,
+    );
+    return json;
+  }
+
+  const scale = targetFrames / current;
+  let allocated = 0;
+  for (let i = 0; i < json.scenes.length - 1; i++) {
+    const scaled = Math.max(
+      MIN_SCENE_FRAMES,
+      Math.round(json.scenes[i].durationInFrames * scale),
+    );
+    json.scenes[i].durationInFrames = scaled;
+    allocated += scaled;
+  }
+  const remainder = targetFrames - allocated;
+  json.scenes[json.scenes.length - 1].durationInFrames = Math.max(
+    MIN_SCENE_FRAMES,
+    remainder,
+  );
+
+  // Final reconcile in case the floor on the last scene blew the budget
+  const final = json.scenes.reduce((s, x) => s + x.durationInFrames, 0);
+  if (final !== targetFrames) {
+    const delta = targetFrames - final;
+    json.scenes[json.scenes.length - 1].durationInFrames = Math.max(
+      MIN_SCENE_FRAMES,
+      json.scenes[json.scenes.length - 1].durationInFrames + delta,
+    );
+  }
+  return json;
 }
 
 function stripJsonFences(raw: string): string {
@@ -239,13 +375,40 @@ export async function jsonComposerNode(
     };
   }
 
+  const targetFrames = resolveTargetFrames(state);
+  const llmTotal = videoJson.scenes.reduce((s, x) => s + x.durationInFrames, 0);
+  if (llmTotal !== targetFrames) {
+    console.warn(
+      `[JsonComposer] LLM total ${llmTotal} ≠ target ${targetFrames} — scaling scenes`,
+    );
+    videoJson = enforceVideoDuration(videoJson, targetFrames);
+  }
+
+  const finalTotal = videoJson.scenes.reduce(
+    (s, x) => s + x.durationInFrames,
+    0,
+  );
+  if (finalTotal !== targetFrames) {
+    console.error(
+      `[JsonComposer] Duration enforcement failed: got ${finalTotal}, want ${targetFrames}`,
+    );
+  }
+
+  // Update upstream script's totalDuration so videoRenderer renders the
+  // exact same length the JSON spans (and audio matches).
+  if (state.videoScript) {
+    (state.videoScript as any).totalDuration = finalTotal;
+  }
+
   const remotionCode = buildRemotionCode(videoJson);
   console.log(
-    `[JsonComposer] Built ${videoJson.scenes.length} scenes, ${videoJson.customComponents.length} custom components, ${remotionCode.length} chars Remotion code`,
+    `[JsonComposer] Built ${videoJson.scenes.length} scenes (${finalTotal} frames / ${(finalTotal / 30).toFixed(1)}s), ${videoJson.customComponents.length} custom components, ${remotionCode.length} chars Remotion code`,
   );
 
   return {
     remotionCode,
+    videoJson,
+    videoScript: state.videoScript,
     currentStep: "complete",
   };
 }
