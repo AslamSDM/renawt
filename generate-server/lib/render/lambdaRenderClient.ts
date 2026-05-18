@@ -85,10 +85,7 @@ export async function submitAndWaitForLambdaRender(
     composition: COMPOSITION_ID,
     inputProps: videoJson as unknown as Record<string, unknown>,
     codec: outputFormat === "webm" ? "vp8" : "h264",
-    forceDurationInFrames: totalFrames,
-    forceFps: videoJson.fps,
-    forceWidth: videoJson.width,
-    forceHeight: videoJson.height,
+    frameRange: [0, totalFrames - 1],
     framesPerLambda: FRAMES_PER_LAMBDA,
     downloadBehavior: { type: "download", fileName: "video.mp4" },
   });

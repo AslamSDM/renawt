@@ -352,7 +352,7 @@ export async function chatWithCloudflareAI(
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     const started = Date.now();
     try {
-      const completion = await client.chat.completions.create({
+      const completion = (await client.chat.completions.create({
         model: CLOUDFLARE_AI_MODEL,
         messages: messages.map((m) => ({
           role: m.role,
@@ -360,9 +360,8 @@ export async function chatWithCloudflareAI(
         })),
         temperature,
         max_tokens: maxTokens,
-        // @ts-expect-error — supported by CF Workers AI for reasoning models
         reasoning_effort: CLOUDFLARE_REASONING_EFFORT,
-      });
+      } as Parameters<typeof client.chat.completions.create>[0])) as any;
 
       const msg = completion.choices[0]?.message as
         | { content?: string | null; reasoning_content?: string | null }
@@ -883,16 +882,13 @@ async function chatWithOllamaGemma4(
   const content = stripGemma4Thought(raw);
   return {
     content,
-    // attach raw for logging
-    // @ts-expect-error — extra debug field
     _raw: raw,
-    // @ts-expect-error
     _usage: {
       inputTokens: promptEval,
       outputTokens: evalCount,
       totalTokens: promptEval + evalCount,
     },
-  };
+  } as ChatResponse;
 }
 
 export async function chatWithOllama(
