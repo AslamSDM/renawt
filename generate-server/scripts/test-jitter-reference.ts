@@ -51,7 +51,7 @@ async function main() {
 
   // Pick an audio track to drive the beat grid (so per-clip composers all
   // align ops to the same BPM).
-  const music = pickTrack({ mood: "product", preferredBpm: 124 });
+  const music = await pickTrack({ mood: "product", preferredBpm: 124 });
   console.log(
     `[test-jitter-ref] music: "${music.title}" @ ${music.bpm} BPM (beat=${Math.round(music.beatMs)}ms)`,
   );

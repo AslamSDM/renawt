@@ -139,6 +139,24 @@ model WebhookEvent {
   id String @id
 }
 
+model Music {
+  id         String   @id @default(cuid())
+  title      String
+  filename   String   @unique
+  url        String
+  artist     String?
+  bpm        Int      @default(120)
+  durationMs Int?
+  moods      String[] @default([])
+  source     String   @default("seed")
+  license    String?
+  enabled    Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  @@index([source])
+  @@index([bpm])
+}
+
 model LlmCall {
   id               String   @id @default(cuid())
   provider         String

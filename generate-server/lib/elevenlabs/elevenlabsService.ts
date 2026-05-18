@@ -8,14 +8,18 @@
 
 import { writeFileSync, mkdirSync, existsSync } from "fs";
 import { join } from "path";
+import { tmpdir } from "os";
 import { randomUUID } from "crypto";
 import {
   generateTTSCloudflare,
   isCloudflareAIConfigured,
 } from "../cloudflare/cloudflareAI";
+import { uploadAudioBufferToR2, isR2Configured } from "../storage/r2";
 
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
-const NARRATION_DIR = join(process.cwd(), "tmp", "narrations");
+// Use system tmp (ephemeral) — FFmpeg needs local paths for inputs.
+// Buffers are also uploaded to R2 for persistence/debugging.
+const NARRATION_DIR = join(tmpdir(), "remawt-narrations");
 const ELEVENLABS_BASE_URL = "https://api.elevenlabs.io/v1";
 
 // Prefer Cloudflare Workers AI TTS unless explicitly disabled
@@ -73,6 +77,8 @@ export interface NarrationSegment {
   text: string;
   /** Local file path — populated by generateNarrationSegments (for FFmpeg stitching) */
   filePath?: string;
+  /** R2 public URL — populated when R2 is configured. */
+  r2Url?: string;
   durationSec?: number;
 }
 
@@ -305,11 +311,26 @@ export async function generateNarrationSegments(
       if (!result.success || !result.buffer) {
         return { ...segment, durationSec: result.estimatedDurationSec };
       }
-      const filePath = join(NARRATION_DIR, `narration-${randomUUID()}.mp3`);
+      const name = `narration-${segment.sceneId || randomUUID()}-${Date.now()}`;
+      const filePath = join(NARRATION_DIR, `${name}.mp3`);
       writeFileSync(filePath, result.buffer);
+
+      let r2Url: string | undefined;
+      if (isR2Configured()) {
+        const up = await uploadAudioBufferToR2(
+          result.buffer,
+          "audio/mpeg",
+          "narration/reel",
+          name,
+        );
+        if (up.success && up.url) r2Url = up.url;
+        else console.warn(`[ElevenLabs] R2 reel upload failed: ${up.error}`);
+      }
+
       return {
         ...segment,
         filePath,
+        r2Url,
         durationSec: result.estimatedDurationSec,
       };
     }),

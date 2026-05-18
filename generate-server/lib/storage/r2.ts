@@ -193,11 +193,13 @@ export async function uploadAudioBufferToR2(
   buffer: Buffer,
   mimeType: string = "audio/mpeg",
   prefix: string = "narrations",
+  filename?: string,
 ): Promise<UploadResult> {
   try {
     const client = getR2Client();
     const ext = mimeType === "audio/mpeg" ? "mp3" : "aac";
-    const key = `audio/${prefix}/${randomUUID()}.${ext}`;
+    const basename = filename ? filename.replace(/\.(mp3|aac)$/i, "") : randomUUID();
+    const key = `audio/${prefix}/${basename}.${ext}`;
 
     const command = new PutObjectCommand({
       Bucket: R2_BUCKET_NAME,

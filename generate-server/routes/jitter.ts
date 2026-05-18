@@ -94,20 +94,21 @@ router.post("/jitter", async (req: AuthenticatedRequest, res) => {
   console.log(`[jitter] user=${userId} project=${tag} url=${body.url}`);
 
   try {
-    // 1. Capture screenshot.
+    // 1. Capture screenshot via scraper-service → R2.
     const shot = await captureForJitter(body.url, tag, {
       width: body.width ?? 1920,
       height: body.height ?? 1080,
     });
-    console.log(`[jitter] screenshot → ${shot.path}`);
+    console.log(`[jitter] screenshot → ${shot.url}`);
 
-    // 2. Run orchestrator. If the caller picked a track, pass it as
-    //    audioOverride so the composer aligns to THAT BPM up-front (instead
-    //    of letting the picker bias the beat grid then swapping audio after).
+    // 2. Run orchestrator. Vision-capable callees accept the R2 URL as the
+    //    "path" arg. If the caller picked a track, pass it as audioOverride
+    //    so the composer aligns to THAT BPM up-front (instead of letting the
+    //    picker bias the beat grid then swapping audio after).
     const result = await generateVideoFromScreenshot({
       url: body.url,
-      screenshotPath: shot.path,
-      heroImageUrl: shot.publicUrl,
+      screenshotPath: shot.url,
+      heroImageUrl: shot.url,
       durationMs: body.durationMs ?? 16000,
       extraNotes: body.notes,
       width: body.width,

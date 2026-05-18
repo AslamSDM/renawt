@@ -1,19 +1,19 @@
 /**
- * Music picker — selects a track from music_metadata.json based on mood + duration.
+ * Music picker — selects a track from the Music DB table based on mood + BPM.
  * Returns the track's R2 URL and BPM so the composer can align operations to beats.
  */
 
-import { readFileSync } from "fs";
-import { resolve } from "path";
+import { PrismaClient } from "../generated/prisma/index.js";
 
 export interface MusicTrack {
+  id: string;
   title: string;
   filename: string;
   url: string;
   moods: string[];
-  artist: string;
+  artist: string | null;
   bpm: number;
-  durationMs?: number;
+  durationMs: number | null;
 }
 
 export interface PickedTrack {
@@ -24,48 +24,58 @@ export interface PickedTrack {
   moods: string[];
 }
 
-let cached: MusicTrack[] | null = null;
+const globalForPrisma = globalThis as unknown as {
+  __musicPrisma: PrismaClient | undefined;
+};
 
-function loadCatalog(): MusicTrack[] {
-  if (cached) return cached;
-  // Locate music_metadata.json — try repo root from generate-server cwd then ../
-  const candidates = [
-    resolve(process.cwd(), "music_metadata.json"),
-    resolve(process.cwd(), "..", "music_metadata.json"),
-    resolve(__dirname, "../../../music_metadata.json"),
-  ];
-  for (const p of candidates) {
-    try {
-      const data = readFileSync(p, "utf8");
-      cached = JSON.parse(data) as MusicTrack[];
-      return cached;
-    } catch {}
+function getPrisma(): PrismaClient {
+  if (!globalForPrisma.__musicPrisma) {
+    globalForPrisma.__musicPrisma = new PrismaClient();
   }
-  throw new Error(
-    `music_metadata.json not found. Tried: ${candidates.join(", ")}`,
-  );
+  return globalForPrisma.__musicPrisma;
+}
+
+let cached: MusicTrack[] | null = null;
+let cachedAt = 0;
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 min
+
+async function loadCatalog(): Promise<MusicTrack[]> {
+  if (cached && Date.now() - cachedAt < CACHE_TTL_MS) return cached;
+  const rows = await getPrisma().music.findMany({
+    where: { enabled: true },
+  });
+  cached = rows.map((r) => ({
+    id: r.id,
+    title: r.title,
+    filename: r.filename,
+    url: r.url,
+    moods: r.moods,
+    artist: r.artist,
+    bpm: r.bpm,
+    durationMs: r.durationMs,
+  }));
+  cachedAt = Date.now();
+  if (!cached.length) {
+    throw new Error("Music table is empty — run scripts/seed-music.ts");
+  }
+  return cached;
 }
 
 /**
  * Pick the best-fit track for a given mood + intended BPM range.
  * Deterministic ordering: matching tracks sorted by closeness to target BPM.
  */
-export function pickTrack(opts: {
-  /** Free-form mood (matched substring against track.moods + title). */
+export async function pickTrack(opts: {
   mood?: string;
-  /** Preferred BPM. Default 124 (~product-launch energy). */
   preferredBpm?: number;
-  /** Hard BPM filter, e.g. [110, 130]. */
   bpmRange?: [number, number];
-}): PickedTrack {
-  const catalog = loadCatalog();
+}): Promise<PickedTrack> {
+  const catalog = await loadCatalog();
   const want = (opts.mood || "").toLowerCase().trim();
   const target = opts.preferredBpm ?? 124;
   const [minBpm, maxBpm] = opts.bpmRange ?? [80, 160];
 
-  const inRange = catalog.filter(
-    (t) => t.bpm >= minBpm && t.bpm <= maxBpm,
-  );
+  const inRange = catalog.filter((t) => t.bpm >= minBpm && t.bpm <= maxBpm);
   let pool = inRange.length ? inRange : catalog;
 
   if (want) {
@@ -77,7 +87,9 @@ export function pickTrack(opts: {
     if (moodMatches.length) pool = moodMatches;
   }
 
-  pool.sort((a, b) => Math.abs(a.bpm - target) - Math.abs(b.bpm - target));
+  pool = [...pool].sort(
+    (a, b) => Math.abs(a.bpm - target) - Math.abs(b.bpm - target),
+  );
   const picked = pool[0];
 
   return {

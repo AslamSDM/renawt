@@ -56,7 +56,7 @@ async function main() {
   if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
 
   // Pick music + align duration to beats
-  const music = pickTrack({
+  const music = await pickTrack({
     mood: moodToMusicKeyword(BRAND_REPORT.brand.mood),
     preferredBpm: 124,
   });

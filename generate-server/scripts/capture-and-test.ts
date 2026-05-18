@@ -43,8 +43,7 @@ async function main() {
   console.log(`[capture-and-test] URL=${url} slug=${slug}`);
 
   const cap = await captureForJitter(url, slug, { width, height, settleMs: 3500 });
-  console.log(`[capture-and-test] screenshot → ${cap.path}`);
-  console.log(`[capture-and-test] public URL  → ${cap.publicUrl}`);
+  console.log(`[capture-and-test] screenshot → ${cap.url}`);
 
   const outDir = join(process.cwd(), "tmp", "test-output");
   if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
@@ -52,8 +51,8 @@ async function main() {
   const t0 = Date.now();
   const result = await generateVideoFromScreenshot({
     url,
-    screenshotPath: cap.path,
-    heroImageUrl: cap.publicUrl,
+    screenshotPath: cap.url,
+    heroImageUrl: cap.url,
     durationMs,
     width,
     height,

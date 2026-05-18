@@ -12,15 +12,18 @@
 
 import { writeFileSync, mkdirSync, existsSync } from "fs";
 import { join } from "path";
+import { tmpdir } from "os";
 import { randomUUID } from "crypto";
+import { uploadVideoBufferToR2, isR2Configured } from "../storage/r2";
 
 // Google AI Studio / Vertex AI configuration
 const GOOGLE_AI_API_KEY = process.env.GOOGLE_AI_API_KEY;
 const VEO_MODEL = process.env.VEO_MODEL || "veo-3.0-generate-preview";
 const VEO_BASE_URL = `https://generativelanguage.googleapis.com/v1beta/models/${VEO_MODEL}`;
 
-// Output directory for generated clips
-const CLIPS_DIR = join(process.cwd(), "tmp", "clips");
+// Ephemeral scratch dir — FFmpeg needs local paths for inputs.
+// Buffers are also uploaded to R2 when configured.
+const CLIPS_DIR = join(tmpdir(), "remawt-veo-clips");
 
 export interface VeoGenerateRequest {
   /** Text prompt describing the desired video clip */
@@ -38,6 +41,8 @@ export interface VeoGenerateRequest {
 export interface VeoClip {
   /** Local file path of the downloaded MP4 clip */
   filePath: string;
+  /** R2 public URL — populated when R2 is configured. */
+  r2Url?: string;
   /** Duration in seconds */
   durationSec: number;
   /** The prompt used to generate this clip */
@@ -345,13 +350,23 @@ async function processVeoResponse(
       const filePath = join(CLIPS_DIR, fileName);
       writeFileSync(filePath, videoBuffer);
 
+      let r2Url: string | undefined;
+      if (isR2Configured()) {
+        const up = await uploadVideoBufferToR2(videoBuffer, fileName, "veo");
+        if (up.success && up.url) r2Url = up.url;
+        else console.warn(`[Veo3] R2 upload failed: ${up.error}`);
+      }
+
       clips.push({
         filePath,
+        r2Url,
         durationSec,
         prompt,
       });
 
-      console.log(`[Veo3] Clip saved: ${filePath} (${videoBuffer.length} bytes)`);
+      console.log(
+        `[Veo3] Clip saved: ${filePath} (${videoBuffer.length} bytes) r2=${r2Url || "none"}`,
+      );
     } catch (err) {
       console.error("[Veo3] Failed to process video clip:", err);
     }

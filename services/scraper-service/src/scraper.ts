@@ -433,6 +433,55 @@ ${content.bodyText}`,
 }
 
 /**
+ * Capture a single viewport screenshot of `url` and upload it to R2 under
+ * `jitter/<id>.png`. Returns the public URL. Used by the urlToJitter pipeline.
+ */
+export async function captureJitterScreenshot(opts: {
+  url: string;
+  id: string;
+  width?: number;
+  height?: number;
+  settleMs?: number;
+}): Promise<{ url: string; key: string }> {
+  const width = opts.width ?? 1920;
+  const height = opts.height ?? 1080;
+  const settleMs = opts.settleMs ?? 2500;
+
+  const browser = await puppeteer.launch({
+    headless: true,
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+    args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu"],
+  });
+  try {
+    const page = await browser.newPage();
+    await page.setViewport({ width, height });
+    await page.setUserAgent(
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    );
+    await page.goto(opts.url, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await new Promise((r) => setTimeout(r, settleMs));
+    const buf = await page.screenshot({ fullPage: false, type: "png" });
+
+    if (!isR2Configured()) {
+      throw new Error("R2 not configured — cannot store jitter screenshot");
+    }
+
+    const filename = `${opts.id}-${Date.now()}.png`;
+    const result = await uploadScreenshotBufferToR2(
+      Buffer.from(buf),
+      filename,
+      "jitter",
+    );
+    if (!result.success || !result.url || !result.key) {
+      throw new Error(result.error || "R2 upload failed");
+    }
+    return { url: result.url, key: result.key };
+  } finally {
+    await browser.close();
+  }
+}
+
+/**
  * Simple screenshot capture (backward compatible with screenshot-api)
  */
 export async function captureScreenshot(url: string): Promise<Buffer> {

@@ -367,7 +367,7 @@ async function runUrlToJitter(input: {
       `[urlToJitter] Music (user-picked): "${music.title}" @ ${music.bpm} BPM (beat=${Math.round(music.beatMs)}ms)`,
     );
   } else if (input.music !== false) {
-    music = pickTrack({
+    music = await pickTrack({
       mood: input.musicMood ?? moodToMusicKeyword(brandReport.brand.mood),
       preferredBpm: input.preferredBpm ?? 124,
     });

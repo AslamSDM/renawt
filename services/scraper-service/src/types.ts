@@ -27,3 +27,18 @@ export interface ScrapeResponse {
   data?: ScrapeResult;
   error?: string;
 }
+
+export interface CaptureJitterRequest {
+  url: string;
+  id?: string;
+  width?: number;
+  height?: number;
+  settleMs?: number;
+}
+
+export interface CaptureJitterResponse {
+  success: boolean;
+  url?: string;
+  key?: string;
+  error?: string;
+}

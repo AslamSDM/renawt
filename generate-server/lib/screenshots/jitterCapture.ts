@@ -1,22 +1,20 @@
 /**
- * Jitter screenshot capture — uses puppeteer to grab a viewport screenshot
- * of any URL and writes it to public/jitter/<id>.png so the renderer can
- * serve it via Remotion's staticFile().
+ * Jitter screenshot capture — delegates to the scraper microservice.
+ * The PNG is captured by puppeteer in the scraper container and uploaded to R2;
+ * we get back the public URL so Remotion can fetch it without disk I/O.
  */
 
-import { writeFileSync, mkdirSync, existsSync } from "fs";
-import { join, resolve } from "path";
+import { captureJitter } from "../scraper/scraperClient";
 
 export interface JitterCaptureResult {
-  /** Absolute path on disk (for vision analysis). */
-  path: string;
-  /** Public URL path the renderer will use (e.g. "/jitter/<id>.png"). */
+  /** R2 public URL (e.g. https://pub-…/jitter/<id>.png). */
+  url: string;
+  /** R2 key (e.g. jitter/<id>.png). */
+  key: string;
+  /** Same as `url` — kept for backwards compatibility with old callers. */
   publicUrl: string;
-}
-
-/** Repo root — three levels up from this file. */
-function repoRoot(): string {
-  return resolve(__dirname, "../../..");
+  /** Empty string — file no longer exists locally. Kept for back-compat. */
+  path: string;
 }
 
 export async function captureForJitter(
@@ -24,33 +22,12 @@ export async function captureForJitter(
   id: string,
   opts: { width?: number; height?: number; settleMs?: number } = {},
 ): Promise<JitterCaptureResult> {
-  const width = opts.width ?? 1920;
-  const height = opts.height ?? 1080;
-  const settleMs = opts.settleMs ?? 2500;
-
-  const publicDir = join(repoRoot(), "public", "jitter");
-  if (!existsSync(publicDir)) mkdirSync(publicDir, { recursive: true });
-  const filename = `${id}.png`;
-  const absPath = join(publicDir, filename);
-
-  const puppeteer = await import("puppeteer");
-  const browser = await puppeteer.default.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  const r = await captureJitter({
+    url,
+    id,
+    width: opts.width,
+    height: opts.height,
+    settleMs: opts.settleMs,
   });
-  try {
-    const page = await browser.newPage();
-    await page.setViewport({ width, height });
-    await page.setUserAgent(
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    );
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
-    await new Promise((r) => setTimeout(r, settleMs));
-    const buf = await page.screenshot({ fullPage: false, type: "png" });
-    writeFileSync(absPath, Buffer.from(buf));
-  } finally {
-    await browser.close();
-  }
-
-  return { path: absPath, publicUrl: `/jitter/${filename}` };
+  return { url: r.url, key: r.key, publicUrl: r.url, path: "" };
 }

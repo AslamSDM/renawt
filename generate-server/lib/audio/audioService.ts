@@ -124,12 +124,14 @@ export async function getAudioConfig(): Promise<{ url: string; bpm: number; dura
   const defaultAudio = await getDefaultAudioFile();
   
   if (!defaultAudio) {
-    // Fallback to first track from music_metadata.json (R2-hosted)
-    return {
-      url: "https://pub-52c4f36ed495483b84403a8cbd2d2ff3.r2.dev/hitslab-product-launch-advertising-commercial-music-301409.mp3",
-      bpm: 120,
-      duration: 30,
-    };
+    // Fallback to the first enabled Music DB track
+    try {
+      const { pickTrack } = await import("./musicPicker.js");
+      const picked = await pickTrack({});
+      return { url: picked.url, bpm: picked.bpm, duration: 30 };
+    } catch {
+      return null;
+    }
   }
 
   return {
