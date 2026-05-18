@@ -42,3 +42,24 @@ export interface CaptureJitterResponse {
   key?: string;
   error?: string;
 }
+
+export interface PixabayMusicRequest {
+  query: string;
+  limit?: number;
+}
+
+export interface PixabayMusicTrack {
+  title: string;
+  artist: string;
+  durationSec: number;
+  mp3Url: string;
+  thumbnailUrl?: string;
+  tags: string[];
+  pixabayId: string;
+}
+
+export interface PixabayMusicResponse {
+  success: boolean;
+  tracks?: PixabayMusicTrack[];
+  error?: string;
+}

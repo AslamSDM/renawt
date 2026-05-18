@@ -5,11 +5,14 @@ import {
   captureScreenshot,
   captureJitterScreenshot,
 } from "./scraper.js";
+import { scrapePixabayMusic } from "./pixabayMusic.js";
 import type {
   ScrapeRequest,
   ScrapeResponse,
   CaptureJitterRequest,
   CaptureJitterResponse,
+  PixabayMusicRequest,
+  PixabayMusicResponse,
 } from "./types.js";
 import { logger, httpLogger } from "./logger.js";
 
@@ -29,6 +32,7 @@ const metrics = {
   scrapeRequests: 0,
   screenshotRequests: 0,
   jitterRequests: 0,
+  pixabayMusicRequests: 0,
   activeJobs: 0,
   completed: 0,
   failed: 0,
@@ -135,6 +139,49 @@ app.post("/capture-jitter", requireAuth, async (req, res) => {
       success: false,
       error: errorMsg,
     };
+    res.status(500).json(response);
+  }
+});
+
+/**
+ * POST /scrape-pixabay-music - Scrape pixabay.com/music for tracks.
+ * Returns metadata + direct mp3 URLs. Caller is responsible for downloading
+ * and storing the mp3s (we don't proxy bytes).
+ */
+app.post("/scrape-pixabay-music", requireAuth, async (req, res) => {
+  const body = req.body as PixabayMusicRequest;
+  const log = (req as any).log;
+
+  if (!body?.query) {
+    return res
+      .status(400)
+      .json({ success: false, error: "query is required" });
+  }
+
+  metrics.pixabayMusicRequests++;
+  const limit = Math.min(Math.max(body.limit ?? 20, 1), 60);
+
+  try {
+    const tracks = await scrapeLimit(async () => {
+      metrics.activeJobs++;
+      log.info({ query: body.query, limit }, "pixabay music scrape start");
+      try {
+        const r = await scrapePixabayMusic(body.query, limit);
+        metrics.completed++;
+        return r;
+      } finally {
+        metrics.activeJobs--;
+      }
+    });
+
+    log.info({ query: body.query, count: tracks.length }, "pixabay music scrape done");
+    const response: PixabayMusicResponse = { success: true, tracks };
+    res.json(response);
+  } catch (error) {
+    metrics.failed++;
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    log.error({ query: body.query, err: errorMsg }, "pixabay music scrape failed");
+    const response: PixabayMusicResponse = { success: false, error: errorMsg };
     res.status(500).json(response);
   }
 });

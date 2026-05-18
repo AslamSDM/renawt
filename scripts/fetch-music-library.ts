@@ -2,15 +2,19 @@
  * Fetch opensource music tracks → upload to R2 → insert into Music table.
  *
  * Sources:
- *   - Pixabay Music   (needs PIXABAY_API_KEY)
- *   - Free Music Archive (FMA)  (best-effort; their public endpoints are flaky)
+ *   - Pixabay  (scraped via scraper-service /scrape-pixabay-music — their
+ *              public API does NOT expose audio, only images)
+ *   - Jamendo  (public CC music API; needs JAMENDO_CLIENT_ID)
  *
  * Usage:
- *   PIXABAY_API_KEY=xxx FMA_API_KEY=xxx npx tsx scripts/fetch-music-library.ts
+ *   SCRAPER_SERVICE_URL=http://localhost:4001 \
+ *   JAMENDO_CLIENT_ID=xxx \
+ *   npx tsx scripts/fetch-music-library.ts
  *
  * Options via env:
- *   MUSIC_FETCH_LIMIT      max tracks per query (default 30)
- *   MUSIC_FETCH_QUERIES    comma-sep queries (default: corporate,upbeat,product,techno,calm,energetic,cinematic)
+ *   MUSIC_FETCH_LIMIT     max tracks per query/source (default 20)
+ *   MUSIC_FETCH_QUERIES   comma-sep queries (default: corporate,upbeat,product,techno,calm,energetic,cinematic,inspiring,electronic,ambient)
+ *   MUSIC_SOURCES         comma-sep enabled sources (default: pixabay,jamendo)
  *
  * Idempotent: skips R2 uploads + DB rows that already exist by filename.
  */
@@ -39,6 +43,10 @@ const r2 = new S3Client({
     secretAccessKey: R2_SECRET_ACCESS_KEY,
   },
 });
+
+const SCRAPER_SERVICE_URL =
+  process.env.SCRAPER_SERVICE_URL || "http://localhost:4001";
+const SCRAPER_AUTH_TOKEN = process.env.SCRAPER_AUTH_TOKEN || "";
 
 async function r2Exists(key: string): Promise<boolean> {
   try {
@@ -74,10 +82,10 @@ interface IngestTrack {
   artist?: string;
   bpm: number;
   moods: string[];
-  source: "pixabay" | "fma";
+  source: "pixabay" | "jamendo";
   license: string;
   durationMs?: number;
-  remoteUrl: string; // where to download mp3 from
+  remoteUrl: string;
 }
 
 function slugify(s: string): string {
@@ -88,119 +96,136 @@ function slugify(s: string): string {
     .slice(0, 80);
 }
 
-// ─── Pixabay fetch ────────────────────────────────────────────────────────────
-async function fetchPixabay(query: string, perPage: number): Promise<IngestTrack[]> {
-  const apiKey = process.env.PIXABAY_API_KEY;
-  if (!apiKey) {
-    console.log("[fetch-music] PIXABAY_API_KEY not set — skipping Pixabay");
-    return [];
-  }
+// ─── Pixabay (via scraper-service) ────────────────────────────────────────────
+async function fetchPixabayViaScraper(
+  query: string,
+  limit: number,
+): Promise<IngestTrack[]> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (SCRAPER_AUTH_TOKEN) headers.Authorization = `Bearer ${SCRAPER_AUTH_TOKEN}`;
 
-  const url = `https://pixabay.com/api/audio/?key=${apiKey}&q=${encodeURIComponent(query)}&per_page=${perPage}`;
-  const res = await fetch(url);
+  const res = await fetch(`${SCRAPER_SERVICE_URL}/scrape-pixabay-music`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ query, limit }),
+    signal: AbortSignal.timeout(180000),
+  });
+
   if (!res.ok) {
-    console.warn(`[fetch-music] Pixabay "${query}" failed: ${res.status}`);
+    console.warn(`[fetch-music] pixabay "${query}" scraper failed: ${res.status}`);
     return [];
   }
   const json = (await res.json()) as {
-    hits?: Array<{
-      id: number;
-      title?: string;
-      audio?: string;
-      audio_mp3?: string;
-      audio_url?: string;
-      user?: string;
-      tags?: string;
-      duration?: number;
+    success: boolean;
+    tracks?: Array<{
+      title: string;
+      artist: string;
+      durationSec: number;
+      mp3Url: string;
+      tags: string[];
+      pixabayId: string;
     }>;
+    error?: string;
   };
+  if (!json.success || !json.tracks) {
+    console.warn(`[fetch-music] pixabay "${query}" returned no tracks: ${json.error || ""}`);
+    return [];
+  }
 
-  const hits = json.hits ?? [];
   const out: IngestTrack[] = [];
-  for (const h of hits) {
-    const remoteUrl = h.audio_mp3 || h.audio || h.audio_url || "";
-    if (!remoteUrl) continue;
-    const title = h.title || `Pixabay ${h.id}`;
-    const artist = h.user || "Pixabay";
-    const moods = (h.tags || query)
-      .split(",")
-      .map((t) => t.trim().toLowerCase())
-      .filter(Boolean)
-      .slice(0, 6);
+  for (const t of json.tracks) {
+    if (!t.mp3Url) continue;
     out.push({
-      title,
-      filename: `pixabay-${slugify(title)}-${h.id}.mp3`,
-      artist,
+      title: t.title,
+      filename: `pixabay-${slugify(t.title)}-${t.pixabayId}.mp3`,
+      artist: t.artist || "Pixabay",
       bpm: 120,
-      moods,
+      moods: t.tags.length ? t.tags : [query.toLowerCase()],
       source: "pixabay",
       license: "pixabay",
-      durationMs: h.duration ? h.duration * 1000 : undefined,
-      remoteUrl,
+      durationMs: t.durationSec ? t.durationSec * 1000 : undefined,
+      remoteUrl: t.mp3Url,
     });
   }
   return out;
 }
 
-// ─── FMA fetch ────────────────────────────────────────────────────────────────
-async function fetchFMA(query: string, limit: number): Promise<IngestTrack[]> {
-  // FMA's official API is intermittent. We hit the public search JSON endpoint;
-  // if it 4xx/5xx we just skip gracefully.
-  const apiKey = process.env.FMA_API_KEY;
-  if (!apiKey) {
-    console.log("[fetch-music] FMA_API_KEY not set — skipping FMA");
+// ─── Jamendo ──────────────────────────────────────────────────────────────────
+async function fetchJamendo(query: string, limit: number): Promise<IngestTrack[]> {
+  const clientId = process.env.JAMENDO_CLIENT_ID;
+  if (!clientId) {
+    console.log("[fetch-music] JAMENDO_CLIENT_ID not set — skipping Jamendo");
     return [];
   }
 
-  const url = `https://freemusicarchive.org/api/get/tracks.json?api_key=${apiKey}&q=${encodeURIComponent(query)}&limit=${limit}`;
+  const params = new URLSearchParams({
+    client_id: clientId,
+    format: "json",
+    limit: String(limit),
+    tags: query,
+    audioformat: "mp32",
+    include: "musicinfo+licenses",
+  });
+  const url = `https://api.jamendo.com/v3.0/tracks/?${params.toString()}`;
+
   try {
     const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
     if (!res.ok) {
-      console.warn(`[fetch-music] FMA "${query}" failed: ${res.status}`);
+      console.warn(`[fetch-music] Jamendo "${query}" failed: ${res.status}`);
       return [];
     }
     const json = (await res.json()) as {
-      dataset?: Array<{
-        track_id?: string;
-        track_title?: string;
-        artist_name?: string;
-        track_listen_url?: string;
-        track_url?: string;
-        track_genres?: Array<{ genre_title: string }>;
-        track_duration?: string; // mm:ss
-        license_title?: string;
+      results?: Array<{
+        id: string;
+        name: string;
+        artist_name: string;
+        audio: string;
+        audiodownload?: string;
+        duration: number;
+        musicinfo?: {
+          tags?: { genres?: string[]; moods?: string[] };
+          acousticelectric?: string;
+          vocalinstrumental?: string;
+        };
+        license_ccurl?: string;
       }>;
+      headers?: { status: string; error_message?: string };
     };
-    const rows = json.dataset ?? [];
+
+    if (json.headers?.status && json.headers.status !== "success") {
+      console.warn(
+        `[fetch-music] Jamendo "${query}" status=${json.headers.status} msg=${json.headers.error_message || ""}`,
+      );
+      return [];
+    }
 
     const out: IngestTrack[] = [];
-    for (const r of rows) {
-      const remoteUrl = r.track_listen_url || r.track_url || "";
+    for (const r of json.results || []) {
+      const remoteUrl = r.audiodownload || r.audio;
       if (!remoteUrl) continue;
-      const title = r.track_title || `FMA ${r.track_id}`;
-      const moods = (r.track_genres || [])
-        .map((g) => g.genre_title.toLowerCase())
+      const moods = [
+        ...(r.musicinfo?.tags?.genres || []),
+        ...(r.musicinfo?.tags?.moods || []),
+      ]
+        .map((m) => m.toLowerCase())
         .slice(0, 6);
-      let durationMs: number | undefined;
-      if (r.track_duration && /^\d+:\d+$/.test(r.track_duration)) {
-        const [mm, ss] = r.track_duration.split(":").map(Number);
-        durationMs = (mm * 60 + ss) * 1000;
-      }
       out.push({
-        title,
-        filename: `fma-${slugify(title)}-${r.track_id}.mp3`,
-        artist: r.artist_name || "FMA",
+        title: r.name,
+        filename: `jamendo-${slugify(r.name)}-${r.id}.mp3`,
+        artist: r.artist_name || "Jamendo",
         bpm: 120,
         moods: moods.length ? moods : [query.toLowerCase()],
-        source: "fma",
-        license: r.license_title || "CC",
-        durationMs,
+        source: "jamendo",
+        license: r.license_ccurl ? "CC-BY" : "Jamendo",
+        durationMs: r.duration ? r.duration * 1000 : undefined,
         remoteUrl,
       });
     }
     return out;
   } catch (err) {
-    console.warn(`[fetch-music] FMA error: ${err instanceof Error ? err.message : err}`);
+    console.warn(
+      `[fetch-music] Jamendo error: ${err instanceof Error ? err.message : err}`,
+    );
     return [];
   }
 }
@@ -242,13 +267,15 @@ async function ingestOne(t: IngestTrack): Promise<"inserted" | "skipped" | "fail
     });
     return "inserted";
   } catch (err) {
-    console.warn(`[fetch-music] ingest failed for ${t.title}: ${err instanceof Error ? err.message : err}`);
+    console.warn(
+      `[fetch-music] ingest failed for ${t.title}: ${err instanceof Error ? err.message : err}`,
+    );
     return "failed";
   }
 }
 
 async function main() {
-  const limit = Number(process.env.MUSIC_FETCH_LIMIT || 30);
+  const limit = Number(process.env.MUSIC_FETCH_LIMIT || 20);
   const queries = (
     process.env.MUSIC_FETCH_QUERIES ||
     "corporate,upbeat,product,techno,calm,energetic,cinematic,inspiring,electronic,ambient"
@@ -256,17 +283,29 @@ async function main() {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
+  const enabledSources = new Set(
+    (process.env.MUSIC_SOURCES || "pixabay,jamendo")
+      .split(",")
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean),
+  );
 
-  console.log(`[fetch-music] queries=${queries.join(", ")} limit=${limit}`);
+  console.log(
+    `[fetch-music] queries=${queries.join(", ")} limit=${limit} sources=${[...enabledSources].join(",")}`,
+  );
 
   const collected: IngestTrack[] = [];
   for (const q of queries) {
-    const [px, fma] = await Promise.all([fetchPixabay(q, limit), fetchFMA(q, limit)]);
-    collected.push(...px, ...fma);
-    console.log(`[fetch-music] "${q}" → pixabay=${px.length} fma=${fma.length}`);
+    const tasks: Promise<IngestTrack[]>[] = [];
+    if (enabledSources.has("pixabay")) tasks.push(fetchPixabayViaScraper(q, limit));
+    if (enabledSources.has("jamendo")) tasks.push(fetchJamendo(q, limit));
+    const results = await Promise.all(tasks);
+    const px = enabledSources.has("pixabay") ? results.shift() ?? [] : [];
+    const jm = enabledSources.has("jamendo") ? results.shift() ?? [] : [];
+    collected.push(...px, ...jm);
+    console.log(`[fetch-music] "${q}" → pixabay=${px.length} jamendo=${jm.length}`);
   }
 
-  // Dedup by filename
   const byFilename = new Map<string, IngestTrack>();
   for (const t of collected) byFilename.set(t.filename, t);
   const unique = [...byFilename.values()];
