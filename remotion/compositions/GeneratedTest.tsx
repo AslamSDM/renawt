@@ -20,8 +20,8 @@ import { slide } from "@remotion/transitions/slide";
 import { wipe } from "@remotion/transitions/wipe";
 
 
-function ease(t) { return t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2; }
-function applyAnim(animation, localFrame, fps) {
+function ease(t: number): number { return t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2; }
+function applyAnim(animation: string, localFrame: number, fps: number) {
   if (animation === "none") return { opacity: 1, transform: "none", filter: "none" };
   const dur = Math.max(1, Math.round(fps * 0.5));
   const t = Math.min(1, Math.max(0, localFrame / dur));
@@ -43,7 +43,12 @@ function GradientBg({ from = "#0f172a", to = "#1e293b", angle = 135 }) {
   return <AbsoluteFill style={{ background: `linear-gradient(${angle}deg, ${from}, ${to})` }} />;
 }
 
-function Title({ text, color = "#fff", size = 96, weight = 800, font = "Inter, sans-serif", animation = "slide-up", delay = 0, align = "center", x = "50%", y = "50%", maxWidth = "80%" }) {
+type TitleProps = {
+  text: string; color?: string; size?: number; weight?: number; font?: string;
+  animation?: string; delay?: number; align?: React.CSSProperties["textAlign"];
+  x?: string; y?: string; maxWidth?: string;
+};
+function Title({ text, color = "#fff", size = 96, weight = 800, font = "Inter, sans-serif", animation = "slide-up", delay = 0, align = "center", x = "50%", y = "50%", maxWidth = "80%" }: TitleProps) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const localFrame = Math.max(0, frame - delay);
@@ -59,7 +64,11 @@ function Title({ text, color = "#fff", size = 96, weight = 800, font = "Inter, s
   );
 }
 
-function Subtitle({ text, color = "rgba(255,255,255,0.75)", size = 36, weight = 500, font = "Inter, sans-serif", animation = "fade", delay = 8, x = "50%", y = "60%", maxWidth = "70%" }) {
+type SubtitleProps = {
+  text: string; color?: string; size?: number; weight?: number; font?: string;
+  animation?: string; delay?: number; x?: string; y?: string; maxWidth?: string;
+};
+function Subtitle({ text, color = "rgba(255,255,255,0.75)", size = 36, weight = 500, font = "Inter, sans-serif", animation = "fade", delay = 8, x = "50%", y = "60%", maxWidth = "70%" }: SubtitleProps) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const localFrame = Math.max(0, frame - delay);
@@ -79,7 +88,7 @@ function Subtitle({ text, color = "rgba(255,255,255,0.75)", size = 36, weight = 
 function IntroScene() { const frame = useCurrentFrame(); const op1 = interpolate(frame, [5, 20], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }); const y1 = interpolate(frame, [5, 20], [40, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }); const op2 = interpolate(frame, [18, 33], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }); const y2 = interpolate(frame, [18, 33], [30, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }); const op3 = interpolate(frame, [30, 45], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }); const y3 = interpolate(frame, [30, 45], [20, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }); return <AbsoluteFill style={{ fontFamily: 'SF Pro Display' }}><div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(160deg, #F9FAFB 0%, #60A5FA 100%)' }} /><div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}><div style={{ opacity: op1, transform: `translateY(${y1}px)`, textAlign: 'center', marginBottom: 16 }}><div style={{ fontSize: 96, fontWeight: 800, color: '#111827' }}>MacBook Neo</div></div><div style={{ opacity: op2, transform: `translateY(${y2}px)`, textAlign: 'center', marginBottom: 8 }}><div style={{ fontSize: 36, fontWeight: 400, color: '#111827' }}>Apple's lightest laptop ever</div></div><div style={{ opacity: op3, transform: `translateY(${y3}px)`, textAlign: 'center' }}><div style={{ fontSize: 24, fontWeight: 600, color: '#3B82F6' }}>18-hour battery · M5 chip · 180° hinge</div></div></div></AbsoluteFill>; }
 
 // ============= REGISTRY MAP =============
-const REGISTRY = {
+const REGISTRY: Record<string, React.FC<any>> = {
   GradientBg,
   Title,
   Subtitle,
@@ -300,16 +309,18 @@ const VIDEO_JSON = {
 };
 
 // ============= TRANSITION HELPERS =============
-function pickPresentation(type) {
-  if (type === "slide") return slide();
-  if (type === "wipe") return wipe();
+type AnyTransition = ReturnType<typeof fade>;
+function pickPresentation(type: string): AnyTransition {
+  if (type === "slide") return slide() as unknown as AnyTransition;
+  if (type === "wipe") return wipe() as unknown as AnyTransition;
   return fade();
 }
 
-function SceneLayers({ layers }) {
+type SceneLayer = { component: string; props?: Record<string, unknown> };
+function SceneLayers({ layers }: { layers: SceneLayer[] }) {
   return (
     <AbsoluteFill>
-      {layers.map((layer, j) => {
+      {layers.map((layer: SceneLayer, j: number) => {
         const Comp = REGISTRY[layer.component];
         if (!Comp) {
           return (

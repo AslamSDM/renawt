@@ -19,7 +19,7 @@ export function BulletList({ items, color = "#fff", bulletColor = "#a78bfa", siz
   return (
     <AbsoluteFill>
       <div style={{ position: "absolute", left: x, top: y, transform: "translateY(-50%)", display: "flex", flexDirection: "column", gap }}>
-        {items.map((it, i) => {
+        {(items as React.ReactNode[]).map((it: React.ReactNode, i: number) => {
           const local = Math.max(0, frame - delay - i * stagger);
           const a = applyAnim("slide-up", local, fps);
           return (

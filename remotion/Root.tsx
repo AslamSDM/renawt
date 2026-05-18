@@ -438,7 +438,7 @@ export const RemotionRoot: React.FC = () => {
           fps/width/height/durationInFrames derived per-render from inputProps. */}
       <Composition
         id="JsonComposition"
-        component={JsonComposition}
+        component={JsonComposition as unknown as React.FC<Record<string, unknown>>}
         durationInFrames={300}
         fps={30}
         width={1920}
@@ -458,17 +458,18 @@ export const RemotionRoot: React.FC = () => {
               ],
             },
           ],
-        } satisfies VideoJsonInputProps}
+        } satisfies VideoJsonInputProps as unknown as Record<string, unknown>}
         calculateMetadata={({ props }) => {
-          const total = props.scenes.reduce(
+          const p = props as unknown as VideoJsonInputProps;
+          const total = p.scenes.reduce(
             (s, x) => s + x.durationInFrames,
             0,
           );
           return {
             durationInFrames: Math.max(1, total),
-            width: props.width || 1920,
-            height: props.height || 1080,
-            fps: props.fps || 30,
+            width: p.width || 1920,
+            height: p.height || 1080,
+            fps: p.fps || 30,
           };
         }}
       />
@@ -476,22 +477,23 @@ export const RemotionRoot: React.FC = () => {
       {/* Jitter-style prototype — primitives + timeline operations */}
       <Composition
         id="JitterComposition"
-        component={JitterComposition}
+        component={JitterComposition as unknown as React.FC<Record<string, unknown>>}
         durationInFrames={120}
         fps={30}
         width={1920}
         height={1080}
-        defaultProps={SEARCH_BAR_JITTER}
+        defaultProps={SEARCH_BAR_JITTER as unknown as Record<string, unknown>}
         calculateMetadata={({ props }) => {
-          const fps = props.fps ?? 30;
-          const totalMs = props.conf.artboards.reduce(
+          const p = props as unknown as JitterDocInputProps;
+          const fps = p.fps ?? 30;
+          const totalMs = p.conf.artboards.reduce(
             (s, a) => s + (a.duration ?? 0),
             0,
           );
           return {
             durationInFrames: Math.max(1, Math.round((totalMs * fps) / 1000)),
-            width: props.conf.artboards[0]?.width || 1920,
-            height: props.conf.artboards[0]?.height || 1080,
+            width: p.conf.artboards[0]?.width || 1920,
+            height: p.conf.artboards[0]?.height || 1080,
             fps,
           };
         }}
