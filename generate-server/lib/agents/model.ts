@@ -4,9 +4,30 @@ import OpenAI from "openai";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
+import { logLlmCall, type TokenUsage } from "../llm/tokenLogger";
 
-// Gemini model — configurable via env
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+function geminiUsageFromResult(result: any): TokenUsage | undefined {
+  const u = result?.response?.usageMetadata;
+  if (!u) return undefined;
+  return {
+    inputTokens: u.promptTokenCount ?? 0,
+    outputTokens: u.candidatesTokenCount ?? 0,
+    totalTokens: u.totalTokenCount ?? 0,
+  };
+}
+
+function openAiUsage(completion: any): TokenUsage | undefined {
+  const u = completion?.usage;
+  if (!u) return undefined;
+  return {
+    inputTokens: u.prompt_tokens ?? 0,
+    outputTokens: u.completion_tokens ?? 0,
+    totalTokens: u.total_tokens ?? 0,
+  };
+}
+
+// Gemini model — configurable via env. Default to 2.5-pro for code-gen quality.
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-pro";
 
 // Google AI client singleton
 let geminiClient: GoogleGenerativeAI | null = null;
@@ -43,6 +64,29 @@ export const CODE_GENERATOR_CONFIG: ModelConfig = {
   temperature: 0.3,
   maxTokens: 8000,
 };
+
+// ============================================
+// Ollama (local) — OpenAI-compatible endpoint
+// ============================================
+// Set LLM_PROVIDER=ollama to short-circuit Gemini Pro / Pro-Vision to local Ollama.
+const OLLAMA_BASE_URL =
+  process.env.OLLAMA_BASE_URL || "http://localhost:11434/v1";
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "gemma4:e4b";
+
+let ollamaClient: OpenAI | null = null;
+function getOllamaClient(): OpenAI {
+  if (!ollamaClient) {
+    ollamaClient = new OpenAI({
+      baseURL: OLLAMA_BASE_URL,
+      apiKey: process.env.OLLAMA_API_KEY || "ollama",
+    });
+  }
+  return ollamaClient;
+}
+
+function useOllama(): boolean {
+  return process.env.LLM_PROVIDER === "ollama";
+}
 
 // ============================================
 // Gemini Flash (Google AI SDK) — fast, cheap
@@ -82,14 +126,33 @@ export async function chatWithGeminiFlash(
     }
   }
 
+  const started = Date.now();
   try {
     const result = await model.generateContent(fullPrompt);
     const text = result.response.text();
     console.log("[GeminiFlash] Response length:", text?.length || 0);
+    logLlmCall({
+      provider: "gemini-flash",
+      model: GEMINI_FLASH_MODEL,
+      usage: geminiUsageFromResult(result),
+      latencyMs: Date.now() - started,
+      ok: true,
+    });
     return { content: text || "" };
   } catch (error) {
-    console.error("[GeminiFlash] API Error, falling back to Kimi:", error);
-    return chatWithKimi(messages, config);
+    logLlmCall({
+      provider: "gemini-flash",
+      model: GEMINI_FLASH_MODEL,
+      latencyMs: Date.now() - started,
+      ok: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    console.error("[GeminiFlash] API Error, falling back to CF Kimi:", error);
+    try {
+      return await chatWithCloudflareAI(messages, config);
+    } catch {
+      return chatWithKimi(messages, config);
+    }
   }
 }
 
@@ -101,6 +164,7 @@ export async function chatWithGeminiPro(
   messages: ChatMessage[],
   config: ModelConfig = {},
 ): Promise<ChatResponse> {
+  if (useOllama()) return chatWithOllama(messages, config);
   const { temperature = 0.7, maxTokens } = config;
   const client = getGeminiClient();
 
@@ -130,14 +194,33 @@ export async function chatWithGeminiPro(
     }
   }
 
+  const started = Date.now();
   try {
     const result = await model.generateContent(fullPrompt);
     const text = result.response.text();
     console.log("[GeminiPro] Response length:", text?.length || 0);
+    logLlmCall({
+      provider: "gemini-pro",
+      model: GEMINI_MODEL,
+      usage: geminiUsageFromResult(result),
+      latencyMs: Date.now() - started,
+      ok: true,
+    });
     return { content: text || "" };
   } catch (error) {
-    console.error("[GeminiPro] API Error, falling back to Kimi:", error);
-    return chatWithKimi(messages, config);
+    logLlmCall({
+      provider: "gemini-pro",
+      model: GEMINI_MODEL,
+      latencyMs: Date.now() - started,
+      ok: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    console.error("[GeminiPro] API Error, falling back to CF Kimi:", error);
+    try {
+      return await chatWithCloudflareAI(messages, config);
+    } catch {
+      return chatWithKimi(messages, config);
+    }
   }
 }
 
@@ -181,6 +264,7 @@ export async function chatWithKimi(
   console.log("[OpenRouter] Model:", OPENROUTER_MODEL);
   console.log("[OpenRouter] Temperature:", temperature);
 
+  const started = Date.now();
   try {
     const completion = await client.chat.completions.create({
       model: OPENROUTER_MODEL,
@@ -196,11 +280,136 @@ export async function chatWithKimi(
     console.log("[OpenRouter] Response received successfully");
     console.log("[OpenRouter] Response length:", content.length);
 
+    logLlmCall({
+      provider: "openrouter",
+      model: OPENROUTER_MODEL,
+      usage: openAiUsage(completion),
+      latencyMs: Date.now() - started,
+      ok: true,
+    });
     return { content };
   } catch (error) {
+    logLlmCall({
+      provider: "openrouter",
+      model: OPENROUTER_MODEL,
+      latencyMs: Date.now() - started,
+      ok: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
     console.error("[OpenRouter] API Error:", error);
     throw error;
   }
+}
+
+// ============================================
+// Cloudflare Workers AI (Kimi K2.6) — OpenAI-compatible endpoint
+// ============================================
+
+const CLOUDFLARE_AI_MODEL =
+  process.env.CLOUDFLARE_AI_MODEL || "@cf/moonshotai/kimi-k2.6";
+
+let cloudflareClient: OpenAI | null = null;
+
+function getCloudflareClient(): OpenAI {
+  if (!cloudflareClient) {
+    const apiToken = process.env.CLOUDFLARE_API_TOKEN;
+    const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+    if (!apiToken) {
+      throw new Error("CLOUDFLARE_API_TOKEN environment variable is required");
+    }
+    if (!accountId) {
+      throw new Error("CLOUDFLARE_ACCOUNT_ID environment variable is required");
+    }
+    cloudflareClient = new OpenAI({
+      apiKey: apiToken,
+      baseURL: `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1`,
+    });
+  }
+  return cloudflareClient;
+}
+
+// Reasoning effort: "low" cuts thinking tokens ~3x for Kimi K2.6 reasoning models.
+// Override via CLOUDFLARE_REASONING_EFFORT=medium|high if higher quality needed.
+const CLOUDFLARE_REASONING_EFFORT = (process.env.CLOUDFLARE_REASONING_EFFORT ||
+  "low") as "low" | "medium" | "high";
+
+export async function chatWithCloudflareAI(
+  messages: ChatMessage[],
+  config: ModelConfig = {},
+): Promise<ChatResponse> {
+  const { temperature = 0.7, maxTokens } = config;
+  const client = getCloudflareClient();
+
+  console.log("[CloudflareAI] Calling Workers AI...");
+  console.log("[CloudflareAI] Model:", CLOUDFLARE_AI_MODEL);
+  console.log(
+    `[CloudflareAI] Temperature: ${temperature} | reasoning_effort: ${CLOUDFLARE_REASONING_EFFORT}`,
+  );
+
+  // Retry with exponential backoff on 429 / transient errors.
+  const MAX_RETRIES = 4;
+  let lastErr: unknown = null;
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    const started = Date.now();
+    try {
+      const completion = await client.chat.completions.create({
+        model: CLOUDFLARE_AI_MODEL,
+        messages: messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+        })),
+        temperature,
+        max_tokens: maxTokens,
+        // @ts-expect-error — supported by CF Workers AI for reasoning models
+        reasoning_effort: CLOUDFLARE_REASONING_EFFORT,
+      });
+
+      const msg = completion.choices[0]?.message as
+        | { content?: string | null; reasoning_content?: string | null }
+        | undefined;
+      let content = msg?.content || "";
+      if (!content && msg?.reasoning_content) {
+        const reasoning = msg.reasoning_content;
+        const fenceMatch = reasoning.match(/```[\s\S]*?```/g);
+        content = fenceMatch ? fenceMatch[fenceMatch.length - 1] : reasoning;
+        console.warn(
+          "[CloudflareAI] content was empty — extracted from reasoning_content",
+        );
+      }
+      console.log("[CloudflareAI] Response length:", content.length);
+
+      logLlmCall({
+        provider: "cloudflare",
+        model: CLOUDFLARE_AI_MODEL,
+        usage: openAiUsage(completion),
+        latencyMs: Date.now() - started,
+        ok: true,
+      });
+      return { content };
+    } catch (error) {
+      lastErr = error;
+      const status = (error as any)?.status;
+      const isRetryable =
+        status === 429 || status === 502 || status === 503 || status === 504;
+      if (!isRetryable || attempt === MAX_RETRIES - 1) {
+        logLlmCall({
+          provider: "cloudflare",
+          model: CLOUDFLARE_AI_MODEL,
+          latencyMs: Date.now() - started,
+          ok: false,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        console.error("[CloudflareAI] API Error (no more retries):", error);
+        throw error;
+      }
+      const backoff = Math.min(8000, 500 * Math.pow(2, attempt));
+      console.warn(
+        `[CloudflareAI] ${status} — retry ${attempt + 1}/${MAX_RETRIES} after ${backoff}ms`,
+      );
+      await new Promise((r) => setTimeout(r, backoff));
+    }
+  }
+  throw lastErr;
 }
 
 // Media type for vision/video
@@ -388,13 +597,28 @@ export async function chatWithGeminiFlashVision(
     : textPrompt;
 
   const { part: mediaPart, cleanup } = await prepareMediaForGemini(media);
+  const started = Date.now();
 
   try {
     const result = await model.generateContent([fullPrompt, mediaPart]);
     const text = result.response.text();
     console.log("[GeminiFlashVision] Response length:", text?.length || 0);
+    logLlmCall({
+      provider: "gemini-flash-vision",
+      model: GEMINI_FLASH_MODEL,
+      usage: geminiUsageFromResult(result),
+      latencyMs: Date.now() - started,
+      ok: true,
+    });
     return { content: text || "" };
   } catch (error) {
+    logLlmCall({
+      provider: "gemini-flash-vision",
+      model: GEMINI_FLASH_MODEL,
+      latencyMs: Date.now() - started,
+      ok: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
     console.error(
       "[GeminiFlashVision] API Error, falling back to Kimi vision:",
       error,
@@ -412,6 +636,8 @@ export async function chatWithGeminiProVision(
   systemPrompt?: string,
   config: ModelConfig = {},
 ): Promise<ChatResponse> {
+  if (useOllama())
+    return chatWithOllamaVision(media, textPrompt, systemPrompt, config);
   const { temperature = 0.7, maxTokens } = config;
   const client = getGeminiClient();
 
@@ -432,13 +658,28 @@ export async function chatWithGeminiProVision(
     : textPrompt;
 
   const { part: mediaPart, cleanup } = await prepareMediaForGemini(media);
+  const started = Date.now();
 
   try {
     const result = await model.generateContent([fullPrompt, mediaPart]);
     const text = result.response.text();
     console.log("[GeminiProVision] Response length:", text?.length || 0);
+    logLlmCall({
+      provider: "gemini-pro-vision",
+      model: GEMINI_MODEL,
+      usage: geminiUsageFromResult(result),
+      latencyMs: Date.now() - started,
+      ok: true,
+    });
     return { content: text || "" };
   } catch (error) {
+    logLlmCall({
+      provider: "gemini-pro-vision",
+      model: GEMINI_MODEL,
+      latencyMs: Date.now() - started,
+      ok: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
     console.error("[GeminiProVision] API Error:", error);
     return chatWithGeminiFlashVision(media, textPrompt, systemPrompt, config);
   } finally {
@@ -511,6 +752,7 @@ async function chatWithKimiVisionDirect(
 
   messages.push({ role: "user", content: userContent });
 
+  const started = Date.now();
   try {
     const completion = await client.chat.completions.create({
       model: OPENROUTER_MODEL,
@@ -524,9 +766,288 @@ async function chatWithKimiVisionDirect(
     console.log("[OpenRouter Vision] Response received successfully");
     console.log("[OpenRouter Vision] Response length:", content.length);
 
+    logLlmCall({
+      provider: "openrouter-vision",
+      model: OPENROUTER_MODEL,
+      usage: openAiUsage(completion),
+      latencyMs: Date.now() - started,
+      ok: true,
+    });
     return { content };
   } catch (error) {
+    logLlmCall({
+      provider: "openrouter-vision",
+      model: OPENROUTER_MODEL,
+      latencyMs: Date.now() - started,
+      ok: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
     console.error("[OpenRouter Vision] API Error:", error);
+    throw error;
+  }
+}
+
+// ============================================
+// Ollama text + vision impls
+// ============================================
+
+// Gemma 4 turn-marker template (per ai.google.dev/gemma/docs/core/prompt-formatting-gemma4).
+// `<|think|>` in system enables internal reasoning emitted in <|channel>thought ... <channel|>.
+function buildGemma4Prompt(messages: ChatMessage[], think: boolean): string {
+  const parts: string[] = [];
+  const sysMsgs = messages.filter((m) => m.role === "system");
+  const otherMsgs = messages.filter((m) => m.role !== "system");
+  const sysText = sysMsgs.map((m) => m.content).join("\n\n");
+  if (sysText || think) {
+    parts.push(
+      `<|turn>system\n${think ? "<|think|>\n" : ""}${sysText}<turn|>`,
+    );
+  }
+  for (const m of otherMsgs) {
+    const role = m.role === "assistant" ? "model" : "user";
+    parts.push(`<|turn>${role}\n${m.content}<turn|>`);
+  }
+  parts.push("<|turn>model\n");
+  return parts.join("\n");
+}
+
+function stripGemma4Thought(text: string): string {
+  // Remove <|channel>thought ... <channel|> blocks the model emits when thinking.
+  return text.replace(/<\|channel>thought[\s\S]*?<channel\|>/g, "").trim();
+}
+
+async function chatWithOllamaGemma4(
+  messages: ChatMessage[],
+  config: ModelConfig,
+): Promise<ChatResponse> {
+  const { temperature = 0.7, maxTokens } = config;
+  const think = process.env.OLLAMA_THINK !== "0";
+  const wantsJson =
+    process.env.OLLAMA_JSON_MODE !== "0" &&
+    messages.some((m) => /\bJSON\b/i.test(m.content));
+  const numCtx = Number(process.env.OLLAMA_NUM_CTX || 16384);
+
+  const prompt = buildGemma4Prompt(messages, think);
+  const body = {
+    model: OLLAMA_MODEL,
+    prompt,
+    raw: true,
+    stream: true,
+    ...(wantsJson ? { format: "json" as const } : {}),
+    options: {
+      temperature,
+      num_ctx: numCtx,
+      ...(maxTokens ? { num_predict: maxTokens } : {}),
+      stop: ["<turn|>"],
+    },
+  };
+  const baseRoot = OLLAMA_BASE_URL.replace(/\/v1\/?$/, "");
+  const resp = await fetch(`${baseRoot}/api/generate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!resp.ok || !resp.body) {
+    throw new Error(
+      `Ollama /api/generate ${resp.status}: ${await resp.text().catch(() => "")}`,
+    );
+  }
+  // Stream NDJSON — accumulate `response` chunks; capture final usage on last line.
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder();
+  let raw = "";
+  let buf = "";
+  let promptEval = 0;
+  let evalCount = 0;
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    let nl: number;
+    while ((nl = buf.indexOf("\n")) !== -1) {
+      const line = buf.slice(0, nl).trim();
+      buf = buf.slice(nl + 1);
+      if (!line) continue;
+      try {
+        const obj = JSON.parse(line);
+        if (typeof obj.response === "string") raw += obj.response;
+        if (obj.done) {
+          promptEval = obj.prompt_eval_count ?? promptEval;
+          evalCount = obj.eval_count ?? evalCount;
+        }
+      } catch {
+        // skip malformed line
+      }
+    }
+  }
+  const content = stripGemma4Thought(raw);
+  return {
+    content,
+    // attach raw for logging
+    // @ts-expect-error — extra debug field
+    _raw: raw,
+    // @ts-expect-error
+    _usage: {
+      inputTokens: promptEval,
+      outputTokens: evalCount,
+      totalTokens: promptEval + evalCount,
+    },
+  };
+}
+
+export async function chatWithOllama(
+  messages: ChatMessage[],
+  config: ModelConfig = {},
+): Promise<ChatResponse> {
+  const { temperature = 0.7, maxTokens } = config;
+
+  console.log("[Ollama] Calling local Ollama...");
+  console.log("[Ollama] Base:", OLLAMA_BASE_URL, "| Model:", OLLAMA_MODEL);
+
+  // Gemma 4 uses a specific turn-marker template; auto-detect by model name.
+  const isGemma4 =
+    /^gemma4(:|$)/i.test(OLLAMA_MODEL) ||
+    process.env.OLLAMA_GEMMA4_FORMAT === "1";
+
+  const started = Date.now();
+  try {
+    if (isGemma4) {
+      const out = (await chatWithOllamaGemma4(messages, {
+        temperature,
+        maxTokens,
+      })) as ChatResponse & { _usage?: TokenUsage };
+      console.log(
+        "[Ollama] (gemma4 turn-marker) Response length:",
+        out.content.length,
+      );
+      logLlmCall({
+        provider: "ollama",
+        model: OLLAMA_MODEL,
+        usage: out._usage,
+        latencyMs: Date.now() - started,
+        ok: true,
+      });
+      return { content: out.content };
+    }
+
+    // Non-Gemma-4 fallback: OpenAI-compat /v1/chat/completions
+    const client = getOllamaClient();
+    const wantsJson =
+      process.env.OLLAMA_JSON_MODE !== "0" &&
+      messages.some((m) => /\bJSON\b/i.test(m.content));
+    const numCtx = Number(process.env.OLLAMA_NUM_CTX || 16384);
+    const completion = await client.chat.completions.create({
+      model: OLLAMA_MODEL,
+      messages: messages.map((m) => ({ role: m.role, content: m.content })),
+      temperature,
+      max_tokens: maxTokens,
+      ...(wantsJson ? { response_format: { type: "json_object" } } : {}),
+      // @ts-expect-error — Ollama accepts arbitrary extra fields
+      options: { num_ctx: numCtx },
+    });
+    const content = completion.choices[0]?.message?.content || "";
+    console.log("[Ollama] Response length:", content.length);
+    logLlmCall({
+      provider: "ollama",
+      model: OLLAMA_MODEL,
+      usage: openAiUsage(completion),
+      latencyMs: Date.now() - started,
+      ok: true,
+    });
+    return { content };
+  } catch (error) {
+    logLlmCall({
+      provider: "ollama",
+      model: OLLAMA_MODEL,
+      latencyMs: Date.now() - started,
+      ok: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    console.error("[Ollama] API Error:", error);
+    throw error;
+  }
+}
+
+export async function chatWithOllamaVision(
+  media: MediaInput,
+  textPrompt: string,
+  systemPrompt?: string,
+  config: ModelConfig = {},
+): Promise<ChatResponse> {
+  const { temperature = 0.7, maxTokens } = config;
+  const client = getOllamaClient();
+
+  console.log("[OllamaVision] Calling local Ollama with media...");
+  console.log(
+    "[OllamaVision] Media type:",
+    media.type,
+    "| Model:",
+    OLLAMA_MODEL,
+  );
+
+  let dataUrl: string;
+  if (media.base64 && media.mimeType) {
+    dataUrl = `data:${media.mimeType};base64,${media.base64}`;
+  } else if (media.path) {
+    if (media.path.startsWith("http")) {
+      const resp = await fetch(media.path);
+      const buffer = Buffer.from(await resp.arrayBuffer());
+      const ext = path.extname(new URL(media.path).pathname).slice(1) || "png";
+      const mimePrefix = media.type === "image" ? "image" : "video";
+      dataUrl = `data:${mimePrefix}/${ext};base64,${buffer.toString("base64")}`;
+    } else {
+      dataUrl = encodeMediaToDataUrl(media.path, media.type);
+    }
+  } else {
+    throw new Error("Media input must have either path or base64+mimeType");
+  }
+
+  const messages: Array<{
+    role: "system" | "user" | "assistant";
+    content:
+      | string
+      | Array<
+          | { type: "text"; text: string }
+          | { type: "image_url"; image_url: { url: string } }
+        >;
+  }> = [];
+  if (systemPrompt) messages.push({ role: "system", content: systemPrompt });
+  messages.push({
+    role: "user",
+    content: [
+      { type: "image_url", image_url: { url: dataUrl } },
+      { type: "text", text: textPrompt },
+    ],
+  });
+
+  const started = Date.now();
+  try {
+    const completion = await client.chat.completions.create({
+      model: OLLAMA_MODEL,
+      messages:
+        messages as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
+      temperature,
+      max_tokens: maxTokens,
+    });
+    const content = completion.choices[0]?.message?.content || "";
+    console.log("[OllamaVision] Response length:", content.length);
+    logLlmCall({
+      provider: "ollama-vision",
+      model: OLLAMA_MODEL,
+      usage: openAiUsage(completion),
+      latencyMs: Date.now() - started,
+      ok: true,
+    });
+    return { content };
+  } catch (error) {
+    logLlmCall({
+      provider: "ollama-vision",
+      model: OLLAMA_MODEL,
+      latencyMs: Date.now() - started,
+      ok: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    console.error("[OllamaVision] API Error:", error);
     throw error;
   }
 }

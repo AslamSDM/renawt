@@ -958,4 +958,7 @@ function Divider({ x = "50%", y = "50%", width = 400, thickness = 2, color = "#f
   },
 };
 
+import { REGISTRY_3D } from "./registry3d";
+Object.assign(BUILTIN_COMPONENTS, REGISTRY_3D);
+
 export type RegistryName = keyof typeof BUILTIN_COMPONENTS;

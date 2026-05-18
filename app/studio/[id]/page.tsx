@@ -121,10 +121,10 @@ export default function StudioPage({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+      <div className="min-h-screen bg-surface-2  flex items-center justify-center">
         <div className="text-center">
           <Spinner size="lg" />
-          <p className="mt-4 text-gray-600 dark:text-gray-400">
+          <p className="mt-4 text-subtle ">
             Loading project...
           </p>
         </div>
@@ -134,13 +134,13 @@ export default function StudioPage({
 
   if (error || !project) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+      <div className="min-h-screen bg-surface-2  flex items-center justify-center">
         <Card className="max-w-md text-center">
           <div className="text-4xl mb-4">😕</div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+          <h2 className="text-xl font-semibold text-ink  mb-2">
             Project Not Found
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-subtle  mb-6">
             {error || "The project you're looking for doesn't exist."}
           </p>
           <Link href="/">
@@ -152,17 +152,26 @@ export default function StudioPage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="relative min-h-screen overflow-hidden bg-surface text-ink">
+      <div className="pointer-events-none absolute inset-0 kinetic-dotgrid" />
+      <div
+        className="pointer-events-none absolute kinetic-glow-soft"
+        style={{ top: -150, left: "50%", transform: "translateX(-50%)", width: 1000, height: 500 }}
+      />
+
       {/* Header */}
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+      <header
+        className="relative z-10 sticky top-0 backdrop-blur-md"
+        style={{ background: "rgba(7,7,10,0.7)", borderBottom: "1px solid var(--rule)" }}
+      >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
-              href="/"
-              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              href="/projects"
+              className="text-muted hover:text-ink transition-colors"
             >
               <svg
-                className="w-6 h-6"
+                className="w-5 h-5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -175,11 +184,15 @@ export default function StudioPage({
                 />
               </svg>
             </Link>
+            <span className="kinetic-pill !py-1 !px-2.5">
+              <span className="accent-dot" />
+              <span className="mono-tick" style={{ color: "var(--ink)" }}>STUDIO</span>
+            </span>
             <div>
-              <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h1 className="text-base font-medium tracking-[-0.02em] text-ink">
                 {project.productData?.name || "Untitled Video"}
               </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-muted">
                 {project.script
                   ? `${Math.round(project.script.totalDuration / 30)}s video`
                   : "Draft"}
@@ -225,7 +238,7 @@ export default function StudioPage({
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="relative z-10 max-w-7xl mx-auto px-6 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Video Player */}
           <div className="lg:col-span-2">
@@ -242,52 +255,37 @@ export default function StudioPage({
           {/* Side Panel */}
           <div className="space-y-6">
             {/* Panel Tabs */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => setActivePanel("scenes")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activePanel === "scenes"
-                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                    : "text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-                }`}
-              >
-                Scenes
-              </button>
-              <button
-                onClick={() => setActivePanel("data")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activePanel === "data"
-                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                    : "text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-                }`}
-              >
-                Data
-              </button>
-              <button
-                onClick={() => setActivePanel("code")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activePanel === "code"
-                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                    : "text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-                }`}
-              >
-                Code
-              </button>
-              <button
-                onClick={() => setActivePanel("recordings")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activePanel === "recordings"
-                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                    : "text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-                }`}
-              >
-                Recordings
-                {recordings.length > 0 && (
-                  <span className="ml-2 text-xs bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded-full">
-                    {recordings.length}
-                  </span>
-                )}
-              </button>
+            <div
+              className="flex gap-1 rounded-full p-1"
+              style={{ background: "var(--paper)", border: "1px solid var(--rule)" }}
+            >
+              {(["scenes", "data", "code", "recordings"] as const).map((p) => {
+                const active = activePanel === p;
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setActivePanel(p)}
+                    className="rounded-full px-3 py-1.5 text-[13px] font-medium capitalize transition-colors"
+                    style={{
+                      background: active ? "var(--accent-soft)" : "transparent",
+                      color: active ? "var(--accent)" : "var(--muted)",
+                      border: active ? "1px solid rgba(59,130,246,0.40)" : "1px solid transparent",
+                    }}
+                  >
+                    {p}
+                    {p === "recordings" && recordings.length > 0 && (
+                      <span
+                        className="ml-1.5 rounded-full px-1.5 py-0.5 text-[10px]"
+                        style={{
+                          background: active ? "rgba(59,130,246,0.20)" : "rgba(245,245,247,0.08)",
+                        }}
+                      >
+                        {recordings.length}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Scenes Panel */}
@@ -298,24 +296,24 @@ export default function StudioPage({
                   {project.script.scenes.map((scene, index) => (
                     <div
                       key={scene.id}
-                      className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                      className="p-3 bg-paper-2  rounded-lg"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                        <span className="text-xs font-medium text-muted  uppercase">
                           {scene.type}
                         </span>
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-muted">
                           {Math.round(scene.startFrame / 30)}s -{" "}
                           {Math.round(scene.endFrame / 30)}s
                         </span>
                       </div>
                       {scene.content.headline && (
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        <p className="text-sm font-medium text-ink ">
                           {scene.content.headline}
                         </p>
                       )}
                       {scene.content.subtext && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-xs text-muted  mt-1">
                           {scene.content.subtext}
                         </p>
                       )}
@@ -324,7 +322,7 @@ export default function StudioPage({
                           className="inline-block w-4 h-4 rounded"
                           style={{ background: scene.style.background }}
                         />
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-muted">
                           {scene.animation.enter} → {scene.animation.exit}
                         </span>
                       </div>
@@ -340,33 +338,33 @@ export default function StudioPage({
                 <CardHeader title="Product Data" />
                 <div className="space-y-4">
                   <div>
-                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                    <label className="text-xs font-medium text-muted  uppercase">
                       Name
                     </label>
-                    <p className="text-sm text-gray-900 dark:text-white">
+                    <p className="text-sm text-ink ">
                       {project.productData.name}
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                    <label className="text-xs font-medium text-muted  uppercase">
                       Tagline
                     </label>
-                    <p className="text-sm text-gray-900 dark:text-white">
+                    <p className="text-sm text-ink ">
                       {project.productData.tagline}
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                    <label className="text-xs font-medium text-muted  uppercase">
                       Features
                     </label>
-                    <ul className="text-sm text-gray-700 dark:text-gray-300 list-disc list-inside">
+                    <ul className="text-sm text-subtle  list-disc list-inside">
                       {project.productData.features.map((f, i) => (
                         <li key={i}>{f.title}</li>
                       ))}
                     </ul>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                    <label className="text-xs font-medium text-muted  uppercase">
                       Colors
                     </label>
                     <div className="flex gap-2 mt-1">
@@ -400,10 +398,10 @@ export default function StudioPage({
             {/* Code Panel */}
             {activePanel === "code" && project.composition && (
               <Card padding="none">
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="p-4 border-b border-rule ">
                   <CardHeader title="Generated Code" />
                 </div>
-                <pre className="p-4 text-xs text-gray-700 dark:text-gray-300 overflow-auto max-h-[500px] bg-gray-50 dark:bg-gray-800">
+                <pre className="p-4 text-xs text-subtle  overflow-auto max-h-[500px] bg-paper-2 ">
                   <code>{project.composition}</code>
                 </pre>
               </Card>
@@ -427,10 +425,10 @@ export default function StudioPage({
                 {recordings.length === 0 ? (
                   <div className="text-center py-8">
                     <div className="text-4xl mb-4">📹</div>
-                    <h3 className="font-medium text-gray-900 dark:text-white mb-2">
+                    <h3 className="font-medium text-ink  mb-2">
                       No Recordings Yet
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    <p className="text-sm text-muted  mb-4">
                       Record your screen to demonstrate product features.
                     </p>
                     <Link href={`/record?projectId=${id}`}>
@@ -442,21 +440,21 @@ export default function StudioPage({
                     {recordings.map((recording) => (
                       <div
                         key={recording.id}
-                        className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                        className="p-3 bg-paper-2  rounded-lg"
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase">
+                          <span className="text-xs font-medium text-blue-600  uppercase">
                             Recording
                           </span>
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-muted">
                             {Math.round(recording.duration)}s
                           </span>
                         </div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        <p className="text-sm font-medium text-ink ">
                           {recording.featureName}
                         </p>
                         {recording.description && (
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                          <p className="text-xs text-muted  mt-1 line-clamp-2">
                             {recording.description}
                           </p>
                         )}
@@ -488,10 +486,10 @@ export default function StudioPage({
               <Card>
                 <div className="text-center py-8">
                   <div className="text-4xl mb-4">🎬</div>
-                  <h3 className="font-medium text-gray-900 dark:text-white mb-2">
+                  <h3 className="font-medium text-ink  mb-2">
                     No Video Generated
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  <p className="text-sm text-muted  mb-4">
                     This project doesn't have a generated video yet.
                   </p>
                   <Link href="/">

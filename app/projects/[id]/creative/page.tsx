@@ -92,12 +92,12 @@ const ProgressBar: React.FC<{
   return (
     <div className="w-full space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-400">{status}</span>
+        <span className="text-sm text-muted">{status}</span>
         {showPercentage && (
-          <span className="text-sm text-gray-500">{Math.round(progress)}%</span>
+          <span className="text-sm text-muted">{Math.round(progress)}%</span>
         )}
       </div>
-      <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-paper-3 rounded-full overflow-hidden">
         <div
           className="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-500 ease-out"
           style={{ width: `${Math.min(Math.max(progress, 0), 100)}%` }}
@@ -2869,33 +2869,43 @@ export default function ProjectCreativePage() {
 
   if (projectLoading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-surface text-ink flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-          <p className="text-gray-400">Loading project...</p>
+          <p className="text-muted">Loading project...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans">
+    <div className="relative min-h-screen overflow-hidden bg-surface text-ink font-sans">
+      {/* Ambient backdrop */}
+      <div className="pointer-events-none fixed inset-0 kinetic-dotgrid" />
+      <div
+        className="pointer-events-none fixed kinetic-glow-soft"
+        style={{ top: -200, left: "50%", transform: "translateX(-50%)", width: 1200, height: 600 }}
+      />
+
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-40 px-6 py-4 flex items-center justify-between bg-[#0a0a0a]/80 backdrop-blur-sm border-b border-white/10">
+      <nav
+        className="fixed top-0 left-0 right-0 z-40 px-6 py-4 flex items-center justify-between backdrop-blur-md"
+        style={{ background: "rgba(7,7,10,0.7)", borderBottom: "1px solid var(--rule)" }}
+      >
         <div className="flex items-center gap-4">
           <Link
             href="/projects"
-            className="text-gray-400 hover:text-white transition-colors"
+            className="text-muted hover:text-ink transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <Link
-            href="/"
-            className="text-xl font-light tracking-[0.2em] uppercase"
-          >
-            Remawt
+          <Link href="/" className="flex items-center gap-2">
+            <img src="/logo/remwat full logo .svg" alt="Remawt" className="h-6 w-auto" />
           </Link>
-          <span className="text-gray-600">/</span>
+          <span className="kinetic-pill !py-1 !px-2.5">
+            <span className="accent-dot" />
+            <span className="mono-tick" style={{ color: "var(--ink)" }}>CREATIVE</span>
+          </span>
 
           {/* Project Name - Editable */}
           {editingProjectName ? (
@@ -2909,14 +2919,14 @@ export default function ProjectCreativePage() {
                   if (e.key === "Escape") setEditingProjectName(false);
                 }}
                 onBlur={handleProjectNameSave}
-                className="px-2 py-1 bg-white/10 border border-white/20 rounded text-sm focus:outline-none focus:border-white/40 w-48"
+                className="px-2 py-1 bg-paper-3 border border-rule-strong rounded text-sm focus:outline-none focus:border-ink w-48"
                 autoFocus
               />
             </div>
           ) : (
             <button
               onClick={startEditingProjectName}
-              className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 group"
+              className="text-muted hover:text-ink transition-colors flex items-center gap-2 group"
             >
               <span className="truncate max-w-xs">
                 {projectName || "Untitled Project"}
@@ -2927,31 +2937,40 @@ export default function ProjectCreativePage() {
         </div>
         <div className="flex items-center gap-4">
           {saving && (
-            <span className="text-sm text-gray-500 flex items-center gap-2">
+            <span className="text-sm text-muted flex items-center gap-2">
               <Loader2 className="w-3 h-3 animate-spin" />
               Saving...
             </span>
           )}
           <Link
             href="/projects"
-            className="text-sm text-gray-400 hover:text-white transition-colors"
+            className="text-sm text-muted hover:text-ink transition-colors"
           >
             All Projects
           </Link>
           {/* Generations Sidebar Toggle */}
           <button
             onClick={() => setShowGenerationsSidebar((v) => !v)}
-            className={`relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all ${
-              showGenerationsSidebar
-                ? "bg-purple-500/20 border border-purple-500/40 text-purple-300"
-                : "bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10"
-            }`}
+            className="relative flex items-center gap-2 rounded-full px-3 py-1.5 text-sm transition-all"
+            style={{
+              background: showGenerationsSidebar ? "var(--accent-soft)" : "rgba(245,245,247,0.04)",
+              border: `1px solid ${showGenerationsSidebar ? "rgba(59,130,246,0.40)" : "var(--rule)"}`,
+              color: showGenerationsSidebar ? "var(--accent)" : "var(--muted)",
+            }}
             title="Generations History"
           >
             <History className="w-4 h-4" />
             <span className="hidden sm:inline">Generations</span>
             {versions.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-purple-500 text-white text-[10px] rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
+              <span
+                className="absolute -top-1 -right-1 grid min-w-[18px] place-items-center rounded-full px-1 text-[10px] font-medium"
+                style={{
+                  background: "var(--accent)",
+                  color: "#0a0a0a",
+                  boxShadow: "0 0 8px var(--accent)",
+                  height: 18,
+                }}
+              >
                 {versions.length}
               </span>
             )}
@@ -2968,19 +2987,19 @@ export default function ProjectCreativePage() {
             onClick={() => setShowGenerationsSidebar(false)}
           />
           {/* Sidebar Panel */}
-          <div className="fixed top-0 right-0 h-full w-[380px] max-w-[90vw] bg-[#0f0f0f] border-l border-white/10 z-50 flex flex-col shadow-2xl">
+          <div className="fixed top-0 right-0 h-full w-[380px] max-w-[90vw] bg-paper-2 border-l border-rule z-50 flex flex-col shadow-2xl">
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-rule">
               <div className="flex items-center gap-2">
                 <Film className="w-5 h-5 text-purple-400" />
                 <h3 className="font-medium">Generations</h3>
-                <span className="text-xs text-gray-500 bg-white/5 px-2 py-0.5 rounded-full">
+                <span className="text-xs text-muted bg-paper-2 px-2 py-0.5 rounded-full">
                   {versions.length}
                 </span>
               </div>
               <button
                 onClick={() => setShowGenerationsSidebar(false)}
-                className="text-gray-500 hover:text-white transition-colors"
+                className="text-muted hover:text-ink transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2990,11 +3009,11 @@ export default function ProjectCreativePage() {
             <div className="flex-1 overflow-y-auto py-4 px-4 space-y-4">
               {versions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center py-12">
-                  <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                    <Film className="w-8 h-8 text-gray-600" />
+                  <div className="w-16 h-16 rounded-full bg-paper-2 flex items-center justify-center mb-4">
+                    <Film className="w-8 h-8 text-subtle" />
                   </div>
-                  <p className="text-gray-500 text-sm">No generations yet</p>
-                  <p className="text-gray-600 text-xs mt-1">
+                  <p className="text-muted text-sm">No generations yet</p>
+                  <p className="text-subtle text-xs mt-1">
                     Generate a video to see it here
                   </p>
                 </div>
@@ -3005,7 +3024,7 @@ export default function ProjectCreativePage() {
                     className={`rounded-xl border overflow-hidden transition-all ${
                       version.id === currentVersionId
                         ? "border-purple-500/50 bg-purple-500/10"
-                        : "border-white/10 bg-white/5 hover:bg-white/10"
+                        : "border-rule bg-paper-2 hover:bg-paper-3"
                     }`}
                   >
                     {/* Video Preview */}
@@ -3018,7 +3037,7 @@ export default function ProjectCreativePage() {
                       />
                     ) : (
                       <div className="w-full aspect-video bg-black/50 flex items-center justify-center">
-                        <Film className="w-8 h-8 text-gray-600" />
+                        <Film className="w-8 h-8 text-subtle" />
                       </div>
                     )}
 
@@ -3035,7 +3054,7 @@ export default function ProjectCreativePage() {
                             </span>
                           )}
                         </div>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-muted">
                           {new Date(version.timestamp).toLocaleDateString(
                             undefined,
                             { month: "short", day: "numeric" },
@@ -3049,7 +3068,7 @@ export default function ProjectCreativePage() {
 
                       {version.editMessage && (
                         <p
-                          className="text-xs text-gray-400 truncate"
+                          className="text-xs text-muted truncate"
                           title={version.editMessage}
                         >
                           {version.editMessage}
@@ -3075,7 +3094,7 @@ export default function ProjectCreativePage() {
                           <a
                             href={version.videoUrl}
                             download
-                            className="flex items-center gap-1 text-xs px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg transition-colors"
+                            className="flex items-center gap-1 text-xs px-3 py-1.5 bg-paper-3 hover:bg-paper-3 border border-rule rounded-lg transition-colors"
                           >
                             <Download className="w-3 h-3" />
                             Download
@@ -3094,7 +3113,7 @@ export default function ProjectCreativePage() {
       {/* Main Content */}
       <main className="pt-20">
         {/* Progress Steps */}
-        <div className="border-b border-white/10">
+        <div className="border-b border-rule">
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="flex items-center gap-4">
               {[
@@ -3116,10 +3135,10 @@ export default function ProjectCreativePage() {
                     }
                     className={`flex items-center gap-2 px-4 py-2 text-sm transition-all ${
                       isActive
-                        ? "text-white bg-white/10 rounded-lg"
+                        ? "text-ink bg-paper-3 rounded-lg"
                         : isPast
-                          ? "text-green-400"
-                          : "text-gray-500"
+                          ? "text-ink"
+                          : "text-muted"
                     } ${(step.id === "script" && !editableScript) || (step.id === "preview" && !renderedVideoUrl && !isGeneratingVideo) ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     <Icon className="w-4 h-4" />
@@ -3137,7 +3156,7 @@ export default function ProjectCreativePage() {
             <div className="space-y-8">
               <div>
                 <h2 className="text-2xl font-light mb-2">Create Your Video</h2>
-                <p className="text-gray-500">
+                <p className="text-muted">
                   {flowMode === "product-demo"
                     ? "Enter your product details and we'll generate a script"
                     : "Upload a reference video and describe the content to recreate"}
@@ -3146,7 +3165,7 @@ export default function ProjectCreativePage() {
 
               {/* Mode Switcher */}
               <div className="space-y-2">
-                <label className="text-xs tracking-widest text-gray-500 uppercase">
+                <label className="text-xs tracking-widest text-muted uppercase">
                   Generation Mode
                 </label>
                 <div className="flex gap-2">
@@ -3154,28 +3173,28 @@ export default function ProjectCreativePage() {
                     onClick={() => setFlowMode("product-demo")}
                     className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all ${
                       flowMode === "product-demo"
-                        ? "bg-white/15 text-white border border-white/30 shadow-lg shadow-white/5"
-                        : "bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10"
+                        ? "bg-paper-3 text-ink border border-rule-strong shadow-lg shadow-black/5"
+                        : "bg-paper-2 text-muted border border-rule hover:bg-paper-3"
                     }`}
                   >
                     <div className="flex flex-col items-center gap-1">
                       <Film className="w-4 h-4" />
                       <span>Product Demo</span>
-                      <span className="text-[10px] text-gray-500">1-5 credits</span>
+                      <span className="text-[10px] text-muted">1-5 credits</span>
                     </div>
                   </button>
                   <button
                     onClick={() => setFlowMode("reference-video")}
                     className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all ${
                       flowMode === "reference-video"
-                        ? "bg-white/15 text-white border border-white/30 shadow-lg shadow-white/5"
-                        : "bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10"
+                        ? "bg-paper-3 text-ink border border-rule-strong shadow-lg shadow-black/5"
+                        : "bg-paper-2 text-muted border border-rule hover:bg-paper-3"
                     }`}
                   >
                     <div className="flex flex-col items-center gap-1">
                       <Upload className="w-4 h-4" />
                       <span>Reference Video</span>
-                      <span className="text-[10px] text-gray-500">5 credits</span>
+                      <span className="text-[10px] text-muted">5 credits</span>
                     </div>
                   </button>
                 </div>
@@ -3183,7 +3202,7 @@ export default function ProjectCreativePage() {
 
               {/* Floating Progress Indicator - Show during generation */}
               {loading && generationProgress > 0 && activeTab === "input" && (
-                <div className="fixed bottom-6 right-6 z-50 bg-[#1a1a1a] border border-white/10 rounded-lg p-4 shadow-2xl max-w-sm">
+                <div className="fixed bottom-6 right-6 z-50 bg-paper-2 border border-rule rounded-lg p-4 shadow-2xl max-w-sm">
                   <ProgressBar
                     progress={generationProgress}
                     status={generationStatus}
@@ -3196,11 +3215,11 @@ export default function ProjectCreativePage() {
                 <>
                   {/* Reference Video Upload */}
                   <div className="space-y-2">
-                    <label className="text-xs tracking-widest text-gray-500 uppercase">
+                    <label className="text-xs tracking-widest text-muted uppercase">
                       Reference Video
                     </label>
                     {referenceVideoPreview ? (
-                      <div className="relative rounded-lg overflow-hidden border border-white/10">
+                      <div className="relative rounded-lg overflow-hidden border border-rule">
                         <video
                           src={referenceVideoPreview}
                           className="w-full max-h-48 object-contain bg-black"
@@ -3218,15 +3237,15 @@ export default function ProjectCreativePage() {
                         >
                           <X className="w-4 h-4" />
                         </button>
-                        <div className="p-2 text-xs text-gray-400">
+                        <div className="p-2 text-xs text-muted">
                           {referenceVideoFile?.name} ({referenceVideoFile ? `${(referenceVideoFile.size / 1024 / 1024).toFixed(1)}MB` : ""})
                         </div>
                       </div>
                     ) : (
-                      <label className="w-full py-8 border-2 border-dashed border-white/10 rounded-lg flex flex-col items-center justify-center gap-3 hover:border-white/20 transition-colors text-gray-500 cursor-pointer">
+                      <label className="w-full py-8 border-2 border-dashed border-rule rounded-lg flex flex-col items-center justify-center gap-3 hover:border-rule-strong transition-colors text-muted cursor-pointer">
                         <Upload className="w-8 h-8" />
                         <span className="text-sm">Click to upload a reference video</span>
-                        <span className="text-xs text-gray-600">MP4, WebM, MOV — max 100MB</span>
+                        <span className="text-xs text-subtle">MP4, WebM, MOV — max 100MB</span>
                         <input
                           type="file"
                           accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
@@ -3239,7 +3258,7 @@ export default function ProjectCreativePage() {
 
                   {/* Description for reference video */}
                   <div className="space-y-2">
-                    <label className="text-xs tracking-widest text-gray-500 uppercase">
+                    <label className="text-xs tracking-widest text-muted uppercase">
                       Content Description
                     </label>
                     <textarea
@@ -3247,16 +3266,16 @@ export default function ProjectCreativePage() {
                       onChange={(e) => setDescription(e.target.value)}
                       placeholder="Describe the content to use in the recreated video. E.g. product name, features, taglines, colors, brand style..."
                       rows={6}
-                      className="w-full px-4 py-4 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none transition-colors resize-none text-base rounded-lg"
+                      className="w-full px-4 py-4 bg-paper-2 border border-rule focus:border-rule-strong focus:outline-none transition-colors resize-none text-base rounded-lg"
                     />
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs text-subtle">
                       Gemini Pro will analyze the reference video&apos;s style and recreate it with your content
                     </p>
                   </div>
 
                   {/* Images / Logos Upload */}
                   <div className="space-y-2">
-                    <label className="text-xs tracking-widest text-gray-500 uppercase">
+                    <label className="text-xs tracking-widest text-muted uppercase">
                       Images &amp; Logos (Optional)
                     </label>
                     {referenceImages.length > 0 && (
@@ -3266,7 +3285,7 @@ export default function ProjectCreativePage() {
                             <img
                               src={img.url}
                               alt={img.name}
-                              className="w-16 h-16 object-cover rounded-lg border border-white/10"
+                              className="w-16 h-16 object-cover rounded-lg border border-rule"
                             />
                             <button
                               onClick={() => setReferenceImages((prev) => prev.filter((_, idx) => idx !== i))}
@@ -3274,12 +3293,12 @@ export default function ProjectCreativePage() {
                             >
                               <X className="w-3 h-3" />
                             </button>
-                            <p className="text-[10px] text-gray-500 truncate max-w-[64px]">{img.name}</p>
+                            <p className="text-[10px] text-muted truncate max-w-[64px]">{img.name}</p>
                           </div>
                         ))}
                       </div>
                     )}
-                    <label className="w-full py-4 border border-dashed border-white/10 rounded-lg flex items-center justify-center gap-2 hover:border-white/20 transition-colors text-gray-500 cursor-pointer text-sm">
+                    <label className="w-full py-4 border border-dashed border-rule rounded-lg flex items-center justify-center gap-2 hover:border-rule-strong transition-colors text-muted cursor-pointer text-sm">
                       {uploadingImages ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
@@ -3299,20 +3318,20 @@ export default function ProjectCreativePage() {
 
                   {/* Website URL (Optional) */}
                   <div className="space-y-2">
-                    <label className="text-xs tracking-widest text-gray-500 uppercase">
+                    <label className="text-xs tracking-widest text-muted uppercase">
                       Website URL (Optional)
                     </label>
                     <div className="flex items-center gap-2">
-                      <Globe className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                      <Globe className="w-4 h-4 text-muted flex-shrink-0" />
                       <input
                         type="url"
                         value={referenceSourceUrl}
                         onChange={(e) => setReferenceSourceUrl(e.target.value)}
                         placeholder="https://yourproduct.com"
-                        className="w-full px-3 py-2 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none transition-colors text-sm rounded-lg"
+                        className="w-full px-3 py-2 bg-paper-2 border border-rule focus:border-rule-strong focus:outline-none transition-colors text-sm rounded-lg"
                       />
                     </div>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs text-subtle">
                       Scrape brand colors, copy, and style from your website
                     </p>
                   </div>
@@ -3320,18 +3339,18 @@ export default function ProjectCreativePage() {
                   {/* Strip Reference Audio */}
                   <div className="flex items-center justify-between py-2">
                     <div>
-                      <p className="text-sm text-gray-300">Use reference audio</p>
-                      <p className="text-xs text-gray-600">Extract and reuse the audio from the reference video</p>
+                      <p className="text-sm text-ink/80">Use reference audio</p>
+                      <p className="text-xs text-subtle">Extract and reuse the audio from the reference video</p>
                     </div>
                     <button
                       onClick={() => setStripReferenceAudio(!stripReferenceAudio)}
                       className={`relative w-10 h-5 rounded-full transition-colors ${
-                        stripReferenceAudio ? "bg-white" : "bg-white/10"
+                        stripReferenceAudio ? "bg-ink" : "bg-paper-3"
                       }`}
                     >
                       <span
                         className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full transition-transform ${
-                          stripReferenceAudio ? "translate-x-5 bg-black" : "translate-x-0 bg-gray-500"
+                          stripReferenceAudio ? "translate-x-5 bg-black" : "translate-x-0 bg-rule-strong"
                         }`}
                       />
                     </button>
@@ -3344,7 +3363,7 @@ export default function ProjectCreativePage() {
                 <>
                   {/* URL Input */}
                   <div className="space-y-2">
-                    <label className="text-xs tracking-widest text-gray-500 uppercase">
+                    <label className="text-xs tracking-widest text-muted uppercase">
                       Product URL (Optional)
                     </label>
                     <input
@@ -3352,13 +3371,13 @@ export default function ProjectCreativePage() {
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
                       placeholder="https://example.com/product"
-                      className="w-full px-4 py-4 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none transition-colors text-base rounded-lg"
+                      className="w-full px-4 py-4 bg-paper-2 border border-rule focus:border-rule-strong focus:outline-none transition-colors text-base rounded-lg"
                     />
                   </div>
 
                   {/* Description Input - Wider */}
                   <div className="space-y-2">
-                    <label className="text-xs tracking-widest text-gray-500 uppercase">
+                    <label className="text-xs tracking-widest text-muted uppercase">
                       Description
                     </label>
                     <textarea
@@ -3366,19 +3385,19 @@ export default function ProjectCreativePage() {
                       onChange={(e) => setDescription(e.target.value)}
                       placeholder="Describe your product, what it does, and what makes it special..."
                       rows={6}
-                      className="w-full px-4 py-4 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none transition-colors resize-none text-base rounded-lg"
+                      className="w-full px-4 py-4 bg-paper-2 border border-rule focus:border-rule-strong focus:outline-none transition-colors resize-none text-base rounded-lg"
                     />
                   </div>
 
                   {/* Video Preset */}
                   <div className="space-y-2">
-                    <label className="text-xs tracking-widest text-gray-500 uppercase">
+                    <label className="text-xs tracking-widest text-muted uppercase">
                       Video Preset
                     </label>
                     <select
                       value={preset}
                       onChange={(e) => setPreset(e.target.value as PresetKey)}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 focus:border-white/30 focus:outline-none rounded-lg"
+                      className="w-full px-4 py-3 bg-paper-2 border border-rule focus:border-rule-strong focus:outline-none rounded-lg"
                     >
                       {Object.entries(PRESETS).map(([key, p]) => (
                         <option key={key} value={key}>
@@ -3393,10 +3412,10 @@ export default function ProjectCreativePage() {
               {/* Duration */}
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <label className="text-xs tracking-widest text-gray-500 uppercase">
+                  <label className="text-xs tracking-widest text-muted uppercase">
                     Duration
                   </label>
-                  <span className="text-sm text-gray-400">
+                  <span className="text-sm text-muted">
                     {duration}s
                     {selectedAudio?.duration &&
                     duration > selectedAudio.duration
@@ -3428,10 +3447,10 @@ export default function ProjectCreativePage() {
                       : 120;
                     setDuration(Math.min(val, maxAllowed));
                   }}
-                  className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
+                  className="w-full h-2 bg-paper-3 rounded-lg appearance-none cursor-pointer accent-white"
                 />
                 {selectedAudio?.duration && (
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-subtle">
                     Max duration is locked to your selected audio track (
                     {Math.floor(selectedAudio.duration)}s)
                   </p>
@@ -3440,7 +3459,7 @@ export default function ProjectCreativePage() {
 
               {/* Aspect Ratio */}
               <div className="space-y-2">
-                <label className="text-xs tracking-widest text-gray-500 uppercase">
+                <label className="text-xs tracking-widest text-muted uppercase">
                   Aspect Ratio
                 </label>
                 <div className="flex gap-2">
@@ -3451,8 +3470,8 @@ export default function ProjectCreativePage() {
                         onClick={() => setAspectRatio(ratio)}
                         className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
                           aspectRatio === ratio
-                            ? "bg-white/20 text-white border border-white/30"
-                            : "bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10"
+                            ? "bg-paper-3 text-ink border border-rule-strong"
+                            : "bg-paper-2 text-muted border border-rule hover:bg-paper-3"
                         }`}
                       >
                         {ASPECT_RATIOS[ratio].label}
@@ -3465,7 +3484,7 @@ export default function ProjectCreativePage() {
               {/* Feature Toggles — Product Demo only */}
               {flowMode === "product-demo" && (
                 <div className="space-y-3">
-                  <label className="text-xs tracking-widest text-gray-500 uppercase">
+                  <label className="text-xs tracking-widest text-muted uppercase">
                     Features
                   </label>
                   {[
@@ -3490,22 +3509,22 @@ export default function ProjectCreativePage() {
                       className="flex items-center justify-between py-2"
                     >
                       <div>
-                        <div className="text-sm text-gray-300">{label}</div>
-                        <div className="text-xs text-gray-600">{desc}</div>
+                        <div className="text-sm text-ink/80">{label}</div>
+                        <div className="text-xs text-subtle">{desc}</div>
                       </div>
                       <button
                         onClick={() =>
                           setToggles((prev) => ({ ...prev, [key]: !prev[key] }))
                         }
                         className={`relative w-10 h-5 rounded-full transition-colors ${
-                          toggles[key] ? "bg-white/30" : "bg-white/10"
+                          toggles[key] ? "bg-paper-3" : "bg-paper-3"
                         }`}
                       >
                         <div
                           className={`absolute top-0.5 w-4 h-4 rounded-full transition-transform ${
                             toggles[key]
-                              ? "translate-x-5 bg-white"
-                              : "translate-x-0.5 bg-gray-500"
+                              ? "translate-x-5 bg-ink"
+                              : "translate-x-0.5 bg-rule-strong"
                           }`}
                         />
                       </button>
@@ -3532,13 +3551,13 @@ export default function ProjectCreativePage() {
               {flowMode !== "reference-video" && (
               /* Recordings */
               <div className="space-y-3">
-                <label className="text-xs tracking-widest text-gray-500 uppercase">
+                <label className="text-xs tracking-widest text-muted uppercase">
                   Screen Recordings
                 </label>
                 {recordings.length === 0 ? (
                   <button
                     onClick={() => setShowRecordingModal(true)}
-                    className="w-full py-4 border-2 border-dashed border-white/10 rounded-lg flex items-center justify-center gap-3 hover:border-white/20 transition-colors text-gray-500"
+                    className="w-full py-4 border-2 border-dashed border-rule rounded-lg flex items-center justify-center gap-3 hover:border-rule-strong transition-colors text-muted"
                   >
                     <Monitor className="w-5 h-5" />
                     <span>Add a screen recording</span>
@@ -3556,29 +3575,29 @@ export default function ProjectCreativePage() {
                       return (
                         <div
                           key={recording.id}
-                          className="bg-white/5 border border-white/10 p-4 rounded-lg"
+                          className="bg-paper-2 border border-rule p-4 rounded-lg"
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <div
                                 className={`w-2 h-2 rounded-full ${
                                   hasProcessedVideo
-                                    ? "bg-green-400"
+                                    ? "bg-ink"
                                     : isFailed
                                       ? "bg-red-400"
                                       : isProcessing
-                                        ? "bg-yellow-400 animate-pulse"
-                                        : "bg-gray-400"
+                                        ? "bg-ink animate-pulse"
+                                        : "bg-rule-strong"
                                 }`}
                               />
                               <span className="text-sm">
                                 {recording.featureName}
                               </span>
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-muted">
                                 {formatTime(Math.round(recording.duration))}
                               </span>
                               {hasProcessedVideo ? (
-                                <span className="text-xs text-green-400">
+                                <span className="text-xs text-ink">
                                   Ready
                                 </span>
                               ) : isFailed ? (
@@ -3586,7 +3605,7 @@ export default function ProjectCreativePage() {
                                   Failed
                                 </span>
                               ) : isProcessing ? (
-                                <span className="text-xs text-yellow-400 flex items-center gap-1">
+                                <span className="text-xs text-ink flex items-center gap-1">
                                   <Loader2 className="w-3 h-3 animate-spin" />
                                   Processing{" "}
                                   {progress > 0 ? `${progress}%` : ""}
@@ -3613,7 +3632,7 @@ export default function ProjectCreativePage() {
                                   );
                                   setShowRecordingModal(true);
                                 }}
-                                className="text-gray-500 hover:text-white"
+                                className="text-muted hover:text-ink"
                                 title="Edit recording"
                               >
                                 <svg
@@ -3653,7 +3672,7 @@ export default function ProjectCreativePage() {
                                     prev.filter((r) => r.id !== recording.id),
                                   );
                                 }}
-                                className="text-gray-500 hover:text-red-400"
+                                className="text-muted hover:text-red-400"
                                 title="Discard recording"
                               >
                                 <X className="w-4 h-4" />
@@ -3665,7 +3684,7 @@ export default function ProjectCreativePage() {
                     })}
                     <button
                       onClick={() => setShowRecordingModal(true)}
-                      className="w-full py-2 text-sm text-gray-500 hover:text-white transition-colors"
+                      className="w-full py-2 text-sm text-muted hover:text-ink transition-colors"
                     >
                       + Add Another
                     </button>
@@ -3676,7 +3695,7 @@ export default function ProjectCreativePage() {
 
               {/* Progress Bar - Show during generation */}
               {loading && generationProgress > 0 && (
-                <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+                <div className="bg-paper-2 border border-rule rounded-lg p-4">
                   <ProgressBar
                     progress={generationProgress}
                     status={generationStatus}
@@ -3733,13 +3752,13 @@ export default function ProjectCreativePage() {
                     <h2 className="text-2xl font-light">
                       Generating Your Script
                     </h2>
-                    <p className="text-gray-500">
+                    <p className="text-muted">
                       {generationStatus || "Initializing AI..."}
                     </p>
                   </div>
 
                   {/* Progress Bar */}
-                  <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+                  <div className="bg-paper-2 border border-rule rounded-lg p-6">
                     <ProgressBar
                       progress={generationProgress}
                       status={generationStatus}
@@ -3766,15 +3785,15 @@ export default function ProjectCreativePage() {
                         <div
                           className={`w-2 h-2 rounded-full ${
                             generationProgress >= step.threshold
-                              ? "bg-green-400"
-                              : "bg-gray-600"
+                              ? "bg-ink"
+                              : "bg-rule-strong"
                           }`}
                         />
                         <span
                           className={
                             generationProgress >= step.threshold
-                              ? "text-gray-300"
-                              : "text-gray-600"
+                              ? "text-ink/80"
+                              : "text-subtle"
                           }
                         >
                           {step.label}
@@ -3797,7 +3816,7 @@ export default function ProjectCreativePage() {
                 <div className="flex items-center justify-between mb-8">
                   <div>
                     <h2 className="text-2xl font-light mb-1">Video Script</h2>
-                    <p className="text-gray-500">
+                    <p className="text-muted">
                       {editableScript.scenes.length} scenes •{" "}
                       {Math.round(editableScript.totalDuration / 30)}s
                     </p>
@@ -3851,7 +3870,7 @@ export default function ProjectCreativePage() {
 
                 {/* Progress Bar - Show during generation */}
                 {loading && generationProgress > 0 && (
-                  <div className="mb-6 bg-white/5 border border-white/10 rounded-lg p-4">
+                  <div className="mb-6 bg-paper-2 border border-rule rounded-lg p-4">
                     <ProgressBar
                       progress={generationProgress}
                       status={generationStatus}
@@ -3861,7 +3880,7 @@ export default function ProjectCreativePage() {
 
                 {/* Full Video Preview - Only shown when requested */}
                 {showFullPreview && (
-                  <div className="mb-8 aspect-video bg-black rounded-xl overflow-hidden border border-white/10">
+                  <div className="mb-8 aspect-video bg-black rounded-xl overflow-hidden border border-rule">
                     <Player
                       component={CompositionComponent}
                       durationInFrames={totalDuration}
@@ -3876,9 +3895,9 @@ export default function ProjectCreativePage() {
                 )}
 
                 {/* Screenshot & Logo Selection */}
-                <div className="mb-8 bg-white/5 border border-white/10 rounded-xl p-6">
+                <div className="mb-8 bg-paper-2 border border-rule rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-medium text-white flex items-center gap-2">
+                    <h3 className="text-lg font-medium text-ink flex items-center gap-2">
                       <ImageIcon className="w-5 h-5 text-purple-400" />
                       Screenshots
                     </h3>
@@ -3909,10 +3928,10 @@ export default function ProjectCreativePage() {
                   {editableScript.scenes.map((scene, idx) => (
                     <div
                       key={scene.id}
-                      className={`bg-white/5 border rounded-xl overflow-hidden transition-all ${
+                      className={`bg-paper-2 border rounded-xl overflow-hidden transition-all ${
                         selectedSceneId === scene.id
                           ? "border-purple-500 ring-2 ring-purple-500/20"
-                          : "border-white/10"
+                          : "border-rule"
                       }`}
                       onClick={() => setSelectedSceneId(scene.id)}
                     >
@@ -3931,7 +3950,7 @@ export default function ProjectCreativePage() {
                         <div className="absolute top-2 left-2 bg-black/70 px-2 py-1 rounded text-xs">
                           Scene {idx + 1}
                         </div>
-                        <div className="absolute top-2 right-2 bg-white/10 px-2 py-1 rounded text-xs">
+                        <div className="absolute top-2 right-2 bg-paper-3 px-2 py-1 rounded text-xs">
                           {Math.round((scene.endFrame - scene.startFrame) / 30)}
                           s
                         </div>
@@ -3950,7 +3969,7 @@ export default function ProjectCreativePage() {
                             setTimeout(() => setIsSceneUpdating(null), 500);
                           }}
                           disabled={isSceneUpdating === scene.id}
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-sm focus:border-white/30 focus:outline-none disabled:opacity-50"
+                          className="w-full px-3 py-2 bg-paper-2 border border-rule rounded text-sm focus:border-rule-strong focus:outline-none disabled:opacity-50"
                         >
                           <option value="intro">Intro</option>
                           <option value="feature">Feature</option>
@@ -4000,7 +4019,7 @@ export default function ProjectCreativePage() {
                             });
                           }}
                           placeholder="Headline"
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-sm focus:border-white/30 focus:outline-none"
+                          className="w-full px-3 py-2 bg-paper-2 border border-rule rounded text-sm focus:border-rule-strong focus:outline-none"
                         />
 
                         {/* Subtext */}
@@ -4041,7 +4060,7 @@ export default function ProjectCreativePage() {
                             });
                           }}
                           placeholder="Subtext (optional)"
-                          className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded text-sm focus:border-white/30 focus:outline-none text-gray-400"
+                          className="w-full px-3 py-2 bg-paper-2 border border-rule rounded text-sm focus:border-rule-strong focus:outline-none text-muted"
                         />
 
                         {/* Recording/Screenshot Buttons */}
@@ -4049,7 +4068,7 @@ export default function ProjectCreativePage() {
                           <button
                             onClick={() => setShowRecordingModal(true)}
                             disabled={isSceneUpdating === scene.id}
-                            className="flex-1 flex items-center justify-center gap-2 py-2 bg-white/5 border border-white/10 rounded text-xs hover:bg-white/10 transition-colors disabled:opacity-50"
+                            className="flex-1 flex items-center justify-center gap-2 py-2 bg-paper-2 border border-rule rounded text-xs hover:bg-paper-3 transition-colors disabled:opacity-50"
                           >
                             {isSceneUpdating === scene.id ? (
                               <Loader2 className="w-3 h-3 animate-spin" />
@@ -4060,7 +4079,7 @@ export default function ProjectCreativePage() {
                               ? "Updating..."
                               : "Add Recording"}
                           </button>
-                          <label className="flex-1 flex items-center justify-center gap-2 py-2 bg-white/5 border border-white/10 rounded text-xs hover:bg-white/10 transition-colors cursor-pointer">
+                          <label className="flex-1 flex items-center justify-center gap-2 py-2 bg-paper-2 border border-rule rounded text-xs hover:bg-paper-3 transition-colors cursor-pointer">
                             <ImageIcon className="w-3 h-3" />
                             Add Screenshot
                             <input
@@ -4079,14 +4098,14 @@ export default function ProjectCreativePage() {
                         </div>
 
                         {/* Scene Actions */}
-                        <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                        <div className="flex items-center justify-between pt-2 border-t border-rule">
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() =>
                                 idx > 0 && handleReorderScene(idx, idx - 1)
                               }
                               disabled={idx === 0 || isSceneUpdating !== null}
-                              className="p-1 text-gray-500 hover:text-white disabled:opacity-20"
+                              className="p-1 text-muted hover:text-ink disabled:opacity-20"
                             >
                               <ChevronLeft className="w-4 h-4" />
                             </button>
@@ -4099,7 +4118,7 @@ export default function ProjectCreativePage() {
                                 idx === editableScript.scenes.length - 1 ||
                                 isSceneUpdating !== null
                               }
-                              className="p-1 text-gray-500 hover:text-white disabled:opacity-20"
+                              className="p-1 text-muted hover:text-ink disabled:opacity-20"
                             >
                               <ChevronRight className="w-4 h-4" />
                             </button>
@@ -4111,7 +4130,7 @@ export default function ProjectCreativePage() {
                               setTimeout(() => setIsSceneUpdating(null), 500);
                             }}
                             disabled={isSceneUpdating !== null}
-                            className="p-1 text-gray-500 hover:text-red-400 disabled:opacity-20"
+                            className="p-1 text-muted hover:text-red-400 disabled:opacity-20"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -4124,7 +4143,7 @@ export default function ProjectCreativePage() {
                   <button
                     onClick={handleAddScene}
                     disabled={isSceneUpdating !== null}
-                    className="aspect-[4/3] border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center gap-3 hover:border-white/20 transition-colors text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="aspect-[4/3] border-2 border-dashed border-rule rounded-xl flex flex-col items-center justify-center gap-3 hover:border-rule-strong transition-colors text-muted disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Plus className="w-8 h-8" />
                     <span className="text-sm">
@@ -4134,15 +4153,15 @@ export default function ProjectCreativePage() {
                 </div>
 
                 {/* Chat-based editing */}
-                <div className="mt-8 bg-white/5 border border-white/10 rounded-xl p-4">
+                <div className="mt-8 bg-paper-2 border border-rule rounded-xl p-4">
                   {scriptChatHistory.length > 0 && (
                     <div className="max-h-32 overflow-y-auto mb-4 space-y-2">
                       {scriptChatHistory.map((msg, i) => (
                         <div
                           key={i}
-                          className={`text-sm ${msg.role === "user" ? "text-gray-300" : "text-purple-400"}`}
+                          className={`text-sm ${msg.role === "user" ? "text-ink/80" : "text-purple-400"}`}
                         >
-                          <span className="text-gray-600 font-mono text-xs">
+                          <span className="text-subtle font-mono text-xs">
                             {msg.role === "user" ? "you" : "ai"}:
                           </span>{" "}
                           {msg.text}
@@ -4162,13 +4181,13 @@ export default function ProjectCreativePage() {
                         }
                       }}
                       placeholder="Edit by chat... e.g. 'make the intro longer'"
-                      className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:border-white/30 focus:outline-none"
+                      className="flex-1 px-4 py-3 bg-paper-2 border border-rule rounded-lg focus:border-rule-strong focus:outline-none"
                       disabled={scriptChatLoading}
                     />
                     <button
                       onClick={handleScriptChat}
                       disabled={scriptChatLoading || !scriptChatInput.trim()}
-                      className="px-4 py-3 bg-white/10 rounded-lg text-gray-500 hover:text-white disabled:opacity-30 transition-colors"
+                      className="px-4 py-3 bg-paper-3 rounded-lg text-muted hover:text-ink disabled:opacity-30 transition-colors"
                     >
                       {scriptChatLoading ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
@@ -4198,10 +4217,10 @@ export default function ProjectCreativePage() {
                   </div>
                   <div className="text-center space-y-2">
                     <h2 className="text-2xl font-light">Rendering Your Video</h2>
-                    <p className="text-gray-500">{generationStatus || "Preparing render..."}</p>
-                    <p className="text-gray-600 text-sm">This typically takes 2-4 minutes depending on video length</p>
+                    <p className="text-muted">{generationStatus || "Preparing render..."}</p>
+                    <p className="text-subtle text-sm">This typically takes 2-4 minutes depending on video length</p>
                   </div>
-                  <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+                  <div className="bg-paper-2 border border-rule rounded-lg p-6">
                     <ProgressBar
                       progress={rendering ? renderProgress : generationProgress}
                       status={generationStatus || "Rendering video..."}
@@ -4217,8 +4236,8 @@ export default function ProjectCreativePage() {
                       const prog = rendering ? renderProgress : generationProgress;
                       return (
                         <div key={idx} className={`flex items-center gap-3 transition-opacity duration-300 ${prog >= step.threshold ? "opacity-100" : "opacity-30"}`}>
-                          <div className={`w-2 h-2 rounded-full ${prog >= step.threshold ? "bg-green-400" : "bg-gray-600"}`} />
-                          <span className={prog >= step.threshold ? "text-gray-300" : "text-gray-600"}>{step.label}</span>
+                          <div className={`w-2 h-2 rounded-full ${prog >= step.threshold ? "bg-ink" : "bg-rule-strong"}`} />
+                          <span className={prog >= step.threshold ? "text-ink/80" : "text-subtle"}>{step.label}</span>
                           {prog >= step.threshold && prog < step.threshold + 20 && (
                             <Loader2 className="w-3 h-3 animate-spin ml-auto text-purple-400" />
                           )}
@@ -4231,7 +4250,7 @@ export default function ProjectCreativePage() {
             )}
             {/* Compact progress for re-renders */}
             {(rendering || (isGeneratingVideo && loading)) && renderedVideoUrl && (
-              <div className="mb-8 bg-white/5 border border-white/10 rounded-lg p-6">
+              <div className="mb-8 bg-paper-2 border border-rule rounded-lg p-6">
                 <ProgressBar
                   progress={rendering ? renderProgress : generationProgress}
                   status={generationStatus || "Rendering video..."}
@@ -4243,7 +4262,7 @@ export default function ProjectCreativePage() {
               <div className="max-w-4xl mx-auto space-y-6">
                 {/* Video Preview + Edit Chat */}
                 <div className="space-y-6">
-                  <div className="aspect-video bg-black rounded-xl overflow-hidden border border-white/10">
+                  <div className="aspect-video bg-black rounded-xl overflow-hidden border border-rule">
                     <video
                       ref={editVideoRef}
                       src={`${renderedVideoUrl}?v=${renderVersion}`}
@@ -4279,7 +4298,7 @@ export default function ProjectCreativePage() {
 
                   {/* Edit Progress */}
                   {editProgress > 0 && editProgress < 100 && (
-                    <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+                    <div className="bg-paper-2 border border-rule rounded-lg p-4">
                       <ProgressBar
                         progress={editProgress}
                         status={editStatus}
@@ -4289,12 +4308,12 @@ export default function ProjectCreativePage() {
 
                   {/* Edit Chat - Always visible */}
                   {remotionCode && (
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                    <div className="bg-paper-2 border border-rule rounded-xl p-4">
                       <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
                         <Edit2 className="w-5 h-5" />
                         Edit Video via Chat
                       </h3>
-                      <p className="text-sm text-gray-400 mb-4">
+                      <p className="text-sm text-muted mb-4">
                         Describe changes you want to make to the video
                       </p>
 
@@ -4304,9 +4323,9 @@ export default function ProjectCreativePage() {
                           {videoEditHistory.map((msg, i) => (
                             <div
                               key={i}
-                              className={`text-sm ${msg.role === "user" ? "text-gray-300" : "text-purple-400"}`}
+                              className={`text-sm ${msg.role === "user" ? "text-ink/80" : "text-purple-400"}`}
                             >
-                              <span className="text-gray-600 font-mono text-xs">
+                              <span className="text-subtle font-mono text-xs">
                                 {msg.role === "user" ? "you" : "ai"}:
                               </span>{" "}
                               {msg.text}
@@ -4328,7 +4347,7 @@ export default function ProjectCreativePage() {
                           }}
                           placeholder="e.g., 'make the intro faster', 'change the colors to blue', 'add more zoom effects'"
                           rows={3}
-                          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm resize-none"
+                          className="w-full px-4 py-3 bg-paper-2 border border-rule rounded-lg text-sm resize-none"
                           disabled={videoEditLoading}
                         />
                         <Button
@@ -4351,8 +4370,8 @@ export default function ProjectCreativePage() {
                       </div>
 
                       {/* Quick Edit Suggestions */}
-                      <div className="mt-4 pt-4 border-t border-white/10">
-                        <h4 className="text-sm font-medium mb-3 text-gray-400">
+                      <div className="mt-4 pt-4 border-t border-rule">
+                        <h4 className="text-sm font-medium mb-3 text-muted">
                           Quick Edits
                         </h4>
                         <div className="flex flex-wrap gap-2">
@@ -4367,7 +4386,7 @@ export default function ProjectCreativePage() {
                             <button
                               key={suggestion}
                               onClick={() => setVideoEditInput(suggestion)}
-                              className="px-3 py-1.5 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-colors"
+                              className="px-3 py-1.5 text-xs bg-paper-2 hover:bg-paper-3 border border-rule rounded-full transition-colors"
                             >
                               {suggestion}
                             </button>
@@ -4384,7 +4403,7 @@ export default function ProjectCreativePage() {
                 <h2 className="text-2xl font-light mb-2">
                   No Video Generated Yet
                 </h2>
-                <p className="text-gray-500 mb-6">
+                <p className="text-muted mb-6">
                   Approve your script to generate the final video
                 </p>
                 <Button
@@ -4412,7 +4431,7 @@ export default function ProjectCreativePage() {
               }
             }}
           />
-          <div className="relative max-w-2xl w-full bg-[#111] border border-white/10 rounded-xl p-8 max-h-[90vh] overflow-y-auto">
+          <div className="relative max-w-2xl w-full bg-paper-2 border border-rule rounded-xl p-8 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-light">
                 {editingRecording
@@ -4428,7 +4447,7 @@ export default function ProjectCreativePage() {
                     setEditingRecording(null);
                   }
                 }}
-                className="text-gray-500 hover:text-white"
+                className="text-muted hover:text-ink"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -4444,7 +4463,7 @@ export default function ProjectCreativePage() {
                 />
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">
+                    <label className="text-xs text-muted mb-1 block">
                       Start (s)
                     </label>
                     <input
@@ -4458,11 +4477,11 @@ export default function ProjectCreativePage() {
                       min={0}
                       max={editTrimEnd}
                       step={0.1}
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded focus:border-white/30 focus:outline-none text-sm"
+                      className="w-full px-3 py-2 bg-paper-2 border border-rule rounded focus:border-rule-strong focus:outline-none text-sm"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 mb-1 block">
+                    <label className="text-xs text-muted mb-1 block">
                       End (s)
                     </label>
                     <input
@@ -4479,7 +4498,7 @@ export default function ProjectCreativePage() {
                       min={editTrimStart}
                       max={editingRecording.duration}
                       step={0.1}
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded focus:border-white/30 focus:outline-none text-sm"
+                      className="w-full px-3 py-2 bg-paper-2 border border-rule rounded focus:border-rule-strong focus:outline-none text-sm"
                     />
                   </div>
                 </div>
@@ -4496,7 +4515,7 @@ export default function ProjectCreativePage() {
               <>
                 <div className="space-y-4 mb-6">
                   <div>
-                    <label className="block text-xs tracking-widest text-gray-500 uppercase mb-2">
+                    <label className="block text-xs tracking-widest text-muted uppercase mb-2">
                       Feature Name
                     </label>
                     <input
@@ -4504,7 +4523,7 @@ export default function ProjectCreativePage() {
                       value={recordingFeatureName}
                       onChange={(e) => setRecordingFeatureName(e.target.value)}
                       placeholder="e.g., Smart Search"
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:border-white/30 focus:outline-none text-sm"
+                      className="w-full px-4 py-3 bg-paper-2 border border-rule rounded-lg focus:border-rule-strong focus:outline-none text-sm"
                       disabled={isRecording}
                     />
                   </div>
@@ -4517,8 +4536,8 @@ export default function ProjectCreativePage() {
                         onClick={() => setRecordingMode("record")}
                         className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm rounded-lg transition-colors ${
                           recordingMode === "record"
-                            ? "bg-white/10 text-white border border-white/20"
-                            : "bg-white/5 text-gray-500 border border-white/5 hover:text-white"
+                            ? "bg-paper-3 text-ink border border-rule-strong"
+                            : "bg-paper-2 text-muted border border-rule hover:text-ink"
                         }`}
                       >
                         <Monitor className="w-4 h-4" />
@@ -4528,8 +4547,8 @@ export default function ProjectCreativePage() {
                         onClick={() => setRecordingMode("upload")}
                         className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm rounded-lg transition-colors ${
                           recordingMode === "upload"
-                            ? "bg-white/10 text-white border border-white/20"
-                            : "bg-white/5 text-gray-500 border border-white/5 hover:text-white"
+                            ? "bg-paper-3 text-ink border border-rule-strong"
+                            : "bg-paper-2 text-muted border border-rule hover:text-ink"
                         }`}
                       >
                         <Upload className="w-4 h-4" />
@@ -4552,7 +4571,7 @@ export default function ProjectCreativePage() {
                           <Monitor className="w-5 h-5" />
                           Start Recording
                         </Button>
-                        <p className="text-xs text-gray-600">
+                        <p className="text-xs text-subtle">
                           Select a window or tab to capture
                         </p>
                       </>
@@ -4576,9 +4595,9 @@ export default function ProjectCreativePage() {
                     )
                   ) : (
                     <div className="w-full space-y-4">
-                      <label className="flex flex-col items-center gap-3 p-8 border-2 border-dashed border-white/10 hover:border-white/20 cursor-pointer transition-colors rounded-lg">
-                        <Upload className="w-8 h-8 text-gray-500" />
-                        <span className="text-sm text-gray-400">
+                      <label className="flex flex-col items-center gap-3 p-8 border-2 border-dashed border-rule hover:border-rule-strong cursor-pointer transition-colors rounded-lg">
+                        <Upload className="w-8 h-8 text-muted" />
+                        <span className="text-sm text-muted">
                           {uploadFile
                             ? uploadFile.name
                             : "Drop video file or click to browse"}

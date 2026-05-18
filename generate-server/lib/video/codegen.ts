@@ -7,12 +7,24 @@ import {
   Sequence,
   Audio,
   Video,
+  Img,
   useCurrentFrame,
   useVideoConfig,
   interpolate,
   spring,
   staticFile,
-} from "remotion";`;
+} from "remotion";
+import {
+  TransitionSeries,
+  linearTiming,
+  springTiming,
+} from "@remotion/transitions";
+import { fade } from "@remotion/transitions/fade";
+import { slide } from "@remotion/transitions/slide";
+import { wipe } from "@remotion/transitions/wipe";
+import { ThreeCanvas } from "@remotion/three";
+import { useFrame, useThree } from "@react-three/fiber";
+import * as THREE from "three";`;
 
 function collectUsedComponents(json: VideoJson): Set<string> {
   const used = new Set<string>();
@@ -86,8 +98,69 @@ const VIDEO_JSON = ${jsonStringifyWithFunctions({
     scenes: json.scenes,
   })};
 
+// ============= TRANSITION HELPERS =============
+function pickPresentation(type) {
+  if (type === "slide") return slide();
+  if (type === "wipe") return wipe();
+  return fade();
+}
+
+function SceneLayers({ layers }) {
+  return (
+    <AbsoluteFill>
+      {layers.map((layer, j) => {
+        const Comp = REGISTRY[layer.component];
+        if (!Comp) {
+          return (
+            <AbsoluteFill key={j} style={{ backgroundColor: "#400", color: "#fff", padding: 40, fontFamily: "monospace" }}>
+              Unknown component: {layer.component}
+            </AbsoluteFill>
+          );
+        }
+        return <Comp key={j} {...layer.props} />;
+      })}
+    </AbsoluteFill>
+  );
+}
+
 // ============= JSON RENDERER =============
 function JsonComposition() {
+  const hasTransitions = VIDEO_JSON.scenes.some(
+    (s, i) => i > 0 && s.transitionIn && s.transitionIn.type && s.transitionIn.type !== "none",
+  );
+
+  if (hasTransitions) {
+    return (
+      <AbsoluteFill style={{ backgroundColor: "#000" }}>
+${audioBlock}
+        <TransitionSeries>
+          {VIDEO_JSON.scenes.flatMap((scene, i) => {
+            const blocks = [];
+            if (i > 0 && scene.transitionIn && scene.transitionIn.type && scene.transitionIn.type !== "none") {
+              const dur = Math.max(1, scene.transitionIn.durationInFrames || 12);
+              blocks.push(
+                <TransitionSeries.Transition
+                  key={\`t-\${i}\`}
+                  presentation={pickPresentation(scene.transitionIn.type)}
+                  timing={linearTiming({ durationInFrames: dur })}
+                />,
+              );
+            }
+            blocks.push(
+              <TransitionSeries.Sequence
+                key={scene.id || \`s-\${i}\`}
+                durationInFrames={scene.durationInFrames}
+              >
+                <SceneLayers layers={scene.layers} />
+              </TransitionSeries.Sequence>,
+            );
+            return blocks;
+          })}
+        </TransitionSeries>
+      </AbsoluteFill>
+    );
+  }
+
   let frameCursor = 0;
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
@@ -97,19 +170,7 @@ ${audioBlock}
         frameCursor += scene.durationInFrames;
         return (
           <Sequence key={scene.id || i} from={from} durationInFrames={scene.durationInFrames}>
-            <AbsoluteFill>
-              {scene.layers.map((layer, j) => {
-                const Comp = REGISTRY[layer.component];
-                if (!Comp) {
-                  return (
-                    <AbsoluteFill key={j} style={{ backgroundColor: "#400", color: "#fff", padding: 40, fontFamily: "monospace" }}>
-                      Unknown component: {layer.component}
-                    </AbsoluteFill>
-                  );
-                }
-                return <Comp key={j} {...layer.props} />;
-              })}
-            </AbsoluteFill>
+            <SceneLayers layers={scene.layers} />
           </Sequence>
         );
       })}

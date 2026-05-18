@@ -3,8 +3,19 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button, Card, CardHeader, Spinner } from "@/components/ui";
-import { Plus, Film, Clock, Trash2, Copy, Edit2, Check, X } from "lucide-react";
+import { Navbar } from "@/components/Navbar";
+import {
+  Plus,
+  Film,
+  Clock,
+  Trash2,
+  Copy,
+  Edit2,
+  Check,
+  X,
+  Sparkles,
+  ArrowUpRight,
+} from "lucide-react";
 
 interface Project {
   id: string;
@@ -15,6 +26,13 @@ interface Project {
   createdAt: string;
   updatedAt: string;
 }
+
+const STATUS_CHIP: Record<string, { bg: string; color: string; border: string }> = {
+  READY: { bg: "var(--accent-soft)", color: "var(--accent)", border: "rgba(59,130,246,0.40)" },
+  GENERATING: { bg: "var(--accent-soft)", color: "var(--accent)", border: "rgba(59,130,246,0.40)" },
+  EXPORTED: { bg: "rgba(245,245,247,0.06)", color: "var(--ink)", border: "var(--rule-strong)" },
+  DRAFT: { bg: "rgba(245,245,247,0.04)", color: "var(--muted)", border: "var(--rule)" },
+};
 
 export default function ProjectsPage() {
   const router = useRouter();
@@ -41,21 +59,17 @@ export default function ProjectsPage() {
     }
   };
 
-  const createProject = async () => {
+  const createProject = async (mode: "creative" | "jitter" = "creative") => {
     setCreating(true);
     try {
       const response = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: "New Project",
-          status: "DRAFT",
-        }),
+        body: JSON.stringify({ name: "New Project", status: "DRAFT" }),
       });
-
       const data = await response.json();
       if (data.project) {
-        router.push(`/projects/${data.project.id}/creative`);
+        router.push(`/projects/${data.project.id}/${mode}`);
       }
     } catch (error) {
       console.error("Failed to create project:", error);
@@ -78,7 +92,6 @@ export default function ProjectsPage() {
 
   const saveProjectName = async (projectId: string) => {
     if (!editingName.trim()) return;
-    
     setSavingName(true);
     try {
       const response = await fetch(`/api/projects/${projectId}`, {
@@ -86,11 +99,12 @@ export default function ProjectsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: editingName.trim() }),
       });
-
       if (response.ok) {
-        setProjects(projects.map(p => 
-          p.id === projectId ? { ...p, name: editingName.trim() } : p
-        ));
+        setProjects(
+          projects.map((p) =>
+            p.id === projectId ? { ...p, name: editingName.trim() } : p,
+          ),
+        );
         setEditingId(null);
       }
     } catch (error) {
@@ -103,9 +117,7 @@ export default function ProjectsPage() {
   const deleteProject = async (projectId: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
     if (!confirm("Are you sure you want to delete this project?")) return;
-
     try {
       await fetch(`/api/projects/${projectId}`, { method: "DELETE" });
       setProjects(projects.filter((p) => p.id !== projectId));
@@ -117,7 +129,6 @@ export default function ProjectsPage() {
   const duplicateProject = async (project: Project, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
     try {
       const response = await fetch("/api/projects", {
         method: "POST",
@@ -128,7 +139,6 @@ export default function ProjectsPage() {
           status: "DRAFT",
         }),
       });
-
       const data = await response.json();
       if (data.project) {
         router.push(`/projects/${data.project.id}/creative`);
@@ -138,25 +148,11 @@ export default function ProjectsPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "READY":
-        return "bg-green-500/20 text-green-400 border-green-500/30";
-      case "GENERATING":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
-      case "EXPORTED":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
-      default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
-    }
-  };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
     if (days === 0) {
       const hours = Math.floor(diff / (1000 * 60 * 60));
       if (hours === 0) {
@@ -164,192 +160,279 @@ export default function ProjectsPage() {
         return minutes === 0 ? "Just now" : `${minutes}m ago`;
       }
       return `${hours}h ago`;
-    } else if (days === 1) {
-      return "Yesterday";
-    } else if (days < 7) {
-      return `${days} days ago`;
-    } else {
-      return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
     }
+    if (days === 1) return "Yesterday";
+    if (days < 7) return `${days} days ago`;
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center">
-        <div className="text-center">
-          <Spinner size="lg" />
-          <p className="mt-4 text-gray-400">Loading projects...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
-      {/* Header */}
-      <header className="border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-light">Video Projects</h1>
-              <p className="text-gray-500 mt-1">
-                {projects.length} project{projects.length !== 1 ? "s" : ""}
-              </p>
-            </div>
-            <Button
-              onClick={createProject}
+    <div className="relative min-h-screen overflow-hidden bg-surface text-ink">
+      {/* Ambient backdrop */}
+      <div className="pointer-events-none absolute inset-0 kinetic-dotgrid" />
+      <div
+        className="pointer-events-none absolute kinetic-glow-soft"
+        style={{ top: -200, left: "50%", transform: "translateX(-50%)", width: 1200, height: 600 }}
+      />
+
+      <Navbar />
+
+      <main className="relative mx-auto max-w-[1400px] px-6 pt-32 pb-20">
+        {/* Header pill */}
+        <div className="mb-10 flex flex-wrap items-center gap-3">
+          <span className="kinetic-pill !py-1.5 !px-3">
+            <span className="accent-dot" />
+            <span className="mono-tick" style={{ color: "var(--ink)" }}>
+              STUDIO · PROJECTS
+            </span>
+          </span>
+          <span className="kinetic-pill !py-1.5 !px-3">
+            <span className="mono-tick" style={{ color: "var(--muted)" }}>
+              {projects.length} PROJECT{projects.length !== 1 ? "S" : ""}
+            </span>
+          </span>
+          <span className="kinetic-pill !py-1.5 !px-3">
+            <span className="accent-dot glow-pulse" />
+            <span className="mono-tick" style={{ color: "var(--accent)" }}>
+              QUEUE LIVE
+            </span>
+          </span>
+        </div>
+
+        {/* Title + CTAs */}
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h1 className="text-[clamp(2.25rem,7vw,5.5rem)] font-medium leading-[0.95] tracking-[-0.04em]">
+              Your <span style={{ color: "var(--accent)", fontStyle: "italic", fontWeight: 300 }}>reels.</span>
+            </h1>
+            <p className="mt-4 text-muted">
+              Every project in one shelf. Edit, duplicate, ship.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => createProject("jitter")}
               disabled={creating}
-              className="rounded-lg"
-              size="lg"
+              className="btn-ghost disabled:opacity-50"
+            >
+              <Sparkles className="h-4 w-4" strokeWidth={1.6} />
+              Generate from URL
+            </button>
+            <button
+              onClick={() => createProject("creative")}
+              disabled={creating}
+              className="btn-accent disabled:opacity-50"
             >
               {creating ? (
-                <Spinner size="sm" className="mr-2" />
+                <span className="h-4 w-4 animate-spin rounded-full border border-black/30 border-t-black" />
               ) : (
-                <Plus className="w-5 h-5 mr-2" />
+                <Plus className="h-4 w-4" strokeWidth={1.6} />
               )}
-              New Project
-            </Button>
+              New project
+            </button>
           </div>
         </div>
-      </header>
 
-      {/* Projects Grid */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {projects.length === 0 ? (
-          <div className="text-center py-24">
-            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Film className="w-10 h-10 text-gray-400" />
+        {/* Grid */}
+        {loading ? (
+          <div className="flex justify-center py-32">
+            <div className="h-8 w-8 animate-spin rounded-full border border-rule border-t-ink" />
+          </div>
+        ) : projects.length === 0 ? (
+          <div
+            className="kinetic-bento kinetic-bento-glow mt-16 p-16 text-center"
+          >
+            <div
+              className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl"
+              style={{ background: "var(--accent-soft)", border: "1px solid rgba(59,130,246,0.40)" }}
+            >
+              <Film className="h-8 w-8" style={{ color: "var(--accent)" }} strokeWidth={1.4} />
             </div>
-            <h2 className="text-xl font-light mb-2">No projects yet</h2>
-            <p className="text-gray-500 mb-6 max-w-md mx-auto">
-              Create your first video project to start generating professional product videos with AI
+            <h2 className="mt-6 text-3xl font-medium tracking-[-0.025em]">
+              No projects yet.
+            </h2>
+            <p className="mx-auto mt-2 max-w-md text-muted">
+              Spin up your first reel and the engine takes it from there.
             </p>
-            <Button onClick={createProject} disabled={creating} size="lg" className="rounded-lg">
+            <button
+              onClick={() => createProject("creative")}
+              disabled={creating}
+              className="btn-accent mt-8 disabled:opacity-50"
+            >
               {creating ? (
-                <Spinner size="sm" className="mr-2" />
+                <span className="h-4 w-4 animate-spin rounded-full border border-black/30 border-t-black" />
               ) : (
-                <Plus className="w-5 h-5 mr-2" />
+                <Plus className="h-4 w-4" strokeWidth={1.6} />
               )}
-              Create First Project
-            </Button>
+              Create first project
+            </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((project) => (
               <Link
                 key={project.id}
                 href={`/projects/${project.id}/creative`}
-                className="group block"
+                className="group kinetic-bento flex flex-col p-2.5 transition-transform hover:-translate-y-0.5"
               >
-                <Card className="h-full hover:border-white/20 transition-all duration-300 hover:shadow-lg hover:shadow-white/5">
-                  {/* Thumbnail Placeholder */}
-                  <div className="aspect-video bg-gradient-to-br from-white/5 to-white/[0.02] rounded-t-lg flex items-center justify-center border-b border-white/5">
-                    <Film className="w-12 h-12 text-gray-600 group-hover:text-gray-400 transition-colors" />
+                <div
+                  className="relative aspect-video overflow-hidden rounded-xl"
+                  style={{ background: "var(--paper-2)", border: "1px solid var(--rule)" }}
+                >
+                  <div className="absolute inset-0 dot-grid opacity-40" />
+                  <div
+                    className="pointer-events-none absolute kinetic-glow-soft opacity-0 transition-opacity group-hover:opacity-100"
+                    style={{ top: "20%", left: "40%", width: 200, height: 160 }}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Film
+                      className="h-10 w-10 transition-colors"
+                      style={{ color: "var(--rule-strong)" }}
+                      strokeWidth={1.2}
+                    />
                   </div>
+                  <div className="absolute left-3 top-3 kinetic-pill !py-1 !px-2">
+                    <span className="accent-dot" />
+                    <span className="mono-tick" style={{ color: "var(--ink)" }}>REC</span>
+                  </div>
+                  <div
+                    className="absolute inset-x-3 bottom-3 h-0.5 rounded-full"
+                    style={{ background: "rgba(245,245,247,0.08)" }}
+                  >
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{ width: "38%", background: "var(--accent)", boxShadow: "0 0 8px var(--accent)" }}
+                    />
+                  </div>
+                </div>
 
-                  <div className="p-5">
-                    {/* Project Name - Editable */}
-                    {editingId === project.id ? (
-                      <div className="flex items-center gap-2 mb-2">
-                        <input
-                          type="text"
-                          value={editingName}
-                          onChange={(e) => setEditingName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") saveProjectName(project.id);
-                            if (e.key === "Escape") cancelEditing();
-                          }}
-                          className="flex-1 px-2 py-1 bg-white/10 border border-white/20 rounded text-sm focus:outline-none focus:border-white/40"
-                          autoFocus
-                          onClick={(e) => e.preventDefault()}
-                        />
-                        <button
-                          onClick={(e) => { e.preventDefault(); saveProjectName(project.id); }}
-                          disabled={savingName}
-                          className="p-1 text-green-400 hover:text-green-300"
-                        >
-                          <Check className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => { e.preventDefault(); cancelEditing(); }}
-                          className="p-1 text-red-400 hover:text-red-300"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 mb-2 group/title">
-                        <h3 className="font-medium text-lg line-clamp-1 group-hover:text-white transition-colors flex-1">
-                          {project.name || "Untitled Project"}
-                        </h3>
-                        <button
-                          onClick={(e) => startEditing(project, e)}
-                          className="opacity-0 group-hover/title:opacity-100 p-1 text-gray-500 hover:text-white transition-all"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Meta Info */}
-                    <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        {formatDate(project.updatedAt)}
-                      </span>
+                <div className="mt-3.5 flex items-start justify-between gap-2 px-2">
+                  {editingId === project.id ? (
+                    <div className="flex flex-1 items-center gap-2">
+                      <input
+                        type="text"
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") saveProjectName(project.id);
+                          if (e.key === "Escape") cancelEditing();
+                        }}
+                        className="flex-1 border border-rule-strong bg-paper px-2 py-1 text-sm focus:border-ink focus:outline-none"
+                        autoFocus
+                        onClick={(e) => e.preventDefault()}
+                      />
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          saveProjectName(project.id);
+                        }}
+                        disabled={savingName}
+                        className="p-1 text-ink hover:opacity-70"
+                      >
+                        <Check className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          cancelEditing();
+                        }}
+                        className="p-1 text-muted hover:text-ink"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
                     </div>
+                  ) : (
+                    <h3 className="line-clamp-1 flex-1 text-base font-medium tracking-[-0.02em] text-ink">
+                      {project.name || "Untitled Project"}
+                    </h3>
+                  )}
+                  <ArrowUpRight className="h-4 w-4 text-muted transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                </div>
 
-                    {/* Status Badge */}
-                    <div className="flex items-center justify-between">
+                <div className="mt-1.5 flex items-center gap-2 px-2 mono-tick">
+                  <Clock className="h-3 w-3" strokeWidth={1.8} />
+                  {formatDate(project.updatedAt).toUpperCase()}
+                </div>
+
+                <div className="mt-4 flex items-center justify-between px-2 pb-2">
+                  {(() => {
+                    const s = STATUS_CHIP[project.status] || {
+                      bg: "rgba(245,245,247,0.04)",
+                      color: "var(--muted)",
+                      border: "var(--rule)",
+                    };
+                    return (
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                          project.status
-                        )}`}
+                        className="rounded-full px-2.5 py-0.5 font-mono text-[10px] tracking-[0.14em]"
+                        style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}` }}
                       >
                         {project.status}
                       </span>
+                    );
+                  })()}
 
-                      {/* Actions */}
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={(e) => duplicateProject(project, e)}
-                          className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                          title="Duplicate"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => deleteProject(project.id, e)}
-                          className="p-2 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
+                  <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        startEditing(project, e);
+                      }}
+                      className="rounded-sm p-1.5 text-muted transition-colors hover:bg-paper-3 hover:text-ink"
+                      title="Rename"
+                    >
+                      <Edit2 className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        router.push(`/projects/${project.id}/jitter`);
+                      }}
+                      className="rounded-sm p-1.5 text-muted transition-colors hover:bg-paper-3 hover:text-ink"
+                      title="Generate from URL"
+                    >
+                      <Sparkles className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => duplicateProject(project, e)}
+                      className="rounded-sm p-1.5 text-muted transition-colors hover:bg-paper-3 hover:text-ink"
+                      title="Duplicate"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => deleteProject(project.id, e)}
+                      className="rounded-sm p-1.5 text-muted transition-colors hover:bg-paper-3 hover:text-destructive"
+                      title="Delete"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </div>
-                </Card>
+                </div>
               </Link>
             ))}
 
-            {/* Create New Card */}
+            {/* New project card */}
             <button
-              onClick={createProject}
+              onClick={() => createProject("creative")}
               disabled={creating}
-              className="group h-full min-h-[280px]"
+              className="group kinetic-bento kinetic-bento-glow flex min-h-[280px] flex-col items-center justify-center gap-4 p-5 transition-transform hover:-translate-y-0.5"
             >
-              <Card className="h-full border-dashed border-2 border-white/10 hover:border-white/20 hover:bg-white/[0.02] transition-all flex flex-col items-center justify-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-                  {creating ? (
-                    <Spinner size="md" />
-                  ) : (
-                    <Plus className="w-8 h-8 text-gray-400 group-hover:text-white transition-colors" />
-                  )}
-                </div>
-                <span className="text-gray-400 group-hover:text-white transition-colors">
-                  {creating ? "Creating..." : "Create New Project"}
-                </span>
-              </Card>
+              <div
+                className="flex h-14 w-14 items-center justify-center rounded-2xl"
+                style={{ background: "var(--accent-soft)", border: "1px solid rgba(59,130,246,0.40)" }}
+              >
+                {creating ? (
+                  <span className="h-5 w-5 animate-spin rounded-full border border-rule border-t-ink" />
+                ) : (
+                  <Plus className="h-6 w-6" style={{ color: "var(--accent)" }} strokeWidth={1.4} />
+                )}
+              </div>
+              <span className="text-xl font-medium tracking-[-0.025em]">
+                {creating ? "Creating..." : "New project"}
+              </span>
+              <span className="mono-tick">TAP TO START</span>
             </button>
           </div>
         )}

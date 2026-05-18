@@ -9,10 +9,17 @@
 import { writeFileSync, mkdirSync, existsSync } from "fs";
 import { join } from "path";
 import { randomUUID } from "crypto";
+import {
+  generateTTSCloudflare,
+  isCloudflareAIConfigured,
+} from "../cloudflare/cloudflareAI";
 
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 const NARRATION_DIR = join(process.cwd(), "tmp", "narrations");
 const ELEVENLABS_BASE_URL = "https://api.elevenlabs.io/v1";
+
+// Prefer Cloudflare Workers AI TTS unless explicitly disabled
+const PREFER_CLOUDFLARE_TTS = process.env.PREFER_CLOUDFLARE_TTS !== "false";
 
 // Friendly voice map — keys usable by callers, values are ElevenLabs voice IDs
 export const VOICE_MAP: Record<string, { id: string; label: string }> = {
@@ -70,7 +77,7 @@ export interface NarrationSegment {
 }
 
 export function isElevenLabsConfigured(): boolean {
-  return !!ELEVENLABS_API_KEY;
+  return !!ELEVENLABS_API_KEY || isCloudflareAIConfigured();
 }
 
 export function estimateNarrationDuration(text: string): number {
@@ -87,26 +94,41 @@ export function resolveVoiceId(voiceIdOrKey?: string): string {
 
 /**
  * Generate narration audio. Returns an MP3 buffer — no temp files.
+ * Routes through Cloudflare Workers AI (Aura) when configured;
+ * falls back to ElevenLabs.
  */
 export async function generateNarration(
   request: NarrationRequest,
 ): Promise<NarrationResult> {
+  const { text } = request;
+  if (!text?.trim()) {
+    return { success: false, error: "Narration text is empty" };
+  }
+
+  if (PREFER_CLOUDFLARE_TTS && isCloudflareAIConfigured()) {
+    const cf = await generateTTSCloudflare(text, { speaker: request.voiceId });
+    if (cf.success) {
+      return {
+        success: true,
+        buffer: cf.buffer,
+        estimatedDurationSec: cf.estimatedDurationSec,
+      };
+    }
+    if (!ELEVENLABS_API_KEY) return { success: false, error: cf.error };
+    console.warn(`[Narration] CF TTS failed (${cf.error}), falling back to ElevenLabs`);
+  }
+
   if (!ELEVENLABS_API_KEY) {
     return { success: false, error: "ELEVENLABS_API_KEY is not set" };
   }
 
   const {
-    text,
     voiceId,
     stability = 0.5,
     similarityBoost = 0.75,
     style = 0.0,
     modelId = "eleven_multilingual_v2",
   } = request;
-
-  if (!text?.trim()) {
-    return { success: false, error: "Narration text is empty" };
-  }
 
   const resolvedVoiceId = resolveVoiceId(voiceId);
   console.log(

@@ -22,12 +22,16 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@ai-sdk/openai-compatible": "^2.0.47",
     "@auth/prisma-adapter": "^2.11.1",
     "@aws-sdk/client-s3": "^3.478.0",
     "@aws-sdk/s3-request-presigner": "^3.478.0",
+    "@babel/standalone": "^7.29.4",
     "@dodopayments/nextjs": "^0.3.3",
     "@google/generative-ai": "^0.24.1",
     "@mastra/core": "^1.31.0",
+    "@mastra/libsql": "^1.10.0",
+    "@mastra/memory": "^1.17.5",
     "@prisma/client": "^5.22.0",
     "@react-three/fiber": "^9.5.0",
     "@remotion/bundler": "4.0.443",
@@ -38,6 +42,7 @@
     "@remotion/renderer": "4.0.443",
     "@remotion/three": "4.0.443",
     "@remotion/transitions": "4.0.443",
+    "ai": "^6.0.177",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dodopayments": "^2.18.0",
@@ -66,6 +71,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/babel__standalone": "^7.1.9",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

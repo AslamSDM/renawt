@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { ArrowUpRight } from "lucide-react";
 
 interface ProfileData {
   user: {
@@ -15,11 +17,22 @@ interface ProfileData {
   };
   subscription: { plan: string; status: string } | null;
   purchases: { amount: number; createdAt: string }[];
-  recentProjects: { id: string; name: string | null; status: string; updatedAt: string }[];
+  recentProjects: {
+    id: string;
+    name: string | null;
+    status: string;
+    updatedAt: string;
+  }[];
 }
 
+const STATUS_CHIP: Record<string, string> = {
+  DRAFT: "border-rule-strong text-muted",
+  GENERATING: "border-ink text-ink",
+  READY: "border-ink bg-ink text-ink-inverse",
+};
+
 export default function ProfilePage() {
-  const { data: session } = useSession();
+  useSession();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -33,120 +46,167 @@ export default function ProfilePage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const statusColor: Record<string, string> = {
-    DRAFT: "bg-gray-500/20 text-gray-300",
-    GENERATING: "bg-yellow-500/20 text-yellow-300",
-    READY: "bg-green-500/20 text-green-300",
-  };
-
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen bg-surface text-ink">
       <Navbar />
 
-      <main className="max-w-3xl mx-auto px-6 pt-28 pb-16">
+      <main className="mx-auto max-w-[1400px] px-6 pt-32 pb-20">
+        <div className="mb-10 flex flex-wrap items-center gap-3 border-b border-rule pb-4">
+          <span className="mono-label rounded-sm border border-ink px-2 py-1">
+            SCENE · PROFILE · TAKE 01
+          </span>
+          <span className="mono-tick">ACCOUNT</span>
+          <span className="text-rule-strong">·</span>
+          <span className="mono-tick">CREDITS · HISTORY · PROJECTS</span>
+        </div>
+
         {loading ? (
-          <div className="flex justify-center py-20">
-            <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+          <div className="flex justify-center py-24">
+            <div className="h-8 w-8 animate-spin rounded-full border border-rule border-t-ink" />
           </div>
         ) : !profile ? (
-          <p className="text-center text-gray-400 py-20">Failed to load profile.</p>
+          <p className="py-24 text-center text-muted">Failed to load profile.</p>
         ) : (
-          <div className="space-y-8">
-            {/* User Info */}
-            <section className="flex items-center gap-6">
-              {profile.user.image ? (
-                <img
-                  src={profile.user.image}
-                  alt={profile.user.name || "User"}
-                  className="w-20 h-20 rounded-full border-2 border-white/10"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center text-2xl font-medium">
-                  {profile.user.name?.[0]?.toUpperCase() || "U"}
-                </div>
-              )}
-              <div>
-                <h1 className="text-2xl font-semibold">{profile.user.name || "User"}</h1>
-                <p className="text-gray-400">{profile.user.email}</p>
-              </div>
-            </section>
-
-            {/* Credits & Subscription */}
-            <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="border border-white/10 rounded-lg p-6">
-                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Credit Balance</p>
-                <p className="text-4xl font-bold">{profile.user.creditBalance}</p>
-                <Link
-                  href="/pricing"
-                  className="inline-block mt-4 px-4 py-2 border border-white text-xs uppercase tracking-widest hover:bg-white hover:text-black transition-all"
-                >
-                  Buy Credits
-                </Link>
-              </div>
-
-              <div className="border border-white/10 rounded-lg p-6">
-                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Subscription</p>
-                {profile.subscription ? (
-                  <>
-                    <p className="text-xl font-semibold capitalize">{profile.subscription.plan}</p>
-                    <p className="text-sm text-gray-400 capitalize">{profile.subscription.status}</p>
-                  </>
-                ) : (
-                  <p className="text-gray-500 mt-1">No active subscription</p>
-                )}
-              </div>
-            </section>
-
-            {/* Purchase History */}
-            <section>
-              <h2 className="text-lg font-semibold mb-4 uppercase tracking-wider">Purchase History</h2>
-              {profile.purchases.length === 0 ? (
-                <p className="text-gray-500 text-sm">No purchases yet.</p>
-              ) : (
-                <div className="border border-white/10 rounded-lg divide-y divide-white/10">
-                  {profile.purchases.map((p, i) => (
-                    <div key={i} className="flex items-center justify-between px-4 py-3">
-                      <span className="text-sm">+{p.amount} credits</span>
-                      <span className="text-xs text-gray-400">
-                        {new Date(p.createdAt).toLocaleDateString()}
-                      </span>
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
+            {/* Left: identity */}
+            <section className="lg:col-span-4">
+              <div className="border border-ink p-8">
+                <div className="flex items-center gap-4">
+                  {profile.user.image ? (
+                    <img
+                      src={profile.user.image}
+                      alt={profile.user.name || "User"}
+                      className="h-16 w-16 rounded-full border border-rule-strong"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full border border-rule-strong bg-paper-2 text-2xl font-medium text-ink">
+                      {profile.user.name?.[0]?.toUpperCase() || "U"}
                     </div>
-                  ))}
+                  )}
+                  <div>
+                    <p className="mono-tick">USER</p>
+                    <h1 className="font-serif-italic text-3xl text-ink">
+                      {profile.user.name || "User"}
+                    </h1>
+                    <p className="text-sm text-muted">{profile.user.email}</p>
+                  </div>
                 </div>
-              )}
+              </div>
+
+              {/* Credits + Sub */}
+              <div className="mt-px grid grid-cols-1 gap-px bg-rule">
+                <div className="bg-paper p-8">
+                  <p className="mono-tick">CREDIT BALANCE</p>
+                  <p className="mt-3 font-serif-italic text-6xl text-ink">
+                    {profile.user.creditBalance}
+                  </p>
+                  <Link
+                    href="/pricing"
+                    className="mt-4 inline-flex items-center gap-2 rounded-full border border-ink px-4 py-2 text-sm text-ink transition-colors hover:bg-ink hover:text-ink-inverse"
+                  >
+                    Buy credits
+                    <ArrowUpRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+                <div className="bg-paper p-8">
+                  <p className="mono-tick">SUBSCRIPTION</p>
+                  {profile.subscription ? (
+                    <>
+                      <p className="mt-3 text-2xl font-medium capitalize">
+                        {profile.subscription.plan}
+                      </p>
+                      <p className="mono-tick mt-1">
+                        {profile.subscription.status.toUpperCase()}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="mt-3 text-sm text-muted">No active plan.</p>
+                  )}
+                </div>
+              </div>
             </section>
 
-            {/* Recent Projects */}
-            <section>
-              <h2 className="text-lg font-semibold mb-4 uppercase tracking-wider">Recent Projects</h2>
-              {profile.recentProjects.length === 0 ? (
-                <p className="text-gray-500 text-sm">No projects yet.</p>
-              ) : (
-                <div className="border border-white/10 rounded-lg divide-y divide-white/10">
-                  {profile.recentProjects.map((proj) => (
-                    <Link
-                      key={proj.id}
-                      href={`/projects/${proj.id}/creative`}
-                      className="flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors"
-                    >
-                      <span className="text-sm truncate">{proj.name || "Untitled"}</span>
-                      <div className="flex items-center gap-3">
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor[proj.status] || "bg-gray-500/20 text-gray-300"}`}>
-                          {proj.status}
+            {/* Right: history + projects */}
+            <section className="lg:col-span-8 space-y-12">
+              <div>
+                <div className="flex items-end justify-between border-b border-rule pb-3">
+                  <h2 className="mono-label">PURCHASE HISTORY</h2>
+                  <span className="mono-tick">
+                    {profile.purchases.length} TX
+                  </span>
+                </div>
+                {profile.purchases.length === 0 ? (
+                  <p className="py-8 text-sm text-muted">No purchases yet.</p>
+                ) : (
+                  <div className="divide-y divide-rule">
+                    {profile.purchases.map((p, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between py-4"
+                      >
+                        <span className="font-serif-italic text-xl text-ink">
+                          +{p.amount}{" "}
+                          <span className="font-sans not-italic text-sm text-muted">
+                            credits
+                          </span>
                         </span>
-                        <span className="text-xs text-gray-400">
-                          {new Date(proj.updatedAt).toLocaleDateString()}
+                        <span className="mono-tick">
+                          {new Date(p.createdAt).toLocaleDateString()}
                         </span>
                       </div>
-                    </Link>
-                  ))}
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <div className="flex items-end justify-between border-b border-rule pb-3">
+                  <h2 className="mono-label">RECENT PROJECTS</h2>
+                  <Link
+                    href="/projects"
+                    className="mono-tick hover:text-ink"
+                  >
+                    SEE ALL →
+                  </Link>
                 </div>
-              )}
+                {profile.recentProjects.length === 0 ? (
+                  <p className="py-8 text-sm text-muted">No projects yet.</p>
+                ) : (
+                  <div className="divide-y divide-rule">
+                    {profile.recentProjects.map((proj) => (
+                      <Link
+                        key={proj.id}
+                        href={`/projects/${proj.id}/creative`}
+                        className="flex items-center justify-between py-4 transition-colors hover:bg-paper-2"
+                      >
+                        <span className="truncate text-base text-ink">
+                          {proj.name || "Untitled"}
+                        </span>
+                        <div className="flex items-center gap-3">
+                          <span
+                            className={`mono-label rounded-sm border px-2 py-0.5 ${
+                              STATUS_CHIP[proj.status] ||
+                              "border-rule-strong text-muted"
+                            }`}
+                          >
+                            {proj.status}
+                          </span>
+                          <span className="mono-tick">
+                            {new Date(proj.updatedAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             </section>
           </div>
         )}
       </main>
+
+      <Footer />
     </div>
   );
 }

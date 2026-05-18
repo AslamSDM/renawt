@@ -24,6 +24,19 @@ export interface ProductData {
   tone: "professional" | "playful" | "minimal" | "bold";
   designInsights?: string;
   visualMood?: string;
+  /** Direct R2 URL of the hero screenshot — surfaced for agent prompts */
+  heroScreenshot?: string;
+  /** Rich vision-extracted brand contract (palette, fonts, materiality, motion) */
+  visionBrand?: {
+    palette: { primary: string; accent: string; background: string; foreground: string; surfaces: string[] };
+    typography: { primaryFont: string; secondaryFont?: string; fontWeights: number[]; characterStyle: string };
+    materiality: "matte" | "glossy" | "metallic" | "glass" | "paper" | "neon";
+    mood: string;
+    layoutSignals: string;
+    motionCues: string;
+    heroComposition: string;
+    visualLanguage: string;
+  };
 }
 
 export const ProductDataSchema = z.object({

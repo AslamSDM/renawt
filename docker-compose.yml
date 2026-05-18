@@ -28,6 +28,8 @@ services:
         required: false
     environment:
       - PORT=4001
+      - SCRAPER_AUTH_TOKEN=${SCRAPER_AUTH_TOKEN:-}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
     restart: unless-stopped
     deploy:
       resources:
