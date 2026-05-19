@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession, signIn } from "next-auth/react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import {
@@ -12,7 +13,35 @@ import {
   Layers,
   Upload,
   Command,
+  Loader2,
 } from "lucide-react";
+
+const PENDING_PROMPT_KEY = "remawt:pending-prompt";
+const ASPECTS = ["16:9", "9:16", "1:1"] as const;
+type Aspect = (typeof ASPECTS)[number];
+
+function extractUrl(text: string): string | null {
+  const m = text.match(/https?:\/\/[^\s)]+/i);
+  return m ? m[0] : null;
+}
+
+interface ShowcaseItem {
+  id: string;
+  name: string | null;
+  videoUrl: string | null;
+  sourceUrl: string | null;
+  updatedAt: string;
+  status: string;
+}
+
+function hostnameFromUrl(u: string | null): string {
+  if (!u) return "";
+  try {
+    return new URL(u).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
 
 const TYPING_TEXTS = [
   "product demo",
@@ -97,15 +126,6 @@ const STEPS = [
   },
 ];
 
-const SHOWCASE = [
-  { title: "PEAK · v3 launch", cat: "LAUNCH FILM", dur: "01:48", team: "@studio·peak" },
-  { title: "NORTH · onboarding", cat: "WALKTHROUGH", dur: "00:42", team: "@hi·north" },
-  { title: "KILN · brand reel", cat: "BRAND", dur: "02:10", team: "@kiln·labs" },
-  { title: "MERGE · v3.0", cat: "CHANGELOG", dur: "00:55", team: "@usemerge" },
-  { title: "LATTICE · feature", cat: "EXPLAINER", dur: "01:20", team: "@lattice·co" },
-  { title: "PRISM · recap", cat: "EVENT", dur: "03:24", team: "@prism·io" },
-];
-
 const USE_CASES = [
   {
     code: "PROD-01",
@@ -144,7 +164,16 @@ const PROMPT_CHIPS = [
   { i: Upload, l: "UPLOAD" },
 ];
 
-function PromptCard() {
+interface PromptCardProps {
+  prompt: string;
+  setPrompt: (v: string) => void;
+  aspect: Aspect;
+  setAspect: (v: Aspect) => void;
+  loading: boolean;
+  onGenerate: () => void;
+}
+
+function PromptCard({ prompt, setPrompt, aspect, setAspect, loading, onGenerate }: PromptCardProps) {
   return (
     <div
       className="relative rounded-2xl p-5"
@@ -158,35 +187,38 @@ function PromptCard() {
       <div className="mb-4 flex items-center gap-2">
         <span className="mono-tick">NEW PROJECT · UNTITLED</span>
         <span className="flex-1" />
-        {["16:9", "9:16", "1:1"].map((a, i) => (
-          <span
-            key={a}
-            className="rounded-full px-2 py-0.5 font-mono text-[10.5px]"
-            style={{
-              background: i === 0 ? "var(--accent-soft)" : "rgba(245,245,247,0.04)",
-              color: i === 0 ? "var(--accent)" : "var(--muted)",
-              border: i === 0 ? "1px solid rgba(59,130,246,0.40)" : "1px solid var(--rule)",
-            }}
-          >
-            {a}
-          </span>
-        ))}
+        {ASPECTS.map((a) => {
+          const active = a === aspect;
+          return (
+            <button
+              key={a}
+              type="button"
+              onClick={() => setAspect(a)}
+              className="rounded-full px-2 py-0.5 font-mono text-[10.5px] transition-colors"
+              style={{
+                background: active ? "var(--accent-soft)" : "rgba(245,245,247,0.04)",
+                color: active ? "var(--accent)" : "var(--muted)",
+                border: active ? "1px solid rgba(59,130,246,0.40)" : "1px solid var(--rule)",
+              }}
+            >
+              {a}
+            </button>
+          );
+        })}
       </div>
-      <div className="min-h-[80px] px-1 pb-3 text-lg leading-relaxed text-ink">
-        90-second launch film for our new analytics dashboard. Open{" "}
-        <span
-          className="rounded px-1.5"
-          style={{ background: "var(--accent-soft)", color: "var(--accent)" }}
-        >
-          app.peak.io
-        </span>{" "}
-        in dark mode, cut to the chart filling in, end on the team gallery.
-        Energetic.
-        <span
-          className="ml-1 inline-block h-5 w-[2px] translate-y-[-2px]"
-          style={{ background: "var(--accent)", boxShadow: "0 0 8px var(--accent)" }}
-        />
-      </div>
+      <textarea
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
+        onKeyDown={(e) => {
+          if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && !loading) {
+            e.preventDefault();
+            onGenerate();
+          }
+        }}
+        rows={3}
+        placeholder="Paste a product URL or describe the launch film you want. e.g. https://yoursite.com — 30s, energetic, brand-tuned."
+        className="w-full resize-none bg-transparent px-1 pb-3 text-lg leading-relaxed text-ink placeholder:text-subtle focus:outline-none"
+      />
       <div className="flex items-center gap-2 border-t border-rule pt-3">
         {PROMPT_CHIPS.map((c, i) => {
           const Icon = c.i;
@@ -202,23 +234,69 @@ function PromptCard() {
           );
         })}
         <span className="flex-1" />
-        <button className="btn-accent text-xs">
-          Generate <ArrowUpRight className="h-3.5 w-3.5" />
+        <button
+          type="button"
+          onClick={onGenerate}
+          disabled={loading || !prompt.trim()}
+          className="btn-accent text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Generating...
+            </>
+          ) : (
+            <>
+              Generate <ArrowUpRight className="h-3.5 w-3.5" />
+            </>
+          )}
         </button>
       </div>
     </div>
   );
 }
 
-function MiniTimeline() {
-  const rows = [
-    { l: "V1", clips: [[0, 40], [44, 70], [74, 100]], c: "rgba(245,245,247,0.20)" },
-    { l: "V2", clips: [[4, 18], [28, 50], [60, 80]], c: "rgba(59,130,246,0.80)" },
-    { l: "V3", clips: [[10, 16], [42, 52], [72, 90]], c: "rgba(59,130,246,0.50)" },
-    { l: "A1", clips: [[0, 100]], c: "rgba(245,245,247,0.10)" },
-  ];
+interface MiniTimelineProps {
+  bpm: number;
+  durationSeconds: number;
+  trackName: string;
+}
+
+function MiniTimeline({ bpm, durationSeconds, trackName }: MiniTimelineProps) {
+  const [playheadPct, setPlayheadPct] = useState(0);
+  const [beatPulse, setBeatPulse] = useState(0);
+
+  useEffect(() => {
+    const beatMs = 60_000 / Math.max(1, bpm);
+    const totalMs = Math.max(1_000, durationSeconds * 1000);
+    let raf = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const elapsed = (now - start) % totalMs;
+      setPlayheadPct((elapsed / totalMs) * 100);
+      const intoBeat = elapsed % beatMs;
+      setBeatPulse(1 - intoBeat / beatMs);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [bpm, durationSeconds]);
+
+  const framesPerBeat = (60 / Math.max(1, bpm)) * 30;
+  const rows = useMemo(() => {
+    return [
+      { l: "V1", clips: [[0, 40], [44, 70], [74, 100]], c: "rgba(245,245,247,0.20)" },
+      { l: "V2", clips: [[4, 18], [28, 50], [60, 82]], c: "rgba(59,130,246,0.80)" },
+      { l: "V3", clips: [[10, 16], [42, 52], [72, 90]], c: "rgba(59,130,246,0.50)" },
+      { l: "A1", clips: [[0, 100]], c: "rgba(245,245,247,0.10)" },
+    ];
+  }, []);
+
   return (
     <div>
+      <div className="mb-2 flex items-center justify-between font-mono text-[9px] text-muted">
+        <span className="truncate">{trackName}</span>
+        <span>{bpm} BPM · {framesPerBeat.toFixed(1)} f/beat</span>
+      </div>
       {rows.map((r, i) => (
         <div key={i} className="mb-1 grid grid-cols-[28px_1fr] gap-2">
           <span className="self-center font-mono text-[9px] text-muted">{r.l}</span>
@@ -237,9 +315,10 @@ function MiniTimeline() {
               <div
                 className="absolute top-[-4px] bottom-[-4px] w-[1.5px]"
                 style={{
-                  left: "38%",
+                  left: `${playheadPct}%`,
                   background: "var(--accent)",
-                  boxShadow: "0 0 8px var(--accent)",
+                  boxShadow: `0 0 ${4 + beatPulse * 14}px var(--accent)`,
+                  transition: "box-shadow 60ms linear",
                 }}
               />
             )}
@@ -252,6 +331,109 @@ function MiniTimeline() {
 
 export default function LandingPage() {
   const router = useRouter();
+  const { data: session, status: authStatus } = useSession();
+  const [prompt, setPrompt] = useState("");
+  const [aspect, setAspect] = useState<Aspect>("16:9");
+  const [creating, setCreating] = useState(false);
+  const [showcase, setShowcase] = useState<ShowcaseItem[]>([]);
+  const [sampleTrack, setSampleTrack] = useState<{
+    bpm: number;
+    duration: number;
+    name: string;
+  }>({ bpm: 120, duration: 30, name: "Sample track" });
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/showcase")
+      .then((r) => r.json())
+      .then((d) => {
+        if (alive && Array.isArray(d.projects)) setShowcase(d.projects);
+      })
+      .catch(() => {});
+    fetch("/api/audio")
+      .then((r) => r.json())
+      .then((d) => {
+        if (!alive) return;
+        const first = Array.isArray(d.audio) ? d.audio[0] : null;
+        if (first?.bpm) {
+          setSampleTrack({
+            bpm: first.bpm,
+            duration: first.duration || 30,
+            name: first.name || "Sample track",
+          });
+        }
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const createFromPrompt = async (text: string, asp: Aspect) => {
+    setCreating(true);
+    try {
+      const sourceUrl = extractUrl(text);
+      const res = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "New Project",
+          description: text,
+          sourceUrl: sourceUrl || undefined,
+          productData: { aspect: asp },
+          status: "DRAFT",
+        }),
+      });
+      if (res.status === 401) {
+        localStorage.setItem(
+          PENDING_PROMPT_KEY,
+          JSON.stringify({ text, aspect: asp })
+        );
+        signIn("google", { callbackUrl: "/" });
+        return;
+      }
+      const data = await res.json();
+      if (data.project?.id) {
+        router.push(`/projects/${data.project.id}/jitter`);
+      }
+    } catch (err) {
+      console.error("Failed to create project", err);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleGenerate = () => {
+    const text = prompt.trim();
+    if (!text) return;
+    if (authStatus === "loading") return;
+    if (!session) {
+      localStorage.setItem(
+        PENDING_PROMPT_KEY,
+        JSON.stringify({ text, aspect })
+      );
+      signIn("google", { callbackUrl: "/" });
+      return;
+    }
+    void createFromPrompt(text, aspect);
+  };
+
+  useEffect(() => {
+    if (authStatus !== "authenticated") return;
+    const raw = localStorage.getItem(PENDING_PROMPT_KEY);
+    if (!raw) return;
+    localStorage.removeItem(PENDING_PROMPT_KEY);
+    try {
+      const parsed = JSON.parse(raw) as { text?: string; aspect?: Aspect };
+      if (parsed.text && parsed.text.trim()) {
+        setPrompt(parsed.text);
+        if (parsed.aspect && ASPECTS.includes(parsed.aspect)) {
+          setAspect(parsed.aspect);
+        }
+        void createFromPrompt(parsed.text, parsed.aspect ?? aspect);
+      }
+    } catch {}
+  }, [authStatus]);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-surface text-ink">
@@ -277,25 +459,27 @@ export default function LandingPage() {
             </span>
           </div>
 
-          <h1 className="text-[clamp(2.5rem,9vw,8.5rem)] font-medium leading-[0.95] tracking-[-0.045em]">
-            Render the <TypewriterText />
-          </h1>
-          <h1
-            className="text-[clamp(2.5rem,9vw,8.5rem)] font-medium leading-[0.95] tracking-[-0.045em]"
-            style={{ color: "var(--muted)" }}
-          >
-            your launch <span style={{ color: "var(--accent)" }}>deserves.</span>
+          <h1 className="text-[clamp(1.75rem,5vw,3.75rem)] font-medium leading-[1.05] tracking-[-0.035em]">
+            Render the <TypewriterText />{" "}
+            <span style={{ color: "var(--muted)" }}>your launch</span>{" "}
+            <span style={{ color: "var(--accent)" }}>deserves.</span>
           </h1>
 
-          <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-muted md:text-xl">
-            Remawt turns your product into broadcast-grade videos — launch
-            films, demos, feature drops — generated from a single prompt.
-            Cinematic by default. Editable when you need it.
+          <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-muted md:text-base">
+            Broadcast-grade product videos from a single prompt. Cinematic by
+            default. Editable when you need it.
           </p>
 
           {/* Prompt card */}
           <div className="mx-auto mt-12 max-w-[740px] text-left">
-            <PromptCard />
+            <PromptCard
+              prompt={prompt}
+              setPrompt={setPrompt}
+              aspect={aspect}
+              setAspect={setAspect}
+              loading={creating || authStatus === "loading"}
+              onGenerate={handleGenerate}
+            />
           </div>
 
           {/* CTAs */}
@@ -423,7 +607,7 @@ export default function LandingPage() {
 
           <div className="grid auto-rows-[minmax(220px,auto)] grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             {/* Big - Capture */}
-            <div className="kinetic-bento p-7 lg:col-span-2 lg:row-span-2 flex flex-col">
+            <Link href="/record" className="kinetic-bento p-7 lg:col-span-2 lg:row-span-2 flex flex-col transition-transform hover:-translate-y-0.5">
               <span className="mono-tick" style={{ color: "var(--accent)" }}>
                 CAPTURE · 01
               </span>
@@ -459,10 +643,10 @@ export default function LandingPage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </Link>
 
             {/* Type */}
-            <div className="kinetic-bento p-6 flex flex-col">
+            <Link href="/projects" className="kinetic-bento p-6 flex flex-col transition-transform hover:-translate-y-0.5">
               <span className="mono-tick" style={{ color: "var(--accent)" }}>TYPE · 02</span>
               <h3 className="mt-2.5 text-lg font-medium tracking-[-0.025em]">Kinetic captions</h3>
               <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
@@ -473,10 +657,10 @@ export default function LandingPage() {
                 <span className="self-end rounded-sm px-2.5 py-1 text-sm font-medium" style={{ background: "var(--accent-soft)", color: "var(--accent)" }}>Cleaner.</span>
                 <span className="self-start rounded-sm px-2.5 py-1 text-sm font-medium" style={{ background: "rgba(245,245,247,0.06)" }}>Shipped.</span>
               </div>
-            </div>
+            </Link>
 
             {/* Score */}
-            <div className="kinetic-bento p-6 flex flex-col">
+            <Link href="/projects" className="kinetic-bento p-6 flex flex-col transition-transform hover:-translate-y-0.5">
               <span className="mono-tick" style={{ color: "var(--accent)" }}>SCORE · 03</span>
               <h3 className="mt-2.5 text-lg font-medium tracking-[-0.025em]">Adaptive soundtrack</h3>
               <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
@@ -497,10 +681,10 @@ export default function LandingPage() {
                   );
                 })}
               </div>
-            </div>
+            </Link>
 
             {/* Brand */}
-            <div className="kinetic-bento p-6 flex flex-col">
+            <Link href="/projects" className="kinetic-bento p-6 flex flex-col transition-transform hover:-translate-y-0.5">
               <span className="mono-tick" style={{ color: "var(--accent)" }}>BRAND · 04</span>
               <h3 className="mt-2.5 text-lg font-medium tracking-[-0.025em]">Brand-locked output</h3>
               <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
@@ -521,10 +705,10 @@ export default function LandingPage() {
                   + token
                 </div>
               </div>
-            </div>
+            </Link>
 
             {/* Callouts */}
-            <div className="kinetic-bento p-6 flex flex-col">
+            <Link href="/projects" className="kinetic-bento p-6 flex flex-col transition-transform hover:-translate-y-0.5">
               <span className="mono-tick" style={{ color: "var(--accent)" }}>CALLOUT · 05</span>
               <h3 className="mt-2.5 text-lg font-medium tracking-[-0.025em]">Smart callouts</h3>
               <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
@@ -536,10 +720,10 @@ export default function LandingPage() {
                 <path d="M95 42 L110 30" stroke="var(--accent)" strokeWidth="1.5" />
                 <circle cx="160" cy="40" r="14" fill="none" stroke="var(--accent)" strokeWidth="1.5" />
               </svg>
-            </div>
+            </Link>
 
             {/* Big - Editor */}
-            <div className="kinetic-bento p-7 lg:col-span-2 lg:row-span-2 flex flex-col">
+            <Link href="/projects" className="kinetic-bento p-7 lg:col-span-2 lg:row-span-2 flex flex-col transition-transform hover:-translate-y-0.5">
               <span className="mono-tick" style={{ color: "var(--accent)" }}>EDITOR · 06</span>
               <h3 className="mt-3 text-2xl font-medium tracking-[-0.03em] md:text-3xl">
                 A timeline editor when you want it
@@ -552,12 +736,16 @@ export default function LandingPage() {
                 className="mt-auto rounded-xl border border-rule p-4"
                 style={{ background: "var(--surface)" }}
               >
-                <MiniTimeline />
+                <MiniTimeline
+                  bpm={sampleTrack.bpm}
+                  durationSeconds={sampleTrack.duration}
+                  trackName={sampleTrack.name}
+                />
               </div>
-            </div>
+            </Link>
 
             {/* Versions */}
-            <div className="kinetic-bento p-6 flex flex-col">
+            <Link href="/projects" className="kinetic-bento p-6 flex flex-col transition-transform hover:-translate-y-0.5">
               <span className="mono-tick" style={{ color: "var(--accent)" }}>VERSIONS · 07</span>
               <h3 className="mt-2.5 text-lg font-medium tracking-[-0.025em]">Re-render any version</h3>
               <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
@@ -589,10 +777,10 @@ export default function LandingPage() {
                   </div>
                 ))}
               </div>
-            </div>
+            </Link>
 
             {/* I18n */}
-            <div className="kinetic-bento p-6 flex flex-col">
+            <Link href="/pricing" className="kinetic-bento p-6 flex flex-col transition-transform hover:-translate-y-0.5">
               <span className="mono-tick" style={{ color: "var(--accent)" }}>I18N · 08</span>
               <h3 className="mt-2.5 text-lg font-medium tracking-[-0.025em]">14 languages</h3>
               <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
@@ -612,7 +800,7 @@ export default function LandingPage() {
                   </span>
                 ))}
               </div>
-            </div>
+            </Link>
           </div>
         </div>
       </section>
@@ -632,59 +820,72 @@ export default function LandingPage() {
                 Just rendered.
               </h2>
             </div>
-            <div
-              className="flex gap-1 rounded-full p-1"
-              style={{ background: "var(--paper)", border: "1px solid var(--rule)" }}
-            >
-              {["All", "Launch", "Demos", "Brand", "Changelog"].map((x, i) => (
-                <span
-                  key={x}
-                  className="rounded-full px-3 py-1.5 text-[12.5px]"
-                  style={{
-                    color: i === 0 ? "var(--ink)" : "var(--muted)",
-                    background: i === 0 ? "rgba(245,245,247,0.06)" : "transparent",
-                  }}
-                >
-                  {x}
-                </span>
-              ))}
-            </div>
+            <Link href="/projects" className="btn-ghost text-sm">
+              See all <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {SHOWCASE.map((r) => (
-              <div
-                key={r.title}
-                className="rounded-2xl p-2.5"
-                style={{ background: "var(--paper)", border: "1px solid var(--rule)" }}
+          {showcase.length === 0 ? (
+            <div
+              className="rounded-2xl p-12 text-center"
+              style={{ background: "var(--paper)", border: "1px solid var(--rule)" }}
+            >
+              <p className="text-muted">No public renders yet — be the first.</p>
+              <button
+                type="button"
+                onClick={() => router.push("/projects")}
+                className="btn-accent mt-6 text-xs"
               >
-                <div
-                  className="relative aspect-video overflow-hidden rounded-xl"
-                  style={{ background: "var(--paper-2)" }}
-                >
-                  <div className="absolute inset-0 dot-grid opacity-40" />
-                  <div className="absolute left-3 top-3 kinetic-pill !py-1 !px-2">
-                    <span className="accent-dot" />
-                    <span className="mono-tick">{r.cat}</span>
-                  </div>
-                  <div className="absolute right-3 top-3 mono-tick">{r.dur}</div>
-                  <div
-                    className="absolute inset-x-3 bottom-3 h-0.5 rounded-full"
-                    style={{ background: "rgba(245,245,247,0.08)" }}
+                Start a render <ArrowUpRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {showcase.map((p) => {
+                const title = p.name || "Untitled render";
+                const host = hostnameFromUrl(p.sourceUrl);
+                const cat = host ? host.toUpperCase() : p.status;
+                return (
+                  <Link
+                    key={p.id}
+                    href={`/projects/${p.id}/jitter`}
+                    className="group rounded-2xl p-2.5 transition-transform hover:-translate-y-0.5"
+                    style={{ background: "var(--paper)", border: "1px solid var(--rule)" }}
                   >
                     <div
-                      className="h-full rounded-full"
-                      style={{ width: "38%", background: "var(--accent)", boxShadow: "0 0 8px var(--accent)" }}
-                    />
-                  </div>
-                </div>
-                <div className="flex items-baseline justify-between px-2 pb-1.5 pt-3.5">
-                  <h3 className="text-base font-medium tracking-[-0.02em]">{r.title}</h3>
-                  <span className="mono-tick">{r.team}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+                      className="relative aspect-video overflow-hidden rounded-xl"
+                      style={{ background: "var(--paper-2)" }}
+                    >
+                      <div className="absolute inset-0 dot-grid opacity-40" />
+                      {p.videoUrl ? (
+                        <video
+                          src={p.videoUrl}
+                          muted
+                          loop
+                          playsInline
+                          preload="metadata"
+                          onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.pause();
+                            e.currentTarget.currentTime = 0;
+                          }}
+                          className="absolute inset-0 h-full w-full object-cover"
+                        />
+                      ) : null}
+                      <div className="absolute left-3 top-3 kinetic-pill !py-1 !px-2">
+                        <span className="accent-dot" />
+                        <span className="mono-tick">{cat}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-baseline justify-between px-2 pb-1.5 pt-3.5">
+                      <h3 className="line-clamp-1 text-base font-medium tracking-[-0.02em]">{title}</h3>
+                      <span className="mono-tick">{p.status}</span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 

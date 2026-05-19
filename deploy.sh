@@ -275,7 +275,7 @@ sudo -u "$APP_USER" bash -c "cp -r $APP_DIR/generate-server/lib/generated $APP_D
 # COMPOSE_SERVICES selects which compose services to bring up.
 # Default: redis + scraper-service. render-service is excluded by default
 # because some VPS hosts already run it from /opt/render-service.
-COMPOSE_SERVICES="${COMPOSE_SERVICES:-redis scraper-service}"
+COMPOSE_SERVICES="${COMPOSE_SERVICES:-redis scraper-service gateway}"
 
 if command -v docker &>/dev/null; then
   log "Starting Docker microservices: $COMPOSE_SERVICES"

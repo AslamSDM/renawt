@@ -64,6 +64,7 @@ export default function JitterProjectPage({
       .then(([projectData, docData]) => {
         if (!alive) return;
         if (projectData?.project?.sourceUrl) setUrl(projectData.project.sourceUrl);
+        if (projectData?.project?.description) setNotes(projectData.project.description);
         if (docData?.doc) setSavedDoc(docData.doc as JitterDoc);
       })
       .catch(() => {})
@@ -166,12 +167,6 @@ export default function JitterProjectPage({
               </p>
             </div>
           </div>
-          <Link
-            href={`/projects/${id}/creative`}
-            className="text-sm text-muted hover:text-ink transition-colors"
-          >
-            Editor →
-          </Link>
         </div>
       </header>
 

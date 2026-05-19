@@ -12,6 +12,7 @@ import { z } from "zod";
 import {
   chatWithGeminiPro,
   chatWithGeminiProVision,
+  chatWithCloudflareAI,
   CODE_GENERATOR_CONFIG,
   type ChatMessage,
 } from "./model";
@@ -1245,13 +1246,22 @@ export async function generateJitterDoc(
   let lastError: unknown = null;
   let raw = "";
 
-  // Always use Gemini Pro — CF Kimi K2.6 doesn't produce valid JitterDoc JSON reliably.
-  const LARGE_CONFIG = { ...CODE_GENERATOR_CONFIG, maxTokens: 16000 };
+  // Default: Gemini Pro. Override with JITTER_LLM=cloudflare to try CF Kimi K2.6
+  // (warning: historically produces invalid JitterDoc JSON — kept for testing).
+  const LARGE_CONFIG = {
+    ...CODE_GENERATOR_CONFIG,
+    maxTokens: Number(process.env.JITTER_MAX_TOKENS || 16000),
+  };
+  const useCloudflare = process.env.JITTER_LLM === "cloudflare";
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      console.log(`[JitterComposer] Attempt ${attempt}/${maxAttempts}`);
-      const resp = await chatWithGeminiPro(messages, LARGE_CONFIG);
+      console.log(
+        `[JitterComposer] Attempt ${attempt}/${maxAttempts} (provider: ${useCloudflare ? "cloudflare-kimi" : "gemini-pro"})`,
+      );
+      const resp = useCloudflare
+        ? await chatWithCloudflareAI(messages, LARGE_CONFIG)
+        : await chatWithGeminiPro(messages, LARGE_CONFIG);
       raw = resp.content;
       const json = JSON.parse(extractJsonBlock(raw));
       const parsed = JitterDocSchema.safeParse(json);

@@ -177,7 +177,7 @@ export default function ProfilePage() {
                     {profile.recentProjects.map((proj) => (
                       <Link
                         key={proj.id}
-                        href={`/projects/${proj.id}/creative`}
+                        href={`/projects/${proj.id}/jitter`}
                         className="flex items-center justify-between py-4 transition-colors hover:bg-paper-2"
                       >
                         <span className="truncate text-base text-ink">

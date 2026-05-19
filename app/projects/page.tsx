@@ -59,7 +59,7 @@ export default function ProjectsPage() {
     }
   };
 
-  const createProject = async (mode: "creative" | "jitter" = "creative") => {
+  const createProject = async () => {
     setCreating(true);
     try {
       const response = await fetch("/api/projects", {
@@ -69,7 +69,7 @@ export default function ProjectsPage() {
       });
       const data = await response.json();
       if (data.project) {
-        router.push(`/projects/${data.project.id}/${mode}`);
+        router.push(`/projects/${data.project.id}/jitter`);
       }
     } catch (error) {
       console.error("Failed to create project:", error);
@@ -141,7 +141,7 @@ export default function ProjectsPage() {
       });
       const data = await response.json();
       if (data.project) {
-        router.push(`/projects/${data.project.id}/creative`);
+        router.push(`/projects/${data.project.id}/jitter`);
       }
     } catch (error) {
       console.error("Failed to duplicate project:", error);
@@ -211,22 +211,14 @@ export default function ProjectsPage() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <button
-              onClick={() => createProject("jitter")}
-              disabled={creating}
-              className="btn-ghost disabled:opacity-50"
-            >
-              <Sparkles className="h-4 w-4" strokeWidth={1.6} />
-              Generate from URL
-            </button>
-            <button
-              onClick={() => createProject("creative")}
+              onClick={() => createProject()}
               disabled={creating}
               className="btn-accent disabled:opacity-50"
             >
               {creating ? (
                 <span className="h-4 w-4 animate-spin rounded-full border border-black/30 border-t-black" />
               ) : (
-                <Plus className="h-4 w-4" strokeWidth={1.6} />
+                <Sparkles className="h-4 w-4" strokeWidth={1.6} />
               )}
               New project
             </button>
@@ -255,7 +247,7 @@ export default function ProjectsPage() {
               Spin up your first reel and the engine takes it from there.
             </p>
             <button
-              onClick={() => createProject("creative")}
+              onClick={() => createProject()}
               disabled={creating}
               className="btn-accent mt-8 disabled:opacity-50"
             >
@@ -272,7 +264,7 @@ export default function ProjectsPage() {
             {projects.map((project) => (
               <Link
                 key={project.id}
-                href={`/projects/${project.id}/creative`}
+                href={`/projects/${project.id}/jitter`}
                 className="group kinetic-bento flex flex-col p-2.5 transition-transform hover:-translate-y-0.5"
               >
                 <div
@@ -384,17 +376,6 @@ export default function ProjectsPage() {
                       <Edit2 className="h-3.5 w-3.5" />
                     </button>
                     <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        router.push(`/projects/${project.id}/jitter`);
-                      }}
-                      className="rounded-sm p-1.5 text-muted transition-colors hover:bg-paper-3 hover:text-ink"
-                      title="Generate from URL"
-                    >
-                      <Sparkles className="h-3.5 w-3.5" />
-                    </button>
-                    <button
                       onClick={(e) => duplicateProject(project, e)}
                       className="rounded-sm p-1.5 text-muted transition-colors hover:bg-paper-3 hover:text-ink"
                       title="Duplicate"
@@ -415,7 +396,7 @@ export default function ProjectsPage() {
 
             {/* New project card */}
             <button
-              onClick={() => createProject("creative")}
+              onClick={() => createProject()}
               disabled={creating}
               className="group kinetic-bento kinetic-bento-glow flex min-h-[280px] flex-col items-center justify-center gap-4 p-5 transition-transform hover:-translate-y-0.5"
             >

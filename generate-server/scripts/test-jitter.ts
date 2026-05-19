@@ -45,12 +45,15 @@ async function main() {
   console.log(`[test-jitter] Inspirations: ${inspirations.length} templates`);
   for (const t of inspirations) console.log(`  - ${t.name} [${t.sections.join(",")}] layers=${t.layerCount} ops=${t.opCount}`);
 
+  const durationMs = Number(process.env.JITTER_DURATION_MS || 5000);
+  console.log(`[test-jitter] Duration: ${durationMs}ms`);
+
   const t0 = Date.now();
   const result = await generateJitterDoc({
     brief,
     width: 1920,
     height: 1080,
-    durationMs: 5000,
+    durationMs,
     brand: {
       primary: "#ff2d95",
       background: "#0b1020",
