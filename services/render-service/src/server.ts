@@ -17,9 +17,24 @@ import { randomUUID } from "crypto";
 const app = express();
 const PORT = Number(process.env.PORT) || 4002;
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
+const RENDER_SERVICE_URL = process.env.RENDER_SERVICE_URL || `http://localhost:${PORT}`;
 const QUEUE_NAME = "render-jobs";
 
 app.use(express.json({ limit: "50mb" }));
+
+// Shared secret auth — if RENDER_API_KEY is set, all requests (except /health) must include it
+const RENDER_API_KEY = process.env.RENDER_API_KEY;
+if (RENDER_API_KEY) {
+  app.use((req, res, next) => {
+    if (req.path === "/health") return next();
+    const key = req.headers["x-render-key"] || req.headers["authorization"]?.replace("Bearer ", "");
+    if (key !== RENDER_API_KEY) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    next();
+  });
+  console.log("[RenderService] API key auth enabled");
+}
 
 // Redis connection for BullMQ queue
 const connection = new IORedis(REDIS_URL, {
@@ -96,6 +111,10 @@ app.get("/render/:jobId/status", async (req, res) => {
   // Check in-memory status first
   const memStatus = jobStatuses.get(jobId);
   if (memStatus) {
+    // Add videoUrl for completed jobs
+    if (memStatus.status === "completed" && !memStatus.videoUrl) {
+      memStatus.videoUrl = `${RENDER_SERVICE_URL}/render/${jobId}/file`;
+    }
     return res.json(memStatus);
   }
 
@@ -113,7 +132,7 @@ app.get("/render/:jobId/status", async (req, res) => {
       jobId,
       status: state === "completed" ? "completed" : state === "failed" ? "failed" : state === "active" ? "rendering" : "queued",
       progress: typeof progress === "number" ? progress / 100 : undefined,
-      videoUrl: state === "completed" ? (job.returnvalue as any)?.videoUrl : undefined,
+      videoUrl: state === "completed" ? `${RENDER_SERVICE_URL}/render/${jobId}/file` : undefined,
       error: state === "failed" ? job.failedReason : undefined,
       createdAt: new Date(job.timestamp).toISOString(),
       updatedAt: new Date().toISOString(),

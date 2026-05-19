@@ -221,11 +221,11 @@ function RecordPageContent() {
 
   if (!projectId) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+      <div className="min-h-screen bg-surface flex items-center justify-center">
         <Card className="max-w-md text-center p-8">
           <div className="text-4xl mb-4">⚠️</div>
-          <h1 className="text-xl font-semibold text-white mb-2">No Project Selected</h1>
-          <p className="text-gray-400 mb-6">
+          <h1 className="text-xl font-semibold text-ink mb-2">No Project Selected</h1>
+          <p className="text-muted mb-6">
             Please select a project to record a feature demo.
           </p>
           <Button onClick={() => router.push("/")}>Go Home</Button>
@@ -235,17 +235,23 @@ function RecordPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="relative min-h-screen overflow-hidden bg-surface text-ink">
+      <div className="pointer-events-none absolute inset-0 kinetic-dotgrid" />
+      <div
+        className="pointer-events-none absolute kinetic-glow-soft"
+        style={{ top: -150, left: "50%", transform: "translateX(-50%)", width: 1000, height: 500 }}
+      />
+
       {/* Instructions Modal */}
       {showInstructions && state.status === "idle" && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <Card className="max-w-lg w-full p-6">
             <h2 className="text-2xl font-bold mb-4">Before You Record</h2>
-            <div className="space-y-4 text-gray-300">
+            <div className="space-y-4 text-ink/80">
               <div className="flex items-start gap-3">
-                <span className="text-yellow-400 text-xl">1.</span>
+                <span className="text-ink text-xl">1.</span>
                 <div>
-                  <p className="font-medium text-white">Hide Your Cursor</p>
+                  <p className="font-medium text-ink">Hide Your Cursor</p>
                   <p className="text-sm">
                     Please hide your cursor before recording. On Mac: System Settings → Accessibility → Display → Pointer Size (set to minimum). 
                     On Windows: Settings → Ease of Access → Mouse pointer → Change pointer size (set to smallest).
@@ -253,18 +259,18 @@ function RecordPageContent() {
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <span className="text-yellow-400 text-xl">2.</span>
+                <span className="text-ink text-xl">2.</span>
                 <div>
-                  <p className="font-medium text-white">Record Your Screen</p>
+                  <p className="font-medium text-ink">Record Your Screen</p>
                   <p className="text-sm">
                     Click "Start Recording" and select the window or screen you want to record.
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <span className="text-yellow-400 text-xl">3.</span>
+                <span className="text-ink text-xl">3.</span>
                 <div>
-                  <p className="font-medium text-white">Demonstrate the Feature</p>
+                  <p className="font-medium text-ink">Demonstrate the Feature</p>
                   <p className="text-sm">
                     Show how the feature works. Your clicks and typing will be highlighted with zoom effects.
                   </p>
@@ -291,18 +297,25 @@ function RecordPageContent() {
       )}
 
       {/* Header */}
-      <header className="border-b border-gray-800 bg-gray-900/50">
+      <header
+        className="relative z-10 sticky top-0 backdrop-blur-md"
+        style={{ background: "rgba(7,7,10,0.7)", borderBottom: "1px solid var(--rule)" }}
+      >
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => router.back()}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-muted hover:text-ink transition-colors"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <h1 className="text-xl font-semibold">Record Feature Demo</h1>
+            <span className="kinetic-pill !py-1 !px-2.5">
+              <span className="accent-dot" />
+              <span className="mono-tick" style={{ color: "var(--ink)" }}>RECORD · DEMO</span>
+            </span>
+            <h1 className="text-base font-medium tracking-[-0.02em]">Record Feature Demo</h1>
           </div>
 
           {state.status === "recording" && (
@@ -324,15 +337,15 @@ function RecordPageContent() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-6 py-8">
+      <main className="relative z-10 max-w-6xl mx-auto px-6 py-8">
         {/* Countdown Overlay */}
         {state.status === "countdown" && (
           <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-40">
             <div className="text-center">
-              <div className="text-9xl font-bold text-white animate-pulse">
+              <div className="text-9xl font-bold text-ink animate-pulse">
                 {state.countdown}
               </div>
-              <p className="text-xl text-gray-400 mt-4">Get ready...</p>
+              <p className="text-xl text-muted mt-4">Get ready...</p>
             </div>
           </div>
         )}
@@ -346,7 +359,7 @@ function RecordPageContent() {
                 <div className="text-center p-8">
                   <div className="text-6xl mb-4">📹</div>
                   <h3 className="text-xl font-semibold mb-2">Ready to Record</h3>
-                  <p className="text-gray-400 mb-6">
+                  <p className="text-muted mb-6">
                     Click the button below to start recording your screen.
                   </p>
                   <Button size="lg" onClick={startCountdown}>
@@ -361,7 +374,7 @@ function RecordPageContent() {
                     <div className="w-12 h-12 bg-red-500 rounded-full animate-pulse" />
                   </div>
                   <p className="text-xl font-semibold">Recording...</p>
-                  <p className="text-gray-400 mt-2">
+                  <p className="text-muted mt-2">
                     {formatTime(state.recordingTime)}
                   </p>
                 </div>
@@ -381,7 +394,7 @@ function RecordPageContent() {
                 <div className="text-center p-8">
                   <div className="text-6xl mb-4">❌</div>
                   <h3 className="text-xl font-semibold text-red-400 mb-2">Error</h3>
-                  <p className="text-gray-400 mb-6">{state.error}</p>
+                  <p className="text-muted mb-6">{state.error}</p>
                   <Button onClick={handleDiscard}>Try Again</Button>
                 </div>
               )}
@@ -389,8 +402,8 @@ function RecordPageContent() {
 
             {/* Recording Info */}
             {state.status === "recording" && (
-              <div className="mt-4 p-4 bg-gray-900 rounded-lg">
-                <p className="text-sm text-gray-400">
+              <div className="mt-4 p-4 bg-paper-2 rounded-lg">
+                <p className="text-sm text-muted">
                   💡 Tip: Click "Stop Recording" when you&apos;re done, or stop sharing your screen.
                 </p>
               </div>
@@ -405,7 +418,7 @@ function RecordPageContent() {
                   <h3 className="text-lg font-semibold mb-4">Feature Details</h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-2">
+                      <label className="block text-sm font-medium text-muted mb-2">
                         Feature Name *
                       </label>
                       <input
@@ -413,11 +426,11 @@ function RecordPageContent() {
                         value={featureName}
                         onChange={(e) => setFeatureName(e.target.value)}
                         placeholder="e.g., Smart Search Feature"
-                        className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                        className="w-full px-3 py-2 bg-paper-3 border border-rule-strong rounded-lg text-ink placeholder-gray-500 focus:outline-none focus:border-ink"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-2">
+                      <label className="block text-sm font-medium text-muted mb-2">
                         Description
                       </label>
                       <textarea
@@ -425,7 +438,7 @@ function RecordPageContent() {
                         onChange={(e) => setDescription(e.target.value)}
                         placeholder="Briefly describe what this feature does..."
                         rows={3}
-                        className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none"
+                        className="w-full px-3 py-2 bg-paper-3 border border-rule-strong rounded-lg text-ink placeholder-gray-500 focus:outline-none focus:border-ink resize-none"
                       />
                     </div>
                   </div>
@@ -435,15 +448,15 @@ function RecordPageContent() {
                   <h3 className="text-lg font-semibold mb-4">Recording Info</h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Duration:</span>
+                      <span className="text-muted">Duration:</span>
                       <span>{formatTime(state.recordingTime)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Format:</span>
+                      <span className="text-muted">Format:</span>
                       <span>WebM</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Cursor:</span>
+                      <span className="text-muted">Cursor:</span>
                       <span>Tracked</span>
                     </div>
                   </div>
@@ -479,21 +492,21 @@ function RecordPageContent() {
             {state.status === "idle" && !showInstructions && (
               <Card className="p-6">
                 <h3 className="text-lg font-semibold mb-4">Recording Tips</h3>
-                <ul className="space-y-3 text-sm text-gray-400">
+                <ul className="space-y-3 text-sm text-muted">
                   <li className="flex items-start gap-2">
-                    <span className="text-yellow-400">•</span>
+                    <span className="text-ink">•</span>
                     Keep your demonstration under 60 seconds
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-yellow-400">•</span>
+                    <span className="text-ink">•</span>
                     Focus on one feature at a time
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-yellow-400">•</span>
+                    <span className="text-ink">•</span>
                     Move your cursor smoothly (avoid rapid movements)
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-yellow-400">•</span>
+                    <span className="text-ink">•</span>
                     Click clearly and pause briefly after each click
                   </li>
                 </ul>
@@ -508,7 +521,7 @@ function RecordPageContent() {
 
 export default function RecordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-950 flex items-center justify-center"><Spinner size="lg" /></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-surface flex items-center justify-center"><Spinner size="lg" /></div>}>
       <RecordPageContent />
     </Suspense>
   );

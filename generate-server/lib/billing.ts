@@ -10,6 +10,9 @@ export const COSTS = {
   editVideo: 1,
   editScript: 1,
   freestyle: 5,
+  referenceVideo: 5,
+  reel: 8,
+  narrate: 1,
 };
 
 // Credit deduction via Prisma (shared production DB)

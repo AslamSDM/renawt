@@ -1,51 +1,34 @@
-import { NextRequest, NextResponse } from "next/server";
-import { listAudioFiles, isR2Configured } from "@/lib/storage/r2";
-import musicMetadata from "@/music_metadata.json";
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db/prisma";
 
 /**
  * GET /api/audio
- * List all available audio files — serves tracks from music_metadata.json (R2-hosted)
- * plus any user-uploaded audio from R2
+ * List enabled music tracks from the Music table (R2-hosted).
  */
 export async function GET() {
   try {
-    // Primary source: music_metadata.json tracks (hosted on R2)
-    const metadataTracks = musicMetadata.map((track) => ({
-      key: track.filename,
-      name: track.title + (track.artist ? ` — ${track.artist}` : ""),
-      url: track.url,
-      bpm: (track as any).bpm || 120,
-      duration: undefined as number | undefined,
-      moods: track.moods,
+    const rows = await prisma.music.findMany({
+      where: { enabled: true },
+      orderBy: [{ source: "asc" }, { createdAt: "asc" }],
+    });
+
+    const audio = rows.map((r) => ({
+      key: r.filename,
+      name: r.title + (r.artist ? ` — ${r.artist}` : ""),
+      url: r.url,
+      bpm: r.bpm,
+      duration: r.durationMs ? r.durationMs / 1000 : undefined,
+      moods: r.moods,
+      source: r.source,
+      license: r.license ?? undefined,
     }));
 
-    // Also include user-uploaded audio from R2 if configured
-    let userUploads: typeof metadataTracks = [];
-    if (isR2Configured()) {
-      try {
-        const r2Files = await listAudioFiles();
-        userUploads = r2Files.map((file) => ({
-          key: file.key,
-          name: file.name,
-          url: file.url,
-          bpm: file.bpm || 120,
-          duration: file.duration,
-          moods: [] as string[],
-        }));
-      } catch {
-        // R2 user uploads optional — don't fail
-      }
-    }
-
-    return NextResponse.json({
-      audio: [...metadataTracks, ...userUploads],
-      source: "music_metadata",
-    });
+    return NextResponse.json({ audio, source: "music_db" });
   } catch (error) {
     console.error("[API] Error listing audio:", error);
     return NextResponse.json(
       { error: "Failed to list audio files" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

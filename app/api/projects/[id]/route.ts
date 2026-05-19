@@ -99,6 +99,12 @@ export async function PATCH(
     if (body.audioUrl !== undefined) {
       updateData.audioUrl = body.audioUrl;
     }
+    if (body.videoUrl !== undefined) {
+      updateData.videoUrl = body.videoUrl;
+    }
+    if (body.currentVersionId !== undefined) {
+      updateData.currentVersionId = body.currentVersionId;
+    }
     if (body.status !== undefined) {
       updateData.status = body.status;
     }

@@ -14,6 +14,7 @@ set -euo pipefail
 REMOTE="${1:-}"
 MODE="${2:---update}"
 APP_DIR="/opt/remawt"
+SSH_KEY="${SSH_KEY:-$HOME/.ssh/aslamSDM}"
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -38,9 +39,9 @@ fi
 # ============================================================
 log "Syncing project files to $REMOTE:$APP_DIR ..."
 
-ssh "$REMOTE" "mkdir -p $APP_DIR"
+ssh -i "$SSH_KEY" "$REMOTE" "mkdir -p $APP_DIR"
 
-rsync -avz --progress \
+rsync -avz --progress -e "ssh -i $SSH_KEY" \
   --exclude 'node_modules' \
   --exclude '.next' \
   --exclude 'dist' \
@@ -186,6 +187,15 @@ REDIS_URL=redis://:CHANGE_ME_TO_RANDOM_STRING@localhost:6379
 SCRAPER_SERVICE_URL=http://localhost:4001
 RENDER_SERVICE_URL=http://localhost:4002
 
+# Scraper auth (REQUIRED in prod — both sides must match)
+SCRAPER_AUTH_TOKEN=
+
+# Music library fetcher (optional)
+JAMENDO_CLIENT_ID=
+
+# Logging
+LOG_LEVEL=info
+
 # Server
 PORT=3001
 
@@ -258,21 +268,36 @@ sudo -u "$APP_USER" bash -c "cd $APP_DIR && npx prisma migrate deploy" 2>/dev/nu
 log "Building generate-server..."
 sudo -u "$APP_USER" bash -c "cd $APP_DIR/generate-server && pnpm build"
 
+log "Copying Prisma client to dist..."
+sudo -u "$APP_USER" bash -c "cp -r $APP_DIR/generate-server/lib/generated $APP_DIR/generate-server/dist/lib/generated"
+
 # Docker microservices
+# COMPOSE_SERVICES selects which compose services to bring up.
+# Default: redis + scraper-service. render-service is excluded by default
+# because some VPS hosts already run it from /opt/render-service.
+COMPOSE_SERVICES="${COMPOSE_SERVICES:-redis scraper-service gateway}"
+
 if command -v docker &>/dev/null; then
-  log "Starting Docker microservices..."
+  log "Starting Docker microservices: $COMPOSE_SERVICES"
   cd "$APP_DIR"
-  docker compose up -d --build
+  # shellcheck disable=SC2086
+  docker compose --env-file generate-server/.env up -d --build $COMPOSE_SERVICES
 
   log "Waiting for services..."
   sleep 8
 
-  curl -sf http://localhost:4001/health > /dev/null 2>&1 \
-    && log "Scraper: healthy" || warn "Scraper: starting..."
-  curl -sf http://localhost:4002/health > /dev/null 2>&1 \
-    && log "Render: healthy" || warn "Render: starting..."
-  docker compose exec -T redis redis-cli -a "$REDIS_PASSWORD" ping 2>/dev/null | grep -q PONG \
-    && log "Redis: healthy" || warn "Redis: starting..."
+  if [[ " $COMPOSE_SERVICES " == *" scraper-service "* ]]; then
+    curl -sf http://localhost:4001/health > /dev/null 2>&1 \
+      && log "Scraper: healthy" || warn "Scraper: starting..."
+  fi
+  if [[ " $COMPOSE_SERVICES " == *" render-service "* ]]; then
+    curl -sf http://localhost:4002/health > /dev/null 2>&1 \
+      && log "Render: healthy" || warn "Render: starting..."
+  fi
+  if [[ " $COMPOSE_SERVICES " == *" redis "* ]]; then
+    docker compose exec -T redis redis-cli -a "$REDIS_PASSWORD" ping 2>/dev/null | grep -q PONG \
+      && log "Redis: healthy" || warn "Redis: starting..."
+  fi
 else
   warn "Docker not available — microservices skipped"
 fi
@@ -314,8 +339,8 @@ rm -f /tmp/remawt-deploy.sh
 ENDSCRIPT
 
 # Upload and execute
-scp -q "$REMOTE_SCRIPT" "$REMOTE:/tmp/remawt-deploy.sh"
+scp -i "$SSH_KEY" -q "$REMOTE_SCRIPT" "$REMOTE:/tmp/remawt-deploy.sh"
 rm -f "$REMOTE_SCRIPT"
-ssh "$REMOTE" "chmod +x /tmp/remawt-deploy.sh && /tmp/remawt-deploy.sh $MODE"
+ssh -i "$SSH_KEY" "$REMOTE" "chmod +x /tmp/remawt-deploy.sh && /tmp/remawt-deploy.sh $MODE"
 
 log "Done!"

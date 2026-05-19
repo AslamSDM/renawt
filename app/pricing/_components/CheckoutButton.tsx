@@ -12,13 +12,15 @@ type Props = {
     isPopular: boolean
     product: ProductType
     quantity: number
+    billing?: "monthly" | "annual"
 }
 
 function CheckoutButton({
     text,
     isPopular,
     product,
-    quantity
+    quantity,
+    billing = "monthly"
 }: Props) {
 
     const [isLoading, setIsLoading] = useState(false);
@@ -28,13 +30,13 @@ function CheckoutButton({
     const router = useRouter();
 
     useEffect(() => {
+        const mode = process.env.NEXT_PUBLIC_DODO_PAYMENTS_ENVIRONMENT === "live_mode" ? "live" : "test";
         DodoPayments.Initialize({
-            mode: "test",
+            mode,
             displayType: "overlay",
             onEvent: (event) => {
-                if (event.event_type === "checkout.breakdown") {
-                    const breakdown = event.data?.message;
-                    // Update your UI with breakdown.subTotal, breakdown.tax, breakdown.total, etc.
+                if (event.event_type === "checkout.closed") {
+                    setIsLoading(false);
                 }
             },
         });
@@ -65,7 +67,8 @@ function CheckoutButton({
                 body: JSON.stringify({
                     product: product.name,
                     userId: session.user.id,
-                    quantity: quantity
+                    quantity: quantity,
+                    billing,
                 }),
             });
 
@@ -74,7 +77,6 @@ function CheckoutButton({
             }
 
             const data = await response.json();
-            console.log('Checkout URL:', data.checkout_url);
 
             DodoPayments.Checkout.open({
                 checkoutUrl: data.checkout_url,
@@ -82,6 +84,7 @@ function CheckoutButton({
 
         } catch (err) {
             console.error('Checkout error:', err);
+            setError('Something went wrong. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -89,15 +92,18 @@ function CheckoutButton({
 
 
     return (
-        <Button
-            className="w-full rounded-none cursor-pointer"
-            variant={isPopular ? "default" : "outline"}
-            size="lg"
-            onClick={handleCheckout}
-            disabled={isLoading}
-        >
-            {isLoading ? "Loading..." : text}
-        </Button>
+        <div>
+            <Button
+                className="w-full rounded-none cursor-pointer"
+                variant={isPopular ? "default" : "outline"}
+                size="lg"
+                onClick={handleCheckout}
+                disabled={isLoading}
+            >
+                {isLoading ? "Loading..." : text}
+            </Button>
+            {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
+        </div>
     )
 }
 

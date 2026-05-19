@@ -5,14 +5,12 @@ import { join } from "path";
 
 // Shared middleware & helpers
 import { jwtAuth } from "./lib/auth";
-import { COSTS } from "./lib/billing";
 
 // Routers
 import webhooksRouter from "./routes/webhooks";
-import generateRouter from "./routes/generate";
-import editRouter from "./routes/edit";
-import freestyleRouter from "./routes/freestyle";
-import devRouter from "./routes/dev";
+import narrateRouter from "./routes/narrate";
+import jitterRouter from "./routes/jitter";
+import jitterReferenceRouter from "./routes/jitterReference";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -22,7 +20,9 @@ app.use(cors({
   origin: process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(",")
     : ["http://localhost:3000"],
-  methods: ["GET", "POST", "PATCH", "DELETE"],
+  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
 }));
 app.use(express.json({ limit: "10mb" }));
 
@@ -46,15 +46,15 @@ app.get("/health", (_req, res) => {
 app.use("/webhooks", webhooksRouter);
 
 // Creative API Routes (JWT Auth Required)
-app.use("/api/creative", jwtAuth, generateRouter);
-app.use("/api/creative", jwtAuth, editRouter);
-app.use("/api/creative", jwtAuth, freestyleRouter);
+app.use("/api/creative", jwtAuth, narrateRouter);
+app.use("/api/creative", jwtAuth, jitterRouter);
+app.use("/api/creative", jwtAuth, jitterReferenceRouter);
 
-// Development Playground (No auth, restricted by NODE_ENV)
-if (process.env.NODE_ENV !== "production") {
-  app.use("/dev", devRouter);
-  console.log("[GenerateServer] 🧪 Dev render playground: /dev/render");
-}
+// Serve Jitter renders + screenshots from the repo /public dir
+app.use(
+  "/jitter",
+  express.static(join(process.cwd(), "..", "public", "jitter")),
+);
 
 // ============================================================
 // Start server
@@ -66,20 +66,7 @@ app.listen(PORT, () => {
   );
   console.log(`[GenerateServer] Credits: Deducted server-side via Prisma`);
   console.log(`[GenerateServer] Endpoints:`);
-  console.log(`  POST /api/creative/generate     — ${COSTS.generate} credit`);
-  console.log(`  POST /api/creative/continue     — ${COSTS.continue} credits`);
-  console.log(`  POST /api/creative/render        — ${COSTS.render} credits`);
-  console.log(`  POST /api/creative/edit-video    — ${COSTS.editVideo} credit`);
-  console.log(
-    `  POST /api/creative/edit-script   — ${COSTS.editScript} credit`,
-  );
-  console.log(
-    `  POST /api/creative/freestyle     — ${COSTS.freestyle} credits`,
-  );
-  if (process.env.NODE_ENV !== "production") {
-    console.log(`  GET  /dev/render                 — 🧪 playground (no auth)`);
-    console.log(
-      `  POST /dev/render                 — 🧪 test render (no auth)`,
-    );
-  }
+  console.log(`  POST /api/creative/narrate          — ElevenLabs TTS narration`);
+  console.log(`  POST /api/creative/jitter           — URL → animated brand video`);
+  console.log(`  POST /api/creative/jitter-reference — reference video → Jitter recreation`);
 });

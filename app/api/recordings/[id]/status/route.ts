@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cvProcessor } from "@/lib/recording/cvProcessor";
 import { videoProcessor } from "@/lib/recording/videoProcessor";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/auth";
 
 /**
  * GET /api/recordings/[id]/status
- * Get processing status for a recording (checks in-memory queues + DB)
+ * Get processing status for a recording
  */
 export async function GET(
   request: NextRequest,
@@ -24,46 +23,21 @@ export async function GET(
     const videoJob = videoProcessor.getJobStatus(recordingId);
     const processedVideoUrl = videoProcessor.getProcessedVideoUrl(recordingId);
 
-    // Check in-memory CV detection status
-    const cvJob = cvProcessor.getJobStatus(recordingId);
-
-    if (cvJob || videoJob) {
+    if (videoJob) {
       return NextResponse.json({
         recordingId,
-        cvStatus: cvJob?.status || "complete",
-        cvProgress: cvJob?.progress || 100,
-        cursorCount: cvJob?.cursorData?.length || 0,
-        zoomPointCount: cvJob?.zoomPoints?.length || 0,
-        videoStatus: videoJob?.status || "not_started",
-        videoProgress: videoJob?.progress || 0,
+        videoStatus: videoJob.status,
+        videoProgress: videoJob.progress || 0,
         processedVideoUrl: processedVideoUrl || null,
-        status: videoJob?.status === "complete"
-          ? "complete"
-          : videoJob?.status || cvJob?.status || "pending",
-        progress: videoJob
-          ? Math.round((cvJob?.progress || 100) * 0.4 + (videoJob.progress || 0) * 0.6)
-          : cvJob?.progress || 0,
-        error: videoJob?.error || cvJob?.error,
-        startedAt: cvJob?.startedAt?.toISOString(),
-        completedAt: videoJob?.completedAt?.toISOString() || cvJob?.completedAt?.toISOString(),
+        status: videoJob.status,
+        progress: videoJob.progress || 0,
+        error: videoJob.error,
+        startedAt: videoJob.startedAt?.toISOString(),
+        completedAt: videoJob.completedAt?.toISOString(),
       });
     }
 
-    // Check if we have saved data from a previous CV run
-    const savedData = await cvProcessor.loadSavedData(recordingId);
-    if (savedData) {
-      return NextResponse.json({
-        recordingId,
-        status: "complete",
-        progress: 100,
-        cursorCount: savedData.cursorData.length,
-        zoomPointCount: savedData.zoomPoints.length,
-        processedVideoUrl: processedVideoUrl || null,
-        source: savedData.source,
-      });
-    }
-
-    // Check the database as last resort (recording may have been processed before server restart)
+    // Check the database as last resort
     try {
       const dbRecording = await prisma.screenRecording.findUnique({
         where: { id: recordingId },
@@ -107,7 +81,7 @@ export async function GET(
 
 /**
  * POST /api/recordings/[id]/status/retry
- * Retry failed CV processing
+ * Retry failed video processing
  */
 export async function POST(
   request: NextRequest,
@@ -124,11 +98,12 @@ export async function POST(
     const action = searchParams.get("action");
 
     if (action === "retry") {
-      await cvProcessor.retryJob(recordingId);
+      // Video processing retry is handled by the videoProcessor
+      // For now, return not supported
       return NextResponse.json({
         recordingId,
-        status: "retrying",
-        message: "CV processing retry initiated",
+        status: "not_supported",
+        message: "Video processing retry not implemented",
       });
     }
 

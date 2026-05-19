@@ -24,6 +24,19 @@ export interface ProductData {
   tone: "professional" | "playful" | "minimal" | "bold";
   designInsights?: string;
   visualMood?: string;
+  /** Direct R2 URL of the hero screenshot — surfaced for agent prompts */
+  heroScreenshot?: string;
+  /** Rich vision-extracted brand contract (palette, fonts, materiality, motion) */
+  visionBrand?: {
+    palette: { primary: string; accent: string; background: string; foreground: string; surfaces: string[] };
+    typography: { primaryFont: string; secondaryFont?: string; fontWeights: number[]; characterStyle: string };
+    materiality: "matte" | "glossy" | "metallic" | "glass" | "paper" | "neon";
+    mood: string;
+    layoutSignals: string;
+    motionCues: string;
+    heroComposition: string;
+    visualLanguage: string;
+  };
 }
 
 export const ProductDataSchema = z.object({
@@ -223,7 +236,10 @@ export interface UserPreferences {
   musicUrl?: string;
   musicBpm?: number;
   videoType?: "demo" | "creative" | "fast-paced" | "cinematic";
-  audio?: AudioConfig; // Audio file configuration
+  audio?: AudioConfig; // Background music configuration
+  narration?: {
+    audioUrl: string; // Pre-generated ElevenLabs narration audio (R2 URL)
+  };
   aspectRatio?: AspectRatio;
   useImages?: boolean;
   nanoBanana?: boolean;
@@ -300,3 +316,44 @@ export const ImageAssetSchema = z.object({
   source: z.enum(["scraped", "uploaded", "stock"]),
   prompt: z.string().optional(),
 });
+
+// ============================================================
+// Reel Types (fast-paced AI-generated video reels)
+// ============================================================
+
+export interface ReelScene {
+  id: string;
+  order: number;
+  narrationText: string;
+  visualPrompt: string;
+  startFrameDescription: string;
+  durationSec: number;
+  transition: "cut" | "crossfade" | "whip-pan" | "zoom" | "match-cut";
+  mood: string;
+}
+
+export interface ReelScript {
+  title: string;
+  totalDurationSec: number;
+  scenes: ReelScene[];
+  musicMood: string;
+  voiceStyle: string;
+}
+
+export interface ReelGenerateRequest {
+  script?: string;
+  topic?: string;
+  style?: string;
+  aspectRatio?: "16:9" | "9:16" | "1:1";
+  maxDurationSec?: number;
+  voiceId?: string;
+  backgroundMusicUrl?: string;
+  musicVolume?: number;
+}
+
+export interface NarrationConfig {
+  voiceId?: string;
+  stability?: number;
+  similarityBoost?: number;
+  modelId?: string;
+}

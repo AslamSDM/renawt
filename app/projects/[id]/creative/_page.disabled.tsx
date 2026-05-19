@@ -1,0 +1,4641 @@
+"use client";
+
+import React, { useState, useRef, useCallback, useEffect } from "react";
+import Link from "next/link";
+import { useRouter, useParams } from "next/navigation";
+import { Player } from "@remotion/player";
+import {
+  AbsoluteFill,
+  Sequence,
+  useCurrentFrame,
+  useVideoConfig,
+  interpolate,
+  spring,
+  Audio,
+} from "remotion";
+import { loadFont as loadInter } from "@remotion/google-fonts/Inter";
+import { loadFont as loadPoppins } from "@remotion/google-fonts/Poppins";
+import { loadFont as loadRoboto } from "@remotion/google-fonts/Roboto";
+import type {
+  VideoScript,
+  VideoScene,
+  ScreenRecording,
+  ZoomPoint,
+} from "@/lib/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { AudioSelector, AudioFile } from "@/components/audio/AudioSelector";
+import { NarrationPanel, NarrationState } from "@/components/audio/NarrationPanel";
+import {
+  Download,
+  Copy,
+  Loader2,
+  Menu,
+  X,
+  Video,
+  Monitor,
+  Upload,
+  Laptop,
+  Globe,
+  Minus,
+  Plus,
+  ChevronUp,
+  ChevronDown,
+  Trash2,
+  GripVertical,
+  Send,
+  Play,
+  Pause,
+  Image as ImageIcon,
+  LayoutTemplate,
+  Eye,
+  EyeOff,
+  Maximize2,
+  ChevronLeft,
+  ChevronRight,
+  ArrowLeft,
+  Save,
+  Edit2,
+  Clock,
+  History,
+  Film,
+} from "lucide-react";
+import { CursorTracker, detectZoomPoints } from "@/lib/recording/cursorTracker";
+import { toast } from "sonner";
+
+import { ScreenshotSelector } from "@/components/screenshot/ScreenshotSelector";
+
+// Load Google Fonts
+const { fontFamily: interFont } = loadInter("normal", {
+  weights: ["400", "600", "800"],
+  subsets: ["latin"],
+});
+
+const { fontFamily: poppinsFont } = loadPoppins("normal", {
+  weights: ["400", "600", "700"],
+  subsets: ["latin"],
+});
+
+const { fontFamily: robotoFont } = loadRoboto("normal", {
+  weights: ["400", "500", "700"],
+  subsets: ["latin"],
+});
+
+// Progress Bar Component
+const ProgressBar: React.FC<{
+  progress: number;
+  status: string;
+  showPercentage?: boolean;
+}> = ({ progress, status, showPercentage = true }) => {
+  return (
+    <div className="w-full space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-muted">{status}</span>
+        {showPercentage && (
+          <span className="text-sm text-muted">{Math.round(progress)}%</span>
+        )}
+      </div>
+      <div className="w-full h-2 bg-paper-3 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-500 ease-out"
+          style={{ width: `${Math.min(Math.max(progress, 0), 100)}%` }}
+        />
+      </div>
+    </div>
+  );
+};
+
+// Typography Components
+const TypingText: React.FC<{
+  text: string;
+  fontSize?: number;
+  delay?: number;
+  color?: string;
+  fontFamily?: string;
+  speed?: number;
+  cursor?: boolean;
+}> = ({
+  text,
+  fontSize = 72,
+  delay = 0,
+  color = "#ffffff",
+  fontFamily = poppinsFont,
+  speed = 2,
+  cursor = true,
+}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const f = Math.max(0, frame - delay);
+  const charsToShow = Math.floor(f / speed);
+  const displayText = text.slice(0, Math.min(charsToShow, text.length));
+  const cursorVisible = cursor && frame % fps < fps / 2;
+
+  return (
+    <span
+      style={{
+        fontSize,
+        fontWeight: 700,
+        fontFamily,
+        color,
+        lineHeight: 1.1,
+        letterSpacing: "-0.02em",
+        display: "inline-block",
+      }}
+    >
+      {displayText}
+      {cursorVisible && charsToShow < text.length && (
+        <span style={{ opacity: 0.8 }}>|</span>
+      )}
+    </span>
+  );
+};
+
+const BlurInText: React.FC<{
+  text: string;
+  fontSize?: number;
+  delay?: number;
+  color?: string;
+  fontFamily?: string;
+}> = ({
+  text,
+  fontSize = 96,
+  delay = 0,
+  color = "#ffffff",
+  fontFamily = poppinsFont,
+}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const f = Math.max(0, frame - delay);
+  const scale = spring({
+    frame: f,
+    fps,
+    config: { damping: 15, stiffness: 100 },
+    from: 0.8,
+    to: 1,
+  });
+  const opacity = interpolate(f, [0, 20], [0, 1], {
+    extrapolateRight: "clamp",
+  });
+  const blur = interpolate(f, [0, 20], [20, 0], { extrapolateRight: "clamp" });
+  const y = interpolate(f, [0, 20], [40, 0], { extrapolateRight: "clamp" });
+
+  return (
+    <span
+      style={{
+        fontSize,
+        fontWeight: 800,
+        fontFamily,
+        color,
+        opacity,
+        filter: `blur(${blur}px)`,
+        transform: `translateY(${y}px) scale(${scale})`,
+        display: "inline-block",
+        lineHeight: 1.1,
+        letterSpacing: "-0.03em",
+      }}
+    >
+      {text}
+    </span>
+  );
+};
+
+const WordReveal: React.FC<{
+  text: string;
+  fontSize?: number;
+  delay?: number;
+  color?: string;
+  fontFamily?: string;
+  staggerDelay?: number;
+}> = ({
+  text,
+  fontSize = 48,
+  delay = 0,
+  color = "#ffffff",
+  fontFamily = interFont,
+  staggerDelay = 8,
+}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const words = text.split(" ");
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "0.4em",
+        justifyContent: "center",
+        fontSize,
+        fontFamily,
+        color,
+        lineHeight: 1.3,
+        fontWeight: 600,
+      }}
+    >
+      {words.map((word, i) => {
+        const f = Math.max(0, frame - delay - i * staggerDelay);
+        const opacity = interpolate(f, [0, 15], [0, 1], {
+          extrapolateRight: "clamp",
+        });
+        const y = interpolate(f, [0, 15], [30, 0], {
+          extrapolateRight: "clamp",
+        });
+        const scale = spring({
+          frame: f,
+          fps,
+          config: { damping: 12, stiffness: 150 },
+          from: 0.5,
+          to: 1,
+        });
+        return (
+          <span
+            key={i}
+            style={{
+              opacity,
+              transform: `translateY(${y}px) scale(${scale})`,
+              display: "inline-block",
+            }}
+          >
+            {word}
+          </span>
+        );
+      })}
+    </div>
+  );
+};
+
+const BodyText: React.FC<{
+  text: string;
+  fontSize?: number;
+  delay?: number;
+  color?: string;
+  fontFamily?: string;
+}> = ({
+  text,
+  fontSize = 28,
+  delay = 0,
+  color = "#e0e0e0",
+  fontFamily = interFont,
+}) => {
+  const frame = useCurrentFrame();
+  const f = Math.max(0, frame - delay);
+  const opacity = interpolate(f, [0, 20], [0, 1], {
+    extrapolateRight: "clamp",
+  });
+  const y = interpolate(f, [0, 20], [20, 0], { extrapolateRight: "clamp" });
+
+  return (
+    <p
+      style={{
+        fontSize,
+        fontFamily,
+        color,
+        opacity,
+        transform: `translateY(${y}px)`,
+        lineHeight: 1.5,
+        fontWeight: 400,
+        letterSpacing: "0.01em",
+        margin: 0,
+      }}
+    >
+      {text}
+    </p>
+  );
+};
+
+const GradientBackground: React.FC<{
+  colors: string[];
+  animated?: boolean;
+}> = ({ colors, animated = true }) => {
+  const frame = useCurrentFrame();
+  const angle = animated ? interpolate(frame, [0, 300], [0, 360]) : 45;
+  return (
+    <AbsoluteFill
+      style={{
+        background: `linear-gradient(${angle}deg, ${colors.join(", ")})`,
+      }}
+    />
+  );
+};
+
+// Scene Preview Component - Shows rough video preview
+const ScenePreview: React.FC<{ scene: VideoScene; isActive?: boolean }> = ({
+  scene,
+  isActive,
+}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const sceneDuration = scene.endFrame - scene.startFrame;
+  const isLastScene = frame > sceneDuration - 30;
+  const fadeIn = interpolate(frame, [0, 15], [0, 1], {
+    extrapolateRight: "clamp",
+  });
+  const fadeOut = interpolate(
+    frame,
+    [sceneDuration - 20, sceneDuration],
+    [1, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+  const opacity = Math.min(fadeIn, fadeOut);
+  const isIntro = scene.type === "intro";
+  const isCTA = scene.type === "cta";
+
+  // Show recording preview if scene has recording
+  const hasRecording = scene.content.recordingId;
+  const hasScreenshot = scene.content.screenshotUrl;
+
+  return (
+    <AbsoluteFill
+      style={{ opacity, backgroundColor: scene.style.background || "#0a0a0a" }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "60px 100px",
+          textAlign: "center",
+          gap: "32px",
+          height: "100%",
+        }}
+      >
+        {/* Scene Type Badge */}
+        <div
+          style={{
+            padding: "6px 12px",
+            borderRadius: "4px",
+            background: "rgba(255,255,255,0.1)",
+            fontSize: "12px",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+            color: scene.style.textColor || "#ffffff",
+          }}
+        >
+          {scene.type}
+        </div>
+
+        {/* Screenshot Preview */}
+        {hasScreenshot && (
+          <div
+            style={{
+              maxWidth: "600px",
+              borderRadius: "12px",
+              overflow: "hidden",
+              boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
+            }}
+          >
+            <img
+              src={scene.content.screenshotUrl}
+              alt="Screenshot"
+              style={{ width: "100%", height: "auto" }}
+            />
+          </div>
+        )}
+
+        {/* Recording Preview Placeholder */}
+        {hasRecording && !hasScreenshot && (
+          <div
+            style={{
+              width: "600px",
+              height: "340px",
+              background: "#1a1a2e",
+              borderRadius: "12px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "2px dashed rgba(255,255,255,0.2)",
+            }}
+          >
+            <div
+              style={{
+                textAlign: "center",
+                color: scene.style.textColor || "#ffffff",
+              }}
+            >
+              <Video
+                style={{
+                  width: "48px",
+                  height: "48px",
+                  margin: "0 auto 16px",
+                  opacity: 0.5,
+                }}
+              />
+              <p style={{ fontSize: "14px", opacity: 0.7 }}>
+                Recording: {scene.content.headline}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Main Headline */}
+        {scene.content.headline && (
+          <div style={{ maxWidth: "900px" }}>
+            {isIntro ? (
+              <BlurInText
+                text={scene.content.headline}
+                fontSize={72}
+                delay={10}
+                color={scene.style.textColor || "#ffffff"}
+              />
+            ) : (
+              <WordReveal
+                text={scene.content.headline}
+                fontSize={48}
+                delay={8}
+                color={scene.style.textColor || "#ffffff"}
+                staggerDelay={6}
+              />
+            )}
+          </div>
+        )}
+
+        {/* Subtext */}
+        {scene.content.subtext && (
+          <div
+            style={{
+              marginTop: "16px",
+              maxWidth: "700px",
+              opacity: isLastScene ? 0.5 : 1,
+            }}
+          >
+            <BodyText
+              text={scene.content.subtext}
+              fontSize={24}
+              delay={isIntro ? 30 : 20}
+              color={scene.style.textColor || "#e0e0e0"}
+            />
+          </div>
+        )}
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+const SingleScenePlayer: React.FC<{
+  scene: VideoScene;
+  width?: number;
+  height?: number;
+}> = ({ scene, width = 1920, height = 1080 }) => {
+  return (
+    <Player
+      component={() => <ScenePreview scene={scene} />}
+      durationInFrames={scene.endFrame - scene.startFrame}
+      fps={30}
+      compositionWidth={width}
+      compositionHeight={height}
+      style={{ width: "100%", height: "100%" }}
+      controls
+      loop
+    />
+  );
+};
+
+const DynamicComposition: React.FC<{
+  script: VideoScript;
+  audioUrl?: string | null;
+}> = ({ script, audioUrl }) => {
+  return (
+    <AbsoluteFill style={{ backgroundColor: "#0a0a0a" }}>
+      {audioUrl && <Audio src={audioUrl} volume={0.8} />}
+      {script.scenes.map((scene) => (
+        <Sequence
+          key={scene.id}
+          from={scene.startFrame}
+          durationInFrames={scene.endFrame - scene.startFrame}
+        >
+          <ScenePreview scene={scene} />
+        </Sequence>
+      ))}
+    </AbsoluteFill>
+  );
+};
+
+const PlaceholderComposition: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const scale = spring({ frame, fps, config: { damping: 12, stiffness: 100 } });
+  const opacity = interpolate(frame, [0, 25], [0, 1], {
+    extrapolateRight: "clamp",
+  });
+  const floatY = Math.sin(frame * 0.05) * 5;
+
+  return (
+    <AbsoluteFill
+      style={{
+        backgroundColor: "#0a0a0a",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        style={{
+          opacity,
+          transform: `scale(${scale}) translateY(${floatY}px)`,
+          textAlign: "center",
+          maxWidth: "800px",
+          padding: "40px",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "80px",
+            marginBottom: "40px",
+            opacity: interpolate(frame, [10, 30], [0, 1], {
+              extrapolateRight: "clamp",
+            }),
+          }}
+        >
+          🎬
+        </div>
+        <div style={{ marginBottom: "24px" }}>
+          <TypingText
+            text="Your Video Awaits"
+            fontSize={72}
+            delay={20}
+            color="#ffffff"
+            speed={3}
+            cursor={true}
+          />
+        </div>
+        <div
+          style={{
+            opacity: interpolate(frame, [50, 70], [0, 1], {
+              extrapolateRight: "clamp",
+            }),
+          }}
+        >
+          <BodyText
+            text="Enter a description to begin production"
+            fontSize={24}
+            color="#666666"
+          />
+        </div>
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+export default function ProjectCreativePage() {
+  const router = useRouter();
+  const params = useParams();
+  const projectId = params.id as string;
+
+  // Project states
+  const [project, setProject] = useState<any>(null);
+  const [projectLoading, setProjectLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [projectName, setProjectName] = useState("");
+  const [editingProjectName, setEditingProjectName] = useState(false);
+  const [tempProjectName, setTempProjectName] = useState("");
+
+  // Mode: "product-demo" (current flow) or "reference-video" (new flow)
+  type FlowMode = "product-demo" | "reference-video";
+  const [flowMode, setFlowMode] = useState<FlowMode>("product-demo");
+
+  // Reference video states
+  const [referenceVideoFile, setReferenceVideoFile] = useState<File | null>(null);
+  const [referenceVideoUrl, setReferenceVideoUrl] = useState<string | null>(null);
+  const [referenceVideoPreview, setReferenceVideoPreview] = useState<string | null>(null);
+  const [uploadingReference, setUploadingReference] = useState(false);
+  const [referenceImages, setReferenceImages] = useState<{ url: string; name: string }[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [referenceSourceUrl, setReferenceSourceUrl] = useState("");
+  const [stripReferenceAudio, setStripReferenceAudio] = useState(false);
+
+  // Input states
+  const [description, setDescription] = useState("");
+  // Single preset combines style + videoType + templateStyle
+  const PRESETS = {
+    creative: {
+      style: "professional" as const,
+      videoType: "creative" as const,
+      templateStyle: "aurora" as const,
+      label: "Creative",
+    },
+    "fast-paced": {
+      style: "bold" as const,
+      videoType: "fast-paced" as const,
+      templateStyle: "blue-clean" as const,
+      label: "Fast-paced",
+    },
+    cinematic: {
+      style: "minimal" as const,
+      videoType: "cinematic" as const,
+      templateStyle: "floating-glass" as const,
+      label: "Cinematic",
+    },
+    demo: {
+      style: "professional" as const,
+      videoType: "demo" as const,
+      templateStyle: "aurora" as const,
+      label: "Demo",
+    },
+    freestyle: {
+      style: "professional" as const,
+      videoType: "freestyle" as const,
+      templateStyle: "aurora" as const,
+      label: "Freestyle (Gemini Pro)",
+    },
+  } as const;
+  type PresetKey = keyof typeof PRESETS;
+  const [preset, setPreset] = useState<PresetKey>("creative");
+  const { style, videoType, templateStyle: _tplStyle } = PRESETS[preset];
+  const getTemplateStyle = (_s: string) => PRESETS[preset].templateStyle;
+
+  const [duration, setDuration] = useState<number>(38);
+  const [url, setUrl] = useState("");
+  const [selectedAudio, setSelectedAudio] = useState<AudioFile | null>(null);
+  const [narration, setNarration] = useState<NarrationState>({
+    enabled: false,
+    text: "",
+    voiceId: "21m00Tcm4TlvDq8ikWAM",
+    audioUrl: null,
+    duration: null,
+  });
+
+  // Aspect ratio
+  const ASPECT_RATIOS = {
+    "16:9": { width: 1920, height: 1080, label: "16:9" },
+    "9:16": { width: 1080, height: 1920, label: "9:16" },
+    "1:1": { width: 1080, height: 1080, label: "1:1" },
+    "4:5": { width: 1080, height: 1350, label: "4:5" },
+  } as const;
+  type AspectRatioKey = keyof typeof ASPECT_RATIOS;
+  const [aspectRatio, setAspectRatio] = useState<AspectRatioKey>("16:9");
+  const compositionWidth = ASPECT_RATIOS[aspectRatio].width;
+  const compositionHeight = ASPECT_RATIOS[aspectRatio].height;
+
+  // Feature toggles
+  const [toggles, setToggles] = useState({
+    nanoBanana: false,
+    stockImages: false,
+    animatedComponents: true,
+  });
+
+  // Credit gating (production only)
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
+  const isProduction = process.env.NODE_ENV === "production";
+  const hasNoCredits =
+    isProduction && creditBalance !== null && creditBalance <= 0;
+
+  // Processing states
+  const [loading, setLoading] = useState(false);
+  const [rendering, setRendering] = useState(false);
+  const [renderProgress, setRenderProgress] = useState(0);
+  const [isGeneratingVideo, setIsGeneratingVideo] = useState(false); // true from approve → video ready/error
+  const [logs, setLogs] = useState<string[]>([]);
+
+  // Data states
+  const [script, setScript] = useState<VideoScript | null>(null);
+  const [editableScript, setEditableScript] = useState<VideoScript | null>(
+    null,
+  );
+  const [productData, setProductData] = useState<any>(null);
+  const [remotionCode, setRemotionCode] = useState<string | null>(null);
+  const [renderedVideoUrl, setRenderedVideoUrl] = useState<string | null>(null);
+  const [renderVersion, setRenderVersion] = useState<number>(Date.now()); // Force video reload
+
+  // Version history states
+  interface VideoVersion {
+    id: string;
+    versionNumber: number;
+    timestamp: number;
+    editMessage: string;
+    remotionCode: string;
+    videoUrl: string | null;
+    thumbnailUrl?: string;
+    isActive: boolean;
+  }
+  const [versions, setVersions] = useState<VideoVersion[]>([]);
+  const [showVersionSidebar, setShowVersionSidebar] = useState(false);
+  const [showGenerationsSidebar, setShowGenerationsSidebar] = useState(false);
+  const [currentVersionId, setCurrentVersionId] = useState<string | null>(null);
+
+  // UI states
+  const [activeTab, setActiveTab] = useState<
+    "input" | "script" | "preview" | "logs"
+  >("input");
+  const [showFullPreview, setShowFullPreview] = useState(false);
+  const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // Progress states
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const [generationStatus, setGenerationStatus] = useState("");
+  const [isSceneUpdating, setIsSceneUpdating] = useState<string | null>(null);
+
+  // Recording states
+  const [recordings, setRecordings] = useState<ScreenRecording[]>([]);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [showRecordingModal, setShowRecordingModal] = useState(false);
+  const [recordingFeatureName, setRecordingFeatureName] = useState("");
+  const [recordingDescription, setRecordingDescription] = useState("");
+  const [recordingMode, setRecordingMode] = useState<"record" | "upload">(
+    "record",
+  );
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  // Editor states
+  const [editingRecording, setEditingRecording] =
+    useState<ScreenRecording | null>(null);
+  const [editTrimStart, setEditTrimStart] = useState(0);
+  const [editTrimEnd, setEditTrimEnd] = useState(0);
+  const [editMockupFrame, setEditMockupFrame] = useState<
+    "browser" | "macbook" | "minimal"
+  >("minimal");
+  const [editCursorStyle, setEditCursorStyle] = useState<"normal" | "hand">(
+    "hand",
+  );
+
+  // CV Processing states
+  const [processingRecordings, setProcessingRecordings] = useState<Set<string>>(
+    new Set(),
+  );
+  const [recordingProgress, setRecordingProgress] = useState<
+    Record<string, number>
+  >({});
+
+  // Screenshot & Logo states
+  const [scrapedScreenshots, setScrapedScreenshots] = useState<any[]>([]);
+  const [extractedLogos, setExtractedLogos] = useState<any[]>([]);
+  const [selectedScreenshots, setSelectedScreenshots] = useState<any[]>([]);
+  const [isAnalyzingScreenshots, setIsAnalyzingScreenshots] = useState(false);
+
+  const [scriptChatInput, setScriptChatInput] = useState("");
+  const [scriptChatLoading, setScriptChatLoading] = useState(false);
+  const [scriptChatHistory, setScriptChatHistory] = useState<
+    Array<{ role: "user" | "assistant"; text: string }>
+  >([]);
+
+  // Post-render editing states
+  const [videoEditInput, setVideoEditInput] = useState("");
+  const [videoEditLoading, setVideoEditLoading] = useState(false);
+  const [videoEditHistory, setVideoEditHistory] = useState<
+    Array<{ role: "user" | "assistant"; text: string }>
+  >([]);
+  const [editProgress, setEditProgress] = useState(0);
+  const [editStatus, setEditStatus] = useState("");
+
+  // Scene text editing state (local, for immediate UI feedback before debounce)
+  const [pendingSceneText, setPendingSceneText] = useState<
+    Record<string, { headline?: string; subtext?: string }>
+  >({});
+
+  // Refs
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const cursorTrackerRef = useRef<CursorTracker | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const logsEndRef = useRef<HTMLDivElement>(null);
+  const editVideoRef = useRef<HTMLVideoElement>(null);
+  const sceneDebounceRef = useRef<Record<string, NodeJS.Timeout>>({});
+
+  const addLog = (
+    message: string,
+    type: "info" | "success" | "error" = "info",
+  ) => {
+    const prefix = type === "success" ? "✓" : type === "error" ? "✗" : "→";
+    setLogs((prev) => [
+      ...prev,
+      `[${new Date().toLocaleTimeString()}] ${prefix} ${message}`,
+    ]);
+  };
+
+  useEffect(() => {
+    logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [logs]);
+
+  // Fetch credit balance (production only)
+  const fetchCredits = useCallback(async () => {
+    try {
+      const res = await fetch("/api/user/profile");
+      if (res.ok) {
+        const data = await res.json();
+        setCreditBalance(data.user.creditBalance ?? 0);
+      }
+    } catch {
+      // Silently fail — credits will remain null (no gating)
+    }
+  }, []);
+
+  // Load project data on mount
+  useEffect(() => {
+    if (projectId) {
+      loadProject();
+      loadRecordings();
+      if (isProduction) fetchCredits();
+    }
+  }, [projectId]);
+
+  // Refresh credits after generation/render completes
+  useEffect(() => {
+    if (!loading && !rendering && isProduction) fetchCredits();
+  }, [loading, rendering]);
+
+  // Unified polling for recording processing status (CV detection + video processing)
+  useEffect(() => {
+    const pendingRecordings = recordings.filter(
+      (r) =>
+        r.processingStatus === "pending" || r.processingStatus === "processing",
+    );
+    if (pendingRecordings.length === 0) return;
+
+    const interval = setInterval(async () => {
+      for (const rec of pendingRecordings) {
+        try {
+          const res = await fetch(`/api/recordings/${rec.id}/status`);
+          if (!res.ok) continue;
+          const data = await res.json();
+
+          if (data.status === "not_found") {
+            // Recording was never queued (e.g. loaded from DB after server restart)
+            // Stop polling by marking as complete
+            setRecordings((prev) =>
+              prev.map((r) =>
+                r.id === rec.id ? { ...r, processingStatus: "complete" } : r,
+              ),
+            );
+            continue;
+          }
+
+          if (data.processedVideoUrl) {
+            setRecordings((prev) =>
+              prev.map((r) =>
+                r.id === rec.id
+                  ? {
+                      ...r,
+                      processedVideoUrl: data.processedVideoUrl,
+                      processingStatus: "complete",
+                    }
+                  : r,
+              ),
+            );
+            setProcessingRecordings((prev) => {
+              const next = new Set(prev);
+              next.delete(rec.id);
+              return next;
+            });
+            addLog(`Processed video ready: ${rec.featureName}`, "success");
+          } else if (data.status === "complete") {
+            setRecordings((prev) =>
+              prev.map((r) =>
+                r.id === rec.id
+                  ? {
+                      ...r,
+                      cursorData: data.cursorData || r.cursorData,
+                      zoomPoints: data.zoomPoints || r.zoomPoints,
+                      processingStatus: "complete",
+                    }
+                  : r,
+              ),
+            );
+            setProcessingRecordings((prev) => {
+              const next = new Set(prev);
+              next.delete(rec.id);
+              return next;
+            });
+            addLog(`Processing complete for ${rec.featureName}`, "success");
+          } else if (data.status === "failed") {
+            setRecordings((prev) =>
+              prev.map((r) =>
+                r.id === rec.id ? { ...r, processingStatus: "failed" } : r,
+              ),
+            );
+            addLog(`Processing failed for ${rec.featureName}`, "error");
+          } else if (data.status === "processing") {
+            setRecordingProgress((prev) => ({
+              ...prev,
+              [rec.id]: data.progress || 0,
+            }));
+          }
+        } catch (err) {
+          console.error(
+            `[Creative] Failed to check status for ${rec.id}:`,
+            err,
+          );
+        }
+      }
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [recordings]);
+
+  const loadProject = async () => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}`);
+      if (!response.ok) throw new Error("Failed to load project");
+
+      const data = await response.json();
+      setProject(data.project);
+
+      // Restore project state
+      if (data.project.name) setProjectName(data.project.name);
+      if (data.project.description) setDescription(data.project.description);
+      if (data.project.sourceUrl) setUrl(data.project.sourceUrl);
+      if (data.project.productData) {
+        setProductData(data.project.productData);
+        if (data.project.productData.screenshots) {
+          setScrapedScreenshots(data.project.productData.screenshots);
+          setSelectedScreenshots(data.project.productData.screenshots);
+        }
+      }
+      if (data.project.script) {
+        setScript(data.project.script);
+        setEditableScript(data.project.script);
+      }
+      if (data.project.composition) {
+        setRemotionCode(data.project.composition);
+      }
+      // Restore video URL: prefer videoUrl, fallback to audioUrl
+      const savedVideoUrl = data.project.videoUrl || data.project.audioUrl;
+      if (savedVideoUrl) {
+        setRenderedVideoUrl(savedVideoUrl);
+      }
+      // Restore currentVersionId from DB
+      if (data.project.currentVersionId) {
+        setCurrentVersionId(data.project.currentVersionId);
+      }
+      // Load version history from R2
+      try {
+        const versionsResponse = await fetch(
+          `/api/versions?projectId=${projectId}`,
+        );
+        if (versionsResponse.ok) {
+          const versionsData = await versionsResponse.json();
+          if (versionsData.versions && versionsData.versions.length > 0) {
+            setVersions(versionsData.versions);
+            // Find the active version and restore its video
+            const activeVersion = versionsData.versions.find(
+              (v: VideoVersion) => v.isActive,
+            );
+            if (activeVersion) {
+              setCurrentVersionId(activeVersion.id);
+              // If the active version has a video URL, use it
+              if (activeVersion.videoUrl) {
+                setRenderedVideoUrl(activeVersion.videoUrl);
+              }
+              if (activeVersion.remotionCode) {
+                setRemotionCode(activeVersion.remotionCode);
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to load versions from R2:", err);
+      }
+    } catch (err) {
+      addLog("Failed to load project", "error");
+    } finally {
+      setProjectLoading(false);
+    }
+  };
+
+  const loadRecordings = async () => {
+    try {
+      const response = await fetch(`/api/recordings?projectId=${projectId}`);
+      if (response.ok) {
+        const data = await response.json();
+        // Recordings loaded from DB with processingStatus "pending" may not be
+        // actually queued for processing (e.g. server restarted). Mark them as
+        // complete if they already have a processedVideoUrl, otherwise leave as-is
+        // and the polling effect will check status and handle "not_found".
+        const loaded = (data.recordings || []).map((r: any) => ({
+          ...r,
+          processingStatus: r.processedVideoUrl
+            ? "complete"
+            : r.processingStatus,
+        }));
+        setRecordings(loaded);
+      }
+    } catch (err) {
+      console.error("Failed to load recordings:", err);
+    }
+  };
+
+  const VPS_API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+
+  /** Build VPS headers with a signed auth token */
+  const vpsHeaders = (token: string): Record<string, string> => ({
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  });
+
+  /**
+   * Get a short-lived JWT for VPS authentication.
+   * Calls the Vercel /api/auth/vps-token route (session-authenticated).
+   * Returns the token string, or null on failure.
+   */
+  const getVpsToken = async (): Promise<string | null> => {
+    try {
+      const res = await fetch("/api/auth/vps-token");
+      if (!res.ok) {
+        if (res.status === 401) {
+          toast.error("Authentication required. Please sign in.");
+        } else {
+          toast.error("Failed to authenticate");
+        }
+        return null;
+      }
+      const data = await res.json();
+      return data.token || null;
+    } catch (err) {
+      toast.error("Failed to connect to auth server");
+      return null;
+    }
+  };
+
+  const saveProject = async (updates: any) => {
+    setSaving(true);
+    try {
+      await fetch(`/api/projects/${projectId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+    } catch (err) {
+      console.error("Failed to save project:", err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleProjectNameSave = async () => {
+    if (!tempProjectName.trim()) {
+      setEditingProjectName(false);
+      return;
+    }
+
+    const newName = tempProjectName.trim();
+    setProjectName(newName);
+    setEditingProjectName(false);
+    await saveProject({ name: newName });
+  };
+
+  const startEditingProjectName = () => {
+    setTempProjectName(projectName);
+    setEditingProjectName(true);
+  };
+
+  const handleGenerate = async () => {
+    if (hasNoCredits) {
+      toast.error("No credits available. Subscribe to get more credits.", {
+        action: { label: "Subscribe", onClick: () => router.push("/pricing") },
+      });
+      return;
+    }
+
+    if (!description.trim() && !url.trim()) {
+      toast.error("Please enter a URL or description");
+      return;
+    }
+
+    setLoading(true);
+    setLogs([]);
+    setScript(null);
+    setRemotionCode(null);
+    setRenderedVideoUrl(null);
+    setActiveTab("script");
+    setGenerationProgress(5);
+    toast.info("Starting generation — this process takes 3-5 minutes", { duration: 5000 });
+    setGenerationStatus("Initializing AI...");
+
+    addLog(`Generating script for "${description}"...`);
+    addLog(`Style: ${style} (${getTemplateStyle(style)}), Type: ${videoType}`);
+
+    try {
+      // Get auth token for VPS
+      const token = await getVpsToken();
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      // Freestyle mode: single call does scrape + code gen + render
+      if (videoType === "freestyle") {
+        addLog("Freestyle mode — Gemini Pro with full creative freedom");
+        setActiveTab("logs");
+
+        const response = await fetch(`${VPS_API_URL}/api/creative/freestyle`, {
+          method: "POST",
+          headers: vpsHeaders(token),
+          body: JSON.stringify({
+            description,
+            url: url.trim() || undefined,
+            style,
+            duration,
+            aspectRatio,
+            useImages: selectedScreenshots.length > 0,
+            nanoBanana: toggles.nanoBanana,
+            stockImages: toggles.stockImages,
+            animatedComponents: toggles.animatedComponents,
+            audio: selectedAudio
+              ? {
+                  url: selectedAudio.url,
+                  bpm: selectedAudio.bpm,
+                  duration: selectedAudio.duration,
+                }
+              : undefined,
+          }),
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || "Freestyle generation failed");
+        }
+
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error("No response body");
+        const decoder = new TextDecoder();
+        let buf = "";
+        let currentRemotionCode = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          const lines = buf.split("\n");
+          buf = lines.pop() || "";
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            try {
+              const event = JSON.parse(line);
+              switch (event.type) {
+                case "status":
+                  addLog(event.data.message || event.data.step);
+                  setGenerationStatus(event.data.message || "Processing...");
+                  if (event.data.step === "scraping") {
+                    setGenerationProgress(15);
+                    toast.info("Analyzing your product...", { duration: 3000 });
+                  } else if (event.data.step === "generating") {
+                    setGenerationProgress(40);
+                    toast.info("Generating video composition...", { duration: 3000 });
+                  } else if (event.data.step === "code-ready") {
+                    setGenerationProgress(60);
+                    toast.info("Code ready, preparing to render...", { duration: 3000 });
+                  } else if (event.data.step === "rendering") {
+                    setGenerationProgress(75);
+                    toast.loading("Rendering video — this may take 2-4 minutes...", { id: "rendering", duration: Infinity });
+                  } else if (event.data.step === "fixing") {
+                    setGenerationProgress(80);
+                  } else if (event.data.step === "complete") {
+                    setGenerationProgress(100);
+                    toast.dismiss("rendering");
+                  }
+                  break;
+                case "productData":
+                  setProductData(event.data);
+                  await saveProject({
+                    productData: event.data,
+                    sourceUrl: url,
+                  });
+                  addLog("Product data extracted", "success");
+                  break;
+                case "remotionCode":
+                  currentRemotionCode = event.data;
+                  setRemotionCode(event.data);
+                  addLog("Composition generated", "success");
+                  break;
+                case "videoUrl":
+                  setRenderedVideoUrl(event.data);
+                  await saveProject({
+                    videoUrl: event.data,
+                    audioUrl: event.data,
+                    status: "RENDERED",
+                  });
+
+                  const freestyleVersion: VideoVersion = {
+                    id: `v-${Date.now()}`,
+                    versionNumber: versions.length + 1,
+                    timestamp: Date.now(),
+                    editMessage: "Freestyle render",
+                    remotionCode: currentRemotionCode,
+                    videoUrl: event.data,
+                    isActive: true,
+                  };
+
+                  const freestyleVersions = versions.map((v) => ({
+                    ...v,
+                    isActive: false,
+                  }));
+                  freestyleVersions.push(freestyleVersion);
+                  setVersions(freestyleVersions);
+                  setCurrentVersionId(freestyleVersion.id);
+
+                  await saveProject({ currentVersionId: freestyleVersion.id });
+
+                  try {
+                    await fetch("/api/versions", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        projectId,
+                        versions: freestyleVersions,
+                      }),
+                    });
+                  } catch (err) {
+                    console.warn("Failed to save versions to R2:", err);
+                  }
+
+                  setActiveTab("preview");
+                  toast.dismiss("rendering");
+                  toast.success("Your video is ready!", { duration: 5000 });
+                  addLog("Video rendered!", "success");
+                  break;
+                case "error":
+                  toast.dismiss("rendering");
+                  toast.error(event.data.errors?.join(", ") || "Error");
+                  addLog(event.data.errors?.[0] || "Error occurred", "error");
+                  break;
+                case "complete":
+                  toast.dismiss("rendering");
+                  addLog(
+                    event.data.success
+                      ? "Freestyle complete!"
+                      : "Generation had errors",
+                    event.data.success ? "success" : "error",
+                  );
+                  break;
+              }
+            } catch {}
+          }
+        }
+
+        setLoading(false);
+        setGenerationProgress(0);
+        return;
+      }
+
+      const response = await fetch(`${VPS_API_URL}/api/creative/generate`, {
+        method: "POST",
+        headers: vpsHeaders(token),
+        body: JSON.stringify({
+          description,
+          style,
+          templateStyle: getTemplateStyle(style),
+          videoType,
+          duration,
+          aspectRatio,
+          url: url.trim() || undefined,
+          useImages: selectedScreenshots.length > 0,
+          nanoBanana: toggles.nanoBanana,
+          stockImages: toggles.stockImages,
+          animatedComponents: toggles.animatedComponents,
+          audio: selectedAudio
+            ? {
+                url: selectedAudio.url,
+                bpm: selectedAudio.bpm,
+                duration: selectedAudio.duration,
+              }
+            : undefined,
+          recordings:
+            recordings.length > 0
+              ? recordings.map((r) => ({
+                  id: r.id,
+                  videoUrl: r.videoUrl,
+                  duration: r.duration,
+                  featureName: r.featureName,
+                  description: r.description,
+                  trimStart: r.trimStart,
+                  trimEnd: r.trimEnd,
+                  mockupFrame: r.mockupFrame || "minimal",
+                  zoomPoints: r.zoomPoints || [],
+                  cursorStyle: r.cursorStyle || "hand",
+                  cursorData: r.cursorData || [],
+                  cursorSource: r.cursorSource || "javascript",
+                  processedVideoUrl: r.processedVideoUrl,
+                }))
+              : undefined,
+          narration: narration.enabled && narration.audioUrl
+            ? { audioUrl: narration.audioUrl }
+            : undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || "API request failed");
+      }
+      setGenerationProgress(15);
+      setGenerationStatus("Processing request...");
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No response body");
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const event = JSON.parse(line);
+            switch (event.type) {
+              case "status": {
+                const genStep = event.data.step || "";
+                const genMsg = event.data.message || genStep;
+                addLog(genMsg);
+                const genMsgLower = genMsg.toLowerCase();
+
+                if (genStep === "scraping" || genMsgLower.includes("scraping") || genMsgLower.includes("analyzing")) {
+                  setGenerationProgress(25);
+                  setGenerationStatus("Analyzing product...");
+                  toast.info("Analyzing product...", { duration: 3000 });
+                } else if (genStep === "scripting" || genMsgLower.includes("script")) {
+                  setGenerationProgress(60);
+                  setGenerationStatus("Writing video script...");
+                  toast.info("Crafting your video script...", { duration: 3000 });
+                } else {
+                  setGenerationStatus(genMsg);
+                }
+                break;
+              }
+              case "productData":
+                setProductData(event.data);
+                await saveProject({ productData: event.data, sourceUrl: url });
+
+                // Extract screenshots and logos from product data
+                if (event.data.screenshots?.length > 0) {
+                  setScrapedScreenshots(event.data.screenshots);
+                  // Don't auto-select screenshots — images are opt-in only
+                  addLog(
+                    `${event.data.screenshots.length} screenshots captured (select them in the Screenshots panel to use in video)`,
+                    "success",
+                  );
+                }
+
+                if (event.data.logos?.length > 0) {
+                  setExtractedLogos(event.data.logos);
+                  addLog(
+                    `${event.data.logos.length} logos extracted`,
+                    "success",
+                  );
+                }
+
+                setGenerationProgress(35);
+                setGenerationStatus("Product data extracted");
+                addLog("Product data extracted", "success");
+                break;
+              case "videoScript":
+                setScript(event.data);
+                setEditableScript(event.data);
+                await saveProject({
+                  script: event.data,
+                  description,
+                  status: "DRAFT",
+                });
+                setGenerationProgress(100);
+                setGenerationStatus("Script generation complete!");
+                setActiveTab("script");
+                toast.success("Script ready — review and approve to generate video", { duration: 5000 });
+                addLog(
+                  `Script created with ${event.data.scenes?.length || 0} scenes`,
+                  "success",
+                );
+                break;
+              case "remotionCode":
+                setRemotionCode(event.data);
+                addLog("Video composition ready", "success");
+                break;
+              case "videoUrl": {
+                const generatedVideoUrl = event.data;
+                setRenderedVideoUrl(generatedVideoUrl);
+                await saveProject({
+                  audioUrl: generatedVideoUrl,
+                  videoUrl: generatedVideoUrl,
+                  status: "READY",
+                });
+                const genVersion: VideoVersion = {
+                  id: `v-${Date.now()}`,
+                  versionNumber: versions.length + 1,
+                  timestamp: Date.now(),
+                  editMessage: `Generate: ${description.slice(0, 40)}`,
+                  remotionCode: remotionCode || "",
+                  videoUrl: generatedVideoUrl,
+                  isActive: true,
+                };
+                const genVersions = versions.map((v) => ({
+                  ...v,
+                  isActive: false,
+                }));
+                genVersions.push(genVersion);
+                setVersions(genVersions);
+                setCurrentVersionId(genVersion.id);
+                await saveProject({ currentVersionId: genVersion.id });
+                try {
+                  await fetch("/api/versions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ projectId, versions: genVersions }),
+                  });
+                } catch (err) {
+                  console.warn("Failed to save versions to R2:", err);
+                }
+                setActiveTab("preview");
+                setShowGenerationsSidebar(true);
+                addLog("Video rendered successfully!", "success");
+                break;
+              }
+              case "error":
+                toast.error(event.data.errors?.join(", ") || "Unknown error");
+                addLog(event.data.errors?.[0] || "Error occurred", "error");
+                break;
+              case "complete":
+                addLog("Production complete!", "success");
+                break;
+            }
+          } catch (e) {
+            console.warn("Failed to parse event:", line);
+          }
+        }
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      toast.error(message);
+      addLog(message, "error");
+    } finally {
+      setLoading(false);
+      setGenerationProgress(0);
+      setGenerationStatus("");
+    }
+  };
+
+  // Handle reference video file selection
+  const handleReferenceVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setReferenceVideoFile(file);
+    setReferenceVideoUrl(null);
+    // Create local preview URL
+    const previewUrl = URL.createObjectURL(file);
+    setReferenceVideoPreview(previewUrl);
+  };
+
+  // Handle reference image uploads
+  const handleReferenceImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingImages(true);
+    try {
+      const formData = new FormData();
+      for (const file of Array.from(files)) {
+        formData.append("files", file);
+      }
+
+      const res = await fetch("/api/assets", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to upload images");
+      }
+
+      const data = await res.json();
+      setReferenceImages((prev) => [...prev, ...data.assets]);
+      toast.success(`${data.assets.length} image(s) uploaded`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploadingImages(false);
+      e.target.value = "";
+    }
+  };
+
+  // Handle reference video generation
+  const handleReferenceGenerate = async () => {
+    if (hasNoCredits) {
+      toast.error("No credits available. Subscribe to get more credits.", {
+        action: { label: "Subscribe", onClick: () => router.push("/pricing") },
+      });
+      return;
+    }
+
+    if (!referenceVideoFile && !referenceVideoUrl) {
+      toast.error("Please upload a reference video");
+      return;
+    }
+
+    if (!description.trim()) {
+      toast.error("Please enter a description of the content to use");
+      return;
+    }
+
+    setLoading(true);
+    setLogs([]);
+    setScript(null);
+    setRemotionCode(null);
+    setRenderedVideoUrl(null);
+    setActiveTab("logs");
+    setGenerationProgress(5);
+    setGenerationStatus("Uploading reference video...");
+    toast.info("Starting reference video generation — this takes 3-5 minutes", { duration: 5000 });
+
+    addLog("Reference Video mode — Gemini Pro will analyze and recreate");
+
+    try {
+      const token = await getVpsToken();
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      // Step 1: Upload reference video to R2 if not already uploaded
+      let videoUrl = referenceVideoUrl;
+      if (!videoUrl && referenceVideoFile) {
+        setUploadingReference(true);
+        setGenerationProgress(10);
+        addLog("Uploading reference video...");
+
+        const formData = new FormData();
+        formData.append("video", referenceVideoFile);
+
+        const uploadRes = await fetch("/api/reference-video", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!uploadRes.ok) {
+          const errData = await uploadRes.json().catch(() => ({}));
+          throw new Error(errData.error || "Failed to upload reference video");
+        }
+
+        const uploadData = await uploadRes.json();
+        videoUrl = uploadData.url;
+        setReferenceVideoUrl(videoUrl);
+        setUploadingReference(false);
+        addLog("Reference video uploaded", "success");
+        setGenerationProgress(15);
+      }
+
+      // Step 2: Call the reference-video endpoint
+      const response = await fetch(`${VPS_API_URL}/api/creative/reference-video`, {
+        method: "POST",
+        headers: vpsHeaders(token),
+        body: JSON.stringify({
+          referenceVideoUrl: videoUrl,
+          description,
+          duration,
+          aspectRatio,
+          audio: selectedAudio
+            ? {
+                url: selectedAudio.url,
+                bpm: selectedAudio.bpm,
+                duration: selectedAudio.duration,
+              }
+            : undefined,
+          images: referenceImages.map((img) => img.url),
+          sourceUrl: referenceSourceUrl || undefined,
+          stripAudio: stripReferenceAudio,
+          narration: narration.enabled && narration.audioUrl
+            ? { audioUrl: narration.audioUrl }
+            : undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || "Reference video generation failed");
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No response body");
+      const decoder = new TextDecoder();
+      let buf = "";
+      let currentRemotionCode = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split("\n");
+        buf = lines.pop() || "";
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const event = JSON.parse(line);
+            switch (event.type) {
+              case "status":
+                addLog(event.data.message || event.data.step);
+                setGenerationStatus(event.data.message || "Processing...");
+                if (event.data.step === "analyzing") {
+                  setGenerationProgress(25);
+                  toast.info("Analyzing reference video...", { duration: 3000 });
+                } else if (event.data.step === "analyzed") {
+                  setGenerationProgress(40);
+                } else if (event.data.step === "generating") {
+                  setGenerationProgress(50);
+                  toast.info("Generating video composition...", { duration: 3000 });
+                } else if (event.data.step === "code-ready") {
+                  setGenerationProgress(60);
+                } else if (event.data.step === "rendering") {
+                  setGenerationProgress(75);
+                  toast.loading("Rendering video...", { id: "rendering", duration: Infinity });
+                } else if (event.data.step === "fixing") {
+                  setGenerationProgress(80);
+                } else if (event.data.step === "complete") {
+                  setGenerationProgress(100);
+                  toast.dismiss("rendering");
+                }
+                break;
+              case "remotionCode":
+                currentRemotionCode = event.data;
+                setRemotionCode(event.data);
+                addLog("Composition generated", "success");
+                break;
+              case "videoUrl":
+                setRenderedVideoUrl(event.data);
+                await saveProject({
+                  videoUrl: event.data,
+                  audioUrl: event.data,
+                  status: "RENDERED",
+                });
+
+                const refVersion: VideoVersion = {
+                  id: `v-${Date.now()}`,
+                  versionNumber: versions.length + 1,
+                  timestamp: Date.now(),
+                  editMessage: "Reference video render",
+                  remotionCode: currentRemotionCode,
+                  videoUrl: event.data,
+                  isActive: true,
+                };
+
+                const refVersions = versions.map((v) => ({
+                  ...v,
+                  isActive: false,
+                }));
+                refVersions.push(refVersion);
+                setVersions(refVersions);
+                setCurrentVersionId(refVersion.id);
+                await saveProject({ currentVersionId: refVersion.id });
+
+                try {
+                  await fetch("/api/versions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ projectId, versions: refVersions }),
+                  });
+                } catch (err) {
+                  console.warn("Failed to save versions to R2:", err);
+                }
+
+                setActiveTab("preview");
+                setShowGenerationsSidebar(true);
+                addLog("Video rendered successfully!", "success");
+                toast.dismiss("rendering");
+                toast.success("Reference video recreated!", { duration: 5000 });
+                break;
+              case "error":
+                toast.dismiss("rendering");
+                toast.error(event.data.errors?.join(", ") || "Error");
+                addLog(event.data.errors?.[0] || "Error occurred", "error");
+                break;
+              case "complete":
+                toast.dismiss("rendering");
+                addLog(
+                  event.data.success ? "Reference video complete!" : "Generation had errors",
+                  event.data.success ? "success" : "error",
+                );
+                break;
+            }
+          } catch {}
+        }
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      toast.error(message);
+      addLog(message, "error");
+    } finally {
+      setLoading(false);
+      setUploadingReference(false);
+      setGenerationProgress(0);
+      setGenerationStatus("");
+    }
+  };
+
+  const handleContinueGeneration = useCallback(async () => {
+    if (!editableScript) return;
+    if (hasNoCredits) {
+      toast.error("No credits available. Subscribe to get more credits.", {
+        action: { label: "Subscribe", onClick: () => router.push("/pricing") },
+      });
+      return;
+    }
+    setLoading(true);
+    setIsGeneratingVideo(true);
+    setScript(editableScript);
+    setGenerationProgress(5);
+    setGenerationStatus("Initializing video generation...");
+    setActiveTab("preview");
+    toast.info("Rendering your video — this takes 2-5 minutes", { duration: 5000 });
+    addLog("Starting video production...");
+
+    try {
+      // Get auth token for VPS
+      const token = await getVpsToken();
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${VPS_API_URL}/api/creative/continue`, {
+        method: "POST",
+        headers: vpsHeaders(token),
+        body: JSON.stringify({
+          videoScript: editableScript,
+          productData,
+          userPreferences: {
+            style,
+            templateStyle: getTemplateStyle(style),
+            videoType,
+            duration,
+            aspectRatio,
+            useImages: selectedScreenshots.length > 0,
+            nanoBanana: toggles.nanoBanana,
+            stockImages: toggles.stockImages,
+            animatedComponents: toggles.animatedComponents,
+            audio: selectedAudio
+              ? {
+                  url: selectedAudio.url,
+                  bpm: selectedAudio.bpm,
+                  duration: selectedAudio.duration,
+                }
+              : undefined,
+          },
+          recordings:
+            recordings.length > 0
+              ? recordings.map((r) => ({
+                  id: r.id,
+                  videoUrl: r.videoUrl,
+                  duration: r.duration,
+                  featureName: r.featureName,
+                  description: r.description,
+                  trimStart: r.trimStart,
+                  trimEnd: r.trimEnd,
+                  mockupFrame: r.mockupFrame || "minimal",
+                  zoomPoints: r.zoomPoints || [],
+                  cursorStyle: r.cursorStyle || "hand",
+                  cursorData: r.cursorData || [],
+                  cursorSource: r.cursorSource || "javascript",
+                  processedVideoUrl: r.processedVideoUrl,
+                }))
+              : undefined,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Continue API request failed");
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No response body");
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let currentRemotionCode = remotionCode;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const event = JSON.parse(line);
+            switch (event.type) {
+              case "status": {
+                const step = event.data.step || "";
+                const msg = event.data.message || step;
+                addLog(msg);
+                const msgLower = msg.toLowerCase();
+
+                if (step === "directing" || msgLower.includes("creative direction")) {
+                  setGenerationProgress(10);
+                  setGenerationStatus("Adding creative direction...");
+                } else if (step === "translating" || msgLower.includes("translating")) {
+                  setGenerationProgress(25);
+                  setGenerationStatus("Generating video composition...");
+                  toast.info("Creating video composition...", { duration: 3000 });
+                } else if (msgLower.includes("composition ready") || msgLower.includes("code generated")) {
+                  setGenerationProgress(40);
+                  setGenerationStatus("Composition ready, starting render...");
+                } else if (step === "rendering" || msgLower.includes("rendering")) {
+                  setGenerationProgress(60);
+                  setGenerationStatus(msg);
+                  toast.loading("Rendering video — this may take 2-4 minutes...", { id: "rendering", duration: Infinity });
+                } else if (step === "fixing" || msgLower.includes("fixing")) {
+                  setGenerationProgress(55);
+                  setGenerationStatus(msg);
+                } else if (step === "complete" || msgLower.includes("rendered")) {
+                  setGenerationProgress(95);
+                  setGenerationStatus("Finalizing...");
+                } else {
+                  // Fallback for any other status
+                  setGenerationStatus(msg);
+                }
+                break;
+              }
+              case "remotionCode":
+                currentRemotionCode = event.data;
+                setRemotionCode(event.data);
+                await saveProject({
+                  composition: event.data,
+                  status: "GENERATING",
+                });
+                setGenerationProgress(50);
+                setGenerationStatus("Composition ready, rendering video...");
+                addLog("Video composition ready", "success");
+                break;
+              case "videoUrl":
+                setRenderedVideoUrl(event.data);
+                await saveProject({ audioUrl: event.data, videoUrl: event.data, status: "READY" });
+
+                const initialVersion: VideoVersion = {
+                  id: `v-${Date.now()}`,
+                  versionNumber: versions.length + 1,
+                  timestamp: Date.now(),
+                  editMessage: "Initial render",
+                  remotionCode: currentRemotionCode || "",
+                  videoUrl: event.data,
+                  isActive: true,
+                };
+
+                const initialVersions = versions.map((v) => ({
+                  ...v,
+                  isActive: false,
+                }));
+                initialVersions.push(initialVersion);
+                setVersions(initialVersions);
+                setCurrentVersionId(initialVersion.id);
+
+                await saveProject({ currentVersionId: initialVersion.id });
+
+                try {
+                  await fetch("/api/versions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      projectId,
+                      versions: initialVersions,
+                    }),
+                  });
+                } catch (err) {
+                  console.warn("Failed to save versions to R2:", err);
+                }
+
+                setGenerationProgress(100);
+                setGenerationStatus("Video generation complete!");
+                setIsGeneratingVideo(false);
+                setActiveTab("preview");
+                toast.dismiss("rendering");
+                toast.success("Your video is ready!", { duration: 5000 });
+                addLog("Video rendered successfully!", "success");
+                break;
+              case "error":
+                toast.dismiss("rendering");
+                toast.error(event.data.errors?.join(", ") || "Unknown error");
+                addLog(event.data.errors?.[0] || "Error occurred", "error");
+                break;
+              case "complete":
+                toast.dismiss("rendering");
+                if (event.data.success) {
+                  setGenerationProgress(100);
+                  setGenerationStatus("Complete!");
+                  addLog("Production complete!", "success");
+                } else {
+                  setGenerationProgress(0);
+                  setGenerationStatus("");
+                  toast.error(event.data.message || "Video generation failed");
+                  addLog(event.data.message || "Generation failed", "error");
+                }
+                break;
+            }
+          } catch (e) {
+            console.warn("Failed to parse event:", line);
+          }
+        }
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      toast.error(message);
+      addLog(message, "error");
+    } finally {
+      setLoading(false);
+      setIsGeneratingVideo(false);
+      // Only reset progress if no video was produced (keep 100% on success)
+      if (!renderedVideoUrl) {
+        setGenerationProgress(0);
+        setGenerationStatus("");
+      }
+    }
+  }, [
+    editableScript,
+    productData,
+    preset,
+    duration,
+    selectedAudio,
+    recordings,
+    projectId,
+    versions,
+    remotionCode,
+  ]);
+
+  // Re-render video after editing
+  const handleReRender = useCallback(async () => {
+    if (!remotionCode) return;
+
+    setLoading(true);
+    setGenerationProgress(0);
+    setGenerationStatus("Applying changes and re-rendering...");
+    addLog("Updating video with your changes...");
+
+    try {
+      // Get auth token for VPS
+      const token = await getVpsToken();
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${VPS_API_URL}/api/creative/render`, {
+        method: "POST",
+        headers: vpsHeaders(token),
+        body: JSON.stringify({
+          remotionCode,
+          audio: selectedAudio
+            ? {
+                url: selectedAudio.url,
+                bpm: selectedAudio.bpm,
+                duration: selectedAudio.duration,
+              }
+            : undefined,
+          durationInFrames: editableScript?.totalDuration || 300,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Re-render API request failed");
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No response body");
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const event = JSON.parse(line);
+            switch (event.type) {
+              case "status":
+                setGenerationStatus(event.data.message || "Rendering...");
+                if (event.data.progress)
+                  setGenerationProgress(event.data.progress);
+                if (event.data.progress && event.data.progress <= 10) {
+                  toast.loading("Re-rendering video — this may take 1-3 minutes...", { id: "rerendering", duration: Infinity });
+                }
+                break;
+              case "videoUrl":
+                toast.dismiss("rerendering");
+                toast.success("Video updated!", { duration: 5000 });
+                const newVideoUrl = event.data;
+                setRenderedVideoUrl(newVideoUrl);
+                setRenderVersion(Date.now());
+                await saveProject({ audioUrl: newVideoUrl, videoUrl: newVideoUrl, status: "READY" });
+
+                const newVersion: VideoVersion = {
+                  id: `v-${Date.now()}`,
+                  versionNumber: versions.length + 1,
+                  timestamp: Date.now(),
+                  editMessage:
+                    videoEditHistory[videoEditHistory.length - 1]?.text ||
+                    "Manual re-render",
+                  remotionCode: remotionCode || "",
+                  videoUrl: newVideoUrl,
+                  isActive: true,
+                };
+
+                const updatedVersions = versions.map((v) => ({
+                  ...v,
+                  isActive: false,
+                }));
+                updatedVersions.push(newVersion);
+                setVersions(updatedVersions);
+                setCurrentVersionId(newVersion.id);
+
+                await saveProject({ currentVersionId: newVersion.id });
+
+                try {
+                  await fetch("/api/versions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      projectId,
+                      versions: updatedVersions,
+                    }),
+                  });
+                } catch (err) {
+                  console.warn("Failed to save versions to R2:", err);
+                }
+
+                setGenerationProgress(100);
+                setGenerationStatus("Re-render complete!");
+                addLog("Video re-rendered successfully!", "success");
+                break;
+              case "error":
+                toast.error(event.data.errors?.join(", ") || "Unknown error");
+                addLog(
+                  event.data.errors?.[0] || "Render error occurred",
+                  "error",
+                );
+                break;
+            }
+          } catch (e) {
+            console.warn("Failed to parse event:", line);
+          }
+        }
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      toast.error(message);
+      addLog(message, "error");
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    remotionCode,
+    projectId,
+    selectedAudio,
+    editableScript,
+    versions,
+    videoEditHistory,
+  ]);
+
+  // Post-render video editing via chat
+  const handleVideoEdit = useCallback(async () => {
+    if (!videoEditInput.trim() || !remotionCode || videoEditLoading) return;
+    if (hasNoCredits) {
+      toast.error("No credits available. Subscribe to get more credits.", {
+        action: { label: "Subscribe", onClick: () => router.push("/pricing") },
+      });
+      return;
+    }
+
+    const message = videoEditInput.trim();
+    setVideoEditInput("");
+    setVideoEditLoading(true);
+    setEditProgress(10);
+    setEditStatus("Analyzing edit request...");
+    setVideoEditHistory((prev) => [...prev, { role: "user", text: message }]);
+
+    addLog(`Editing video: "${message}"`, "info");
+
+    try {
+      // Get auth token for VPS
+      const token = await getVpsToken();
+      if (!token) {
+        setVideoEditLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${VPS_API_URL}/api/creative/edit-video`, {
+        method: "POST",
+        headers: vpsHeaders(token),
+        body: JSON.stringify({
+          message,
+          remotionCode,
+          videoScript: editableScript,
+          productData,
+          userPreferences: {
+            style,
+            videoType,
+            duration,
+            useImages: selectedScreenshots.length > 0,
+            audio: selectedAudio
+              ? {
+                  url: selectedAudio.url,
+                  bpm: selectedAudio.bpm,
+                  duration: selectedAudio.duration,
+                }
+              : undefined,
+          },
+          recordings: recordings.map((r) => ({
+            id: r.id,
+            videoUrl: r.videoUrl,
+            duration: r.duration,
+            featureName: r.featureName,
+            description: r.description,
+            trimStart: r.trimStart,
+            trimEnd: r.trimEnd,
+            mockupFrame: r.mockupFrame || "minimal",
+            zoomPoints: r.zoomPoints || [],
+            cursorStyle: r.cursorStyle || "hand",
+            cursorData: r.cursorData || [],
+            processedVideoUrl: r.processedVideoUrl,
+          })),
+        }),
+      });
+
+      if (!response.ok) throw new Error("Edit API request failed");
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No response body");
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let newRemotionCode: string | null = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const event = JSON.parse(line);
+            switch (event.type) {
+              case "status":
+                const step = event.data.step;
+                setEditStatus(event.data.message);
+                if (step === "editing") setEditProgress(30);
+                else if (step === "generating") setEditProgress(50);
+                else if (step === "validating") setEditProgress(70);
+                else if (step === "fixing") setEditProgress(80);
+                else if (step === "complete") setEditProgress(90);
+                break;
+              case "remotionCode":
+                newRemotionCode = event.data;
+                setRemotionCode(event.data);
+                await saveProject({
+                  composition: event.data,
+                  status: "EDITING",
+                });
+                setEditProgress(100);
+                break;
+              case "error":
+                toast.error(event.data.errors?.join(", ") || "Unknown error");
+                addLog(
+                  event.data.errors?.[0] || "Edit error occurred",
+                  "error",
+                );
+                break;
+              case "complete":
+                if (event.data.success && newRemotionCode) {
+                  setVideoEditHistory((prev) => [
+                    ...prev,
+                    {
+                      role: "assistant",
+                      text: "Applying changes and re-rendering...",
+                    },
+                  ]);
+                  addLog("Changes applied, updating video...", "success");
+                } else {
+                  setVideoEditHistory((prev) => [
+                    ...prev,
+                    {
+                      role: "assistant",
+                      text: "Edit completed with issues. Please try a different request.",
+                    },
+                  ]);
+                }
+                break;
+            }
+          } catch (e) {
+            console.warn("Failed to parse event:", line);
+          }
+        }
+      }
+      // Auto-render after successful edit
+      if (newRemotionCode) {
+        setTimeout(() => handleReRender(), 500);
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      toast.error(message);
+      addLog(message, "error");
+      setVideoEditHistory((prev) => [
+        ...prev,
+        { role: "assistant", text: `Error: ${message}` },
+      ]);
+    } finally {
+      setVideoEditLoading(false);
+    }
+  }, [
+    videoEditInput,
+    remotionCode,
+    editableScript,
+    productData,
+    preset,
+    duration,
+    selectedAudio,
+    recordings,
+    projectId,
+    videoEditLoading,
+    handleReRender,
+  ]);
+
+  // Switch to a specific version
+  const switchToVersion = useCallback(
+    async (version: VideoVersion) => {
+      setRemotionCode(version.remotionCode);
+      setRenderedVideoUrl(version.videoUrl);
+      setRenderVersion(Date.now());
+      setCurrentVersionId(version.id);
+
+      // Mark this version as active
+      const updatedVersions = versions.map((v) => ({
+        ...v,
+        isActive: v.id === version.id,
+      }));
+      setVersions(updatedVersions);
+
+      await saveProject({
+        composition: version.remotionCode,
+        audioUrl: version.videoUrl,
+        videoUrl: version.videoUrl,
+        currentVersionId: version.id,
+      });
+
+      // Save updated versions to R2
+      try {
+        await fetch("/api/versions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ projectId, versions: updatedVersions }),
+        });
+      } catch (err) {
+        console.warn("Failed to save versions to R2:", err);
+      }
+
+      addLog(`Switched to version ${version.versionNumber}`, "success");
+    },
+    [versions],
+  );
+
+  const handleRender = async () => {
+    if (hasNoCredits) {
+      toast.error("No credits available. Subscribe to get more credits.", {
+        action: { label: "Subscribe", onClick: () => router.push("/pricing") },
+      });
+      return;
+    }
+    if (!remotionCode) {
+      toast.error("No video composition available. Generate a video first!");
+      return;
+    }
+    setRendering(true);
+    setRenderProgress(5);
+    setGenerationStatus("Initializing render...");
+    addLog("Starting render...");
+
+    let progressStage = 0;
+    const progressInterval = setInterval(() => {
+      progressStage++;
+      if (progressStage === 1) {
+        setRenderProgress(20);
+        setGenerationStatus("Preparing composition...");
+      } else if (progressStage === 2) {
+        setRenderProgress(40);
+        setGenerationStatus("Rendering frames...");
+      } else if (progressStage === 3) {
+        setRenderProgress(60);
+        setGenerationStatus("Encoding video...");
+      } else if (progressStage === 4) {
+        setRenderProgress(80);
+        setGenerationStatus("Finalizing output...");
+      } else if (progressStage >= 5) {
+        setRenderProgress((prev) => Math.min(prev + 2, 95));
+      }
+    }, 2000);
+
+    try {
+      const response = await fetch("/api/render", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          remotionCode,
+          durationInFrames: script?.totalDuration || 300,
+          format: "mp4",
+        }),
+      });
+
+      clearInterval(progressInterval);
+      const result = await response.json();
+
+      if (result.success) {
+        setRenderProgress(100);
+        setGenerationStatus("Render complete!");
+        setRenderedVideoUrl(result.videoUrl);
+        setRenderVersion(Date.now());
+
+        // Persist video URL to DB
+        await saveProject({
+          audioUrl: result.videoUrl,
+          videoUrl: result.videoUrl,
+          status: "READY",
+        });
+
+        // Create a version for this render
+        const renderVersion: VideoVersion = {
+          id: `v-${Date.now()}`,
+          versionNumber: versions.length + 1,
+          timestamp: Date.now(),
+          editMessage: "Manual render",
+          remotionCode: remotionCode || "",
+          videoUrl: result.videoUrl,
+          isActive: true,
+        };
+
+        const renderVersions = versions.map((v) => ({
+          ...v,
+          isActive: false,
+        }));
+        renderVersions.push(renderVersion);
+        setVersions(renderVersions);
+        setCurrentVersionId(renderVersion.id);
+
+        await saveProject({ currentVersionId: renderVersion.id });
+
+        try {
+          await fetch("/api/versions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ projectId, versions: renderVersions }),
+          });
+        } catch (err) {
+          console.warn("Failed to save versions to R2:", err);
+        }
+
+        addLog(
+          `Video rendered in ${Math.round(result.renderTime / 1000)}s`,
+          "success",
+        );
+      } else {
+        throw new Error(result.error || "Render failed");
+      }
+    } catch (err) {
+      clearInterval(progressInterval);
+      const message = err instanceof Error ? err.message : "Render failed";
+      toast.error(message);
+      addLog(`Render error: ${message}`, "error");
+    } finally {
+      setRendering(false);
+      setTimeout(() => {
+        setGenerationStatus("");
+      }, 2000);
+    }
+  };
+
+  // Scene editing handlers with debounce
+  const handleUpdateScene = useCallback(
+    (sceneId: string, updates: Partial<VideoScene>) => {
+      setEditableScript((prev) => {
+        if (!prev) return prev;
+        const scenes = prev.scenes.map((s) =>
+          s.id === sceneId ? { ...s, ...updates } : s,
+        );
+        let frame = 0;
+        for (const scene of scenes) {
+          const duration = scene.endFrame - scene.startFrame;
+          scene.startFrame = frame;
+          scene.endFrame = frame + duration;
+          frame += duration;
+        }
+        const updated = { ...prev, scenes, totalDuration: frame };
+        saveProject({ script: updated });
+        return updated;
+      });
+    },
+    [],
+  );
+
+  const debouncedUpdateScene = useCallback(
+    (sceneId: string, updates: Partial<VideoScene>, delay: number = 500) => {
+      const existingTimer = sceneDebounceRef.current[sceneId];
+      if (existingTimer) {
+        clearTimeout(existingTimer);
+      }
+      sceneDebounceRef.current[sceneId] = setTimeout(() => {
+        handleUpdateScene(sceneId, updates);
+        delete sceneDebounceRef.current[sceneId];
+      }, delay);
+    },
+    [handleUpdateScene],
+  );
+
+  const flushSceneUpdate = useCallback((sceneId: string) => {
+    const existingTimer = sceneDebounceRef.current[sceneId];
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+      delete sceneDebounceRef.current[sceneId];
+    }
+  }, []);
+
+  const handleRemoveScene = useCallback((sceneId: string) => {
+    setEditableScript((prev) => {
+      if (!prev) return prev;
+      const scenes = prev.scenes.filter((s) => s.id !== sceneId);
+      let frame = 0;
+      for (const scene of scenes) {
+        const duration = scene.endFrame - scene.startFrame;
+        scene.startFrame = frame;
+        scene.endFrame = frame + duration;
+        frame += duration;
+      }
+      const updated = { ...prev, scenes, totalDuration: frame };
+      saveProject({ script: updated });
+      return updated;
+    });
+  }, []);
+
+  const handleReorderScene = useCallback((fromIdx: number, toIdx: number) => {
+    setEditableScript((prev) => {
+      if (!prev) return prev;
+      const scenes = [...prev.scenes];
+      const [moved] = scenes.splice(fromIdx, 1);
+      scenes.splice(toIdx, 0, moved);
+      let frame = 0;
+      for (const scene of scenes) {
+        const duration = scene.endFrame - scene.startFrame;
+        scene.startFrame = frame;
+        scene.endFrame = frame + duration;
+        frame += duration;
+      }
+      const updated = { ...prev, scenes, totalDuration: frame };
+      saveProject({ script: updated });
+      return updated;
+    });
+  }, []);
+
+  const handleAddScene = useCallback(() => {
+    setEditableScript((prev) => {
+      if (!prev) return prev;
+      const scenes = [...prev.scenes];
+      const newScene: VideoScene = {
+        id: `scene-${Date.now()}`,
+        startFrame: 0,
+        endFrame: 60,
+        type: "feature",
+        content: { headline: "New Feature", subtext: "" },
+        animation: { enter: "blur-in" as any, exit: "fade" },
+        style: {
+          background: "#0a0a0f",
+          textColor: "#ffffff",
+          fontSize: "medium",
+        },
+      };
+      scenes.push(newScene);
+      let frame = 0;
+      for (const scene of scenes) {
+        const duration = scene.endFrame - scene.startFrame;
+        scene.startFrame = frame;
+        scene.endFrame = frame + duration;
+        frame += duration;
+      }
+      const updated = { ...prev, scenes, totalDuration: frame };
+      saveProject({ script: updated });
+      return updated;
+    });
+  }, []);
+
+  const handleAddRecordingToScene = useCallback(
+    (sceneId: string, recording: ScreenRecording) => {
+      setEditableScript((prev) => {
+        if (!prev) return prev;
+        const scenes = prev.scenes.map((s) =>
+          s.id === sceneId
+            ? {
+                ...s,
+                type: "recording" as const,
+                content: {
+                  ...s.content,
+                  recordingId: recording.id,
+                  headline: recording.featureName,
+                },
+              }
+            : s,
+        );
+        return { ...prev, scenes };
+      });
+    },
+    [],
+  );
+
+  const handleAddScreenshotToScene = useCallback(
+    (sceneId: string, screenshotUrl: string) => {
+      setEditableScript((prev) => {
+        if (!prev) return prev;
+        const scenes = prev.scenes.map((s) =>
+          s.id === sceneId
+            ? {
+                ...s,
+                type: "screenshot" as const,
+                content: { ...s.content, screenshotUrl },
+              }
+            : s,
+        );
+        return { ...prev, scenes };
+      });
+    },
+    [],
+  );
+
+  const handleScriptChat = useCallback(async () => {
+    if (!scriptChatInput.trim() || !editableScript || scriptChatLoading) return;
+    if (hasNoCredits) {
+      toast.error("No credits available. Subscribe to get more credits.", {
+        action: { label: "Subscribe", onClick: () => router.push("/pricing") },
+      });
+      return;
+    }
+    const message = scriptChatInput.trim();
+    setScriptChatInput("");
+    setScriptChatLoading(true);
+    setScriptChatHistory((prev) => [...prev, { role: "user", text: message }]);
+
+    try {
+      // Get auth token for VPS
+      const token = await getVpsToken();
+      if (!token) {
+        setScriptChatLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${VPS_API_URL}/api/creative/edit-script`, {
+        method: "POST",
+        headers: vpsHeaders(token),
+        body: JSON.stringify({
+          message,
+          videoScript: editableScript,
+          productData,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success && data.videoScript) {
+        setEditableScript(data.videoScript);
+        setScript(data.videoScript);
+        await saveProject({ script: data.videoScript });
+        const reply = `Updated — ${data.videoScript.scenes?.length || 0} scenes.`;
+        setScriptChatHistory((prev) => [
+          ...prev,
+          { role: "assistant", text: reply },
+        ]);
+        addLog(`Script edited: "${message}"`, "success");
+      } else {
+        setScriptChatHistory((prev) => [
+          ...prev,
+          { role: "assistant", text: `Error: ${data.error || "Failed"}` },
+        ]);
+      }
+    } catch (err) {
+      setScriptChatHistory((prev) => [
+        ...prev,
+        { role: "assistant", text: "Error: Network failed" },
+      ]);
+    } finally {
+      setScriptChatLoading(false);
+    }
+  }, [scriptChatInput, editableScript, productData, scriptChatLoading]);
+
+  // Recording functions
+  const startRecording = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          frameRate: { ideal: 30 },
+        },
+        audio: false,
+      });
+
+      streamRef.current = stream;
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: "video/webm;codecs=vp9",
+      });
+      mediaRecorderRef.current = mediaRecorder;
+      chunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) chunksRef.current.push(event.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const blob = new Blob(chunksRef.current, { type: "video/webm" });
+        const cursorData = cursorTrackerRef.current?.stop() || [];
+        const zoomPoints = detectZoomPoints(cursorData);
+
+        const formData = new FormData();
+        formData.append("video", blob, "recording.webm");
+        formData.append("projectId", projectId);
+        formData.append("cursorData", JSON.stringify(cursorData));
+        formData.append("zoomPoints", JSON.stringify(zoomPoints));
+        formData.append("featureName", recordingFeatureName || "Feature Demo");
+        formData.append("description", recordingDescription || "");
+        formData.append("duration", String(recordingTime));
+        formData.append("cursorStyle", editCursorStyle);
+
+        try {
+          const response = await fetch("/api/recordings", {
+            method: "POST",
+            body: formData,
+          });
+          const data = await response.json();
+          if (data.success) {
+            addLog(
+              `Recording saved: ${recordingFeatureName || "Feature Demo"}`,
+              "success",
+            );
+
+            // Check if CV processing was triggered (for external recordings)
+            const isExternalRecording = cursorData.length === 0;
+
+            const newRecording: ScreenRecording = {
+              id: data.recordingId,
+              projectId,
+              videoUrl: data.videoUrl,
+              duration: recordingTime,
+              cursorData,
+              zoomPoints,
+              trimStart: 0,
+              trimEnd: recordingTime,
+              featureName: recordingFeatureName || "Feature Demo",
+              description: recordingDescription || "",
+              cursorStyle: editCursorStyle,
+              mockupFrame: "minimal",
+              createdAt: new Date().toISOString(),
+              cursorSource: isExternalRecording ? "cv_detection" : "javascript",
+              processingStatus: "pending",
+            };
+            setEditingRecording(newRecording);
+            setEditTrimStart(0);
+            setEditTrimEnd(recordingTime);
+            setEditMockupFrame("minimal");
+            loadRecordings(); // Refresh recordings list
+          } else {
+            addLog(
+              `Recording upload failed: ${data.error || "Unknown error"}`,
+              "error",
+            );
+          }
+        } catch (error) {
+          addLog(`Failed to save recording`, "error");
+        }
+        setIsRecording(false);
+      };
+
+      cursorTrackerRef.current = new CursorTracker();
+      cursorTrackerRef.current.start();
+      mediaRecorder.start(1000);
+      setIsRecording(true);
+      setRecordingTime(0);
+
+      let seconds = 0;
+      timerRef.current = setInterval(() => {
+        seconds++;
+        setRecordingTime(seconds);
+      }, 1000);
+
+      stream.getVideoTracks()[0].onended = () => stopRecording();
+    } catch (error) {
+      addLog("Failed to start recording", "error");
+    }
+  }, [
+    recordingFeatureName,
+    recordingDescription,
+    recordingTime,
+    projectId,
+    editCursorStyle,
+  ]);
+
+  const stopRecording = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (cursorTrackerRef.current) cursorTrackerRef.current.stop();
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state !== "inactive"
+    ) {
+      mediaRecorderRef.current.stop();
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+    }
+  }, []);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const handleUpload = useCallback(async () => {
+    if (!uploadFile || !recordingFeatureName.trim()) return;
+    setUploading(true);
+    try {
+      // Get video duration from file metadata
+      const videoDuration = await new Promise<number>((resolve) => {
+        const video = document.createElement("video");
+        video.preload = "metadata";
+        video.onloadedmetadata = () => {
+          resolve(video.duration);
+          URL.revokeObjectURL(video.src);
+        };
+        video.onerror = () => {
+          resolve(30);
+          URL.revokeObjectURL(video.src);
+        };
+        video.src = URL.createObjectURL(uploadFile);
+      });
+
+      const formData = new FormData();
+      formData.append("video", uploadFile);
+      formData.append("projectId", projectId);
+      formData.append("cursorData", "[]");
+      formData.append("zoomPoints", "[]");
+      formData.append("featureName", recordingFeatureName);
+      formData.append("description", recordingDescription || "");
+      formData.append("duration", String(Math.round(videoDuration)));
+      formData.append("cursorStyle", editCursorStyle);
+
+      const response = await fetch("/api/recordings", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      if (data.success) {
+        const newRecording: ScreenRecording = {
+          id: data.recordingId,
+          projectId,
+          videoUrl: data.videoUrl,
+          duration: videoDuration,
+          cursorData: [],
+          zoomPoints: [],
+          trimStart: 0,
+          trimEnd: videoDuration,
+          featureName: recordingFeatureName,
+          description: recordingDescription || "",
+          cursorStyle: editCursorStyle,
+          mockupFrame: "minimal",
+          createdAt: new Date().toISOString(),
+          processingStatus: "pending",
+        };
+        setEditingRecording(newRecording);
+        setEditTrimStart(0);
+        setEditTrimEnd(videoDuration);
+        setEditMockupFrame("minimal");
+        loadRecordings();
+        addLog(`Upload complete: ${recordingFeatureName}`, "success");
+      } else {
+        addLog(`Upload failed: ${data.error || "Unknown error"}`, "error");
+      }
+    } catch (error) {
+      addLog("Failed to upload recording", "error");
+    } finally {
+      setUploading(false);
+      setUploadFile(null);
+    }
+  }, [
+    uploadFile,
+    recordingFeatureName,
+    recordingDescription,
+    projectId,
+    editCursorStyle,
+  ]);
+
+  const handleSaveRecordingEdit = useCallback(() => {
+    if (!editingRecording) return;
+    const updated: ScreenRecording = {
+      ...editingRecording,
+      trimStart: editTrimStart,
+      trimEnd: editTrimEnd,
+      mockupFrame: editMockupFrame,
+      cursorStyle: editCursorStyle,
+    };
+    setRecordings((prev) => {
+      const exists = prev.find((r) => r.id === updated.id);
+      if (exists) return prev.map((r) => (r.id === updated.id ? updated : r));
+      return [...prev, updated];
+    });
+    addLog(`Recording saved: ${updated.featureName}`, "success");
+    setEditingRecording(null);
+    setRecordingFeatureName("");
+    setRecordingDescription("");
+    setShowRecordingModal(false);
+  }, [
+    editingRecording,
+    editTrimStart,
+    editTrimEnd,
+    editMockupFrame,
+    editCursorStyle,
+  ]);
+
+  // Composition
+  const CompositionComponent = editableScript
+    ? () => (
+        <DynamicComposition
+          script={editableScript}
+          audioUrl={selectedAudio?.url || null}
+        />
+      )
+    : PlaceholderComposition;
+  const totalDuration = editableScript?.totalDuration || 300;
+
+  if (projectLoading) {
+    return (
+      <div className="min-h-screen bg-surface text-ink flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+          <p className="text-muted">Loading project...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative min-h-screen overflow-hidden bg-surface text-ink font-sans">
+      {/* Ambient backdrop */}
+      <div className="pointer-events-none fixed inset-0 kinetic-dotgrid" />
+      <div
+        className="pointer-events-none fixed kinetic-glow-soft"
+        style={{ top: -200, left: "50%", transform: "translateX(-50%)", width: 1200, height: 600 }}
+      />
+
+      {/* Navigation */}
+      <nav
+        className="fixed top-0 left-0 right-0 z-40 px-6 py-4 flex items-center justify-between backdrop-blur-md"
+        style={{ background: "rgba(7,7,10,0.7)", borderBottom: "1px solid var(--rule)" }}
+      >
+        <div className="flex items-center gap-4">
+          <Link
+            href="/projects"
+            className="text-muted hover:text-ink transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <Link href="/" className="flex items-center gap-2">
+            <img src="/logo/remwat full logo .svg" alt="Remawt" className="h-6 w-auto" />
+          </Link>
+          <span className="kinetic-pill !py-1 !px-2.5">
+            <span className="accent-dot" />
+            <span className="mono-tick" style={{ color: "var(--ink)" }}>CREATIVE</span>
+          </span>
+
+          {/* Project Name - Editable */}
+          {editingProjectName ? (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={tempProjectName}
+                onChange={(e) => setTempProjectName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleProjectNameSave();
+                  if (e.key === "Escape") setEditingProjectName(false);
+                }}
+                onBlur={handleProjectNameSave}
+                className="px-2 py-1 bg-paper-3 border border-rule-strong rounded text-sm focus:outline-none focus:border-ink w-48"
+                autoFocus
+              />
+            </div>
+          ) : (
+            <button
+              onClick={startEditingProjectName}
+              className="text-muted hover:text-ink transition-colors flex items-center gap-2 group"
+            >
+              <span className="truncate max-w-xs">
+                {projectName || "Untitled Project"}
+              </span>
+              <Edit2 className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-4">
+          {saving && (
+            <span className="text-sm text-muted flex items-center gap-2">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              Saving...
+            </span>
+          )}
+          <Link
+            href="/projects"
+            className="text-sm text-muted hover:text-ink transition-colors"
+          >
+            All Projects
+          </Link>
+          {/* Generations Sidebar Toggle */}
+          <button
+            onClick={() => setShowGenerationsSidebar((v) => !v)}
+            className="relative flex items-center gap-2 rounded-full px-3 py-1.5 text-sm transition-all"
+            style={{
+              background: showGenerationsSidebar ? "var(--accent-soft)" : "rgba(245,245,247,0.04)",
+              border: `1px solid ${showGenerationsSidebar ? "rgba(59,130,246,0.40)" : "var(--rule)"}`,
+              color: showGenerationsSidebar ? "var(--accent)" : "var(--muted)",
+            }}
+            title="Generations History"
+          >
+            <History className="w-4 h-4" />
+            <span className="hidden sm:inline">Generations</span>
+            {versions.length > 0 && (
+              <span
+                className="absolute -top-1 -right-1 grid min-w-[18px] place-items-center rounded-full px-1 text-[10px] font-medium"
+                style={{
+                  background: "var(--accent)",
+                  color: "#0a0a0a",
+                  boxShadow: "0 0 8px var(--accent)",
+                  height: 18,
+                }}
+              >
+                {versions.length}
+              </span>
+            )}
+          </button>
+        </div>
+      </nav>
+
+      {/* Generations Sidebar Overlay */}
+      {showGenerationsSidebar && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/40 z-40"
+            onClick={() => setShowGenerationsSidebar(false)}
+          />
+          {/* Sidebar Panel */}
+          <div className="fixed top-0 right-0 h-full w-[380px] max-w-[90vw] bg-paper-2 border-l border-rule z-50 flex flex-col shadow-2xl">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-rule">
+              <div className="flex items-center gap-2">
+                <Film className="w-5 h-5 text-purple-400" />
+                <h3 className="font-medium">Generations</h3>
+                <span className="text-xs text-muted bg-paper-2 px-2 py-0.5 rounded-full">
+                  {versions.length}
+                </span>
+              </div>
+              <button
+                onClick={() => setShowGenerationsSidebar(false)}
+                className="text-muted hover:text-ink transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto py-4 px-4 space-y-4">
+              {versions.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center py-12">
+                  <div className="w-16 h-16 rounded-full bg-paper-2 flex items-center justify-center mb-4">
+                    <Film className="w-8 h-8 text-subtle" />
+                  </div>
+                  <p className="text-muted text-sm">No generations yet</p>
+                  <p className="text-subtle text-xs mt-1">
+                    Generate a video to see it here
+                  </p>
+                </div>
+              ) : (
+                [...versions].reverse().map((version, idx) => (
+                  <div
+                    key={version.id}
+                    className={`rounded-xl border overflow-hidden transition-all ${
+                      version.id === currentVersionId
+                        ? "border-purple-500/50 bg-purple-500/10"
+                        : "border-rule bg-paper-2 hover:bg-paper-3"
+                    }`}
+                  >
+                    {/* Video Preview */}
+                    {version.videoUrl ? (
+                      <video
+                        src={version.videoUrl}
+                        controls
+                        preload="metadata"
+                        className="w-full aspect-video bg-black"
+                      />
+                    ) : (
+                      <div className="w-full aspect-video bg-black/50 flex items-center justify-center">
+                        <Film className="w-8 h-8 text-subtle" />
+                      </div>
+                    )}
+
+                    {/* Info */}
+                    <div className="p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">
+                            Generation #{versions.length - idx}
+                          </span>
+                          {version.id === currentVersionId && (
+                            <span className="text-[10px] bg-purple-500/30 text-purple-300 border border-purple-500/30 px-1.5 py-0.5 rounded-full">
+                              active
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-muted">
+                          {new Date(version.timestamp).toLocaleDateString(
+                            undefined,
+                            { month: "short", day: "numeric" },
+                          )}{" "}
+                          {new Date(version.timestamp).toLocaleTimeString(
+                            undefined,
+                            { hour: "2-digit", minute: "2-digit" },
+                          )}
+                        </span>
+                      </div>
+
+                      {version.editMessage && (
+                        <p
+                          className="text-xs text-muted truncate"
+                          title={version.editMessage}
+                        >
+                          {version.editMessage}
+                        </p>
+                      )}
+
+                      {/* Actions */}
+                      <div className="flex gap-2 pt-1">
+                        {version.id !== currentVersionId &&
+                          version.videoUrl && (
+                            <button
+                              onClick={() => {
+                                switchToVersion(version);
+                                setActiveTab("preview");
+                                setShowGenerationsSidebar(false);
+                              }}
+                              className="flex-1 text-xs px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 rounded-lg transition-colors text-purple-300"
+                            >
+                              Use this
+                            </button>
+                          )}
+                        {version.videoUrl && (
+                          <a
+                            href={version.videoUrl}
+                            download
+                            className="flex items-center gap-1 text-xs px-3 py-1.5 bg-paper-3 hover:bg-paper-3 border border-rule rounded-lg transition-colors"
+                          >
+                            <Download className="w-3 h-3" />
+                            Download
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Main Content */}
+      <main className="pt-20">
+        {/* Progress Steps */}
+        <div className="border-b border-rule">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center gap-4">
+              {[
+                { id: "input", label: "1. Configure", icon: LayoutTemplate },
+                { id: "script", label: "2. Review Script", icon: Eye },
+                { id: "preview", label: "3. Final Preview", icon: Video },
+              ].map((step, idx) => {
+                const Icon = step.icon;
+                const isActive = activeTab === step.id;
+                const isPast =
+                  idx < ["input", "script", "preview"].indexOf(activeTab);
+                return (
+                  <button
+                    key={step.id}
+                    onClick={() => setActiveTab(step.id as any)}
+                    disabled={
+                      (step.id === "script" && !editableScript) ||
+                      (step.id === "preview" && !renderedVideoUrl && !isGeneratingVideo)
+                    }
+                    className={`flex items-center gap-2 px-4 py-2 text-sm transition-all ${
+                      isActive
+                        ? "text-ink bg-paper-3 rounded-lg"
+                        : isPast
+                          ? "text-ink"
+                          : "text-muted"
+                    } ${(step.id === "script" && !editableScript) || (step.id === "preview" && !renderedVideoUrl && !isGeneratingVideo) ? "opacity-50 cursor-not-allowed" : ""}`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="hidden md:inline">{step.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* INPUT TAB - Wider Configuration Panel */}
+        {activeTab === "input" && (
+          <div className="max-w-2xl mx-auto px-6 py-12">
+            <div className="space-y-8">
+              <div>
+                <h2 className="text-2xl font-light mb-2">Create Your Video</h2>
+                <p className="text-muted">
+                  {flowMode === "product-demo"
+                    ? "Enter your product details and we'll generate a script"
+                    : "Upload a reference video and describe the content to recreate"}
+                </p>
+              </div>
+
+              {/* Mode Switcher */}
+              <div className="space-y-2">
+                <label className="text-xs tracking-widest text-muted uppercase">
+                  Generation Mode
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setFlowMode("product-demo")}
+                    className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all ${
+                      flowMode === "product-demo"
+                        ? "bg-paper-3 text-ink border border-rule-strong shadow-lg shadow-black/5"
+                        : "bg-paper-2 text-muted border border-rule hover:bg-paper-3"
+                    }`}
+                  >
+                    <div className="flex flex-col items-center gap-1">
+                      <Film className="w-4 h-4" />
+                      <span>Product Demo</span>
+                      <span className="text-[10px] text-muted">1-5 credits</span>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setFlowMode("reference-video")}
+                    className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all ${
+                      flowMode === "reference-video"
+                        ? "bg-paper-3 text-ink border border-rule-strong shadow-lg shadow-black/5"
+                        : "bg-paper-2 text-muted border border-rule hover:bg-paper-3"
+                    }`}
+                  >
+                    <div className="flex flex-col items-center gap-1">
+                      <Upload className="w-4 h-4" />
+                      <span>Reference Video</span>
+                      <span className="text-[10px] text-muted">5 credits</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Floating Progress Indicator - Show during generation */}
+              {loading && generationProgress > 0 && activeTab === "input" && (
+                <div className="fixed bottom-6 right-6 z-50 bg-paper-2 border border-rule rounded-lg p-4 shadow-2xl max-w-sm">
+                  <ProgressBar
+                    progress={generationProgress}
+                    status={generationStatus}
+                  />
+                </div>
+              )}
+
+              {/* === REFERENCE VIDEO MODE === */}
+              {flowMode === "reference-video" && (
+                <>
+                  {/* Reference Video Upload */}
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-widest text-muted uppercase">
+                      Reference Video
+                    </label>
+                    {referenceVideoPreview ? (
+                      <div className="relative rounded-lg overflow-hidden border border-rule">
+                        <video
+                          src={referenceVideoPreview}
+                          className="w-full max-h-48 object-contain bg-black"
+                          controls
+                          muted
+                        />
+                        <button
+                          onClick={() => {
+                            setReferenceVideoFile(null);
+                            setReferenceVideoUrl(null);
+                            if (referenceVideoPreview) URL.revokeObjectURL(referenceVideoPreview);
+                            setReferenceVideoPreview(null);
+                          }}
+                          className="absolute top-2 right-2 p-1 bg-black/60 rounded-full hover:bg-black/80 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                        <div className="p-2 text-xs text-muted">
+                          {referenceVideoFile?.name} ({referenceVideoFile ? `${(referenceVideoFile.size / 1024 / 1024).toFixed(1)}MB` : ""})
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="w-full py-8 border-2 border-dashed border-rule rounded-lg flex flex-col items-center justify-center gap-3 hover:border-rule-strong transition-colors text-muted cursor-pointer">
+                        <Upload className="w-8 h-8" />
+                        <span className="text-sm">Click to upload a reference video</span>
+                        <span className="text-xs text-subtle">MP4, WebM, MOV — max 100MB</span>
+                        <input
+                          type="file"
+                          accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
+                          onChange={handleReferenceVideoSelect}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  {/* Description for reference video */}
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-widest text-muted uppercase">
+                      Content Description
+                    </label>
+                    <textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Describe the content to use in the recreated video. E.g. product name, features, taglines, colors, brand style..."
+                      rows={6}
+                      className="w-full px-4 py-4 bg-paper-2 border border-rule focus:border-rule-strong focus:outline-none transition-colors resize-none text-base rounded-lg"
+                    />
+                    <p className="text-xs text-subtle">
+                      Gemini Pro will analyze the reference video&apos;s style and recreate it with your content
+                    </p>
+                  </div>
+
+                  {/* Images / Logos Upload */}
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-widest text-muted uppercase">
+                      Images &amp; Logos (Optional)
+                    </label>
+                    {referenceImages.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {referenceImages.map((img, i) => (
+                          <div key={i} className="relative group">
+                            <img
+                              src={img.url}
+                              alt={img.name}
+                              className="w-16 h-16 object-cover rounded-lg border border-rule"
+                            />
+                            <button
+                              onClick={() => setReferenceImages((prev) => prev.filter((_, idx) => idx !== i))}
+                              className="absolute -top-1 -right-1 p-0.5 bg-red-500/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                            <p className="text-[10px] text-muted truncate max-w-[64px]">{img.name}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <label className="w-full py-4 border border-dashed border-rule rounded-lg flex items-center justify-center gap-2 hover:border-rule-strong transition-colors text-muted cursor-pointer text-sm">
+                      {uploadingImages ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <ImageIcon className="w-4 h-4" />
+                      )}
+                      {uploadingImages ? "Uploading..." : "Add images or logos"}
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                        multiple
+                        onChange={handleReferenceImageUpload}
+                        className="hidden"
+                        disabled={uploadingImages}
+                      />
+                    </label>
+                  </div>
+
+                  {/* Website URL (Optional) */}
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-widest text-muted uppercase">
+                      Website URL (Optional)
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-muted flex-shrink-0" />
+                      <input
+                        type="url"
+                        value={referenceSourceUrl}
+                        onChange={(e) => setReferenceSourceUrl(e.target.value)}
+                        placeholder="https://yourproduct.com"
+                        className="w-full px-3 py-2 bg-paper-2 border border-rule focus:border-rule-strong focus:outline-none transition-colors text-sm rounded-lg"
+                      />
+                    </div>
+                    <p className="text-xs text-subtle">
+                      Scrape brand colors, copy, and style from your website
+                    </p>
+                  </div>
+
+                  {/* Strip Reference Audio */}
+                  <div className="flex items-center justify-between py-2">
+                    <div>
+                      <p className="text-sm text-ink/80">Use reference audio</p>
+                      <p className="text-xs text-subtle">Extract and reuse the audio from the reference video</p>
+                    </div>
+                    <button
+                      onClick={() => setStripReferenceAudio(!stripReferenceAudio)}
+                      className={`relative w-10 h-5 rounded-full transition-colors ${
+                        stripReferenceAudio ? "bg-ink" : "bg-paper-3"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full transition-transform ${
+                          stripReferenceAudio ? "translate-x-5 bg-black" : "translate-x-0 bg-rule-strong"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* === PRODUCT DEMO MODE === */}
+              {flowMode === "product-demo" && (
+                <>
+                  {/* URL Input */}
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-widest text-muted uppercase">
+                      Product URL (Optional)
+                    </label>
+                    <input
+                      type="url"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      placeholder="https://example.com/product"
+                      className="w-full px-4 py-4 bg-paper-2 border border-rule focus:border-rule-strong focus:outline-none transition-colors text-base rounded-lg"
+                    />
+                  </div>
+
+                  {/* Description Input - Wider */}
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-widest text-muted uppercase">
+                      Description
+                    </label>
+                    <textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Describe your product, what it does, and what makes it special..."
+                      rows={6}
+                      className="w-full px-4 py-4 bg-paper-2 border border-rule focus:border-rule-strong focus:outline-none transition-colors resize-none text-base rounded-lg"
+                    />
+                  </div>
+
+                  {/* Video Preset */}
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-widest text-muted uppercase">
+                      Video Preset
+                    </label>
+                    <select
+                      value={preset}
+                      onChange={(e) => setPreset(e.target.value as PresetKey)}
+                      className="w-full px-4 py-3 bg-paper-2 border border-rule focus:border-rule-strong focus:outline-none rounded-lg"
+                    >
+                      {Object.entries(PRESETS).map(([key, p]) => (
+                        <option key={key} value={key}>
+                          {p.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
+
+              {/* Duration */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs tracking-widest text-muted uppercase">
+                    Duration
+                  </label>
+                  <span className="text-sm text-muted">
+                    {duration}s
+                    {selectedAudio?.duration &&
+                    duration > selectedAudio.duration
+                      ? ` (capped at ${Math.floor(selectedAudio.duration)}s — audio length)`
+                      : selectedAudio?.duration
+                        ? ` / ${Math.floor(selectedAudio.duration)}s max`
+                        : ""}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="10"
+                  max={
+                    selectedAudio?.duration
+                      ? Math.floor(selectedAudio.duration)
+                      : 120
+                  }
+                  step="1"
+                  value={Math.min(
+                    duration,
+                    selectedAudio?.duration
+                      ? Math.floor(selectedAudio.duration)
+                      : 120,
+                  )}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value);
+                    const maxAllowed = selectedAudio?.duration
+                      ? Math.floor(selectedAudio.duration)
+                      : 120;
+                    setDuration(Math.min(val, maxAllowed));
+                  }}
+                  className="w-full h-2 bg-paper-3 rounded-lg appearance-none cursor-pointer accent-white"
+                />
+                {selectedAudio?.duration && (
+                  <p className="text-xs text-subtle">
+                    Max duration is locked to your selected audio track (
+                    {Math.floor(selectedAudio.duration)}s)
+                  </p>
+                )}
+              </div>
+
+              {/* Aspect Ratio */}
+              <div className="space-y-2">
+                <label className="text-xs tracking-widest text-muted uppercase">
+                  Aspect Ratio
+                </label>
+                <div className="flex gap-2">
+                  {(Object.keys(ASPECT_RATIOS) as AspectRatioKey[]).map(
+                    (ratio) => (
+                      <button
+                        key={ratio}
+                        onClick={() => setAspectRatio(ratio)}
+                        className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                          aspectRatio === ratio
+                            ? "bg-paper-3 text-ink border border-rule-strong"
+                            : "bg-paper-2 text-muted border border-rule hover:bg-paper-3"
+                        }`}
+                      >
+                        {ASPECT_RATIOS[ratio].label}
+                      </button>
+                    ),
+                  )}
+                </div>
+              </div>
+
+              {/* Feature Toggles — Product Demo only */}
+              {flowMode === "product-demo" && (
+                <div className="space-y-3">
+                  <label className="text-xs tracking-widest text-muted uppercase">
+                    Features
+                  </label>
+                  {[
+                    {
+                      key: "nanoBanana" as const,
+                      label: "AI Image Gen",
+                      desc: "Generate images with Gemini Flash",
+                    },
+                    {
+                      key: "stockImages" as const,
+                      label: "Stock Images",
+                      desc: "Include stock photography",
+                    },
+                    {
+                      key: "animatedComponents" as const,
+                      label: "Animated Components",
+                      desc: "Use animated UI elements",
+                    },
+                  ].map(({ key, label, desc }) => (
+                    <div
+                      key={key}
+                      className="flex items-center justify-between py-2"
+                    >
+                      <div>
+                        <div className="text-sm text-ink/80">{label}</div>
+                        <div className="text-xs text-subtle">{desc}</div>
+                      </div>
+                      <button
+                        onClick={() =>
+                          setToggles((prev) => ({ ...prev, [key]: !prev[key] }))
+                        }
+                        className={`relative w-10 h-5 rounded-full transition-colors ${
+                          toggles[key] ? "bg-paper-3" : "bg-paper-3"
+                        }`}
+                      >
+                        <div
+                          className={`absolute top-0.5 w-4 h-4 rounded-full transition-transform ${
+                            toggles[key]
+                              ? "translate-x-5 bg-ink"
+                              : "translate-x-0.5 bg-rule-strong"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Narration (ElevenLabs voice-over) */}
+              <NarrationPanel
+                state={narration}
+                onChange={setNarration}
+                vpsApiUrl={VPS_API_URL}
+                getToken={getVpsToken}
+              />
+
+              {/* Audio Selector */}
+              <AudioSelector
+                selectedAudio={selectedAudio}
+                onSelect={setSelectedAudio}
+              />
+
+              {/* Recordings — Product Demo only */}
+              {flowMode !== "reference-video" && (
+              /* Recordings */
+              <div className="space-y-3">
+                <label className="text-xs tracking-widest text-muted uppercase">
+                  Screen Recordings
+                </label>
+                {recordings.length === 0 ? (
+                  <button
+                    onClick={() => setShowRecordingModal(true)}
+                    className="w-full py-4 border-2 border-dashed border-rule rounded-lg flex items-center justify-center gap-3 hover:border-rule-strong transition-colors text-muted"
+                  >
+                    <Monitor className="w-5 h-5" />
+                    <span>Add a screen recording</span>
+                  </button>
+                ) : (
+                  <div className="space-y-3">
+                    {recordings.map((recording) => {
+                      const isProcessing =
+                        recording.processingStatus === "pending" ||
+                        recording.processingStatus === "processing";
+                      const progress = recordingProgress[recording.id] || 0;
+                      const hasProcessedVideo = !!recording.processedVideoUrl;
+                      const isFailed = recording.processingStatus === "failed";
+
+                      return (
+                        <div
+                          key={recording.id}
+                          className="bg-paper-2 border border-rule p-4 rounded-lg"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`w-2 h-2 rounded-full ${
+                                  hasProcessedVideo
+                                    ? "bg-ink"
+                                    : isFailed
+                                      ? "bg-red-400"
+                                      : isProcessing
+                                        ? "bg-ink animate-pulse"
+                                        : "bg-rule-strong"
+                                }`}
+                              />
+                              <span className="text-sm">
+                                {recording.featureName}
+                              </span>
+                              <span className="text-xs text-muted">
+                                {formatTime(Math.round(recording.duration))}
+                              </span>
+                              {hasProcessedVideo ? (
+                                <span className="text-xs text-ink">
+                                  Ready
+                                </span>
+                              ) : isFailed ? (
+                                <span className="text-xs text-red-400">
+                                  Failed
+                                </span>
+                              ) : isProcessing ? (
+                                <span className="text-xs text-ink flex items-center gap-1">
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                  Processing{" "}
+                                  {progress > 0 ? `${progress}%` : ""}
+                                </span>
+                              ) : null}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => {
+                                  setEditingRecording(recording);
+                                  setEditTrimStart(recording.trimStart);
+                                  setEditTrimEnd(recording.trimEnd);
+                                  setEditMockupFrame(
+                                    recording.mockupFrame || "minimal",
+                                  );
+                                  setEditCursorStyle(
+                                    recording.cursorStyle || "hand",
+                                  );
+                                  setRecordingFeatureName(
+                                    recording.featureName,
+                                  );
+                                  setRecordingDescription(
+                                    recording.description,
+                                  );
+                                  setShowRecordingModal(true);
+                                }}
+                                className="text-muted hover:text-ink"
+                                title="Edit recording"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                  />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (
+                                    !confirm(
+                                      `Discard recording "${recording.featureName}"?`,
+                                    )
+                                  )
+                                    return;
+                                  try {
+                                    await fetch(
+                                      `/api/recordings/${recording.id}`,
+                                      { method: "DELETE" },
+                                    );
+                                  } catch (err) {
+                                    console.error(
+                                      "Failed to delete recording:",
+                                      err,
+                                    );
+                                  }
+                                  setRecordings((prev) =>
+                                    prev.filter((r) => r.id !== recording.id),
+                                  );
+                                }}
+                                className="text-muted hover:text-red-400"
+                                title="Discard recording"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <button
+                      onClick={() => setShowRecordingModal(true)}
+                      className="w-full py-2 text-sm text-muted hover:text-ink transition-colors"
+                    >
+                      + Add Another
+                    </button>
+                  </div>
+                )}
+              </div>
+              )}
+
+              {/* Progress Bar - Show during generation */}
+              {loading && generationProgress > 0 && (
+                <div className="bg-paper-2 border border-rule rounded-lg p-4">
+                  <ProgressBar
+                    progress={generationProgress}
+                    status={generationStatus}
+                  />
+                </div>
+              )}
+
+              {/* Generate Button */}
+              <Button
+                onClick={flowMode === "reference-video" ? handleReferenceGenerate : handleGenerate}
+                disabled={
+                  loading ||
+                  !description.trim() ||
+                  hasNoCredits ||
+                  (flowMode === "reference-video" && !referenceVideoFile && !referenceVideoUrl)
+                }
+                className="w-full rounded-lg py-6 text-lg"
+                size="lg"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="animate-spin h-5 w-5" />
+                    {uploadingReference ? "Uploading Video..." : flowMode === "reference-video" ? "Recreating Video..." : "Generating Script..."}
+                  </span>
+                ) : hasNoCredits ? (
+                  "No Credits Available"
+                ) : flowMode === "reference-video" ? (
+                  "Recreate from Reference (5 credits)"
+                ) : (
+                  "Generate Script"
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* SCRIPT TAB - Visual Scene Editor */}
+        {activeTab === "script" && (
+          <div className="max-w-7xl mx-auto px-6 py-8">
+            {/* Loading State - Script is being generated */}
+            {loading && !editableScript && (
+              <div className="min-h-[60vh] flex flex-col items-center justify-center">
+                <div className="w-full max-w-lg space-y-8">
+                  {/* Animated Icon */}
+                  <div className="flex justify-center">
+                    <div className="relative">
+                      <Loader2 className="w-16 h-16 animate-spin text-purple-500" />
+                      <div className="absolute inset-0 w-16 h-16 animate-ping rounded-full bg-purple-500/20" />
+                    </div>
+                  </div>
+
+                  {/* Status Text */}
+                  <div className="text-center space-y-2">
+                    <h2 className="text-2xl font-light">
+                      Generating Your Script
+                    </h2>
+                    <p className="text-muted">
+                      {generationStatus || "Initializing AI..."}
+                    </p>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="bg-paper-2 border border-rule rounded-lg p-6">
+                    <ProgressBar
+                      progress={generationProgress}
+                      status={generationStatus}
+                    />
+                  </div>
+
+                  {/* Loading Steps */}
+                  <div className="space-y-3 text-sm">
+                    {[
+                      { label: "Analyzing your product", threshold: 20 },
+                      { label: "Extracting key features", threshold: 40 },
+                      { label: "Crafting video scenes", threshold: 60 },
+                      { label: "Optimizing script flow", threshold: 80 },
+                      { label: "Finalizing", threshold: 100 },
+                    ].map((step, idx) => (
+                      <div
+                        key={idx}
+                        className={`flex items-center gap-3 transition-opacity duration-300 ${
+                          generationProgress >= step.threshold
+                            ? "opacity-100"
+                            : "opacity-30"
+                        }`}
+                      >
+                        <div
+                          className={`w-2 h-2 rounded-full ${
+                            generationProgress >= step.threshold
+                              ? "bg-ink"
+                              : "bg-rule-strong"
+                          }`}
+                        />
+                        <span
+                          className={
+                            generationProgress >= step.threshold
+                              ? "text-ink/80"
+                              : "text-subtle"
+                          }
+                        >
+                          {step.label}
+                        </span>
+                        {generationProgress >= step.threshold &&
+                          generationProgress < step.threshold + 20 && (
+                            <Loader2 className="w-3 h-3 animate-spin ml-auto text-purple-400" />
+                          )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Script Ready State */}
+            {editableScript && (
+              <>
+                {/* Script Header */}
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h2 className="text-2xl font-light mb-1">Video Script</h2>
+                    <p className="text-muted">
+                      {editableScript.scenes.length} scenes •{" "}
+                      {Math.round(editableScript.totalDuration / 30)}s
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      onClick={async () => {
+                        await saveProject({ script: editableScript });
+                        toast.success("Script saved to project");
+                      }}
+                      variant="outline"
+                      disabled={saving || !editableScript}
+                      className="rounded-lg"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      {saving ? "Saving..." : "Save Script"}
+                    </Button>
+                    <Button
+                      onClick={handleContinueGeneration}
+                      disabled={loading || hasNoCredits}
+                      className="rounded-lg"
+                      size="lg"
+                    >
+                      {loading ? (
+                        <span className="flex items-center gap-2">
+                          <Loader2 className="animate-spin h-5 w-5" />
+                          Generating Video...
+                        </span>
+                      ) : hasNoCredits ? (
+                        "No Credits Available"
+                      ) : (
+                        "Approve & Generate Video"
+                      )}
+                    </Button>
+                    <Button
+                      onClick={() => setShowFullPreview(!showFullPreview)}
+                      variant="outline"
+                      className="rounded-lg"
+                    >
+                      {showFullPreview ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                      <span className="ml-2">
+                        {showFullPreview ? "Hide" : "Show"} Full Preview
+                      </span>
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Progress Bar - Show during generation */}
+                {loading && generationProgress > 0 && (
+                  <div className="mb-6 bg-paper-2 border border-rule rounded-lg p-4">
+                    <ProgressBar
+                      progress={generationProgress}
+                      status={generationStatus}
+                    />
+                  </div>
+                )}
+
+                {/* Full Video Preview - Only shown when requested */}
+                {showFullPreview && (
+                  <div className="mb-8 aspect-video bg-black rounded-xl overflow-hidden border border-rule">
+                    <Player
+                      component={CompositionComponent}
+                      durationInFrames={totalDuration}
+                      fps={30}
+                      compositionWidth={1920}
+                      compositionHeight={1080}
+                      style={{ width: "100%", height: "100%" }}
+                      controls
+                      loop
+                    />
+                  </div>
+                )}
+
+                {/* Screenshot & Logo Selection */}
+                <div className="mb-8 bg-paper-2 border border-rule rounded-xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium text-ink flex items-center gap-2">
+                      <ImageIcon className="w-5 h-5 text-purple-400" />
+                      Screenshots
+                    </h3>
+                  </div>
+
+                  <ScreenshotSelector
+                    screenshots={scrapedScreenshots}
+                    logos={extractedLogos}
+                    onSelectionChange={setSelectedScreenshots}
+                    onUpload={(uploaded) => {
+                      setScrapedScreenshots((prev) => [...prev, ...uploaded]);
+                      setSelectedScreenshots((prev) => [...prev, ...uploaded]);
+                      setProductData((prev: any) => ({
+                        ...prev,
+                        screenshots: [
+                          ...(prev?.screenshots || []),
+                          ...uploaded,
+                        ],
+                      }));
+                    }}
+                    isAnalyzing={isAnalyzingScreenshots}
+                    projectId={projectId}
+                  />
+                </div>
+
+                {/* Scenes Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {editableScript.scenes.map((scene, idx) => (
+                    <div
+                      key={scene.id}
+                      className={`bg-paper-2 border rounded-xl overflow-hidden transition-all ${
+                        selectedSceneId === scene.id
+                          ? "border-purple-500 ring-2 ring-purple-500/20"
+                          : "border-rule"
+                      }`}
+                      onClick={() => setSelectedSceneId(scene.id)}
+                    >
+                      {/* Scene Preview */}
+                      <div className="aspect-video bg-black relative">
+                        <Player
+                          component={() => <ScenePreview scene={scene} />}
+                          durationInFrames={scene.endFrame - scene.startFrame}
+                          fps={30}
+                          compositionWidth={1920}
+                          compositionHeight={1080}
+                          style={{ width: "100%", height: "100%" }}
+                          controls
+                          loop
+                        />
+                        <div className="absolute top-2 left-2 bg-black/70 px-2 py-1 rounded text-xs">
+                          Scene {idx + 1}
+                        </div>
+                        <div className="absolute top-2 right-2 bg-paper-3 px-2 py-1 rounded text-xs">
+                          {Math.round((scene.endFrame - scene.startFrame) / 30)}
+                          s
+                        </div>
+                      </div>
+
+                      {/* Scene Editor */}
+                      <div className="p-4 space-y-4">
+                        {/* Scene Type */}
+                        <select
+                          value={scene.type}
+                          onChange={(e) => {
+                            setIsSceneUpdating(scene.id);
+                            handleUpdateScene(scene.id, {
+                              type: e.target.value as any,
+                            });
+                            setTimeout(() => setIsSceneUpdating(null), 500);
+                          }}
+                          disabled={isSceneUpdating === scene.id}
+                          className="w-full px-3 py-2 bg-paper-2 border border-rule rounded text-sm focus:border-rule-strong focus:outline-none disabled:opacity-50"
+                        >
+                          <option value="intro">Intro</option>
+                          <option value="feature">Feature</option>
+                          <option value="tagline">Tagline</option>
+                          <option value="value-prop">Value Prop</option>
+                          <option value="screenshot">Screenshot</option>
+                          <option value="testimonial">Testimonial</option>
+                          <option value="recording">Recording</option>
+                          <option value="cta">CTA</option>
+                        </select>
+
+                        {/* Headline */}
+                        <input
+                          type="text"
+                          value={
+                            pendingSceneText[scene.id]?.headline ??
+                            scene.content.headline ??
+                            ""
+                          }
+                          onChange={(e) => {
+                            const newValue = e.target.value;
+                            setPendingSceneText((prev) => ({
+                              ...prev,
+                              [scene.id]: {
+                                ...prev[scene.id],
+                                headline: newValue,
+                              },
+                            }));
+                            debouncedUpdateScene(scene.id, {
+                              content: { ...scene.content, headline: newValue },
+                            });
+                          }}
+                          onBlur={() => {
+                            flushSceneUpdate(scene.id);
+                            handleUpdateScene(scene.id, {
+                              content: {
+                                ...scene.content,
+                                headline:
+                                  pendingSceneText[scene.id]?.headline ??
+                                  scene.content.headline,
+                              },
+                            });
+                            setPendingSceneText((prev) => {
+                              const next = { ...prev };
+                              delete next[scene.id];
+                              return next;
+                            });
+                          }}
+                          placeholder="Headline"
+                          className="w-full px-3 py-2 bg-paper-2 border border-rule rounded text-sm focus:border-rule-strong focus:outline-none"
+                        />
+
+                        {/* Subtext */}
+                        <input
+                          type="text"
+                          value={
+                            pendingSceneText[scene.id]?.subtext ??
+                            scene.content.subtext ??
+                            ""
+                          }
+                          onChange={(e) => {
+                            const newValue = e.target.value;
+                            setPendingSceneText((prev) => ({
+                              ...prev,
+                              [scene.id]: {
+                                ...prev[scene.id],
+                                subtext: newValue,
+                              },
+                            }));
+                            debouncedUpdateScene(scene.id, {
+                              content: { ...scene.content, subtext: newValue },
+                            });
+                          }}
+                          onBlur={() => {
+                            flushSceneUpdate(scene.id);
+                            handleUpdateScene(scene.id, {
+                              content: {
+                                ...scene.content,
+                                subtext:
+                                  pendingSceneText[scene.id]?.subtext ??
+                                  scene.content.subtext,
+                              },
+                            });
+                            setPendingSceneText((prev) => {
+                              const next = { ...prev };
+                              delete next[scene.id];
+                              return next;
+                            });
+                          }}
+                          placeholder="Subtext (optional)"
+                          className="w-full px-3 py-2 bg-paper-2 border border-rule rounded text-sm focus:border-rule-strong focus:outline-none text-muted"
+                        />
+
+                        {/* Recording/Screenshot Buttons */}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setShowRecordingModal(true)}
+                            disabled={isSceneUpdating === scene.id}
+                            className="flex-1 flex items-center justify-center gap-2 py-2 bg-paper-2 border border-rule rounded text-xs hover:bg-paper-3 transition-colors disabled:opacity-50"
+                          >
+                            {isSceneUpdating === scene.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Video className="w-3 h-3" />
+                            )}
+                            {isSceneUpdating === scene.id
+                              ? "Updating..."
+                              : "Add Recording"}
+                          </button>
+                          <label className="flex-1 flex items-center justify-center gap-2 py-2 bg-paper-2 border border-rule rounded text-xs hover:bg-paper-3 transition-colors cursor-pointer">
+                            <ImageIcon className="w-3 h-3" />
+                            Add Screenshot
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const url = URL.createObjectURL(file);
+                                  handleAddScreenshotToScene(scene.id, url);
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
+
+                        {/* Scene Actions */}
+                        <div className="flex items-center justify-between pt-2 border-t border-rule">
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() =>
+                                idx > 0 && handleReorderScene(idx, idx - 1)
+                              }
+                              disabled={idx === 0 || isSceneUpdating !== null}
+                              className="p-1 text-muted hover:text-ink disabled:opacity-20"
+                            >
+                              <ChevronLeft className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() =>
+                                idx < editableScript.scenes.length - 1 &&
+                                handleReorderScene(idx, idx + 1)
+                              }
+                              disabled={
+                                idx === editableScript.scenes.length - 1 ||
+                                isSceneUpdating !== null
+                              }
+                              className="p-1 text-muted hover:text-ink disabled:opacity-20"
+                            >
+                              <ChevronRight className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setIsSceneUpdating(scene.id);
+                              handleRemoveScene(scene.id);
+                              setTimeout(() => setIsSceneUpdating(null), 500);
+                            }}
+                            disabled={isSceneUpdating !== null}
+                            className="p-1 text-muted hover:text-red-400 disabled:opacity-20"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Add Scene Button */}
+                  <button
+                    onClick={handleAddScene}
+                    disabled={isSceneUpdating !== null}
+                    className="aspect-[4/3] border-2 border-dashed border-rule rounded-xl flex flex-col items-center justify-center gap-3 hover:border-rule-strong transition-colors text-muted disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Plus className="w-8 h-8" />
+                    <span className="text-sm">
+                      {isSceneUpdating !== null ? "Updating..." : "Add Scene"}
+                    </span>
+                  </button>
+                </div>
+
+                {/* Chat-based editing */}
+                <div className="mt-8 bg-paper-2 border border-rule rounded-xl p-4">
+                  {scriptChatHistory.length > 0 && (
+                    <div className="max-h-32 overflow-y-auto mb-4 space-y-2">
+                      {scriptChatHistory.map((msg, i) => (
+                        <div
+                          key={i}
+                          className={`text-sm ${msg.role === "user" ? "text-ink/80" : "text-purple-400"}`}
+                        >
+                          <span className="text-subtle font-mono text-xs">
+                            {msg.role === "user" ? "you" : "ai"}:
+                          </span>{" "}
+                          {msg.text}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={scriptChatInput}
+                      onChange={(e) => setScriptChatInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleScriptChat();
+                        }
+                      }}
+                      placeholder="Edit by chat... e.g. 'make the intro longer'"
+                      className="flex-1 px-4 py-3 bg-paper-2 border border-rule rounded-lg focus:border-rule-strong focus:outline-none"
+                      disabled={scriptChatLoading}
+                    />
+                    <button
+                      onClick={handleScriptChat}
+                      disabled={scriptChatLoading || !scriptChatInput.trim()}
+                      className="px-4 py-3 bg-paper-3 rounded-lg text-muted hover:text-ink disabled:opacity-30 transition-colors"
+                    >
+                      {scriptChatLoading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Send className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* PREVIEW TAB - Final Video */}
+        {activeTab === "preview" && (
+          <div className="max-w-7xl mx-auto px-6 py-8">
+            {/* Full Loading State - Show during rendering */}
+            {(rendering || isGeneratingVideo) && !renderedVideoUrl && (
+              <div className="min-h-[50vh] flex flex-col items-center justify-center mb-8">
+                <div className="w-full max-w-lg space-y-8">
+                  <div className="flex justify-center">
+                    <div className="relative">
+                      <Loader2 className="w-16 h-16 animate-spin text-purple-500" />
+                      <div className="absolute inset-0 w-16 h-16 animate-ping rounded-full bg-purple-500/20" />
+                    </div>
+                  </div>
+                  <div className="text-center space-y-2">
+                    <h2 className="text-2xl font-light">Rendering Your Video</h2>
+                    <p className="text-muted">{generationStatus || "Preparing render..."}</p>
+                    <p className="text-subtle text-sm">This typically takes 2-4 minutes depending on video length</p>
+                  </div>
+                  <div className="bg-paper-2 border border-rule rounded-lg p-6">
+                    <ProgressBar
+                      progress={rendering ? renderProgress : generationProgress}
+                      status={generationStatus || "Rendering video..."}
+                    />
+                  </div>
+                  <div className="space-y-3 text-sm">
+                    {[
+                      { label: "Creative direction", threshold: 5 },
+                      { label: "Generating composition", threshold: 20 },
+                      { label: "Rendering frames", threshold: 50 },
+                      { label: "Encoding & uploading", threshold: 85 },
+                    ].map((step, idx) => {
+                      const prog = rendering ? renderProgress : generationProgress;
+                      return (
+                        <div key={idx} className={`flex items-center gap-3 transition-opacity duration-300 ${prog >= step.threshold ? "opacity-100" : "opacity-30"}`}>
+                          <div className={`w-2 h-2 rounded-full ${prog >= step.threshold ? "bg-ink" : "bg-rule-strong"}`} />
+                          <span className={prog >= step.threshold ? "text-ink/80" : "text-subtle"}>{step.label}</span>
+                          {prog >= step.threshold && prog < step.threshold + 20 && (
+                            <Loader2 className="w-3 h-3 animate-spin ml-auto text-purple-400" />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Compact progress for re-renders */}
+            {(rendering || (isGeneratingVideo && loading)) && renderedVideoUrl && (
+              <div className="mb-8 bg-paper-2 border border-rule rounded-lg p-6">
+                <ProgressBar
+                  progress={rendering ? renderProgress : generationProgress}
+                  status={generationStatus || "Rendering video..."}
+                />
+              </div>
+            )}
+
+            {renderedVideoUrl ? (
+              <div className="max-w-4xl mx-auto space-y-6">
+                {/* Video Preview + Edit Chat */}
+                <div className="space-y-6">
+                  <div className="aspect-video bg-black rounded-xl overflow-hidden border border-rule">
+                    <video
+                      ref={editVideoRef}
+                      src={`${renderedVideoUrl}?v=${renderVersion}`}
+                      controls
+                      className="w-full h-full"
+                      autoPlay={false}
+                      key={`${renderedVideoUrl}-${renderVersion}`}
+                    />
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-wrap justify-center gap-4">
+                    <Button asChild size="lg" className="rounded-lg">
+                      <a
+                        href={`${renderedVideoUrl}?v=${renderVersion}`}
+                        download
+                        className="inline-flex items-center gap-2"
+                      >
+                        <Download className="w-5 h-5" />
+                        Download Video
+                      </a>
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="rounded-lg"
+                      onClick={() => router.push("/projects")}
+                    >
+                      Back to Projects
+                    </Button>
+                  </div>
+
+                  {/* Edit Progress */}
+                  {editProgress > 0 && editProgress < 100 && (
+                    <div className="bg-paper-2 border border-rule rounded-lg p-4">
+                      <ProgressBar
+                        progress={editProgress}
+                        status={editStatus}
+                      />
+                    </div>
+                  )}
+
+                  {/* Edit Chat - Always visible */}
+                  {remotionCode && (
+                    <div className="bg-paper-2 border border-rule rounded-xl p-4">
+                      <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
+                        <Edit2 className="w-5 h-5" />
+                        Edit Video via Chat
+                      </h3>
+                      <p className="text-sm text-muted mb-4">
+                        Describe changes you want to make to the video
+                      </p>
+
+                      {/* Chat History */}
+                      {videoEditHistory.length > 0 && (
+                        <div className="max-h-64 overflow-y-auto mb-4 space-y-3">
+                          {videoEditHistory.map((msg, i) => (
+                            <div
+                              key={i}
+                              className={`text-sm ${msg.role === "user" ? "text-ink/80" : "text-purple-400"}`}
+                            >
+                              <span className="text-subtle font-mono text-xs">
+                                {msg.role === "user" ? "you" : "ai"}:
+                              </span>{" "}
+                              {msg.text}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Edit Input */}
+                      <div className="space-y-3">
+                        <textarea
+                          value={videoEditInput}
+                          onChange={(e) => setVideoEditInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              e.preventDefault();
+                              handleVideoEdit();
+                            }
+                          }}
+                          placeholder="e.g., 'make the intro faster', 'change the colors to blue', 'add more zoom effects'"
+                          rows={3}
+                          className="w-full px-4 py-3 bg-paper-2 border border-rule rounded-lg text-sm resize-none"
+                          disabled={videoEditLoading}
+                        />
+                        <Button
+                          onClick={handleVideoEdit}
+                          disabled={videoEditLoading || !videoEditInput.trim()}
+                          className="w-full"
+                        >
+                          {videoEditLoading ? (
+                            <span className="flex items-center gap-2">
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Editing...
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-2">
+                              <Send className="w-4 h-4" />
+                              Apply Edit
+                            </span>
+                          )}
+                        </Button>
+                      </div>
+
+                      {/* Quick Edit Suggestions */}
+                      <div className="mt-4 pt-4 border-t border-rule">
+                        <h4 className="text-sm font-medium mb-3 text-muted">
+                          Quick Edits
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            "Make it faster",
+                            "Change colors to blue",
+                            "Add more zoom",
+                            "Make text bigger",
+                            "Add background effects",
+                            "Slow down intro",
+                          ].map((suggestion) => (
+                            <button
+                              key={suggestion}
+                              onClick={() => setVideoEditInput(suggestion)}
+                              className="px-3 py-1.5 text-xs bg-paper-2 hover:bg-paper-3 border border-rule rounded-full transition-colors"
+                            >
+                              {suggestion}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : !isGeneratingVideo && !rendering ? (
+              <div className="text-center py-24">
+                <div className="text-6xl mb-4">🎬</div>
+                <h2 className="text-2xl font-light mb-2">
+                  No Video Generated Yet
+                </h2>
+                <p className="text-muted mb-6">
+                  Approve your script to generate the final video
+                </p>
+                <Button
+                  onClick={() => setActiveTab("script")}
+                  size="lg"
+                  className="rounded-lg"
+                >
+                  Go to Script
+                </Button>
+              </div>
+            ) : null}
+          </div>
+        )}
+      </main>
+
+      {/* Recording Modal */}
+      {showRecordingModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0"
+            onClick={() => {
+              if (!isRecording && !uploading) {
+                setShowRecordingModal(false);
+                setEditingRecording(null);
+              }
+            }}
+          />
+          <div className="relative max-w-2xl w-full bg-paper-2 border border-rule rounded-xl p-8 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-light">
+                {editingRecording
+                  ? "Edit Recording"
+                  : isRecording
+                    ? "Recording..."
+                    : "Add Recording"}
+              </h2>
+              <button
+                onClick={() => {
+                  if (!isRecording && !uploading) {
+                    setShowRecordingModal(false);
+                    setEditingRecording(null);
+                  }
+                }}
+                className="text-muted hover:text-ink"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {editingRecording ? (
+              <div className="space-y-5">
+                <video
+                  ref={editVideoRef}
+                  src={editingRecording.videoUrl}
+                  controls
+                  className="w-full max-h-[300px] bg-black rounded-lg"
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-muted mb-1 block">
+                      Start (s)
+                    </label>
+                    <input
+                      type="number"
+                      value={editTrimStart}
+                      onChange={(e) =>
+                        setEditTrimStart(
+                          Math.max(0, parseFloat(e.target.value) || 0),
+                        )
+                      }
+                      min={0}
+                      max={editTrimEnd}
+                      step={0.1}
+                      className="w-full px-3 py-2 bg-paper-2 border border-rule rounded focus:border-rule-strong focus:outline-none text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted mb-1 block">
+                      End (s)
+                    </label>
+                    <input
+                      type="number"
+                      value={editTrimEnd}
+                      onChange={(e) =>
+                        setEditTrimEnd(
+                          Math.min(
+                            editingRecording.duration,
+                            parseFloat(e.target.value) || 0,
+                          ),
+                        )
+                      }
+                      min={editTrimStart}
+                      max={editingRecording.duration}
+                      step={0.1}
+                      className="w-full px-3 py-2 bg-paper-2 border border-rule rounded focus:border-rule-strong focus:outline-none text-sm"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleSaveRecordingEdit}
+                  className="w-full rounded-lg"
+                  size="lg"
+                >
+                  Save Recording
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-xs tracking-widest text-muted uppercase mb-2">
+                      Feature Name
+                    </label>
+                    <input
+                      type="text"
+                      value={recordingFeatureName}
+                      onChange={(e) => setRecordingFeatureName(e.target.value)}
+                      placeholder="e.g., Smart Search"
+                      className="w-full px-4 py-3 bg-paper-2 border border-rule rounded-lg focus:border-rule-strong focus:outline-none text-sm"
+                      disabled={isRecording}
+                    />
+                  </div>
+                </div>
+
+                {!isRecording && (
+                  <>
+                    <div className="flex gap-1 mb-4">
+                      <button
+                        onClick={() => setRecordingMode("record")}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm rounded-lg transition-colors ${
+                          recordingMode === "record"
+                            ? "bg-paper-3 text-ink border border-rule-strong"
+                            : "bg-paper-2 text-muted border border-rule hover:text-ink"
+                        }`}
+                      >
+                        <Monitor className="w-4 h-4" />
+                        Record
+                      </button>
+                      <button
+                        onClick={() => setRecordingMode("upload")}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm rounded-lg transition-colors ${
+                          recordingMode === "upload"
+                            ? "bg-paper-3 text-ink border border-rule-strong"
+                            : "bg-paper-2 text-muted border border-rule hover:text-ink"
+                        }`}
+                      >
+                        <Upload className="w-4 h-4" />
+                        Upload
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                <div className="flex flex-col items-center gap-4">
+                  {recordingMode === "record" ? (
+                    !isRecording ? (
+                      <>
+                        <Button
+                          onClick={startRecording}
+                          disabled={!recordingFeatureName.trim()}
+                          size="lg"
+                          className="rounded-lg flex items-center gap-2"
+                        >
+                          <Monitor className="w-5 h-5" />
+                          Start Recording
+                        </Button>
+                        <p className="text-xs text-subtle">
+                          Select a window or tab to capture
+                        </p>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center gap-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                          <span className="font-mono text-2xl text-red-400">
+                            {formatTime(recordingTime)}
+                          </span>
+                        </div>
+                        <Button
+                          variant="destructive"
+                          size="lg"
+                          onClick={stopRecording}
+                          className="rounded-lg"
+                        >
+                          Stop Recording
+                        </Button>
+                      </div>
+                    )
+                  ) : (
+                    <div className="w-full space-y-4">
+                      <label className="flex flex-col items-center gap-3 p-8 border-2 border-dashed border-rule hover:border-rule-strong cursor-pointer transition-colors rounded-lg">
+                        <Upload className="w-8 h-8 text-muted" />
+                        <span className="text-sm text-muted">
+                          {uploadFile
+                            ? uploadFile.name
+                            : "Drop video file or click to browse"}
+                        </span>
+                        <input
+                          type="file"
+                          accept="video/*"
+                          className="hidden"
+                          onChange={(e) =>
+                            setUploadFile(e.target.files?.[0] || null)
+                          }
+                        />
+                      </label>
+                      {uploadFile && (
+                        <Button
+                          onClick={handleUpload}
+                          disabled={uploading || !recordingFeatureName.trim()}
+                          className="w-full rounded-lg"
+                          size="lg"
+                        >
+                          {uploading ? (
+                            <span className="flex items-center gap-2">
+                              <Loader2 className="animate-spin h-5 w-5" />
+                              Uploading...
+                            </span>
+                          ) : (
+                            "Upload"
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
