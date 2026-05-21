@@ -199,6 +199,11 @@ LOG_LEVEL=info
 # Server
 PORT=3001
 
+# Repo root — used by generate-server to spawn `remotion` CLI from the
+# correct cwd. Must point to the directory containing remotion/Root.tsx
+# and the root node_modules with @remotion/cli installed.
+REPO_ROOT=/opt/remawt
+
 # API Key (shared with Vercel frontend)
 API_KEY=
 
@@ -258,6 +263,9 @@ fi
 # ==========================================================
 log "Setting file ownership..."
 chown -R "$APP_USER:$APP_USER" "$APP_DIR"
+
+log "Installing root dependencies (needed for remotion CLI)..."
+sudo -u "$APP_USER" bash -c "cd $APP_DIR && pnpm install --prod=false"
 
 log "Installing generate-server dependencies..."
 sudo -u "$APP_USER" bash -c "cd $APP_DIR/generate-server && pnpm install"
