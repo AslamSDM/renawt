@@ -8,7 +8,8 @@ import { generateVideoFromScreenshot } from "../lib/agents/urlToJitter";
 
 const router: Router = Router();
 
-const REPO_ROOT = resolve(__dirname, "../..");
+const REPO_ROOT =
+  process.env.REPO_ROOT || resolve(__dirname, "..", "..");
 
 // ============================================================
 // GET /jitter — API docs

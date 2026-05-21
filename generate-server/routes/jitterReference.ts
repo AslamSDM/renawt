@@ -6,7 +6,8 @@ import type { AuthenticatedRequest } from "../lib/auth";
 import { generateJitterFromReference } from "../lib/agents/jitterReferenceOrchestrator";
 
 const router: Router = Router();
-const REPO_ROOT = resolve(__dirname, "../..");
+const REPO_ROOT =
+  process.env.REPO_ROOT || resolve(__dirname, "..", "..");
 
 router.get("/jitter-reference", (_req, res) => {
   res.json({
