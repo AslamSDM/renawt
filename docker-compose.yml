@@ -28,6 +28,8 @@ services:
         required: false
     environment:
       - PORT=4001
+      - SCRAPER_AUTH_TOKEN=${SCRAPER_AUTH_TOKEN:-}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
     restart: unless-stopped
     deploy:
       resources:
@@ -57,9 +59,9 @@ services:
     restart: unless-stopped
     read_only: true
     tmpfs:
-      - /tmp:size=256m,uid=1000,gid=1000
-      - /app/.remotion-temp:size=512m,uid=1000,gid=1000
-      - /app/public/renders:size=512m,uid=1000,gid=1000
+      - /tmp:size=1g,uid=1000,gid=1000
+      - /app/.remotion-temp:size=1g,uid=1000,gid=1000
+      - /app/public/renders:size=1g,uid=1000,gid=1000
       - /app/node_modules/.remotion:size=256m,uid=1000,gid=1000
       - /home/node:size=64m,uid=1000,gid=1000
     security_opt:
@@ -82,11 +84,44 @@ services:
       timeout: 10s
       retries: 3
 
+  gateway:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    volumes:
+      - ./services/gateway/Caddyfile:/etc/caddy/Caddyfile:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - default
+      - coolify
+      - render-service
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
+      # HTTPS router — TLS via the existing letsencrypt resolver Coolify uses
+      - "traefik.http.routers.remawt-api.rule=Host(`api.remawt.com`)"
+      - "traefik.http.routers.remawt-api.entryPoints=https"
+      - "traefik.http.routers.remawt-api.tls=true"
+      - "traefik.http.routers.remawt-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.remawt-api.service=remawt-api"
+      # HTTP router → redirect to HTTPS
+      - "traefik.http.routers.remawt-api-http.rule=Host(`api.remawt.com`)"
+      - "traefik.http.routers.remawt-api-http.entryPoints=http"
+      - "traefik.http.routers.remawt-api-http.middlewares=redirect-to-https"
+      - "traefik.http.routers.remawt-api-http.service=remawt-api"
+      # Upstream is Caddy on port 80 inside the container
+      - "traefik.http.services.remawt-api.loadbalancer.server.port=80"
+
   # Internal network blocks outbound internet for render-service
   # Redis and scraper-service use default bridge network
 networks:
   internal:
     internal: true
+  coolify:
+    external: true
+  render-service:
+    external: true
+    name: render-service_default
 
 volumes:
   redis-data:

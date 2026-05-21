@@ -3,11 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Check, ArrowRight, Coins, Building2, Mail, Send } from "lucide-react";
+import { Check, ArrowUpRight, Coins, Building2, Mail, Send } from "lucide-react";
 import { subscriptionPlans } from "@/lib/dodo/subscription";
 import CheckoutButton from "./_components/CheckoutButton";
 
@@ -22,7 +20,7 @@ const FAQS = [
   },
   {
     q: "Can I buy more credits later?",
-    a: "Absolutely! You can purchase additional credits anytime. Your credit balance accumulates with each purchase.",
+    a: "Absolutely. You can purchase additional credits anytime. Your credit balance accumulates with each purchase.",
   },
   {
     q: "What happens if I run out of credits?",
@@ -34,11 +32,11 @@ const FAQS = [
   },
   {
     q: "Do you offer custom packages?",
-    a: "Yes! For teams or agencies needing larger volumes, check out our Enterprise plan or contact us at info@remawt.com for custom pricing.",
+    a: "Yes. For teams or agencies needing larger volumes, see the Enterprise tier or email support@remawt.com.",
   },
   {
     q: "What's the difference between monthly and annual?",
-    a: "Annual plans give you 10% off compared to paying monthly. You get the same credits each month, just at a lower total cost.",
+    a: "Annual plans give you 10% off compared to monthly. Same credits, lower total cost.",
   },
 ];
 
@@ -61,140 +59,161 @@ export default function PricingPage() {
     const body = encodeURIComponent(
       `Company: ${enterpriseForm.companyName}\nEmail: ${enterpriseForm.email}\nExpected Videos/Month: ${enterpriseForm.expectedVideos}\n\nMessage:\n${enterpriseForm.message}`,
     );
-    window.location.href = `mailto:info@remawt.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:support@remawt.com?subject=${subject}&body=${body}`;
     setFormSubmitted(true);
     setTimeout(() => setFormSubmitted(false), 5000);
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-white selection:text-black">
-      {/* Film Grain Overlay */}
-      <div
-        className="fixed inset-0 pointer-events-none z-50 opacity-[0.04]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-        }}
-      />
-
+    <div className="min-h-screen bg-surface text-ink">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="pt-32 pb-16 px-6 md:px-12 border-b border-white/10">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8">
-            <div>
-              <span className="text-xs tracking-[0.3em] text-gray-600 uppercase block mb-4">
-                Pricing
-              </span>
-              <h1 className="text-[10vw] md:text-[6vw] font-light leading-[0.9]">
-                Simple
-              </h1>
-              <h1 className="text-[10vw] md:text-[6vw] font-light leading-[0.9]">
-                Pricing
-              </h1>
-            </div>
-            <div className="text-sm tracking-widest text-gray-600 uppercase mt-8 md:mt-0 text-right">
-              <span className="block">Pay Monthly or Annually</span>
-              <span className="block">Save 10% with Annual</span>
-            </div>
+      {/* Hero */}
+      <section className="px-6 pt-32 pb-12">
+        <div className="mx-auto max-w-[1400px]">
+          <div className="flex flex-wrap items-center gap-3 border-b border-rule pb-4">
+            <span className="mono-label rounded-sm border border-ink px-2 py-1">
+              SCENE 02 · PRICING · TAKE 01
+            </span>
+            <span className="mono-tick">PLANS 03</span>
+            <span className="text-rule-strong">·</span>
+            <span className="mono-tick">BILLING {billing.toUpperCase()}</span>
+            <span className="text-rule-strong">·</span>
+            <span className="mono-tick">CREDITS NEVER EXPIRE</span>
           </div>
 
-          {/* Billing Toggle */}
-          <div className="flex items-center justify-center gap-4 mt-12">
-            <span
-              className={`text-sm tracking-widest uppercase cursor-pointer transition-colors ${billing === "monthly" ? "text-white" : "text-gray-600"}`}
-              onClick={() => setBilling("monthly")}
-            >
-              Monthly
-            </span>
-            <button
-              onClick={() => setBilling(billing === "monthly" ? "annual" : "monthly")}
-              className="relative w-14 h-7 rounded-full border border-white/20 transition-colors cursor-pointer"
-              style={{ backgroundColor: billing === "annual" ? "#fff" : "transparent" }}
-            >
-              <span
-                className={`absolute top-0.5 w-6 h-6 rounded-full transition-all duration-300 ${
-                  billing === "annual"
-                    ? "left-7 bg-black"
-                    : "left-0.5 bg-white"
-                }`}
-              />
-            </button>
-            <span
-              className={`text-sm tracking-widest uppercase cursor-pointer transition-colors ${billing === "annual" ? "text-white" : "text-gray-600"}`}
-              onClick={() => setBilling("annual")}
-            >
-              Annual
-              <span className="ml-2 text-xs text-green-400 normal-case">Save 10%</span>
-            </span>
+          <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12">
+            <div className="lg:col-span-8">
+              <h1 className="text-[clamp(2.5rem,7vw,6rem)] font-medium leading-[0.95] tracking-[-0.02em]">
+                Pay per cut.{" "}
+                <span className="font-serif-italic">Ship every week.</span>
+              </h1>
+              <p className="mt-6 max-w-xl text-lg text-muted">
+                One credit per video export. Pick monthly or annual, top up
+                anytime. Need volume? The enterprise tier is bespoke.
+              </p>
+            </div>
+
+            <div className="lg:col-span-4">
+              {/* Billing toggle */}
+              <div className="flex items-center gap-3 border border-ink p-4">
+                <span className="mono-label">BILLING</span>
+                <div className="ml-auto flex items-center gap-3">
+                  <button
+                    onClick={() => setBilling("monthly")}
+                    className={`text-sm tracking-tight ${
+                      billing === "monthly" ? "text-ink" : "text-muted"
+                    }`}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    onClick={() =>
+                      setBilling(billing === "monthly" ? "annual" : "monthly")
+                    }
+                    className="relative h-6 w-12 rounded-full border border-ink bg-paper"
+                  >
+                    <span
+                      className={`absolute top-0.5 h-5 w-5 rounded-full bg-ink transition-all ${
+                        billing === "annual" ? "left-[1.625rem]" : "left-0.5"
+                      }`}
+                    />
+                  </button>
+                  <button
+                    onClick={() => setBilling("annual")}
+                    className={`text-sm tracking-tight ${
+                      billing === "annual" ? "text-ink" : "text-muted"
+                    }`}
+                  >
+                    Annual
+                  </button>
+                </div>
+              </div>
+              <p className="mono-tick mt-2">SAVE 10% ON ANNUAL</p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Credit Packages - Grid Layout */}
-      <section className="py-24 px-6 md:px-12 border-b border-white/10">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-px bg-white/10">
+      {/* Plans */}
+      <section className="border-t border-rule px-6 py-20">
+        <div className="mx-auto max-w-[1400px]">
+          <div className="grid grid-cols-1 gap-px bg-rule md:grid-cols-3">
             {subscriptionPlans.map((pkg) => {
               const monthlyPrice = parseInt(pkg.price);
-              const annualTotal = pkg.annualPrice || String(Math.round(monthlyPrice * 12 * 0.9));
-              const annualMonthly = (parseInt(annualTotal.replace(/,/g, "")) / 12).toFixed(0);
-              const displayPrice = billing === "annual" ? annualMonthly : pkg.price;
+              const annualTotal =
+                pkg.annualPrice ||
+                String(Math.round(monthlyPrice * 12 * 0.9));
+              const annualMonthly = (
+                parseInt(annualTotal.replace(/,/g, "")) / 12
+              ).toFixed(0);
+              const displayPrice =
+                billing === "annual" ? annualMonthly : pkg.price;
               const displayTotal = billing === "annual" ? annualTotal : null;
 
               return (
-                <Card
+                <div
                   key={pkg.title}
-                  className={`bg-[#0a0a0a] border-0 rounded-none ${pkg.popular ? "relative" : ""}`}
+                  className={`relative flex flex-col bg-paper p-8 ${
+                    pkg.popular ? "ring-1 ring-inset ring-ink" : ""
+                  }`}
                 >
                   {pkg.popular && (
-                    <div className="absolute top-0 left-0 right-0 bg-white text-black text-center py-2 text-xs tracking-widest uppercase">
-                      Most Popular
+                    <div className="absolute -top-px left-0 right-0 bg-ink py-1.5 text-center mono-label text-ink-inverse">
+                      MOST POPULAR
                     </div>
                   )}
-
-                  <CardHeader className={`${pkg.popular ? "pt-16" : ""} pb-8`}>
-                    <div className="flex items-center gap-2 text-xs text-gray-600 tracking-widest uppercase mb-6">
-                      <Coins className="w-4 h-4" />
-                      <span>{billing === "annual" ? "Billed annually" : "Billed monthly"}</span>
+                  <div className={pkg.popular ? "pt-8" : ""}>
+                    <div className="flex items-center gap-2 mono-tick">
+                      <Coins className="h-3 w-3" strokeWidth={1.6} />
+                      {billing === "annual"
+                        ? "BILLED ANNUALLY"
+                        : "BILLED MONTHLY"}
                     </div>
 
-                    <div className="flex items-baseline gap-2 mb-1">
-                      <span className="text-6xl font-light">${displayPrice}</span>
-                      <span className="text-sm text-gray-500">/mo</span>
+                    <div className="mt-6 flex items-baseline gap-2">
+                      <span className="font-serif-italic text-6xl text-ink">
+                        ${displayPrice}
+                      </span>
+                      <span className="text-sm text-muted">/mo</span>
                     </div>
 
                     {displayTotal && (
-                      <p className="text-xs text-gray-500">
-                        ${displayTotal}/year
-                        <span className="ml-2 text-green-400">Save ${Math.round(monthlyPrice * 12 - parseInt(annualTotal.replace(/,/g, "")))}/yr</span>
+                      <p className="mt-1 text-xs text-muted">
+                        ${displayTotal}/year · save $
+                        {Math.round(
+                          monthlyPrice * 12 -
+                            parseInt(annualTotal.replace(/,/g, "")),
+                        )}
+                        /yr
                       </p>
                     )}
 
-                    <CardTitle className="text-2xl font-light tracking-wide mt-4">
+                    <h3 className="mt-6 text-2xl font-medium tracking-tight">
                       {pkg.title}
-                    </CardTitle>
-                    <div className="mt-2">
-                      <span className="text-3xl font-light text-white">
+                    </h3>
+                    <div className="mt-2 flex items-baseline gap-2">
+                      <span className="font-serif-italic text-3xl text-ink">
                         {pkg.creditsPerCycle}
                       </span>
-                      <span className="text-sm text-gray-500 ml-2">credits/month</span>
+                      <span className="mono-tick">CREDITS / MONTH</span>
                     </div>
-                    <p className="text-sm text-gray-500 mt-2">
-                      {pkg.description}
-                    </p>
-                  </CardHeader>
+                    <p className="mt-2 text-sm text-muted">{pkg.description}</p>
+                  </div>
 
-                  <CardContent className="flex flex-col justify-between space-y-6 h-full">
-                    <ul className="space-y-4">
-                      {pkg.features.map((feature, i) => (
-                        <li key={i} className="flex items-center gap-3 text-sm">
-                          <Check className="w-4 h-4 text-gray-500" />
-                          <span className="text-gray-400">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
+                  <ul className="mt-8 space-y-3">
+                    {pkg.features.map((f, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-3 text-sm text-ink/80"
+                      >
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-ink" strokeWidth={1.6} />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
 
+                  <div className="mt-8">
                     <CheckoutButton
                       text={pkg.cta}
                       isPopular={pkg.popular}
@@ -202,259 +221,222 @@ export default function PricingPage() {
                       quantity={1}
                       billing={billing}
                     />
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               );
             })}
           </div>
         </div>
       </section>
 
-      {/* Enterprise Section */}
-      <section className="py-24 px-6 md:px-12 border-b border-white/10">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-px bg-white/10">
-            {/* Enterprise Info */}
-            <Card className="bg-[#0a0a0a] border-0 rounded-none">
-              <CardHeader className="pb-6">
-                <div className="flex items-center gap-2 text-xs text-gray-600 tracking-widest uppercase mb-6">
-                  <Building2 className="w-4 h-4" />
-                  <span>Enterprise</span>
-                </div>
-                <CardTitle className="text-4xl md:text-5xl font-light tracking-wide mb-4">
-                  Custom Pricing
-                </CardTitle>
-                <p className="text-gray-500 leading-relaxed">
-                  For teams and agencies with high-volume needs. Get a tailored
-                  plan that fits your production workflow.
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <ul className="space-y-4">
-                  {[
-                    "Unlimited or bulk credits",
-                    "Dedicated account manager",
-                    "Custom rendering pipeline",
-                    "Priority API access & SLA",
-                    "White-label options",
-                    "Custom integrations",
-                    "Volume-based discounts",
-                    "Onboarding & training",
-                  ].map((feature, i) => (
-                    <li key={i} className="flex items-center gap-3 text-sm">
-                      <Check className="w-4 h-4 text-gray-500" />
-                      <span className="text-gray-400">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="pt-4 border-t border-white/10">
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Mail className="w-4 h-4" />
-                    <a
-                      href="mailto:info@remawt.com"
-                      className="hover:text-white transition-colors"
-                    >
-                      info@remawt.com
-                    </a>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Enterprise Form */}
-            <Card className="bg-[#0a0a0a] border-0 rounded-none">
-              <CardHeader className="pb-6">
-                <CardTitle className="text-2xl font-light tracking-wide">
-                  Get in Touch
-                </CardTitle>
-                <p className="text-sm text-gray-500">
-                  Tell us about your needs and we&apos;ll craft a plan for you.
-                </p>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleEnterpriseSubmit} className="space-y-5">
-                  <div>
-                    <label className="block text-xs tracking-widest text-gray-500 uppercase mb-2">
-                      Work Email *
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={enterpriseForm.email}
-                      onChange={(e) =>
-                        setEnterpriseForm((prev) => ({
-                          ...prev,
-                          email: e.target.value,
-                        }))
-                      }
-                      className="w-full bg-transparent border border-white/10 px-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30 transition-colors"
-                      placeholder="you@company.com"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs tracking-widest text-gray-500 uppercase mb-2">
-                      Company Name
-                    </label>
-                    <input
-                      type="text"
-                      value={enterpriseForm.companyName}
-                      onChange={(e) =>
-                        setEnterpriseForm((prev) => ({
-                          ...prev,
-                          companyName: e.target.value,
-                        }))
-                      }
-                      className="w-full bg-transparent border border-white/10 px-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30 transition-colors"
-                      placeholder="Acme Inc."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs tracking-widest text-gray-500 uppercase mb-2">
-                      Expected Videos Per Month *
-                    </label>
-                    <select
-                      required
-                      value={enterpriseForm.expectedVideos}
-                      onChange={(e) =>
-                        setEnterpriseForm((prev) => ({
-                          ...prev,
-                          expectedVideos: e.target.value,
-                        }))
-                      }
-                      className="w-full bg-transparent border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:border-white/30 transition-colors appearance-none cursor-pointer"
-                    >
-                      <option value="" disabled className="bg-[#0a0a0a]">
-                        Select volume
-                      </option>
-                      <option value="500-1000" className="bg-[#0a0a0a]">
-                        500 – 1,000
-                      </option>
-                      <option value="1000-5000" className="bg-[#0a0a0a]">
-                        1,000 – 5,000
-                      </option>
-                      <option value="5000-10000" className="bg-[#0a0a0a]">
-                        5,000 – 10,000
-                      </option>
-                      <option value="10000+" className="bg-[#0a0a0a]">
-                        10,000+
-                      </option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs tracking-widest text-gray-500 uppercase mb-2">
-                      Tell Us More
-                    </label>
-                    <textarea
-                      rows={4}
-                      value={enterpriseForm.message}
-                      onChange={(e) =>
-                        setEnterpriseForm((prev) => ({
-                          ...prev,
-                          message: e.target.value,
-                        }))
-                      }
-                      className="w-full bg-transparent border border-white/10 px-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30 transition-colors resize-none"
-                      placeholder="Describe your use case, team size, and any specific requirements..."
-                    />
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full py-4 text-sm tracking-widest uppercase rounded-none bg-white text-black hover:bg-gray-200 transition-all"
+      {/* Enterprise */}
+      <section className="border-t border-rule bg-paper-3 px-6 py-20">
+        <div className="mx-auto max-w-[1400px]">
+          <div className="grid grid-cols-1 gap-px bg-rule lg:grid-cols-2">
+            <div className="bg-paper p-10">
+              <div className="flex items-center gap-2 mono-tick">
+                <Building2 className="h-3.5 w-3.5" strokeWidth={1.6} />
+                ENTERPRISE
+              </div>
+              <h2 className="mt-6 text-4xl font-medium tracking-tight md:text-5xl">
+                Custom <span className="font-serif-italic">pipeline.</span>
+              </h2>
+              <p className="mt-4 max-w-md text-muted">
+                For teams and agencies. Bulk credits, white label, custom
+                renderers, dedicated SLA.
+              </p>
+              <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {[
+                  "Unlimited or bulk credits",
+                  "Dedicated account manager",
+                  "Custom rendering pipeline",
+                  "Priority API access & SLA",
+                  "White-label options",
+                  "Custom integrations",
+                  "Volume-based discounts",
+                  "Onboarding & training",
+                ].map((f) => (
+                  <li
+                    key={f}
+                    className="flex items-start gap-2 text-sm text-ink/80"
                   >
-                    {formSubmitted ? (
-                      "Opening Mail Client..."
-                    ) : (
-                      <>
-                        Contact Sales
-                        <Send className="ml-2 w-4 h-4" />
-                      </>
-                    )}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-ink" strokeWidth={1.6} />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-8 flex items-center gap-2 border-t border-rule pt-6 text-sm">
+                <Mail className="h-4 w-4 text-muted" strokeWidth={1.6} />
+                <a
+                  href="mailto:support@remawt.com"
+                  className="text-ink underline decoration-rule-strong underline-offset-4 hover:decoration-ink"
+                >
+                  support@remawt.com
+                </a>
+              </div>
+            </div>
+
+            <form
+              onSubmit={handleEnterpriseSubmit}
+              className="bg-paper p-10"
+            >
+              <h3 className="text-2xl font-medium tracking-tight">
+                Get in touch
+              </h3>
+              <p className="mt-2 text-sm text-muted">
+                Tell us about your needs and we&apos;ll craft a plan.
+              </p>
+
+              <div className="mt-8 space-y-5">
+                {[
+                  {
+                    label: "WORK EMAIL *",
+                    key: "email",
+                    type: "email",
+                    required: true,
+                    placeholder: "you@company.com",
+                  },
+                  {
+                    label: "COMPANY NAME",
+                    key: "companyName",
+                    type: "text",
+                    placeholder: "Acme Inc.",
+                  },
+                ].map((field) => (
+                  <div key={field.key}>
+                    <label className="mono-tick mb-2 block">{field.label}</label>
+                    <input
+                      type={field.type}
+                      required={field.required}
+                      value={
+                        enterpriseForm[
+                          field.key as keyof typeof enterpriseForm
+                        ]
+                      }
+                      onChange={(e) =>
+                        setEnterpriseForm((p) => ({
+                          ...p,
+                          [field.key]: e.target.value,
+                        }))
+                      }
+                      placeholder={field.placeholder}
+                      className="w-full border border-rule-strong bg-paper px-4 py-3 text-sm text-ink placeholder:text-subtle focus:border-ink focus:outline-none"
+                    />
+                  </div>
+                ))}
+
+                <div>
+                  <label className="mono-tick mb-2 block">
+                    EXPECTED VIDEOS / MONTH *
+                  </label>
+                  <select
+                    required
+                    value={enterpriseForm.expectedVideos}
+                    onChange={(e) =>
+                      setEnterpriseForm((p) => ({
+                        ...p,
+                        expectedVideos: e.target.value,
+                      }))
+                    }
+                    className="w-full cursor-pointer appearance-none border border-rule-strong bg-paper px-4 py-3 text-sm text-ink focus:border-ink focus:outline-none"
+                  >
+                    <option value="" disabled>
+                      Select volume
+                    </option>
+                    <option value="500-1000">500 – 1,000</option>
+                    <option value="1000-5000">1,000 – 5,000</option>
+                    <option value="5000-10000">5,000 – 10,000</option>
+                    <option value="10000+">10,000+</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mono-tick mb-2 block">TELL US MORE</label>
+                  <textarea
+                    rows={4}
+                    value={enterpriseForm.message}
+                    onChange={(e) =>
+                      setEnterpriseForm((p) => ({
+                        ...p,
+                        message: e.target.value,
+                      }))
+                    }
+                    placeholder="Describe your use case, team size, requirements..."
+                    className="w-full resize-none border border-rule-strong bg-paper px-4 py-3 text-sm text-ink placeholder:text-subtle focus:border-ink focus:outline-none"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-6 py-3 text-sm text-ink-inverse transition-opacity hover:opacity-90"
+                >
+                  {formSubmitted ? (
+                    "Opening mail client..."
+                  ) : (
+                    <>
+                      Contact sales
+                      <Send className="h-4 w-4" strokeWidth={1.6} />
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="py-24 px-6 md:px-12 border-b border-white/10">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-16">
-            <span className="text-xs tracking-[0.3em] text-gray-600 uppercase block mb-4">
-              FAQ
-            </span>
-            <h2 className="text-4xl md:text-5xl font-light">
-              Questions & Answers
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-px bg-white/10">
-            {FAQS.map((faq, i) => (
-              <Card key={i} className="bg-[#0a0a0a] border-0 rounded-none">
-                <CardHeader className="border-b border-white/10">
-                  <CardTitle className="text-lg font-light">{faq.q}</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <p className="text-gray-500 leading-relaxed">{faq.a}</p>
-                </CardContent>
-              </Card>
+      {/* FAQ */}
+      <section className="border-t border-rule px-6 py-20">
+        <div className="mx-auto max-w-[1400px]">
+          <p className="mono-tick">FAQ</p>
+          <h2 className="mt-3 text-4xl font-medium tracking-tight md:text-5xl">
+            Questions &{" "}
+            <span className="font-serif-italic">answers.</span>
+          </h2>
+          <div className="mt-12 grid grid-cols-1 gap-px bg-rule md:grid-cols-2">
+            {FAQS.map((faq) => (
+              <div key={faq.q} className="bg-paper p-8">
+                <h3 className="text-lg font-medium text-ink">{faq.q}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-muted">
+                  {faq.a}
+                </p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Large CTA Section */}
-      <section className="py-32 md:py-48 px-6 md:px-12">
-        <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-[8vw] md:text-[6vw] font-light leading-[0.9] mb-8">
-            Ready to Create?
+      {/* CTA */}
+      <section className="border-t border-rule px-6 py-28">
+        <div className="mx-auto max-w-[1400px] text-center">
+          <h2 className="text-[clamp(2.5rem,7vw,6rem)] font-medium leading-[0.95] tracking-tight">
+            Start <span className="font-serif-italic">rendering.</span>
           </h2>
-          <p className="text-gray-500 max-w-xl mx-auto mb-8">
-            Purchase credits and start creating professional videos with AI.
-            Each video costs just 1 credit.
+          <p className="mx-auto mt-6 max-w-xl text-muted">
+            Each video costs one credit. Buy a plan, hit start, ship a reel.
           </p>
-          <p className="text-gray-600 text-sm mb-12">
-            Need help? Reach out at{" "}
-            <a
-              href="mailto:info@remawt.com"
-              className="text-white hover:underline transition-colors"
-            >
-              info@remawt.com
-            </a>
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button
-              onClick={() => router.push("/creative")}
-              className="px-12 py-4 text-lg tracking-wider uppercase rounded-none"
-              size="lg"
-            >
-              Start Creating
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-            <Button
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+            <button
               onClick={() => router.push("/projects")}
-              className="px-12 py-4 text-lg tracking-wider uppercase rounded-none"
-              variant="outline"
-              size="lg"
+              className="group inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-sm text-ink-inverse transition-opacity hover:opacity-90"
             >
-              View Projects
-            </Button>
+              Start free
+              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+            </button>
+            <button
+              onClick={() => router.push("/projects")}
+              className="rounded-full border border-ink px-6 py-3 text-sm text-ink transition-colors hover:bg-ink hover:text-ink-inverse"
+            >
+              View projects
+            </button>
           </div>
-
-          {/* Legal Links */}
-          <div className="flex items-center justify-center gap-6 text-xs text-gray-600">
-            <Link href="/privacy" className="hover:text-white transition-colors">
-              Privacy Policy
+          <div className="mt-8 flex items-center justify-center gap-4 text-xs text-muted">
+            <Link href="/privacy" className="hover:text-ink">
+              Privacy
             </Link>
-            <span>|</span>
-            <Link href="/terms" className="hover:text-white transition-colors">
-              Terms & Conditions
+            <span className="text-rule-strong">·</span>
+            <Link href="/terms" className="hover:text-ink">
+              Terms
             </Link>
           </div>
         </div>

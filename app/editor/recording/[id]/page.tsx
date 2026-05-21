@@ -234,10 +234,10 @@ export default function RecordingEditorPage({
 
   if (state.status === "loading") {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+      <div className="min-h-screen bg-surface flex items-center justify-center">
         <div className="text-center">
           <Spinner size="lg" />
-          <p className="mt-4 text-gray-400">Loading recording...</p>
+          <p className="mt-4 text-muted">Loading recording...</p>
         </div>
       </div>
     );
@@ -245,11 +245,11 @@ export default function RecordingEditorPage({
 
   if (state.status === "error") {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+      <div className="min-h-screen bg-surface flex items-center justify-center">
         <Card className="max-w-md text-center p-8">
           <div className="text-4xl mb-4">❌</div>
-          <h1 className="text-xl font-semibold text-white mb-2">Error</h1>
-          <p className="text-gray-400 mb-6">{state.error}</p>
+          <h1 className="text-xl font-semibold text-ink mb-2">Error</h1>
+          <p className="text-muted mb-6">{state.error}</p>
           <Button onClick={() => router.back()}>Go Back</Button>
         </Card>
       </div>
@@ -259,20 +259,33 @@ export default function RecordingEditorPage({
   if (!recording) return null;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="relative min-h-screen overflow-hidden bg-surface text-ink">
+      <div className="pointer-events-none absolute inset-0 kinetic-dotgrid" />
+      <div
+        className="pointer-events-none absolute kinetic-glow-soft"
+        style={{ top: -150, left: "50%", transform: "translateX(-50%)", width: 1000, height: 500 }}
+      />
+
       {/* Header */}
-      <header className="border-b border-gray-800 bg-gray-900/50">
+      <header
+        className="relative z-10 sticky top-0 backdrop-blur-md"
+        style={{ background: "rgba(7,7,10,0.7)", borderBottom: "1px solid var(--rule)" }}
+      >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => router.back()}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-muted hover:text-ink transition-colors"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <h1 className="text-xl font-semibold">Edit Recording</h1>
+            <span className="kinetic-pill !py-1 !px-2.5">
+              <span className="accent-dot" />
+              <span className="mono-tick" style={{ color: "var(--ink)" }}>RECORDING · EDIT</span>
+            </span>
+            <h1 className="text-base font-medium tracking-[-0.02em]">Edit Recording</h1>
           </div>
 
           <div className="flex items-center gap-3">
@@ -298,7 +311,7 @@ export default function RecordingEditorPage({
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="relative z-10 max-w-7xl mx-auto px-6 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Video Preview */}
           <div className="lg:col-span-2 space-y-4">
@@ -317,17 +330,17 @@ export default function RecordingEditorPage({
             {/* Timeline */}
             <Card className="p-4">
               <div className="flex items-center gap-4 mb-2">
-                <span className="text-sm text-gray-400 font-mono">
+                <span className="text-sm text-muted font-mono">
                   {formatTime(currentTime)}
                 </span>
                 <div 
                   ref={timelineRef}
-                  className="flex-1 h-12 bg-gray-800 rounded-lg relative cursor-pointer overflow-hidden"
+                  className="flex-1 h-12 bg-paper-3 rounded-lg relative cursor-pointer overflow-hidden"
                   onClick={handleTimelineClick}
                 >
                   {/* Progress bar */}
                   <div 
-                    className="absolute left-0 top-0 h-full bg-blue-500/30"
+                    className="absolute left-0 top-0 h-full bg-ink/30"
                     style={{ width: `${(currentTime / recording.duration) * 100}%` }}
                   />
                   
@@ -336,7 +349,7 @@ export default function RecordingEditorPage({
                     <div
                       key={index}
                       className={`absolute top-1 bottom-1 w-1 rounded cursor-pointer transition-all ${
-                        selectedZoom === index ? "bg-yellow-400 w-2" : "bg-yellow-500/70"
+                        selectedZoom === index ? "bg-ink w-2" : "bg-yellow-500/70"
                       }`}
                       style={{ 
                         left: `${(zoom.time / recording.duration) * 100}%`,
@@ -362,7 +375,7 @@ export default function RecordingEditorPage({
                     style={{ left: `${(trimEnd / recording.duration) * 100}%` }}
                   />
                 </div>
-                <span className="text-sm text-gray-400 font-mono">
+                <span className="text-sm text-muted font-mono">
                   {formatTime(recording.duration)}
                 </span>
               </div>
@@ -376,25 +389,25 @@ export default function RecordingEditorPage({
               <h3 className="text-lg font-semibold mb-4">Feature Details</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                  <label className="block text-sm font-medium text-muted mb-2">
                     Feature Name
                   </label>
                   <input
                     type="text"
                     value={featureName}
                     onChange={(e) => setFeatureName(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-3 py-2 bg-paper-3 border border-rule-strong rounded-lg text-ink focus:outline-none focus:border-ink"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                  <label className="block text-sm font-medium text-muted mb-2">
                     Description
                   </label>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={3}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-blue-500 resize-none"
+                    className="w-full px-3 py-2 bg-paper-3 border border-rule-strong rounded-lg text-ink focus:outline-none focus:border-ink resize-none"
                   />
                 </div>
               </div>
@@ -408,8 +421,8 @@ export default function RecordingEditorPage({
                   onClick={() => setCursorStyle("mac")}
                   className={`flex-1 py-3 px-4 rounded-lg border transition-all ${
                     cursorStyle === "mac"
-                      ? "bg-blue-500/20 border-blue-500 text-blue-400"
-                      : "bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-600"
+                      ? "bg-ink/20 border-blue-500 text-ink"
+                      : "bg-paper-3 border-rule-strong text-muted hover:border-rule-strong"
                   }`}
                 >
                   <div className="text-2xl mb-1">🖱️</div>
@@ -419,8 +432,8 @@ export default function RecordingEditorPage({
                   onClick={() => setCursorStyle("windows")}
                   className={`flex-1 py-3 px-4 rounded-lg border transition-all ${
                     cursorStyle === "windows"
-                      ? "bg-blue-500/20 border-blue-500 text-blue-400"
-                      : "bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-600"
+                      ? "bg-ink/20 border-blue-500 text-ink"
+                      : "bg-paper-3 border-rule-strong text-muted hover:border-rule-strong"
                   }`}
                 >
                   <div className="text-2xl mb-1">🖱️</div>
@@ -434,7 +447,7 @@ export default function RecordingEditorPage({
               <h3 className="text-lg font-semibold mb-4">Trim</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                  <label className="block text-sm font-medium text-muted mb-2">
                     Start Time: {formatTime(trimStart)}
                   </label>
                   <input
@@ -451,7 +464,7 @@ export default function RecordingEditorPage({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                  <label className="block text-sm font-medium text-muted mb-2">
                     End Time: {formatTime(trimEnd)}
                   </label>
                   <input
@@ -485,7 +498,7 @@ export default function RecordingEditorPage({
 
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {zoomPoints.length === 0 ? (
-                  <p className="text-sm text-gray-500 text-center py-4">
+                  <p className="text-sm text-muted text-center py-4">
                     No zoom points. Click "Auto-Detect" to find zoom points automatically.
                   </p>
                 ) : (
@@ -494,8 +507,8 @@ export default function RecordingEditorPage({
                       key={index}
                       className={`p-3 rounded-lg border transition-all ${
                         selectedZoom === index 
-                          ? "bg-blue-500/10 border-blue-500" 
-                          : "bg-gray-800 border-gray-700"
+                          ? "bg-ink/10 border-blue-500" 
+                          : "bg-paper-3 border-rule-strong"
                       }`}
                       onClick={() => setSelectedZoom(index)}
                     >
@@ -515,17 +528,17 @@ export default function RecordingEditorPage({
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div>
-                          <span className="text-gray-500">Time:</span>{" "}
+                          <span className="text-muted">Time:</span>{" "}
                           {formatTime(zoom.time)}
                         </div>
                         <div>
-                          <span className="text-gray-500">Scale:</span>{" "}
+                          <span className="text-muted">Scale:</span>{" "}
                           {zoom.scale}x
                         </div>
                       </div>
                       {selectedZoom === index && (
-                        <div className="mt-3 pt-3 border-t border-gray-700">
-                          <label className="block text-xs text-gray-500 mb-1">
+                        <div className="mt-3 pt-3 border-t border-rule-strong">
+                          <label className="block text-xs text-muted mb-1">
                             Scale: {zoom.scale}x
                           </label>
                           <input
@@ -547,18 +560,18 @@ export default function RecordingEditorPage({
 
             {/* Info */}
             <Card className="p-4">
-              <h4 className="text-sm font-medium text-gray-400 mb-2">Recording Info</h4>
+              <h4 className="text-sm font-medium text-muted mb-2">Recording Info</h4>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Duration:</span>
+                  <span className="text-muted">Duration:</span>
                   <span>{formatTime(recording.duration)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Cursor Events:</span>
+                  <span className="text-muted">Cursor Events:</span>
                   <span>{cursorData.length}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Zoom Points:</span>
+                  <span className="text-muted">Zoom Points:</span>
                   <span>{zoomPoints.length}</span>
                 </div>
               </div>

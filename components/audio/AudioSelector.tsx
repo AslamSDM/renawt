@@ -13,6 +13,7 @@ interface AudioFile {
   url: string;
   bpm?: number;
   duration?: number;
+  moods?: string[];
 }
 
 interface AudioSelectorProps {
@@ -25,7 +26,7 @@ export function AudioSelector({ selectedAudio, onSelect }: AudioSelectorProps) {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [playing, setPlaying] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [activeMood, setActiveMood] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -131,7 +132,6 @@ export function AudioSelector({ selectedAudio, onSelect }: AudioSelectorProps) {
     if (!file) return;
 
     setUploading(true);
-    setUploadProgress(0);
 
     try {
       const formData = new FormData();
@@ -160,7 +160,6 @@ export function AudioSelector({ selectedAudio, onSelect }: AudioSelectorProps) {
       console.error("Upload error:", error);
     } finally {
       setUploading(false);
-      setUploadProgress(0);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -173,6 +172,15 @@ export function AudioSelector({ selectedAudio, onSelect }: AudioSelectorProps) {
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
+
+  // Unique moods across all tracks for the filter chips
+  const allMoods = Array.from(
+    new Set(audioList.flatMap((a) => a.moods || []))
+  ).sort();
+
+  const filteredAudio = activeMood
+    ? audioList.filter((a) => a.moods?.includes(activeMood))
+    : audioList;
 
   if (loading) {
     return (
@@ -223,15 +231,52 @@ export function AudioSelector({ selectedAudio, onSelect }: AudioSelectorProps) {
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="space-y-2 max-h-[300px] overflow-y-auto">
-          {audioList.length === 0 ? (
+        {/* Mood filter chips */}
+        {allMoods.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            <button
+              onClick={() => setActiveMood(null)}
+              className={`px-2.5 py-0.5 rounded-full text-xs border transition-colors ${
+                !activeMood
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-border text-muted-foreground hover:border-primary/50"
+              }`}
+            >
+              All
+            </button>
+            {allMoods.map((mood) => (
+              <button
+                key={mood}
+                onClick={() => setActiveMood(activeMood === mood ? null : mood)}
+                className={`px-2.5 py-0.5 rounded-full text-xs border transition-colors capitalize ${
+                  activeMood === mood
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "border-border text-muted-foreground hover:border-primary/50"
+                }`}
+              >
+                {mood}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="space-y-2 max-h-[280px] overflow-y-auto">
+          {filteredAudio.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Music className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p>No audio files available</p>
-              <p className="text-sm">Upload an audio file to get started</p>
+              {activeMood ? (
+                <>
+                  <p>No tracks match <span className="capitalize">{activeMood}</span></p>
+                  <p className="text-sm">Try another mood or select All</p>
+                </>
+              ) : (
+                <>
+                  <p>No audio files available</p>
+                  <p className="text-sm">Upload an audio file to get started</p>
+                </>
+              )}
             </div>
           ) : (
-            audioList.map((audio) => (
+            filteredAudio.map((audio) => (
               <div
                 key={audio.key}
                 className={`flex items-center gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
@@ -267,7 +312,7 @@ export function AudioSelector({ selectedAudio, onSelect }: AudioSelectorProps) {
                       </Badge>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
+                  <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground mt-1">
                     {audio.bpm && (
                       <span className="flex items-center gap-1">
                         <Activity className="w-3 h-3" />
@@ -280,6 +325,14 @@ export function AudioSelector({ selectedAudio, onSelect }: AudioSelectorProps) {
                         {formatDuration(audio.duration)}
                       </span>
                     )}
+                    {audio.moods?.slice(0, 2).map((mood) => (
+                      <span
+                        key={mood}
+                        className="text-xs px-1.5 py-0.5 bg-muted rounded capitalize"
+                      >
+                        {mood}
+                      </span>
+                    ))}
                   </div>
                 </div>
 

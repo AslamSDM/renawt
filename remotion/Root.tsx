@@ -6,6 +6,142 @@ import ReelsFlyVideoContent from "./compositions/ReelsFlyVideo";
 import TeambleDemoVideo from "./compositions/TeambleDemo";
 import TechProductDemo from "./compositions/TechProductDemo";
 import PremiumShowcase from "./compositions/PremiumShowcase";
+import {
+  JsonComposition,
+  type VideoJsonInputProps,
+} from "./compositions/JsonComposition";
+import {
+  JitterComposition,
+  type JitterDocInputProps,
+} from "./compositions/JitterComposition";
+import GeneratedTest from "./compositions/GeneratedTest";
+
+const SEARCH_ICON_SVG =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#404040" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+  );
+
+const SEARCH_BAR_JITTER: JitterDocInputProps = {
+  name: "Search bar",
+  fps: 30,
+  conf: {
+    artboards: [
+      {
+        id: "2:54",
+        name: "Search",
+        width: 1920,
+        height: 1080,
+        duration: 4000,
+        fillColor: "#0b1020",
+        background: true,
+        operations: [
+          {
+            id: "vq04xmuZ",
+            type: "growIn",
+            targetId: "2:67",
+            scale: 0.5,
+            startTime: 0,
+            endTime: 400,
+            easing: "slowDown",
+          },
+          {
+            id: "Wx2eq9xT",
+            type: "growIn",
+            targetId: "TPow4AfN",
+            scale: 0.5,
+            startTime: 100,
+            endTime: 500,
+            easing: "slowDown",
+          },
+          {
+            id: "GwZcqotK",
+            type: "resize",
+            targetId: "2:67",
+            anchor: "center",
+            fromValue: { width: 80 },
+            startTime: 400,
+            endTime: 1100,
+            easing: "natural",
+          },
+          {
+            id: "cHMLsazs",
+            type: "textIn",
+            targetId: "2:61",
+            split: "letters",
+            order: "forward",
+            offset: 50,
+            travelDistance: 20,
+            slideDirection: "up",
+            nodeDuration: 500,
+            nodeEasing: "slowDown",
+            effect: "appear",
+            startTime: 900,
+          },
+          {
+            id: "4L1TwDaW",
+            type: "shrinkOut",
+            targetId: "2:67",
+            scale: 0.8,
+            startTime: 3200,
+            endTime: 3500,
+            easing: "accelerate",
+          },
+        ],
+        layers: [
+          {
+            type: "layerGrp",
+            id: "2:67",
+            name: "Search bar",
+            x: 620,
+            y: 480,
+            width: 680,
+            height: 120,
+            cornerRadius: 40,
+            background: true,
+            fillColor: "#ffffff",
+            clipsContent: false,
+            shadowEnabled: true,
+            shadowOffsetX: 0,
+            shadowOffsetY: 12,
+            shadowBlur: 40,
+            shadowColor: "#000000",
+            shadowOpacity: 30,
+            layers: [
+              {
+                type: "image",
+                id: "TPow4AfN",
+                url: SEARCH_ICON_SVG,
+                mediaName: "Icon.svg",
+                x: 40,
+                y: 40,
+                width: 40,
+                height: 40,
+              },
+              {
+                type: "text",
+                id: "2:61",
+                name: "Best motion design tool",
+                x: 100,
+                y: 40,
+                width: 540,
+                height: 40,
+                text: "Best motion design tool",
+                color: "#404040",
+                font: { name: "Inter", weight: 500 },
+                fontSize: 28,
+                lineHeight: 140,
+                letterSpacing: 0,
+                textAlign: "left",
+                verticalAlign: "center",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+};
 
 // Wrapper components to satisfy Remotion's type requirements
 const TechLaunchWrapper: React.FC<Record<string, unknown>> = (props) => {
@@ -37,6 +173,16 @@ const sampleProductData = {
 export const RemotionRoot: React.FC = () => {
   return (
     <>
+      {/* Most recent test-generate output (smoke test) */}
+      <Composition
+        id="GeneratedTest"
+        component={GeneratedTest}
+        durationInFrames={600}
+        fps={30}
+        width={1920}
+        height={1080}
+      />
+
       {/* Original Demo */}
       <Composition
         id="Demo"
@@ -286,6 +432,71 @@ export const RemotionRoot: React.FC = () => {
         fps={30}
         width={1920}
         height={1080}
+      />
+
+      {/* JSON-driven composition — primary entry for the new pipeline.
+          fps/width/height/durationInFrames derived per-render from inputProps. */}
+      <Composition
+        id="JsonComposition"
+        component={JsonComposition as unknown as React.FC<Record<string, unknown>>}
+        durationInFrames={300}
+        fps={30}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          fps: 30,
+          width: 1920,
+          height: 1080,
+          audio: null,
+          scenes: [
+            {
+              id: "preview",
+              durationInFrames: 90,
+              layers: [
+                { component: "GradientBg", props: { from: "#0f172a", to: "#7c3aed" } },
+                { component: "Title", props: { text: "JsonComposition preview", delay: 5 } },
+              ],
+            },
+          ],
+        } satisfies VideoJsonInputProps as unknown as Record<string, unknown>}
+        calculateMetadata={({ props }) => {
+          const p = props as unknown as VideoJsonInputProps;
+          const total = p.scenes.reduce(
+            (s, x) => s + x.durationInFrames,
+            0,
+          );
+          return {
+            durationInFrames: Math.max(1, total),
+            width: p.width || 1920,
+            height: p.height || 1080,
+            fps: p.fps || 30,
+          };
+        }}
+      />
+
+      {/* Jitter-style prototype — primitives + timeline operations */}
+      <Composition
+        id="JitterComposition"
+        component={JitterComposition as unknown as React.FC<Record<string, unknown>>}
+        durationInFrames={120}
+        fps={30}
+        width={1920}
+        height={1080}
+        defaultProps={SEARCH_BAR_JITTER as unknown as Record<string, unknown>}
+        calculateMetadata={({ props }) => {
+          const p = props as unknown as JitterDocInputProps;
+          const fps = p.fps ?? 30;
+          const totalMs = p.conf.artboards.reduce(
+            (s, a) => s + (a.duration ?? 0),
+            0,
+          );
+          return {
+            durationInFrames: Math.max(1, Math.round((totalMs * fps) / 1000)),
+            width: p.conf.artboards[0]?.width || 1920,
+            height: p.conf.artboards[0]?.height || 1080,
+            fps,
+          };
+        }}
       />
     </>
   );

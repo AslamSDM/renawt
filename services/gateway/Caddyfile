@@ -1,0 +1,28 @@
+# Internal HTTP reverse-proxy.
+# TLS is terminated upstream by Coolify's Traefik. This Caddy instance
+# listens on plain HTTP inside the Docker network and path-routes to
+# host-mode services (generate-server on :3001, render-service on :4002).
+{
+	auto_https off
+	admin off
+	log {
+		output stdout
+		format console
+		level INFO
+	}
+}
+
+:80 {
+	# Render-service handles all /render and /render/<id>/* paths.
+	# render-service container is reachable on its own docker network
+	# (render-service_default → render-service-render-service-1:4002).
+	@render path /render /render/*
+	handle @render {
+		reverse_proxy render-service-render-service-1:4002
+	}
+
+	# Everything else goes to generate-server (systemd on host).
+	handle {
+		reverse_proxy host.docker.internal:3001
+	}
+}

@@ -1,17 +1,30 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, JetBrains_Mono, EB_Garamond } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-geist-sans",
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
+
+const ebGaramond = EB_Garamond({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  variable: "--font-eb-garamond",
   display: "swap",
 });
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0a0a0a",
+  themeColor: "#07070a",
 };
 
 export const metadata: Metadata = {
@@ -96,7 +109,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${jetbrainsMono.variable} ${ebGaramond.variable}`}
+    >
       <head>
         <link rel="icon" type="image/svg+xml" href="/logo/remawt logo .svg" />
         <script
@@ -122,7 +138,7 @@ export default function RootLayout({
                 "@type": "Organization",
                 name: "Remawt",
                 url: "https://remawt.com",
-                email: "info@remawt.com",
+                email: "support@remawt.com",
               },
             }),
           }}

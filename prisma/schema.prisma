@@ -16,6 +16,7 @@ model Project {
   productData String?
   script      String?
   composition String?
+  jitterDoc   String?
   audioUrl    String?
   videoUrl    String?
   currentVersionId String?
@@ -23,11 +24,24 @@ model Project {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  user       User?             @relation(fields: [userId], references: [id])
-  recordings ScreenRecording[]
-  images     ProductImage[]
+  user            User?               @relation(fields: [userId], references: [id])
+  recordings      ScreenRecording[]
+  images          ProductImage[]
+  jitterHistory   JitterDocHistory[]
 
   @@index([userId])
+}
+
+model JitterDocHistory {
+  id        String   @id @default(cuid())
+  projectId String
+  doc       String
+  label     String?
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
 }
 
 model ScreenRecording {
@@ -120,4 +134,43 @@ model CreditPurchase {
 
 model WebhookEvent {
   id String @id
+}
+
+model Music {
+  id         String   @id @default(cuid())
+  title      String
+  filename   String   @unique
+  url        String
+  artist     String?
+  bpm        Int      @default(120)
+  durationMs Int?
+  moods      String[] @default([])
+  source     String   @default("seed") // seed | pixabay | fma | jamendo | user
+  license    String?  // e.g. "pixabay", "CC-BY", "CC0"
+  enabled    Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  @@index([source])
+  @@index([bpm])
+}
+
+model LlmCall {
+  id               String   @id @default(cuid())
+  provider         String
+  model            String
+  label            String
+  inputTokens      Int      @default(0)
+  outputTokens     Int      @default(0)
+  totalTokens      Int      @default(0)
+  latencyMs        Int      @default(0)
+  ok               Boolean  @default(true)
+  error            String?
+  projectId        String?
+  userId           String?
+  createdAt        DateTime @default(now())
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("llm_calls")
 }
