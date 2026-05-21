@@ -5,8 +5,10 @@ import { spawn } from "child_process";
 import type { AuthenticatedRequest } from "../lib/auth";
 import { captureForJitter } from "../lib/screenshots/jitterCapture";
 import { generateVideoFromScreenshot } from "../lib/agents/urlToJitter";
+import { PrismaClient } from "../lib/generated/prisma/index.js";
 
 const router: Router = Router();
+const prisma = new PrismaClient();
 
 const REPO_ROOT =
   process.env.REPO_ROOT || resolve(__dirname, "..", "..");
@@ -19,17 +21,19 @@ router.get("/jitter", (_req, res) => {
     endpoint: "/api/creative/jitter",
     method: "POST",
     body: {
-      url: "string (required) - source page to capture",
-      audio:
-        "object (optional) - { url, bpm, volume? } to override picker",
+      url: "string (required)",
+      audio: "object (optional) - { url, bpm, volume?, title? }",
       durationMs: "number (default 16000)",
-      notes: "string (optional) - extra art direction",
+      notes: "string (optional)",
       width: "number (default 1920)",
       height: "number (default 1080)",
-      projectId: "string (optional) - id used in screenshot/render filenames",
+      projectId: "string (optional)",
     },
-    returns:
-      "{ videoUrl, brandReport, music, doc: {artboards, operations, customComponents, durationMs} }",
+    returns: "{ jobId, status }",
+    polling: {
+      "GET /jitter/jobs/:id": "single job status + result",
+      "GET /jitter/jobs": "user's recent jobs (limit 20)",
+    },
   });
 });
 
@@ -38,7 +42,6 @@ interface JitterBody {
   audio?:
     | { url: string; bpm: number; volume?: number; title?: string }
     | null;
-  /** Voice-over narration. Either text (TTS) or audioUrl (pre-existing). */
   narration?: {
     text?: string;
     audioUrl?: string;
@@ -47,9 +50,7 @@ interface JitterBody {
     startMs?: number;
     durationMs?: number;
   } | null;
-  /** Stock-image topics → Unsplash search. */
   stockImageTopics?: string[];
-  /** Or pass already-fetched URLs. */
   stockImageUrls?: string[];
   durationMs?: number;
   notes?: string;
@@ -80,32 +81,29 @@ function runRemotionRender(propsPath: string, mp4Path: string): Promise<void> {
   });
 }
 
-// ============================================================
-// POST /jitter — full URL → mp4 pipeline
-// ============================================================
-router.post("/jitter", async (req: AuthenticatedRequest, res) => {
-  const userId = req.userId || "dev-user";
-  const body = (req.body || {}) as JitterBody;
-  const tag = body.projectId || `jitter-${Date.now()}`;
-
-  if (!body?.url || !/^https?:\/\//.test(body.url)) {
-    return res.status(400).json({ error: "invalid url" });
-  }
-
-  console.log(`[jitter] user=${userId} project=${tag} url=${body.url}`);
-
+async function runJitterPipeline(
+  jobId: string,
+  body: JitterBody,
+  userId: string,
+): Promise<void> {
+  const tag = body.projectId || jobId;
   try {
-    // 1. Capture screenshot via scraper-service → R2.
+    await prisma.jitterJob.update({
+      where: { id: jobId },
+      data: { status: "running", phase: "capturing" },
+    });
+
     const shot = await captureForJitter(body.url, tag, {
       width: body.width ?? 1920,
       height: body.height ?? 1080,
     });
-    console.log(`[jitter] screenshot → ${shot.url}`);
+    console.log(`[jitter:${jobId}] screenshot → ${shot.url}`);
 
-    // 2. Run orchestrator. Vision-capable callees accept the R2 URL as the
-    //    "path" arg. If the caller picked a track, pass it as audioOverride
-    //    so the composer aligns to THAT BPM up-front (instead of letting the
-    //    picker bias the beat grid then swapping audio after).
+    await prisma.jitterJob.update({
+      where: { id: jobId },
+      data: { phase: "composing" },
+    });
+
     const result = await generateVideoFromScreenshot({
       url: body.url,
       screenshotPath: shot.url,
@@ -126,7 +124,11 @@ router.post("/jitter", async (req: AuthenticatedRequest, res) => {
 
     const doc = result.composer.doc;
 
-    // 4. Persist props + render mp4 — both into served public dirs.
+    await prisma.jitterJob.update({
+      where: { id: jobId },
+      data: { phase: "rendering" },
+    });
+
     const propsDir = join(REPO_ROOT, "public", "jitter", "renders");
     if (!existsSync(propsDir)) mkdirSync(propsDir, { recursive: true });
     const propsPath = join(propsDir, `${tag}-doc.json`);
@@ -136,34 +138,175 @@ router.post("/jitter", async (req: AuthenticatedRequest, res) => {
     const mp4Path = join(propsDir, mp4Filename);
 
     await runRemotionRender(propsPath, mp4Path);
-    console.log(`[jitter] rendered → ${mp4Path}`);
+    console.log(`[jitter:${jobId}] rendered → ${mp4Path}`);
 
-    // The mp4 lives in the repo /public dir → both Next dev server (3000)
-    // and the express static mount below serve it.
-    return res.json({
-      videoUrl: `/jitter/renders/${mp4Filename}`,
-      brandReport: result.brandReport,
-      music: result.music,
-      jitterDoc: doc,
-      doc: {
-        artboards: doc.conf.artboards.length,
-        operations: doc.conf.artboards.reduce(
-          (s: number, a: any) => s + a.operations.length,
-          0,
-        ),
-        customComponents: doc.customComponents.length,
-        durationMs: doc.conf.artboards.reduce(
-          (s: number, a: any) => s + a.duration,
-          0,
-        ),
+    await prisma.jitterJob.update({
+      where: { id: jobId },
+      data: {
+        status: "completed",
+        phase: null,
+        videoUrl: `/jitter/renders/${mp4Filename}`,
+        brandReport: result.brandReport
+          ? JSON.stringify(result.brandReport)
+          : null,
+        music: result.music ? JSON.stringify(result.music) : null,
+        jitterDoc: JSON.stringify(doc),
       },
     });
   } catch (err) {
-    console.error("[jitter] failed:", err);
-    return res.status(500).json({
-      error: err instanceof Error ? err.message : "Jitter pipeline failed",
-    });
+    console.error(`[jitter:${jobId}] failed:`, err);
+    await prisma.jitterJob
+      .update({
+        where: { id: jobId },
+        data: {
+          status: "failed",
+          phase: null,
+          error: err instanceof Error ? err.message : String(err),
+        },
+      })
+      .catch(() => {});
   }
+}
+
+// ============================================================
+// POST /jitter — enqueue job, return jobId
+// ============================================================
+router.post("/jitter", async (req: AuthenticatedRequest, res) => {
+  const userId = req.userId || "dev-user";
+  const body = (req.body || {}) as JitterBody;
+
+  if (!body?.url || !/^https?:\/\//.test(body.url)) {
+    return res.status(400).json({ error: "invalid url" });
+  }
+
+  const job = await prisma.jitterJob.create({
+    data: {
+      userId,
+      projectId: body.projectId,
+      status: "queued",
+      url: body.url,
+      audio: body.audio ? JSON.stringify(body.audio) : null,
+      durationMs: body.durationMs ?? 16000,
+      notes: body.notes,
+    },
+  });
+
+  console.log(`[jitter] queued job=${job.id} user=${userId} url=${body.url}`);
+
+  // Fire and forget — pipeline writes status back to DB.
+  void runJitterPipeline(job.id, body, userId);
+
+  return res.status(202).json({ jobId: job.id, status: "queued" });
 });
+
+// ============================================================
+// GET /jitter/jobs — list user's recent jobs
+// ============================================================
+router.get("/jitter/jobs", async (req: AuthenticatedRequest, res) => {
+  const userId = req.userId;
+  if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+  const jobs = await prisma.jitterJob.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+    select: {
+      id: true,
+      projectId: true,
+      status: true,
+      phase: true,
+      url: true,
+      durationMs: true,
+      error: true,
+      videoUrl: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  return res.json({ jobs });
+});
+
+// ============================================================
+// GET /jitter/jobs/:id — single job status + result
+// ============================================================
+router.get(
+  "/jitter/jobs/:id",
+  async (req: AuthenticatedRequest, res) => {
+    const userId = req.userId;
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const job = await prisma.jitterJob.findUnique({
+      where: { id: req.params.id },
+    });
+    if (!job || job.userId !== userId) {
+      return res.status(404).json({ error: "Not found" });
+    }
+
+    const doc = job.jitterDoc ? safeJson(job.jitterDoc) : null;
+
+    return res.json({
+      jobId: job.id,
+      projectId: job.projectId,
+      status: job.status,
+      phase: job.phase,
+      url: job.url,
+      durationMs: job.durationMs,
+      error: job.error,
+      videoUrl: job.videoUrl,
+      brandReport: job.brandReport ? safeJson(job.brandReport) : null,
+      music: job.music ? safeJson(job.music) : null,
+      jitterDoc: doc,
+      doc:
+        doc && typeof doc === "object"
+          ? summarizeDoc(doc as any)
+          : null,
+      createdAt: job.createdAt,
+      updatedAt: job.updatedAt,
+    });
+  },
+);
+
+function safeJson(s: string): unknown {
+  try {
+    return JSON.parse(s);
+  } catch {
+    return null;
+  }
+}
+
+function summarizeDoc(doc: any) {
+  const artboards = doc?.conf?.artboards || [];
+  return {
+    artboards: artboards.length,
+    operations: artboards.reduce(
+      (s: number, a: any) => s + (a?.operations?.length || 0),
+      0,
+    ),
+    customComponents: doc?.customComponents?.length || 0,
+    durationMs: artboards.reduce(
+      (s: number, a: any) => s + (a?.duration || 0),
+      0,
+    ),
+  };
+}
+
+// On process start, mark any jobs that were mid-flight as failed —
+// the in-process runner is gone, so they can never finish.
+prisma.jitterJob
+  .updateMany({
+    where: { status: { in: ["queued", "running"] } },
+    data: {
+      status: "failed",
+      phase: null,
+      error: "Server restarted while job was in flight",
+    },
+  })
+  .then((r) => {
+    if (r.count > 0) {
+      console.log(`[jitter] swept ${r.count} stale jobs on startup`);
+    }
+  })
+  .catch(() => {});
 
 export default router;

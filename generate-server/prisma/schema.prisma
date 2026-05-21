@@ -47,6 +47,28 @@ model JitterDocHistory {
   @@index([projectId, createdAt])
 }
 
+model JitterJob {
+  id          String   @id @default(cuid())
+  userId      String
+  projectId   String?
+  status      String   @default("queued")
+  phase       String?
+  url         String
+  audio       String?
+  durationMs  Int      @default(16000)
+  notes       String?
+  error       String?
+  videoUrl    String?
+  brandReport String?
+  music       String?
+  jitterDoc   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
 model ScreenRecording {
   id                String   @id @default(cuid())
   projectId         String

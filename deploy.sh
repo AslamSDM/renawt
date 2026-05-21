@@ -239,6 +239,8 @@ EnvironmentFile=/opt/remawt/generate-server/.env
 NoNewPrivileges=true
 ProtectSystem=strict
 ReadWritePaths=/opt/remawt
+# Puppeteer (used by Remotion render) needs a writable /tmp.
+PrivateTmp=yes
 
 [Install]
 WantedBy=multi-user.target
