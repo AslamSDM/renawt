@@ -1,17 +1,22 @@
 "use client";
 
 import { SessionProvider } from "next-auth/react";
-import { Mentiq } from "mentiq-sdk";
+import posthog from "posthog-js";
+import { PostHogProvider } from "posthog-js/react";
+import { useEffect } from "react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
+    useEffect(() => {
+        if (posthog.__loaded) return;
+        posthog.init("phc_mtoVUHTDj3Bp8T7HfYAgecSRJ2GpaTsfswv9qeQc9Cgp", {
+            api_host: "https://us.i.posthog.com",
+            defaults: "2026-01-30",
+        });
+    }, []);
+
     return (
         <SessionProvider>
-            <Mentiq
-                apiKey={process.env.NEXT_PUBLIC_MENTIQ_API_KEY!}
-                projectId={process.env.NEXT_PUBLIC_MENTIQ_PROJECT_ID!}
-            >
-                {children}
-            </Mentiq>
+            <PostHogProvider client={posthog}>{children}</PostHogProvider>
         </SessionProvider>
     );
 }

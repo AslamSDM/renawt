@@ -16,10 +16,15 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Global Middleware
+const DEFAULT_ALLOWED_ORIGINS = [
+  "http://localhost:3000",
+  "https://www.remawt.com",
+  "https://remawt.com",
+];
 app.use(cors({
   origin: process.env.CORS_ORIGIN
-    ? process.env.CORS_ORIGIN.split(",")
-    : ["http://localhost:3000"],
+    ? process.env.CORS_ORIGIN.split(",").map((s) => s.trim())
+    : DEFAULT_ALLOWED_ORIGINS,
   methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
