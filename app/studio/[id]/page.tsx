@@ -164,11 +164,11 @@ export default function StudioPage({
         className="relative z-10 sticky top-0 backdrop-blur-md"
         style={{ background: "rgba(7,7,10,0.7)", borderBottom: "1px solid var(--rule)" }}
       >
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="max-w-7xl mx-auto px-4 py-3 md:px-6 md:py-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
             <Link
               href="/projects"
-              className="text-muted hover:text-ink transition-colors"
+              className="shrink-0 text-muted hover:text-ink transition-colors"
             >
               <svg
                 className="w-5 h-5"
@@ -184,15 +184,15 @@ export default function StudioPage({
                 />
               </svg>
             </Link>
-            <span className="kinetic-pill !py-1 !px-2.5">
+            <span className="hidden sm:inline-flex kinetic-pill !py-1 !px-2.5">
               <span className="accent-dot" />
               <span className="mono-tick" style={{ color: "var(--ink)" }}>STUDIO</span>
             </span>
-            <div>
-              <h1 className="text-base font-medium tracking-[-0.02em] text-ink">
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate text-sm md:text-base font-medium tracking-[-0.02em] text-ink">
                 {project.productData?.name || "Untitled Video"}
               </h1>
-              <p className="text-xs text-muted">
+              <p className="text-[11px] md:text-xs text-muted">
                 {project.script
                   ? `${Math.round(project.script.totalDuration / 30)}s video`
                   : "Draft"}
@@ -200,10 +200,10 @@ export default function StudioPage({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Button variant="secondary" size="sm">
+          <div className="flex items-center gap-2 md:gap-3 shrink-0">
+            <Button variant="secondary" size="sm" className="!px-2 md:!px-3">
               <svg
-                className="w-4 h-4 mr-2"
+                className="w-4 h-4 md:mr-2"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -215,11 +215,11 @@ export default function StudioPage({
                   d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
                 />
               </svg>
-              Share
+              <span className="hidden md:inline">Share</span>
             </Button>
-            <Button size="sm">
+            <Button size="sm" className="!px-2 md:!px-3">
               <svg
-                className="w-4 h-4 mr-2"
+                className="w-4 h-4 md:mr-2"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -231,15 +231,16 @@ export default function StudioPage({
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                 />
               </svg>
-              Export MP4
+              <span className="hidden md:inline">Export MP4</span>
+              <span className="md:hidden">Export</span>
             </Button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="relative z-10 max-w-7xl mx-auto px-6 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 py-6 md:px-6 md:py-8">
+        <div className="grid lg:grid-cols-3 gap-5 md:gap-8">
           {/* Video Player */}
           <div className="lg:col-span-2">
             <Card padding="none" className="overflow-hidden">
@@ -256,7 +257,7 @@ export default function StudioPage({
           <div className="space-y-6">
             {/* Panel Tabs */}
             <div
-              className="flex gap-1 rounded-full p-1"
+              className="flex gap-1 overflow-x-auto rounded-full p-1"
               style={{ background: "var(--paper)", border: "1px solid var(--rule)" }}
             >
               {(["scenes", "data", "code", "recordings"] as const).map((p) => {
@@ -265,7 +266,7 @@ export default function StudioPage({
                   <button
                     key={p}
                     onClick={() => setActivePanel(p)}
-                    className="rounded-full px-3 py-1.5 text-[13px] font-medium capitalize transition-colors"
+                    className="shrink-0 rounded-full px-3 py-1.5 text-[13px] font-medium capitalize transition-colors"
                     style={{
                       background: active ? "var(--accent-soft)" : "transparent",
                       color: active ? "var(--accent)" : "var(--muted)",

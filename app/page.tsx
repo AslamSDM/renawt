@@ -176,7 +176,7 @@ interface PromptCardProps {
 function PromptCard({ prompt, setPrompt, aspect, setAspect, loading, onGenerate }: PromptCardProps) {
   return (
     <div
-      className="relative rounded-2xl p-5"
+      className="relative rounded-2xl p-4 sm:p-5"
       style={{
         background: "var(--paper)",
         border: "1px solid var(--rule)",
@@ -184,9 +184,9 @@ function PromptCard({ prompt, setPrompt, aspect, setAspect, loading, onGenerate 
           "0 0 0 1px var(--rule), 0 0 60px -10px rgba(59,130,246,0.40), inset 0 1px 0 rgba(255,255,255,0.04)",
       }}
     >
-      <div className="mb-4 flex items-center gap-2">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
         <span className="mono-tick">NEW PROJECT · UNTITLED</span>
-        <span className="flex-1" />
+        <span className="hidden flex-1 sm:block" />
         {ASPECTS.map((a) => {
           const active = a === aspect;
           return (
@@ -217,9 +217,9 @@ function PromptCard({ prompt, setPrompt, aspect, setAspect, loading, onGenerate 
         }}
         rows={3}
         placeholder="Paste a product URL or describe the launch film you want. e.g. https://yoursite.com — 30s, energetic, brand-tuned."
-        className="w-full resize-none bg-transparent px-1 pb-3 text-lg leading-relaxed text-ink placeholder:text-subtle focus:outline-none"
+        className="w-full resize-none bg-transparent px-1 pb-3 text-base leading-relaxed text-ink placeholder:text-subtle focus:outline-none sm:text-lg"
       />
-      <div className="flex items-center gap-2 border-t border-rule pt-3">
+      <div className="flex flex-wrap items-center gap-2 border-t border-rule pt-3">
         {PROMPT_CHIPS.map((c, i) => {
           const Icon = c.i;
           return (
@@ -233,12 +233,12 @@ function PromptCard({ prompt, setPrompt, aspect, setAspect, loading, onGenerate 
             </span>
           );
         })}
-        <span className="flex-1" />
+        <span className="hidden flex-1 sm:block" />
         <button
           type="button"
           onClick={onGenerate}
           disabled={loading || !prompt.trim()}
-          className="btn-accent text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn-accent ml-auto text-xs disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
             <>
@@ -447,19 +447,20 @@ export default function LandingPage() {
       <Navbar transparent />
 
       {/* ─── Hero ─────────────────────────────────────────────── */}
-      <section className="relative px-6 pt-32 md:pt-36">
+      <section className="relative px-4 pt-24 sm:px-6 md:pt-36">
         <div className="mx-auto max-w-[1400px] text-center">
-          <div className="kinetic-pill mx-auto mb-9">
+          <div className="kinetic-pill mx-auto mb-7 flex-wrap justify-center md:mb-9">
             <span className="accent-dot" />
             <span className="mono-tick" style={{ color: "var(--ink)" }}>
-              NEW · v4.2 · GUIDED CINEMATOGRAPHY MODEL
+              <span className="hidden sm:inline">NEW · v4.2 · GUIDED CINEMATOGRAPHY MODEL</span>
+              <span className="sm:hidden">NEW · v4.2</span>
             </span>
             <span className="mono-tick" style={{ color: "var(--accent)" }}>
               READ THE POST →
             </span>
           </div>
 
-          <h1 className="text-[clamp(1.75rem,5vw,3.75rem)] font-medium leading-[1.05] tracking-[-0.035em]">
+          <h1 className="text-[clamp(1.75rem,7vw,3.75rem)] font-medium leading-[1.05] tracking-[-0.035em]">
             Render the <TypewriterText />{" "}
             <span style={{ color: "var(--muted)" }}>your launch</span>{" "}
             <span style={{ color: "var(--accent)" }}>deserves.</span>
@@ -471,7 +472,7 @@ export default function LandingPage() {
           </p>
 
           {/* Prompt card */}
-          <div className="mx-auto mt-12 max-w-[740px] text-left">
+          <div className="mx-auto mt-10 max-w-[740px] text-left md:mt-12">
             <PromptCard
               prompt={prompt}
               setPrompt={setPrompt}
@@ -500,11 +501,11 @@ export default function LandingPage() {
 
       {/* ─── Logos ────────────────────────────────────────────── */}
       <section
-        className="relative mt-28 border-y border-rule"
+        className="relative mt-20 border-y border-rule md:mt-28"
         id="customers"
         style={{ background: "var(--paper)" }}
       >
-        <div className="mx-auto max-w-[1400px] px-6 py-9">
+        <div className="mx-auto max-w-[1400px] px-4 py-7 sm:px-6 md:py-9">
           <p className="mono-tick mb-6 text-center">
             2,840 TEAMS SHIPPING VIDEO WITH REMAWT
           </p>
@@ -524,7 +525,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── How it works ─────────────────────────────────────── */}
-      <section className="relative px-6 py-32" id="product">
+      <section className="relative px-4 py-20 sm:px-6 md:py-32" id="product">
         <div className="mx-auto max-w-[1400px]">
           <div className="mb-16 text-center">
             <div className="kinetic-pill mx-auto mb-5">
@@ -585,7 +586,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Bento features ───────────────────────────────────── */}
-      <section className="relative border-t border-rule px-6 py-32">
+      <section className="relative border-t border-rule px-4 py-20 sm:px-6 md:py-32">
         <div className="mx-auto max-w-[1400px]">
           <div className="mb-14 flex flex-col items-start justify-between gap-8 md:flex-row md:items-end">
             <div className="max-w-2xl">
@@ -806,7 +807,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Showcase ─────────────────────────────────────────── */}
-      <section className="relative border-t border-rule px-6 py-32" id="showcase">
+      <section className="relative border-t border-rule px-4 py-20 sm:px-6 md:py-32" id="showcase">
         <div className="mx-auto max-w-[1400px]">
           <div className="mb-12 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
             <div>
@@ -892,7 +893,7 @@ export default function LandingPage() {
       {/* ─── Use cases ────────────────────────────────────────── */}
       <section
         id="use-cases"
-        className="relative border-t border-rule px-6 py-32"
+        className="relative border-t border-rule px-4 py-20 sm:px-6 md:py-32"
       >
         <div className="mx-auto max-w-[1400px]">
           <div className="mb-16 text-center">
@@ -939,7 +940,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Final CTA ────────────────────────────────────────── */}
-      <section className="relative overflow-hidden border-t border-rule px-6 py-40 text-center">
+      <section className="relative overflow-hidden border-t border-rule px-4 py-24 text-center sm:px-6 md:py-40">
         <div className="pointer-events-none absolute inset-0 kinetic-dotgrid" />
         <div
           className="pointer-events-none absolute kinetic-glow"

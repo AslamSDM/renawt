@@ -52,15 +52,20 @@ export function Navbar({
         }`}
         style={{ borderBottom: transparent ? "none" : "1px solid var(--rule)" }}
       >
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 py-3 md:px-6 md:py-4">
           {/* Left: logo + status pill */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 md:gap-4">
             {showLogo && (
-              <Link href="/" className="flex items-center gap-2" aria-label="Remawt">
+              <Link href="/" className="flex shrink-0 items-center" aria-label="Remawt">
+                <img
+                  src="/logo/remawt logo .svg"
+                  alt="Remawt"
+                  className="block h-10 w-auto md:hidden"
+                />
                 <img
                   src="/logo/remwat full logo .svg"
                   alt="Remawt"
-                  className="h-7 w-auto"
+                  className="hidden h-8 w-auto md:block"
                 />
               </Link>
             )}
@@ -222,7 +227,7 @@ export function Navbar({
             <img
               src="/logo/remwat full logo .svg"
               alt="Remawt"
-              className="mb-4 h-10 w-auto"
+              className="mb-4 h-12 w-auto"
             />
           )}
           {showNavLinks &&

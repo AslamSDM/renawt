@@ -148,33 +148,36 @@ export default function JitterProjectPage({
         className="relative z-10 sticky top-0 backdrop-blur-md"
         style={{ background: "rgba(7,7,10,0.7)", borderBottom: "1px solid var(--rule)" }}
       >
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="max-w-7xl mx-auto px-4 py-3 md:px-6 md:py-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
             <Link
               href="/projects"
-              className="p-2 hover:bg-paper-2 rounded-full transition-colors"
+              className="shrink-0 p-2 hover:bg-paper-2 rounded-full transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </Link>
-            <span className="kinetic-pill !py-1 !px-2.5">
+            <span className="hidden sm:inline-flex kinetic-pill !py-1 !px-2.5">
               <span className="accent-dot" />
               <span className="mono-tick" style={{ color: "var(--ink)" }}>JITTER · URL → VIDEO</span>
             </span>
-            <div>
-              <h1 className="text-base font-medium tracking-[-0.02em]">Generate from URL</h1>
-              <p className="text-xs text-muted mt-0.5">
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate text-sm md:text-base font-medium tracking-[-0.02em]">Generate from URL</h1>
+              <p className="hidden sm:block text-xs text-muted mt-0.5 truncate">
                 Screenshot the page, derive the brand, render an animated video.
+              </p>
+              <p className="sm:hidden text-[11px] text-muted mt-0.5">
+                URL → animated video
               </p>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="relative z-10 max-w-7xl mx-auto px-6 py-8 space-y-8">
-        <section className="grid grid-cols-1 lg:grid-cols-[1fr,420px] gap-8">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 py-6 md:px-6 md:py-8 space-y-6 md:space-y-8">
+        <section className="grid grid-cols-1 lg:grid-cols-[1fr,420px] gap-5 md:gap-8">
           {/* Left: form */}
           <div className="space-y-6">
-            <Card className="p-6">
+            <Card className="p-5 md:p-6">
               <label className="block text-sm font-medium text-ink/80 mb-2">
                 <Globe className="w-4 h-4 inline mr-2" />
                 Source URL
@@ -191,12 +194,12 @@ export default function JitterProjectPage({
               </p>
             </Card>
 
-            <Card className="p-6">
+            <Card className="p-5 md:p-6">
               <label className="block text-sm font-medium text-ink/80 mb-3">
                 <Clock className="w-4 h-4 inline mr-2" />
                 Duration
               </label>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {DURATION_PRESETS.map((p) => (
                   <button
                     key={p.value}
@@ -216,7 +219,7 @@ export default function JitterProjectPage({
               </p>
             </Card>
 
-            <Card className="p-6">
+            <Card className="p-5 md:p-6">
               <label className="block text-sm font-medium text-ink/80 mb-2">
                 Direction (optional)
               </label>
@@ -268,7 +271,7 @@ export default function JitterProjectPage({
 
           {/* Right: render output panel */}
           <aside className="space-y-4">
-            <Card className="p-6 sticky top-6">
+            <Card className="p-5 md:p-6 lg:sticky lg:top-6">
               <div className="flex items-center gap-2 text-sm font-medium text-ink/80 mb-4">
                 <FileVideo className="w-4 h-4" />
                 Last render
