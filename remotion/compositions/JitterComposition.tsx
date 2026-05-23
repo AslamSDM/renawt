@@ -173,6 +173,15 @@ export interface JitterDocInputProps {
     startMs?: number;
     durationMs?: number;
   } | null;
+  captions?: {
+    enabled?: boolean;
+    style?: "bottom" | "centered" | "minimal";
+    fontFamily?: string;
+    fontSize?: number;
+    color?: string;
+    background?: string;
+    chunks?: { text: string; startMs: number; endMs: number }[];
+  } | null;
   customComponents?: JitterCustomComponent[];
   conf: {
     artboards: Artboard[];
@@ -843,10 +852,71 @@ function ArtboardScene({ art }: { art: Artboard }) {
   );
 }
 
+interface CaptionsOverlayProps {
+  chunks: { text: string; startMs: number; endMs: number }[];
+  style: "bottom" | "centered" | "minimal";
+  fontFamily?: string;
+  fontSize?: number;
+  color?: string;
+  background?: string;
+  fps: number;
+}
+
+const CaptionsOverlay: React.FC<CaptionsOverlayProps> = ({
+  chunks,
+  style,
+  fontFamily,
+  fontSize,
+  color,
+  background,
+  fps,
+}) => {
+  const frame = useCurrentFrame();
+  const nowMs = (frame / fps) * 1000;
+  const active = chunks.find((c) => nowMs >= c.startMs && nowMs < c.endMs);
+  if (!active) return null;
+
+  const isCentered = style === "centered";
+  const isMinimal = style === "minimal";
+  const bottom = isCentered ? undefined : 80;
+  const top = isCentered ? "50%" : undefined;
+  const transform = isCentered ? "translate(-50%, -50%)" : "translateX(-50%)";
+
+  return (
+    <AbsoluteFill style={{ pointerEvents: "none" }}>
+      <div
+        style={{
+          position: "absolute",
+          left: "50%",
+          bottom,
+          top,
+          transform,
+          maxWidth: "85%",
+          padding: isMinimal ? "8px 16px" : "16px 28px",
+          borderRadius: 14,
+          background:
+            background ?? (isMinimal ? "transparent" : "rgba(0,0,0,0.72)"),
+          color: color ?? "#ffffff",
+          fontFamily: resolveFontFamily(fontFamily ?? "Inter"),
+          fontSize: fontSize ?? 44,
+          fontWeight: 600,
+          lineHeight: 1.2,
+          textAlign: "center",
+          textShadow: isMinimal ? "0 2px 8px rgba(0,0,0,0.85)" : undefined,
+          letterSpacing: -0.5,
+        }}
+      >
+        {active.text}
+      </div>
+    </AbsoluteFill>
+  );
+};
+
 export const JitterComposition: React.FC<JitterDocInputProps> = ({
   conf,
   audio,
   narration,
+  captions,
   customComponents,
 }) => {
   const { fps } = useVideoConfig();
@@ -937,6 +1007,17 @@ export const JitterComposition: React.FC<JitterDocInputProps> = ({
             </Sequence>
           );
         })}
+        {captions?.enabled !== false && captions?.chunks?.length ? (
+          <CaptionsOverlay
+            chunks={captions.chunks}
+            style={captions.style ?? "bottom"}
+            fontFamily={captions.fontFamily}
+            fontSize={captions.fontSize}
+            color={captions.color}
+            background={captions.background}
+            fps={fps}
+          />
+        ) : null}
       </AbsoluteFill>
     </CustomContext.Provider>
   );

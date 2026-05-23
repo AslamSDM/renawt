@@ -51,6 +51,23 @@ interface JitterBody {
   stockImageTopics?: string[];
   /** Or pass already-fetched URLs. */
   stockImageUrls?: string[];
+  /** User-uploaded named assets (logos, screen recordings, photos). */
+  userAssets?: Array<{
+    url: string;
+    alias: string;
+    kind: "image" | "video";
+    name?: string;
+    description?: string;
+  }>;
+  /** Caption track config. Chunks are auto-derived from narration text. */
+  captions?: {
+    enabled?: boolean;
+    style?: "bottom" | "centered" | "minimal";
+    fontFamily?: string;
+    fontSize?: number;
+    color?: string;
+    background?: string;
+  } | null;
   durationMs?: number;
   notes?: string;
   width?: number;
@@ -119,6 +136,8 @@ router.post("/jitter", async (req: AuthenticatedRequest, res) => {
       narration: body.narration || undefined,
       stockImageTopics: body.stockImageTopics,
       stockImageUrls: body.stockImageUrls,
+      userAssets: body.userAssets,
+      captions: body.captions ?? undefined,
       jobId: tag,
       userId,
       projectId: body.projectId,

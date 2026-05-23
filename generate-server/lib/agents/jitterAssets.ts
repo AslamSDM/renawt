@@ -34,6 +34,84 @@ export interface StockImage {
   topic: string;
 }
 
+export interface UserAsset {
+  url: string;
+  /** Short identifier the user can reference in their prompt — e.g. "logo", "hero". */
+  alias: string;
+  kind: "image" | "video";
+  /** Original filename, helps the LLM disambiguate similar aliases. */
+  name?: string;
+  /** Free-form description supplied by the user (purpose, when to use it). */
+  description?: string;
+}
+
+export interface CaptionChunk {
+  text: string;
+  startMs: number;
+  endMs: number;
+}
+
+/**
+ * Split narration text into caption chunks and distribute time proportionally
+ * to character count across the given total durationMs. Punctuation-aware: we
+ * break on sentence terminators first, then on commas/long phrases. No external
+ * STT — speech-to-text alignment would be more accurate but adds a slow,
+ * paid hop. Proportional timing is "good enough" for short videos.
+ */
+export function buildCaptionsFromNarration(
+  text: string,
+  totalDurationMs: number,
+  opts: { startMs?: number; maxCharsPerChunk?: number } = {},
+): CaptionChunk[] {
+  if (!text?.trim() || !Number.isFinite(totalDurationMs) || totalDurationMs <= 0) {
+    return [];
+  }
+  const startMs = opts.startMs ?? 0;
+  const maxChars = opts.maxCharsPerChunk ?? 64;
+
+  const sentenceSplit = text
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(/(?<=[.!?])\s+/)
+    .filter(Boolean);
+
+  const phrases: string[] = [];
+  for (const s of sentenceSplit) {
+    if (s.length <= maxChars) {
+      phrases.push(s);
+      continue;
+    }
+    // Break long sentences on commas / semicolons / "and"/"but" connectors.
+    const sub = s.split(/(?<=[,;:])\s+|\s+(?=and |but |or |so )/i).filter(Boolean);
+    let buffer = "";
+    for (const piece of sub) {
+      if ((buffer + " " + piece).trim().length <= maxChars) {
+        buffer = (buffer + " " + piece).trim();
+      } else {
+        if (buffer) phrases.push(buffer);
+        buffer = piece;
+      }
+    }
+    if (buffer) phrases.push(buffer);
+  }
+
+  if (!phrases.length) return [];
+  const totalChars = phrases.reduce((s, p) => s + p.length, 0);
+  const chunks: CaptionChunk[] = [];
+  let cursor = startMs;
+  for (const p of phrases) {
+    const share = (p.length / totalChars) * totalDurationMs;
+    const end = cursor + share;
+    chunks.push({
+      text: p,
+      startMs: Math.round(cursor),
+      endMs: Math.round(end),
+    });
+    cursor = end;
+  }
+  return chunks;
+}
+
 /**
  * Resolve a NarrationInput → playable narration spec (with public URL).
  * Returns null if no narration was requested or synthesis failed.

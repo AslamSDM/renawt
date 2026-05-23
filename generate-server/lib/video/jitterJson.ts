@@ -248,6 +248,29 @@ export const JitterDocSchema = z.object({
     })
     .nullable()
     .optional(),
+  /** Optional caption track. Rendered as a bottom-aligned overlay synced to chunk windows. */
+  captions: z
+    .object({
+      enabled: z.boolean().default(true),
+      style: z
+        .enum(["bottom", "centered", "minimal"])
+        .default("bottom"),
+      fontFamily: z.string().optional(),
+      fontSize: z.number().optional(),
+      color: z.string().optional(),
+      background: z.string().optional(),
+      chunks: z
+        .array(
+          z.object({
+            text: z.string(),
+            startMs: z.number(),
+            endMs: z.number(),
+          }),
+        )
+        .default([]),
+    })
+    .nullable()
+    .optional(),
   customComponents: z.array(JitterCustomComponentSchema).default([]),
   conf: z.object({
     id: z.string().default("root"),

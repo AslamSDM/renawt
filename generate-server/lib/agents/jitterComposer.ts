@@ -157,6 +157,16 @@ export interface JitterBrief {
    *  bare URL or a `{url, topic}` pair — the topic helps the composer pick a
    *  photo that matches the scene's content rather than dropping one at random. */
   stockImages?: Array<string | { url: string; topic?: string }>;
+  /** User-uploaded named assets (logos, photos, screen recordings) that the user
+   *  may reference by alias in `brief`. Drop the matching URL as an image layer
+   *  when the brief mentions the alias (or "logo"/"my product" if obvious). */
+  userAssets?: Array<{
+    url: string;
+    alias: string;
+    kind: "image" | "video";
+    name?: string;
+    description?: string;
+  }>;
   /** Optional background music. */
   audio?: { url: string; bpm?: number; volume?: number } | null;
   /** Optional voice-over narration (already synthesized). */
@@ -438,6 +448,15 @@ function buildUserMessage(brief: JitterBrief): string {
     ? `\nNARRATION (attach this as top-level "narration" in your JSON — voice-over plays mixed with the music):\n${JSON.stringify(brief.narration)}\nDESIGN FOR NARRATION: keep on-screen text minimal, reveal in sync with the voice. Total scene durations should give the narration room to land.`
     : "";
 
+  const userAssetsBlock = brief.userAssets?.length
+    ? `\nUSER ASSETS — the operator uploaded these and may reference them by alias in the BRIEF (e.g. "use [logo] in scene 1"). When the brief mentions an alias by name, drop the matching URL as a layer in that scene. Images go as { "type": "image", "url": "<url>" }. VIDEO assets cannot render directly — use the first frame mental-model and drop the URL only if the brief explicitly asks for a "thumbnail" placeholder; otherwise skip video assets. NEVER reuse the same asset more than twice.\n${brief.userAssets
+        .map(
+          (a) =>
+            `  - [${a.alias}] kind=${a.kind} url=${a.url}${a.description ? `  // ${a.description}` : a.name ? `  // ${a.name}` : ""}`,
+        )
+        .join("\n")}`
+    : "";
+
   const beatBlock = brief.audio?.bpm
     ? `\nBEAT GRID (the music is locked at ${brief.audio.bpm} BPM — compose ON the grid):\n${describeBeatGrid(beatGridForBpm(brief.audio.bpm))}`
     : "";
@@ -481,7 +500,7 @@ ${brief.brief.trim()}
 TARGET:
 - Canvas: ${w} x ${h}
 - Total duration: ${dur}ms (sum of artboard durations MUST equal this ±200ms)
-- fps: 30${sceneHint}${beatBlock}${brand}${copy}${hero}${stock}${audio}${narration}${fontBlock}${backdropBlock}${inspirations}${customs}
+- fps: 30${sceneHint}${beatBlock}${brand}${copy}${hero}${stock}${audio}${narration}${userAssetsBlock}${fontBlock}${backdropBlock}${inspirations}${customs}
 
 ${BUILTIN_CATALOG}
 

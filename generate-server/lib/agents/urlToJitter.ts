@@ -30,7 +30,9 @@ import {
 import {
   resolveNarration,
   fetchStockImagesForTopics,
+  buildCaptionsFromNarration,
   type NarrationInput,
+  type UserAsset,
 } from "./jitterAssets";
 import { withLlmContext } from "../llm/tokenLogger";
 import { pickTemplateInspirations, pickBackgroundForBrand } from "./jitterTemplateRegistry";
@@ -311,6 +313,17 @@ export async function generateVideoFromScreenshot(input: {
   stockImageTopics?: string[];
   /** Caller-supplied stock image URLs (if you already have a list). */
   stockImageUrls?: string[];
+  /** User-uploaded named assets (logos, photos, screen recordings) the agent can reference by alias. */
+  userAssets?: UserAsset[];
+  /** Caption track config. Caller passes `enabled`+`style`; chunks are auto-derived from narration. */
+  captions?: {
+    enabled?: boolean;
+    style?: "bottom" | "centered" | "minimal";
+    fontFamily?: string;
+    fontSize?: number;
+    color?: string;
+    background?: string;
+  } | null;
   /** Tag used in narration filename. Defaults to a timestamp. */
   jobId?: string;
   /** For LLM token-usage logging. */
@@ -342,6 +355,15 @@ async function runUrlToJitter(input: {
   narration?: NarrationInput | null;
   stockImageTopics?: string[];
   stockImageUrls?: string[];
+  userAssets?: UserAsset[];
+  captions?: {
+    enabled?: boolean;
+    style?: "bottom" | "centered" | "minimal";
+    fontFamily?: string;
+    fontSize?: number;
+    color?: string;
+    background?: string;
+  } | null;
   jobId?: string;
   userId?: string;
   projectId?: string;
@@ -442,6 +464,17 @@ async function runUrlToJitter(input: {
     );
   }
 
+  // User-uploaded named assets (logos, screen recordings, photos). Composer
+  // can drop them as image layers by URL when the prompt mentions the alias.
+  if (input.userAssets?.length) {
+    brief.userAssets = input.userAssets;
+    console.log(
+      `[urlToJitter] ${input.userAssets.length} user assets attached: ${input.userAssets
+        .map((a) => `${a.alias}(${a.kind})`)
+        .join(", ")}`,
+    );
+  }
+
   const composer = await generateJitterDoc(brief, { maxAttempts: 3 });
 
   // Content-relevance pass: scan every text / mockup / code layer and
@@ -470,6 +503,32 @@ async function runUrlToJitter(input: {
   // durationMs, but we need the authoritative spec for music ducking.
   if (narration) {
     composer.doc.narration = narration;
+  }
+
+  // Captions — auto-derive from the narration text if the caller asked for them.
+  const captionsCfg = input.captions;
+  if (captionsCfg?.enabled !== false && narration && input.narration?.text) {
+    const totalMs =
+      narration.durationMs ?? Math.round((narration.estimatedDurationSec ?? 0) * 1000);
+    if (totalMs > 0) {
+      const chunks = buildCaptionsFromNarration(input.narration.text, totalMs, {
+        startMs: narration.startMs ?? 0,
+      });
+      if (chunks.length) {
+        composer.doc.captions = {
+          enabled: captionsCfg?.enabled ?? true,
+          style: captionsCfg?.style ?? "bottom",
+          fontFamily: captionsCfg?.fontFamily,
+          fontSize: captionsCfg?.fontSize,
+          color: captionsCfg?.color,
+          background: captionsCfg?.background,
+          chunks,
+        };
+        console.log(
+          `[urlToJitter] captions attached (${chunks.length} chunks, style=${composer.doc.captions.style})`,
+        );
+      }
+    }
   }
   return { brandReport, brief, composer, music };
 }

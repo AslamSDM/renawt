@@ -27,9 +27,21 @@ const VALID_IMAGE_TYPES = [
   "image/webp",
 ];
 
+const VALID_VIDEO_TYPES = [
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+  "video/x-matroska",
+];
+
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB
+const MAX_VIDEO_BYTES = 200 * 1024 * 1024; // 200 MB — screen recordings can be big
+
 /**
  * POST /api/assets
- * Upload image assets (logos, SVGs, PNGs) to R2
+ * Upload image/video assets (logos, screenshots, screen recordings) to R2.
+ *
+ * Each returned asset: { url, key, name, kind: "image" | "video" }.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -59,31 +71,41 @@ export async function POST(request: NextRequest) {
     }
 
     const client = getR2Client();
-    const uploaded: { url: string; key: string; name: string }[] = [];
+    const uploaded: {
+      url: string;
+      key: string;
+      name: string;
+      kind: "image" | "video";
+    }[] = [];
 
     for (const file of files) {
-      if (!VALID_IMAGE_TYPES.includes(file.type)) {
+      const isImage = VALID_IMAGE_TYPES.includes(file.type);
+      const isVideo = VALID_VIDEO_TYPES.includes(file.type);
+      if (!isImage && !isVideo) {
         return NextResponse.json(
           {
-            error: `Invalid file type: ${file.name}. Supported: PNG, JPG, SVG, WebP`,
+            error: `Invalid file type: ${file.name}. Supported: PNG, JPG, SVG, WebP, MP4, WebM, MOV`,
           },
           { status: 400 },
         );
       }
 
-      // Max 10MB per image
-      if (file.size > 10 * 1024 * 1024) {
+      const maxBytes = isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
+      if (file.size > maxBytes) {
+        const limit = isVideo ? "200MB" : "10MB";
         return NextResponse.json(
-          { error: `File too large: ${file.name}. Maximum 10MB per image.` },
+          { error: `File too large: ${file.name}. Maximum ${limit}.` },
           { status: 400 },
         );
       }
 
       const buffer = Buffer.from(await file.arrayBuffer());
-      const ext = file.name.split(".").pop() || "png";
+      const ext =
+        file.name.split(".").pop() || (isVideo ? "mp4" : "png");
       const assetId = `asset-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const fileName = `${assetId}.${ext}`;
-      const key = `assets/${session.user.id}/${fileName}`;
+      const subdir = isVideo ? "videos" : "images";
+      const key = `assets/${session.user.id}/${subdir}/${fileName}`;
 
       await client.send(
         new PutObjectCommand({
@@ -103,7 +125,12 @@ export async function POST(request: NextRequest) {
         ? `${R2_PUBLIC_URL}/${key}`
         : `https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${key}`;
 
-      uploaded.push({ url: publicUrl, key, name: file.name });
+      uploaded.push({
+        url: publicUrl,
+        key,
+        name: file.name,
+        kind: isVideo ? "video" : "image",
+      });
     }
 
     return NextResponse.json({ assets: uploaded });
