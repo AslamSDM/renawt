@@ -28,8 +28,31 @@ model Project {
   recordings      ScreenRecording[]
   images          ProductImage[]
   jitterHistory   JitterDocHistory[]
+  generations     Generation[]
 
   @@index([userId])
+}
+
+model Generation {
+  id          String    @id @default(cuid())
+  projectId   String
+  userId      String?
+  status      String    @default("RUNNING")
+  videoUrl    String?
+  params      String?
+  doc         String?
+  brandReport String?
+  music       String?
+  error       String?
+  startedAt   DateTime  @default(now())
+  finishedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
+  @@index([status])
 }
 
 model JitterDocHistory {

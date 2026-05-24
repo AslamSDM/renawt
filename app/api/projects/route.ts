@@ -9,10 +9,43 @@ export async function GET() {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
     }
 
-    const projects = await prisma.project.findMany({
+    const rows = await prisma.project.findMany({
       where: { userId: session.user.id },
-      orderBy: { createdAt: "desc" },
-      take: 20,
+      orderBy: { updatedAt: "desc" },
+      take: 50,
+      include: {
+        generations: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          select: {
+            id: true,
+            status: true,
+            videoUrl: true,
+            createdAt: true,
+            startedAt: true,
+            finishedAt: true,
+          },
+        },
+        _count: { select: { generations: true } },
+      },
+    });
+
+    const projects = rows.map((p) => {
+      const latest = p.generations[0] ?? null;
+      const ongoing = latest?.status === "RUNNING";
+      return {
+        id: p.id,
+        userId: p.userId,
+        name: p.name,
+        sourceUrl: p.sourceUrl,
+        description: p.description,
+        status: ongoing ? "GENERATING" : p.status,
+        videoUrl: p.videoUrl ?? latest?.videoUrl ?? null,
+        generationCount: p._count.generations,
+        latestGeneration: latest,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
+      };
     });
 
     return NextResponse.json({ projects });

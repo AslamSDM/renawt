@@ -23,6 +23,16 @@ interface Project {
   sourceUrl: string | null;
   description: string | null;
   status: string;
+  videoUrl: string | null;
+  generationCount: number;
+  latestGeneration: {
+    id: string;
+    status: string;
+    videoUrl: string | null;
+    createdAt: string;
+    startedAt: string;
+    finishedAt: string | null;
+  } | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -32,6 +42,7 @@ const STATUS_CHIP: Record<string, { bg: string; color: string; border: string }>
   GENERATING: { bg: "var(--accent-soft)", color: "var(--accent)", border: "rgba(59,130,246,0.40)" },
   EXPORTED: { bg: "rgba(245,245,247,0.06)", color: "var(--ink)", border: "var(--rule-strong)" },
   DRAFT: { bg: "rgba(245,245,247,0.04)", color: "var(--muted)", border: "var(--rule)" },
+  FAILED: { bg: "rgba(239,68,68,0.10)", color: "rgb(239,68,68)", border: "rgba(239,68,68,0.40)" },
 };
 
 export default function ProjectsPage() {
@@ -58,6 +69,13 @@ export default function ProjectsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const anyOngoing = projects.some((p) => p.status === "GENERATING");
+    if (!anyOngoing) return;
+    const t = setInterval(fetchProjects, 4000);
+    return () => clearInterval(t);
+  }, [projects]);
 
   const createProject = async () => {
     setCreating(true);
@@ -272,29 +290,51 @@ export default function ProjectsPage() {
                   style={{ background: "var(--paper-2)", border: "1px solid var(--rule)" }}
                 >
                   <div className="absolute inset-0 dot-grid opacity-40" />
-                  <div
-                    className="pointer-events-none absolute kinetic-glow-soft opacity-0 transition-opacity group-hover:opacity-100"
-                    style={{ top: "20%", left: "40%", width: 200, height: 160 }}
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Film
-                      className="h-10 w-10 transition-colors"
-                      style={{ color: "var(--rule-strong)" }}
-                      strokeWidth={1.2}
+                  {project.videoUrl ? (
+                    <video
+                      src={project.videoUrl}
+                      muted
+                      playsInline
+                      preload="metadata"
+                      className="absolute inset-0 h-full w-full object-cover"
+                      onMouseEnter={(e) => {
+                        const v = e.currentTarget;
+                        v.currentTime = 0;
+                        v.play().catch(() => {});
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.pause();
+                      }}
                     />
-                  </div>
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Film
+                        className="h-10 w-10"
+                        style={{ color: "var(--rule-strong)" }}
+                        strokeWidth={1.2}
+                      />
+                    </div>
+                  )}
+                  {project.status === "GENERATING" ? (
+                    <div
+                      className="absolute inset-0 flex items-center justify-center"
+                      style={{ background: "rgba(7,7,10,0.55)" }}
+                    >
+                      <div className="flex flex-col items-center gap-2">
+                        <span className="h-6 w-6 animate-spin rounded-full border border-rule border-t-ink" />
+                        <span className="mono-tick" style={{ color: "var(--accent)" }}>
+                          GENERATING…
+                        </span>
+                      </div>
+                    </div>
+                  ) : null}
                   <div className="absolute left-3 top-3 kinetic-pill !py-1 !px-2">
                     <span className="accent-dot" />
-                    <span className="mono-tick" style={{ color: "var(--ink)" }}>REC</span>
-                  </div>
-                  <div
-                    className="absolute inset-x-3 bottom-3 h-0.5 rounded-full"
-                    style={{ background: "rgba(245,245,247,0.08)" }}
-                  >
-                    <div
-                      className="h-full rounded-full transition-all"
-                      style={{ width: "38%", background: "var(--accent)", boxShadow: "0 0 8px var(--accent)" }}
-                    />
+                    <span className="mono-tick" style={{ color: "var(--ink)" }}>
+                      {project.generationCount > 0
+                        ? `${project.generationCount} REND${project.generationCount !== 1 ? "S" : ""}`
+                        : "EMPTY"}
+                    </span>
                   </div>
                 </div>
 

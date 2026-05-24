@@ -13,6 +13,11 @@ import {
   Upload,
   X,
   Captions as CaptionsIcon,
+  History,
+  AlertCircle,
+  Loader2,
+  CheckCircle2,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -33,6 +38,18 @@ interface RenderResult {
     customComponents: number;
     durationMs: number;
   };
+}
+
+interface GenerationRow {
+  id: string;
+  status: "RUNNING" | "SUCCEEDED" | "FAILED" | string;
+  videoUrl: string | null;
+  params: any | null;
+  error: string | null;
+  startedAt: string;
+  finishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 const DURATION_PRESETS = [
@@ -101,20 +118,55 @@ export default function JitterProjectPage({
   >("bottom");
   const [userAssets, setUserAssets] = useState<UserAsset[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [generations, setGenerations] = useState<GenerationRow[]>([]);
+  const [activeGenId, setActiveGenId] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const videoInputRef = useRef<HTMLInputElement | null>(null);
+
+  const fetchGenerations = async () => {
+    try {
+      const res = await fetch(`/api/projects/${id}/generations`);
+      const data = await res.json();
+      const rows = (data.generations ?? []) as GenerationRow[];
+      setGenerations(rows);
+      return rows;
+    } catch {
+      return [];
+    }
+  };
 
   useEffect(() => {
     let alive = true;
     Promise.all([
       fetch(`/api/projects/${id}`).then((r) => r.json()),
       fetch(`/api/projects/${id}/jitter-doc`).then((r) => r.json()),
+      fetch(`/api/projects/${id}/generations`).then((r) => r.json()),
     ])
-      .then(([projectData, docData]) => {
+      .then(([projectData, docData, genData]) => {
         if (!alive) return;
         if (projectData?.project?.sourceUrl) setUrl(projectData.project.sourceUrl);
         if (projectData?.project?.description) setNotes(projectData.project.description);
         if (docData?.doc) setSavedDoc(docData.doc as JitterDoc);
+        const rows = (genData?.generations ?? []) as GenerationRow[];
+        setGenerations(rows);
+        const latest = rows[0];
+        if (latest?.status === "RUNNING") {
+          setGenerating(true);
+          setActiveGenId(latest.id);
+        } else if (latest?.status === "SUCCEEDED" && latest.videoUrl) {
+          setResult({
+            videoUrl: latest.videoUrl,
+            brandReport: latest.params?.brandReport ?? null,
+            music: latest.params?.music ?? null,
+            jitterDoc: (docData?.doc as JitterDoc) ?? ({} as JitterDoc),
+            doc: latest.params?.docSummary ?? {
+              artboards: 0,
+              operations: 0,
+              customComponents: 0,
+              durationMs: 0,
+            },
+          });
+        }
       })
       .catch(() => {})
       .finally(() => alive && setHydrating(false));
@@ -122,6 +174,66 @@ export default function JitterProjectPage({
       alive = false;
     };
   }, [id]);
+
+  // Poll while a generation is RUNNING so a refresh resumes state.
+  useEffect(() => {
+    if (!generating) return;
+    const t = setInterval(async () => {
+      const rows = await fetchGenerations();
+      const active = activeGenId
+        ? rows.find((r) => r.id === activeGenId)
+        : rows[0];
+      if (!active) return;
+      if (active.status === "SUCCEEDED" && active.videoUrl) {
+        setGenerating(false);
+      } else if (active.status === "FAILED") {
+        setGenerating(false);
+        setError(active.error || "Generation failed");
+      }
+    }, 4000);
+    return () => clearInterval(t);
+  }, [generating, activeGenId, id]);
+
+  const loadGeneration = async (gid: string) => {
+    try {
+      const res = await fetch(`/api/projects/${id}/generations/${gid}`);
+      const data = await res.json();
+      const g = data?.generation;
+      if (!g) return;
+      if (g.doc) {
+        setSavedDoc(g.doc as JitterDoc);
+        await fetch(`/api/projects/${id}/jitter-doc`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ doc: g.doc, label: `restore:${gid.slice(0, 6)}` }),
+        });
+      }
+      if (g.videoUrl) {
+        setResult({
+          videoUrl: g.videoUrl,
+          brandReport: g.brandReport,
+          music: g.music,
+          jitterDoc: g.doc,
+          doc: g.params?.docSummary ?? {
+            artboards: g.doc?.conf?.artboards?.length ?? 0,
+            operations: 0,
+            customComponents: g.doc?.customComponents?.length ?? 0,
+            durationMs:
+              g.doc?.conf?.artboards?.reduce(
+                (s: number, a: any) => s + (a.duration ?? 0),
+                0,
+              ) ?? 0,
+          },
+        });
+      }
+    } catch {}
+  };
+
+  const deleteGeneration = async (gid: string) => {
+    if (!confirm("Delete this generation?")) return;
+    await fetch(`/api/projects/${id}/generations/${gid}`, { method: "DELETE" });
+    await fetchGenerations();
+  };
 
   const persistInitialDoc = async (doc: JitterDoc) => {
     try {
@@ -199,32 +311,61 @@ export default function JitterProjectPage({
     setError(null);
     setResult(null);
     setGenerating(true);
+
+    const audio = selectedAudio
+      ? {
+          url: selectedAudio.url,
+          bpm: selectedAudio.bpm ?? 124,
+          volume: 0.6,
+          title: selectedAudio.name,
+        }
+      : undefined;
+
+    const narrationPayload =
+      narration.enabled && (narration.text.trim() || narration.audioUrl)
+        ? {
+            text: narration.text.trim() || undefined,
+            audioUrl: narration.audioUrl || undefined,
+            voiceId: narration.voiceId || undefined,
+            durationMs:
+              narration.duration != null
+                ? Math.round(narration.duration * 1000)
+                : undefined,
+          }
+        : undefined;
+
+    const params = {
+      url: url.trim(),
+      durationMs,
+      notes: notes.trim() || undefined,
+      audio,
+      narration: narrationPayload,
+      userAssets: userAssets.length ? userAssets : undefined,
+      captions: narrationPayload
+        ? { enabled: captionsEnabled, style: captionsStyle }
+        : undefined,
+    };
+
+    let gid: string | null = null;
+    try {
+      const genResp = await fetch(`/api/projects/${id}/generations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ params }),
+      });
+      const genData = await genResp.json();
+      if (genResp.ok && genData?.generation?.id) {
+        gid = genData.generation.id;
+        setActiveGenId(gid);
+        await fetchGenerations();
+      }
+    } catch {}
+
     try {
       const token = await getVpsToken();
       if (!token) {
         throw new Error("Authentication failed. Please sign in.");
       }
-      const audio = selectedAudio
-        ? {
-            url: selectedAudio.url,
-            bpm: selectedAudio.bpm ?? 124,
-            volume: 0.6,
-            title: selectedAudio.name,
-          }
-        : undefined;
-
-      const narrationPayload =
-        narration.enabled && (narration.text.trim() || narration.audioUrl)
-          ? {
-              text: narration.text.trim() || undefined,
-              audioUrl: narration.audioUrl || undefined,
-              voiceId: narration.voiceId || undefined,
-              durationMs:
-                narration.duration != null
-                  ? Math.round(narration.duration * 1000)
-                  : undefined,
-            }
-          : undefined;
 
       const resp = await fetch(`${VPS_API_URL}/api/creative/jitter`, {
         method: "POST",
@@ -232,18 +373,7 @@ export default function JitterProjectPage({
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          url: url.trim(),
-          audio,
-          durationMs,
-          notes: notes.trim() || undefined,
-          projectId: id,
-          narration: narrationPayload,
-          userAssets: userAssets.length ? userAssets : undefined,
-          captions: narrationPayload
-            ? { enabled: captionsEnabled, style: captionsStyle }
-            : undefined,
-        }),
+        body: JSON.stringify({ ...params, projectId: id }),
       });
       const data = await resp.json();
       if (!resp.ok) {
@@ -254,11 +384,45 @@ export default function JitterProjectPage({
         setSavedDoc(data.jitterDoc);
         await persistInitialDoc(data.jitterDoc);
       }
+
+      if (gid) {
+        await fetch(`/api/projects/${id}/generations/${gid}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            status: "SUCCEEDED",
+            videoUrl: data.videoUrl,
+            doc: data.jitterDoc,
+            brandReport: data.brandReport,
+            music: data.music,
+          }),
+        });
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg);
+      if (gid) {
+        await fetch(`/api/projects/${id}/generations/${gid}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "FAILED", error: msg }),
+        }).catch(() => {});
+      }
     } finally {
       setGenerating(false);
+      await fetchGenerations();
     }
+  };
+
+  const formatRelative = (iso: string) => {
+    const d = new Date(iso).getTime();
+    const diff = Date.now() - d;
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return "just now";
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    return new Date(iso).toLocaleDateString();
   };
 
   return (
@@ -647,6 +811,128 @@ export default function JitterProjectPage({
             <JitterEditor projectId={id} initialDoc={savedDoc} />
           </section>
         ) : null}
+
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-medium tracking-tight flex items-center gap-2">
+              <History className="w-4 h-4" />
+              Generations
+              <span className="text-xs text-muted">({generations.length})</span>
+            </h2>
+            <span className="text-xs text-muted">
+              Tap any past render to load its doc into the editor.
+            </span>
+          </div>
+
+          {generations.length === 0 ? (
+            <Card className="p-8 text-center">
+              <span className="text-xs text-muted">
+                No generations yet. Hit Generate to create the first render.
+              </span>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {generations.map((g) => {
+                const isActive = activeGenId === g.id;
+                const running = g.status === "RUNNING";
+                const failed = g.status === "FAILED";
+                return (
+                  <Card
+                    key={g.id}
+                    className={`p-3 transition-colors ${
+                      isActive ? "border-rule-strong" : ""
+                    }`}
+                  >
+                    <div
+                      className="relative aspect-video rounded-md overflow-hidden bg-paper-2 border border-rule cursor-pointer"
+                      onClick={() => !running && g.videoUrl && loadGeneration(g.id)}
+                    >
+                      {g.videoUrl ? (
+                        <video
+                          src={g.videoUrl}
+                          muted
+                          playsInline
+                          preload="metadata"
+                          className="absolute inset-0 h-full w-full object-cover"
+                          onMouseEnter={(e) => {
+                            const v = e.currentTarget;
+                            v.currentTime = 0;
+                            v.play().catch(() => {});
+                          }}
+                          onMouseLeave={(e) => e.currentTarget.pause()}
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          {running ? (
+                            <Loader2 className="w-6 h-6 animate-spin text-muted" />
+                          ) : failed ? (
+                            <AlertCircle className="w-6 h-6 text-red-400" />
+                          ) : (
+                            <FileVideo className="w-6 h-6 text-muted" />
+                          )}
+                        </div>
+                      )}
+                      {running ? (
+                        <div
+                          className="absolute inset-0 flex items-center justify-center"
+                          style={{ background: "rgba(7,7,10,0.55)" }}
+                        >
+                          <div className="flex flex-col items-center gap-1.5">
+                            <Loader2 className="w-5 h-5 animate-spin text-ink" />
+                            <span className="mono-tick text-[10px]">RUNNING</span>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="mt-2 flex items-center justify-between gap-2">
+                      <span className="flex items-center gap-1.5 text-[11px] text-muted">
+                        {g.status === "SUCCEEDED" ? (
+                          <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                        ) : failed ? (
+                          <AlertCircle className="w-3 h-3 text-red-400" />
+                        ) : (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        )}
+                        {g.status}
+                      </span>
+                      <span className="text-[11px] text-muted">
+                        {formatRelative(g.createdAt)}
+                      </span>
+                    </div>
+                    {g.params?.url ? (
+                      <div className="mt-1 text-[11px] truncate text-muted">
+                        {g.params.url}
+                      </div>
+                    ) : null}
+                    {failed && g.error ? (
+                      <div className="mt-1 text-[11px] text-red-300 line-clamp-2">
+                        {g.error}
+                      </div>
+                    ) : null}
+                    <div className="mt-2 flex items-center justify-between gap-2">
+                      <button
+                        type="button"
+                        disabled={running || !g.videoUrl}
+                        onClick={() => loadGeneration(g.id)}
+                        className="text-[11px] px-2 py-1 rounded border border-rule hover:border-rule-strong disabled:opacity-40"
+                      >
+                        Load into editor
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteGeneration(g.id)}
+                        className="p-1.5 rounded hover:bg-paper-3 text-muted hover:text-red-300"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </section>
       </main>
     </div>
   );
