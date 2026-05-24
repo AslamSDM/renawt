@@ -59,5 +59,5 @@ export function setLayer(
 }
 
 export function totalDurationMs(doc: JitterDoc): number {
-  return doc.conf.artboards.reduce((s, a) => s + (a.duration ?? 0), 0);
+  return doc.conf?.artboards?.reduce((s, a) => s + (a.duration ?? 0), 0) ?? 0;
 }

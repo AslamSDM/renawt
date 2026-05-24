@@ -636,7 +636,7 @@ export default function JitterProjectPage({
           </aside>
         </section>
 
-        {savedDoc ? (
+        {savedDoc?.conf?.artboards?.length ? (
           <section>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-medium tracking-tight">Editor</h2>

@@ -116,7 +116,7 @@ export function JitterEditor({ projectId, initialDoc }: Props) {
     const fps = doc.fps ?? 30;
     const totalMs = totalDurationMs(doc);
     const durationInFrames = Math.max(1, Math.round((totalMs * fps) / 1000));
-    const first = doc.conf.artboards[0];
+    const first = doc.conf?.artboards?.[0];
     return {
       fps,
       durationInFrames,

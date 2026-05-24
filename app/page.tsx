@@ -94,17 +94,6 @@ const TypewriterText = () => {
   );
 };
 
-const LOGOS = [
-  "Linear",
-  "Vercel",
-  "Supabase",
-  "Cursor",
-  "Resend",
-  "Modal",
-  "Statsig",
-  "Arc",
-];
-
 const STEPS = [
   {
     n: "01",
@@ -491,35 +480,6 @@ export default function LandingPage() {
             <Link href="/#showcase" className="btn-ghost">
               Browse showcase <ArrowRight className="h-4 w-4" />
             </Link>
-          </div>
-          <p className="mt-6 text-sm text-muted">
-            Free for 2 renders · No credit card ·{" "}
-            <span className="font-mono">SOC 2 · GDPR · SAML</span>
-          </p>
-        </div>
-      </section>
-
-      {/* ─── Logos ────────────────────────────────────────────── */}
-      <section
-        className="relative mt-20 border-y border-rule md:mt-28"
-        id="customers"
-        style={{ background: "var(--paper)" }}
-      >
-        <div className="mx-auto max-w-[1400px] px-4 py-7 sm:px-6 md:py-9">
-          <p className="mono-tick mb-6 text-center">
-            2,840 TEAMS SHIPPING VIDEO WITH REMAWT
-          </p>
-          <div className="grid grid-cols-2 items-center md:grid-cols-4 lg:grid-cols-8">
-            {LOGOS.map((c, i) => (
-              <div
-                key={c}
-                className={`py-2 text-center text-lg font-medium tracking-tight text-muted ${
-                  i < LOGOS.length - 1 ? "lg:border-r" : ""
-                } border-rule`}
-              >
-                {c}
-              </div>
-            ))}
           </div>
         </div>
       </section>
