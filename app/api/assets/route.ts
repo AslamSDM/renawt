@@ -9,12 +9,17 @@ const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME || "remawt-videos";
 const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL?.replace(/[%\s/]+$/, "");
 
 const getR2Client = (): S3Client => {
+  if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY) {
+    throw new Error(
+      "R2 not configured (missing R2_ACCOUNT_ID / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY)",
+    );
+  }
   return new S3Client({
     region: "auto",
     endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
     credentials: {
-      accessKeyId: R2_ACCESS_KEY_ID!,
-      secretAccessKey: R2_SECRET_ACCESS_KEY!,
+      accessKeyId: R2_ACCESS_KEY_ID,
+      secretAccessKey: R2_SECRET_ACCESS_KEY,
     },
   });
 };
@@ -136,8 +141,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ assets: uploaded });
   } catch (error) {
     console.error("[Assets Upload] Error:", error);
+    const msg = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: "Failed to upload assets" },
+      { error: `Failed to upload assets: ${msg}` },
       { status: 500 },
     );
   }
