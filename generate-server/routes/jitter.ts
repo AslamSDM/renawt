@@ -2,6 +2,7 @@ import { Router } from "express";
 import { writeFileSync, mkdirSync, existsSync } from "fs";
 import { join, resolve } from "path";
 import { spawn } from "child_process";
+import { SignJWT } from "jose";
 import type { AuthenticatedRequest } from "../lib/auth";
 import { captureForJitter } from "../lib/screenshots/jitterCapture";
 import { generateVideoFromScreenshot } from "../lib/agents/urlToJitter";
@@ -35,6 +36,12 @@ router.get("/jitter", (_req, res) => {
 
 interface JitterBody {
   url: string;
+  /** Run pipeline in background, respond 202 immediately, callback when done. */
+  async?: boolean;
+  /** Generation row id (used for log/correlation only — callback writes to it). */
+  generationId?: string;
+  /** Full URL the worker POSTs result to when done (Next PATCH endpoint). */
+  callbackUrl?: string;
   audio?:
     | { url: string; bpm: number; volume?: number; title?: string }
     | null;
@@ -97,6 +104,112 @@ function runRemotionRender(propsPath: string, mp4Path: string): Promise<void> {
   });
 }
 
+async function runJitterPipeline(
+  body: JitterBody,
+  tag: string,
+  userId: string,
+) {
+  const shot = await captureForJitter(body.url, tag, {
+    width: body.width ?? 1920,
+    height: body.height ?? 1080,
+  });
+  console.log(`[jitter] screenshot → ${shot.url}`);
+
+  const result = await generateVideoFromScreenshot({
+    url: body.url,
+    screenshotPath: shot.url,
+    heroImageUrl: shot.url,
+    durationMs: body.durationMs ?? 16000,
+    extraNotes: body.notes,
+    width: body.width,
+    height: body.height,
+    music: body.audio === null ? false : true,
+    audioOverride: body.audio || undefined,
+    narration: body.narration || undefined,
+    stockImageTopics: body.stockImageTopics,
+    stockImageUrls: body.stockImageUrls,
+    userAssets: body.userAssets,
+    captions: body.captions ?? undefined,
+    jobId: tag,
+    userId,
+    projectId: body.projectId,
+  });
+
+  const doc = result.composer.doc;
+
+  const propsDir = join(REPO_ROOT, "public", "jitter", "renders");
+  if (!existsSync(propsDir)) mkdirSync(propsDir, { recursive: true });
+  const propsPath = join(propsDir, `${tag}-doc.json`);
+  writeFileSync(propsPath, JSON.stringify(doc, null, 2));
+
+  const mp4Filename = `${tag}-${Date.now()}.mp4`;
+  const mp4Path = join(propsDir, mp4Filename);
+  await runRemotionRender(propsPath, mp4Path);
+  console.log(`[jitter] rendered → ${mp4Path}`);
+
+  return {
+    videoUrl: `/jitter/renders/${mp4Filename}`,
+    brandReport: result.brandReport,
+    music: result.music,
+    jitterDoc: doc,
+    doc: {
+      artboards: doc.conf.artboards.length,
+      operations: doc.conf.artboards.reduce(
+        (s: number, a: any) => s + a.operations.length,
+        0,
+      ),
+      customComponents: doc.customComponents.length,
+      durationMs: doc.conf.artboards.reduce(
+        (s: number, a: any) => s + a.duration,
+        0,
+      ),
+    },
+  };
+}
+
+async function mintCallbackToken(): Promise<string | null> {
+  const secret = process.env.API_KEY;
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      console.error("[jitter] API_KEY missing — cannot mint callback token");
+      return null;
+    }
+    return "dev";
+  }
+  const key = new TextEncoder().encode(secret);
+  return await new SignJWT({ sub: "internal-worker" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setAudience("callback")
+    .setIssuedAt()
+    .setExpirationTime("30m")
+    .sign(key);
+}
+
+async function postCallback(
+  callbackUrl: string,
+  payload: Record<string, unknown>,
+) {
+  const token = await mintCallbackToken();
+  if (!token) return;
+  try {
+    const resp = await fetch(callbackUrl, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!resp.ok) {
+      console.error(
+        `[jitter] callback ${callbackUrl} → ${resp.status} ${await resp.text().catch(() => "")}`,
+      );
+    }
+  } catch (err) {
+    console.error("[jitter] callback failed:", err);
+  }
+}
+
 // ============================================================
 // POST /jitter — full URL → mp4 pipeline
 // ============================================================
@@ -109,74 +222,39 @@ router.post("/jitter", async (req: AuthenticatedRequest, res) => {
     return res.status(400).json({ error: "invalid url" });
   }
 
-  console.log(`[jitter] user=${userId} project=${tag} url=${body.url}`);
+  console.log(
+    `[jitter] user=${userId} project=${tag} url=${body.url} async=${!!body.async}`,
+  );
 
+  // Async branch — respond 202 immediately, run pipeline detached, callback on done.
+  if (body.async && body.callbackUrl) {
+    res.status(202).json({ accepted: true, generationId: body.generationId });
+    (async () => {
+      try {
+        const out = await runJitterPipeline(body, tag, userId);
+        await postCallback(body.callbackUrl!, {
+          status: "SUCCEEDED",
+          videoUrl: out.videoUrl,
+          doc: out.jitterDoc,
+          brandReport: out.brandReport,
+          music: out.music,
+          docSummary: out.doc,
+        });
+      } catch (err) {
+        console.error("[jitter] async failed:", err);
+        await postCallback(body.callbackUrl!, {
+          status: "FAILED",
+          error: err instanceof Error ? err.message : "Jitter pipeline failed",
+        });
+      }
+    })();
+    return;
+  }
+
+  // Legacy sync branch.
   try {
-    // 1. Capture screenshot via scraper-service → R2.
-    const shot = await captureForJitter(body.url, tag, {
-      width: body.width ?? 1920,
-      height: body.height ?? 1080,
-    });
-    console.log(`[jitter] screenshot → ${shot.url}`);
-
-    // 2. Run orchestrator. Vision-capable callees accept the R2 URL as the
-    //    "path" arg. If the caller picked a track, pass it as audioOverride
-    //    so the composer aligns to THAT BPM up-front (instead of letting the
-    //    picker bias the beat grid then swapping audio after).
-    const result = await generateVideoFromScreenshot({
-      url: body.url,
-      screenshotPath: shot.url,
-      heroImageUrl: shot.url,
-      durationMs: body.durationMs ?? 16000,
-      extraNotes: body.notes,
-      width: body.width,
-      height: body.height,
-      music: body.audio === null ? false : true,
-      audioOverride: body.audio || undefined,
-      narration: body.narration || undefined,
-      stockImageTopics: body.stockImageTopics,
-      stockImageUrls: body.stockImageUrls,
-      userAssets: body.userAssets,
-      captions: body.captions ?? undefined,
-      jobId: tag,
-      userId,
-      projectId: body.projectId,
-    });
-
-    const doc = result.composer.doc;
-
-    // 4. Persist props + render mp4 — both into served public dirs.
-    const propsDir = join(REPO_ROOT, "public", "jitter", "renders");
-    if (!existsSync(propsDir)) mkdirSync(propsDir, { recursive: true });
-    const propsPath = join(propsDir, `${tag}-doc.json`);
-    writeFileSync(propsPath, JSON.stringify(doc, null, 2));
-
-    const mp4Filename = `${tag}-${Date.now()}.mp4`;
-    const mp4Path = join(propsDir, mp4Filename);
-
-    await runRemotionRender(propsPath, mp4Path);
-    console.log(`[jitter] rendered → ${mp4Path}`);
-
-    // The mp4 lives in the repo /public dir → both Next dev server (3000)
-    // and the express static mount below serve it.
-    return res.json({
-      videoUrl: `/jitter/renders/${mp4Filename}`,
-      brandReport: result.brandReport,
-      music: result.music,
-      jitterDoc: doc,
-      doc: {
-        artboards: doc.conf.artboards.length,
-        operations: doc.conf.artboards.reduce(
-          (s: number, a: any) => s + a.operations.length,
-          0,
-        ),
-        customComponents: doc.customComponents.length,
-        durationMs: doc.conf.artboards.reduce(
-          (s: number, a: any) => s + a.duration,
-          0,
-        ),
-      },
-    });
+    const out = await runJitterPipeline(body, tag, userId);
+    return res.json(out);
   } catch (err) {
     console.error("[jitter] failed:", err);
     return res.status(500).json({

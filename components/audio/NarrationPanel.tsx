@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Mic, Play, Pause, Loader2, ChevronDown, Volume2 } from "lucide-react";
+import { Mic, Play, Pause, Loader2, ChevronDown, Volume2, Sparkles } from "lucide-react";
 
 export interface NarrationVoice {
   voice_id: string;
@@ -18,19 +18,33 @@ export interface NarrationState {
   duration: number | null;
 }
 
+export interface ScriptContext {
+  url?: string;
+  durationMs?: number;
+  notes?: string;
+  brandReport?: {
+    productName?: string;
+    tagline?: string;
+    description?: string;
+  };
+  tone?: string;
+}
+
 interface NarrationPanelProps {
   state: NarrationState;
   onChange: (state: NarrationState) => void;
   vpsApiUrl: string;
   getToken: () => Promise<string | null>;
+  scriptContext?: ScriptContext;
 }
 
 const DEFAULT_VOICE_ID = "21m00Tcm4TlvDq8ikWAM"; // Rachel
 
-export function NarrationPanel({ state, onChange, vpsApiUrl, getToken }: NarrationPanelProps) {
+export function NarrationPanel({ state, onChange, vpsApiUrl, getToken, scriptContext }: NarrationPanelProps) {
   const [voices, setVoices] = useState<NarrationVoice[]>([]);
   const [loadingVoices, setLoadingVoices] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [generatingScript, setGeneratingScript] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [voiceDropdownOpen, setVoiceDropdownOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -116,6 +130,45 @@ export function NarrationPanel({ state, onChange, vpsApiUrl, getToken }: Narrati
       setError(err instanceof Error ? err.message : "Failed to generate narration");
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const generateScript = async () => {
+    const ctx = scriptContext ?? {};
+    if (!ctx.url?.trim() && !ctx.notes?.trim() && !ctx.brandReport) {
+      setError("Add a URL or direction first so the AI knows what to write about.");
+      return;
+    }
+    setError(null);
+    setGeneratingScript(true);
+    try {
+      const token = await getToken();
+      if (!token) throw new Error("Auth failed");
+      const res = await fetch(`${vpsApiUrl}/api/creative/narrate/generate-script`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          url: ctx.url,
+          durationMs: ctx.durationMs,
+          notes: ctx.notes,
+          brandReport: ctx.brandReport,
+          tone: ctx.tone,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Script generation failed");
+      if (!data.script) throw new Error("Empty script");
+      set({ text: data.script, audioUrl: null, duration: null });
+      audioRef.current?.pause();
+      audioRef.current = null;
+      setPlaying(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to generate script");
+    } finally {
+      setGeneratingScript(false);
     }
   };
 
@@ -215,7 +268,28 @@ export function NarrationPanel({ state, onChange, vpsApiUrl, getToken }: Narrati
 
           {/* Narration text */}
           <div className="space-y-1">
-            <label className="text-xs text-gray-500">Script</label>
+            <div className="flex items-center justify-between">
+              <label className="text-xs text-gray-500">Script</label>
+              <button
+                type="button"
+                onClick={generateScript}
+                disabled={generatingScript}
+                className="inline-flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-md border border-white/15 bg-white/5 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                title="Have the AI write a voice-over script from the URL + direction"
+              >
+                {generatingScript ? (
+                  <>
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Writing…
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3 h-3" />
+                    {state.text.trim() ? "Rewrite with AI" : "Generate script"}
+                  </>
+                )}
+              </button>
+            </div>
             <textarea
               value={state.text}
               onChange={(e) => {

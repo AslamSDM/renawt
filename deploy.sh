@@ -199,6 +199,12 @@ LOG_LEVEL=info
 # Server
 PORT=3001
 
+# CORS — comma-separated list. Must include every frontend origin that
+# calls api.remawt.com. Caddy gateway (services/gateway/Caddyfile) echoes
+# the same list on upstream-error responses so failures don't masquerade
+# as CORS errors in the browser.
+CORS_ORIGIN=https://www.remawt.com,https://remawt.com,http://localhost:3000
+
 # Repo root — used by generate-server to spawn `remotion` CLI from the
 # correct cwd. Must point to the directory containing remotion/Root.tsx
 # and the root node_modules with @remotion/cli installed.
@@ -288,6 +294,12 @@ COMPOSE_SERVICES="${COMPOSE_SERVICES:-redis scraper-service gateway}"
 if command -v docker &>/dev/null; then
   log "Starting Docker microservices: $COMPOSE_SERVICES"
   cd "$APP_DIR"
+  # Force gateway recreate so Caddyfile edits (timeouts, error-handler
+  # CORS headers) always take effect — `--build` alone won't recreate a
+  # container when only the bind-mounted Caddyfile changed.
+  if [[ " $COMPOSE_SERVICES " == *" gateway "* ]]; then
+    docker compose rm -sf gateway 2>/dev/null || true
+  fi
   # shellcheck disable=SC2086
   docker compose --env-file generate-server/.env up -d --build $COMPOSE_SERVICES
 

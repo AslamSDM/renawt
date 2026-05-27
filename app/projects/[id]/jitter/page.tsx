@@ -185,6 +185,7 @@ export default function JitterProjectPage({
         : rows[0];
       if (!active) return;
       if (active.status === "SUCCEEDED" && active.videoUrl) {
+        await loadGeneration(active.id);
         setGenerating(false);
       } else if (active.status === "FAILED") {
         setGenerating(false);
@@ -354,12 +355,17 @@ export default function JitterProjectPage({
         body: JSON.stringify({ params }),
       });
       const genData = await genResp.json();
-      if (genResp.ok && genData?.generation?.id) {
-        gid = genData.generation.id;
-        setActiveGenId(gid);
-        await fetchGenerations();
+      if (!genResp.ok || !genData?.generation?.id) {
+        throw new Error(genData?.error || "Failed to create generation row");
       }
-    } catch {}
+      gid = genData.generation.id;
+      setActiveGenId(gid);
+      await fetchGenerations();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      setGenerating(false);
+      return;
+    }
 
     try {
       const token = await getVpsToken();
@@ -367,40 +373,32 @@ export default function JitterProjectPage({
         throw new Error("Authentication failed. Please sign in.");
       }
 
+      const callbackUrl = `${window.location.origin}/api/projects/${id}/generations/${gid}`;
+
+      // Fire async — backend responds 202 immediately, calls back on done.
       const resp = await fetch(`${VPS_API_URL}/api/creative/jitter`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ ...params, projectId: id }),
+        body: JSON.stringify({
+          ...params,
+          projectId: id,
+          async: true,
+          generationId: gid,
+          callbackUrl,
+        }),
       });
-      const data = await resp.json();
-      if (!resp.ok) {
-        throw new Error(data?.error || "Generation failed");
+      if (resp.status !== 202 && !resp.ok) {
+        const data = await resp.json().catch(() => ({}));
+        throw new Error(data?.error || "Failed to start generation");
       }
-      setResult(data);
-      if (data.jitterDoc) {
-        setSavedDoc(data.jitterDoc);
-        await persistInitialDoc(data.jitterDoc);
-      }
-
-      if (gid) {
-        await fetch(`/api/projects/${id}/generations/${gid}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            status: "SUCCEEDED",
-            videoUrl: data.videoUrl,
-            doc: data.jitterDoc,
-            brandReport: data.brandReport,
-            music: data.music,
-          }),
-        });
-      }
+      // Polling loop in useEffect handles status + loads result on SUCCEEDED.
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg);
+      setGenerating(false);
       if (gid) {
         await fetch(`/api/projects/${id}/generations/${gid}`, {
           method: "PATCH",
@@ -408,8 +406,6 @@ export default function JitterProjectPage({
           body: JSON.stringify({ status: "FAILED", error: msg }),
         }).catch(() => {});
       }
-    } finally {
-      setGenerating(false);
       await fetchGenerations();
     }
   };
@@ -650,6 +646,18 @@ export default function JitterProjectPage({
                 onChange={setNarration}
                 vpsApiUrl={VPS_API_URL}
                 getToken={getVpsToken}
+                scriptContext={{
+                  url: url.trim() || undefined,
+                  durationMs,
+                  notes: notes.trim() || undefined,
+                  brandReport: result?.brandReport
+                    ? {
+                        productName: result.brandReport.productName,
+                        tagline: result.brandReport.tagline,
+                        description: result.brandReport.description,
+                      }
+                    : undefined,
+                }}
               />
             </Card>
 

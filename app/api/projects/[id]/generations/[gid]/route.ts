@@ -1,8 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
+import { jwtVerify } from "jose";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/auth";
 
-async function authorize(id: string) {
+async function verifyCallbackToken(req?: NextRequest): Promise<boolean> {
+  if (!req) return false;
+  const header = req.headers.get("authorization");
+  if (!header?.startsWith("Bearer ")) return false;
+  const secret = process.env.API_KEY;
+  if (!secret) return false;
+  try {
+    const { payload } = await jwtVerify(
+      header.slice(7),
+      new TextEncoder().encode(secret),
+      { algorithms: ["HS256"], audience: "callback" },
+    );
+    return payload.sub === "internal-worker";
+  } catch {
+    return false;
+  }
+}
+
+async function authorize(id: string, req?: NextRequest) {
+  // Internal worker callback — JWT signed with API_KEY, aud:"callback".
+  if (await verifyCallbackToken(req)) {
+    const project = await prisma.project.findUnique({ where: { id } });
+    if (!project) {
+      return {
+        error: NextResponse.json({ error: "Project not found" }, { status: 404 }),
+      };
+    }
+    return { project, userId: project.userId ?? "internal" };
+  }
+
   const session = await auth();
   if (!session?.user?.id) {
     return {
@@ -28,7 +58,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string; gid: string }> },
 ) {
   const { id, gid } = await params;
-  const a = await authorize(id);
+  const a = await authorize(id, _req);
   if ("error" in a) return a.error;
 
   const row = await prisma.generation.findUnique({ where: { id: gid } });
@@ -52,7 +82,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string; gid: string }> },
 ) {
   const { id, gid } = await params;
-  const a = await authorize(id);
+  const a = await authorize(id, request);
   if ("error" in a) return a.error;
 
   const body = await request.json().catch(() => ({}));
@@ -71,6 +101,15 @@ export async function PATCH(
     data.brandReport = body.brandReport ? JSON.stringify(body.brandReport) : null;
   if (body.music !== undefined)
     data.music = body.music ? JSON.stringify(body.music) : null;
+  if (body.docSummary !== undefined) {
+    const existingParams = existing.params ? safeJson(existing.params) ?? {} : {};
+    data.params = JSON.stringify({
+      ...existingParams,
+      docSummary: body.docSummary,
+      brandReport: body.brandReport ?? existingParams.brandReport,
+      music: body.music ?? existingParams.music,
+    });
+  }
   if (body.status === "SUCCEEDED" || body.status === "FAILED") {
     data.finishedAt = new Date();
   }
