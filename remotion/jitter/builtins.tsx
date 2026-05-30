@@ -30,6 +30,22 @@ function resolveImg(url: string): string {
   return staticFile(url.replace(/^\//, ""));
 }
 
+/** Remotion <Img> that hides itself instead of cancelling the whole render
+ *  when a single asset (e.g. a dead R2 url) fails to load. */
+function SafeImg({ src, style, ...rest }: React.ComponentProps<typeof Img>) {
+  return (
+    <Img
+      src={src}
+      style={style}
+      onError={(e) => {
+        console.warn(`[Jitter] image failed to load: ${String(src)}`);
+        (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
+      }}
+      {...rest}
+    />
+  );
+}
+
 // ---------- Mockups ----------
 
 export function BrowserMockup({
@@ -101,7 +117,7 @@ export function BrowserMockup({
         }}
       >
         {screenshot ? (
-          <Img
+          <SafeImg
             src={resolveImg(screenshot)}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
@@ -162,7 +178,7 @@ export function MacMockup({
           }}
         >
           {screenshot ? (
-            <Img
+            <SafeImg
               src={resolveImg(screenshot)}
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
@@ -233,7 +249,7 @@ export function PhoneMockup({
           }}
         >
           {screenshot ? (
-            <Img
+            <SafeImg
               src={resolveImg(screenshot)}
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
@@ -1394,7 +1410,7 @@ export function ScreenshotShowcase({
               border: "1px solid rgba(255,255,255,0.08)",
             }}
           >
-            <Img
+            <SafeImg
               src={resolveImg(src)}
               style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
             />

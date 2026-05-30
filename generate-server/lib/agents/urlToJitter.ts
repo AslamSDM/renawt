@@ -40,6 +40,7 @@ import {
   reviewContentRelevance,
   applyContentFixes,
 } from "./contentRelevanceChecker";
+import { critiqueScenes, applySceneFixes } from "./jitterSceneCritic";
 
 /** Map BrandReport.brand.mood → which scraped jitter.video sections to mine for inspiration. */
 const MOOD_TO_SECTIONS: Record<string, string[]> = {
@@ -496,6 +497,25 @@ async function runUrlToJitter(input: {
   } catch (err) {
     console.warn(
       `[urlToJitter] content-relevance check failed (continuing): ${err instanceof Error ? err.message : err}`,
+    );
+  }
+
+  // Scene critic: review the doc scene-by-scene and strip fabricated stats
+  // (the stray "99%" at the end), weak endings, and empty mockups that the
+  // per-layer relevance pass doesn't catch. One extra LLM call.
+  try {
+    const critique = await critiqueScenes(composer.doc, brandReport);
+    if (critique.issues.length) {
+      const counts = applySceneFixes(composer.doc, critique);
+      console.log(
+        `[urlToJitter] scene-critic: ${critique.issues.length} issues → ${counts.statsFixed} stats fixed, ${counts.rewritten} rewritten, ${counts.dropped} dropped`,
+      );
+    } else {
+      console.log("[urlToJitter] scene-critic: clean (no issues)");
+    }
+  } catch (err) {
+    console.warn(
+      `[urlToJitter] scene-critic failed (continuing): ${err instanceof Error ? err.message : err}`,
     );
   }
 

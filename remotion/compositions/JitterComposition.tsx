@@ -12,6 +12,7 @@ import * as Remotion from "remotion";
 import {
   AbsoluteFill,
   Audio,
+  Img,
   Sequence,
   staticFile,
   useCurrentFrame,
@@ -639,11 +640,21 @@ function resolveImageSrc(url: string): string {
 }
 
 function renderImage(layer: ImageLayer) {
+  // Remotion <Img> blocks the render via delayRender() until the bitmap is
+  // decoded — a plain <img> lets the frame capture race ahead of the network
+  // fetch, which is why logos/screenshots came out blank. onError keeps a
+  // single bad asset (e.g. dead R2 url) from cancelling the whole render.
   return (
-    <img
+    <Img
       src={resolveImageSrc(layer.url)}
       alt={layer.mediaName ?? ""}
       style={{ width: "100%", height: "100%", objectFit: "contain" }}
+      onError={(e) => {
+        console.warn(
+          `[Jitter] image failed to load: ${resolveImageSrc(layer.url)}`,
+        );
+        (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
+      }}
     />
   );
 }
