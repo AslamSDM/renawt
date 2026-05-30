@@ -18,6 +18,7 @@ import {
   Loader2,
   CheckCircle2,
   Trash2,
+  Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -50,6 +51,14 @@ interface GenerationRow {
   finishedAt: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+// Newest render first. RUNNING rows have no finishedAt, so fall back to
+// createdAt; ties keep the API's incoming order.
+function sortNewestFirst(rows: GenerationRow[]): GenerationRow[] {
+  const ts = (r: GenerationRow) =>
+    new Date(r.finishedAt ?? r.createdAt ?? r.startedAt ?? 0).getTime();
+  return [...rows].sort((a, b) => ts(b) - ts(a));
 }
 
 const DURATION_PRESETS = [
@@ -122,12 +131,22 @@ export default function JitterProjectPage({
   const [activeGenId, setActiveGenId] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const videoInputRef = useRef<HTMLInputElement | null>(null);
+  const editorRef = useRef<HTMLDivElement | null>(null);
+
+  // Jump to the inline Remotion editor. If a generation id is given, load its
+  // doc into the editor first, then scroll once React has painted the section.
+  const openEditor = async (gid?: string) => {
+    if (gid) await loadGeneration(gid);
+    requestAnimationFrame(() => {
+      editorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
 
   const fetchGenerations = async () => {
     try {
       const res = await fetch(`/api/projects/${id}/generations`);
       const data = await res.json();
-      const rows = (data.generations ?? []) as GenerationRow[];
+      const rows = sortNewestFirst((data.generations ?? []) as GenerationRow[]);
       setGenerations(rows);
       return rows;
     } catch {
@@ -147,7 +166,9 @@ export default function JitterProjectPage({
         if (projectData?.project?.sourceUrl) setUrl(projectData.project.sourceUrl);
         if (projectData?.project?.description) setNotes(projectData.project.description);
         if (docData?.doc) setSavedDoc(docData.doc as JitterDoc);
-        const rows = (genData?.generations ?? []) as GenerationRow[];
+        const rows = sortNewestFirst(
+          (genData?.generations ?? []) as GenerationRow[],
+        );
         setGenerations(rows);
         const latest = rows[0];
         if (latest?.status === "RUNNING") {
@@ -789,19 +810,40 @@ export default function JitterProjectPage({
                       <span>{(result.doc.durationMs / 1000).toFixed(2)}s</span>
                     </div>
                   </div>
-                  <a
-                    href={result.videoUrl}
-                    download
-                    className="block text-center px-4 py-2 bg-paper-2 hover:bg-paper-3 rounded-lg text-sm border border-rule transition-colors"
-                  >
-                    Download mp4
-                  </a>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => openEditor()}
+                      className="flex items-center justify-center gap-1.5 px-4 py-2 bg-ink text-paper hover:opacity-90 rounded-lg text-sm font-medium transition-opacity"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      Edit
+                    </button>
+                    <a
+                      href={result.videoUrl}
+                      download
+                      className="flex items-center justify-center px-4 py-2 bg-paper-2 hover:bg-paper-3 rounded-lg text-sm border border-rule transition-colors"
+                    >
+                      Download mp4
+                    </a>
+                  </div>
                 </div>
               ) : (
-                <div className="aspect-video bg-paper-2 rounded-lg flex items-center justify-center border border-dashed border-rule">
-                  <span className="text-xs text-muted">
-                    {hydrating ? "Loading…" : "Output will appear here"}
-                  </span>
+                <div className="aspect-video bg-paper-2 rounded-lg flex flex-col items-center justify-center gap-2 border border-dashed border-rule text-center px-4">
+                  {hydrating ? (
+                    <span className="text-xs text-muted">Loading…</span>
+                  ) : (
+                    <>
+                      <FileVideo className="w-6 h-6 text-muted/60" />
+                      <span className="text-xs text-muted">
+                        No renders yet
+                      </span>
+                      <span className="text-[11px] text-muted/70">
+                        Hit Generate to create your first render — it&apos;ll
+                        show up here.
+                      </span>
+                    </>
+                  )}
                 </div>
               )}
             </Card>
@@ -809,7 +851,7 @@ export default function JitterProjectPage({
         </section>
 
         {savedDoc?.conf?.artboards?.length ? (
-          <section>
+          <section ref={editorRef} className="scroll-mt-6">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-medium tracking-tight">Editor</h2>
               <span className="text-xs text-muted">
@@ -921,10 +963,11 @@ export default function JitterProjectPage({
                       <button
                         type="button"
                         disabled={running || !g.videoUrl}
-                        onClick={() => loadGeneration(g.id)}
-                        className="text-[11px] px-2 py-1 rounded border border-rule hover:border-rule-strong disabled:opacity-40"
+                        onClick={() => openEditor(g.id)}
+                        className="flex items-center gap-1 text-[11px] px-2 py-1 rounded border border-rule hover:border-rule-strong disabled:opacity-40"
                       >
-                        Load into editor
+                        <Pencil className="w-3 h-3" />
+                        Edit
                       </button>
                       <button
                         type="button"
