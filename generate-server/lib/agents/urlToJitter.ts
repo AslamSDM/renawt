@@ -41,6 +41,7 @@ import {
   applyContentFixes,
 } from "./contentRelevanceChecker";
 import { critiqueScenes, applySceneFixes } from "./jitterSceneCritic";
+import { noopProgress, type ProgressEmit } from "./progress";
 
 /** Map BrandReport.brand.mood → which scraped jitter.video sections to mine for inspiration. */
 const MOOD_TO_SECTIONS: Record<string, string[]> = {
@@ -330,6 +331,8 @@ export async function generateVideoFromScreenshot(input: {
   /** For LLM token-usage logging. */
   userId?: string;
   projectId?: string;
+  /** Optional progress sink — emits a step event at each pipeline stage. */
+  onProgress?: ProgressEmit;
 }): Promise<UrlToJitterResult> {
   return withLlmContext(
     {
@@ -368,14 +371,33 @@ async function runUrlToJitter(input: {
   jobId?: string;
   userId?: string;
   projectId?: string;
+  onProgress?: ProgressEmit;
 }): Promise<UrlToJitterResult> {
+  const emit = input.onProgress ?? noopProgress;
   console.log(`[urlToJitter] URL: ${input.url}`);
+
+  await emit({ step: "brand", label: "Analyze brand", status: "running" });
   const brandReport = await analyzeBrandFromScreenshot(input.screenshotPath, {
     hint: `Page URL: ${input.url}`,
   });
   console.log(
     `[urlToJitter] Brand: ${brandReport.productName} | colors=${JSON.stringify(brandReport.brand)} | features=${brandReport.features.length}`,
   );
+  await emit({
+    step: "brand",
+    label: "Analyze brand",
+    status: "done",
+    detail: `${brandReport.productName} · ${brandReport.brand.mood} · ${brandReport.features.length} features`,
+    output: {
+      productName: brandReport.productName,
+      tagline: brandReport.tagline,
+      mood: brandReport.brand.mood,
+      colors: brandReport.brand,
+      headlines: brandReport.headlines,
+      features: brandReport.features?.map((f) => f.title),
+      cta: brandReport.cta,
+    },
+  });
 
   let music: PickedTrack | null = null;
   if (input.audioOverride) {
@@ -390,6 +412,7 @@ async function runUrlToJitter(input: {
       `[urlToJitter] Music (user-picked): "${music.title}" @ ${music.bpm} BPM (beat=${Math.round(music.beatMs)}ms)`,
     );
   } else if (input.music !== false) {
+    await emit({ step: "music", label: "Pick music", status: "running" });
     music = await pickTrack({
       mood: input.musicMood ?? moodToMusicKeyword(brandReport.brand.mood),
       preferredBpm: input.preferredBpm ?? 124,
@@ -397,6 +420,15 @@ async function runUrlToJitter(input: {
     console.log(
       `[urlToJitter] Music: "${music.title}" @ ${music.bpm} BPM (beat=${Math.round(music.beatMs)}ms)`,
     );
+  }
+  if (music) {
+    await emit({
+      step: "music",
+      label: "Pick music",
+      status: "done",
+      detail: `${music.title} @ ${music.bpm} BPM`,
+      output: { title: music.title, bpm: music.bpm, moods: music.moods },
+    });
   }
 
   // Round requested duration to a whole beat so artboards sum cleanly.
@@ -476,11 +508,32 @@ async function runUrlToJitter(input: {
     );
   }
 
+  await emit({ step: "compose", label: "Compose JitterDoc", status: "running" });
   const composer = await generateJitterDoc(brief, { maxAttempts: 3 });
+  {
+    const ab = composer.doc.conf.artboards;
+    await emit({
+      step: "compose",
+      label: "Compose JitterDoc",
+      status: "done",
+      detail: `${ab.length} scenes · ${ab.reduce((s, a) => s + a.operations.length, 0)} ops · ${composer.doc.customComponents.length} components`,
+      output: {
+        name: composer.doc.name,
+        scenes: ab.map((a) => ({
+          name: a.name,
+          durationMs: a.duration,
+          layers: a.layers.length,
+          operations: a.operations.length,
+        })),
+        customComponents: composer.doc.customComponents.map((c) => c.name),
+      },
+    });
+  }
 
   // Content-relevance pass: scan every text / mockup / code layer and
   // strip placeholder content + rewrite invented text using verbatim
   // BrandReport copy. One extra LLM call.
+  await emit({ step: "content-review", label: "Content review", status: "running" });
   try {
     const review = await reviewContentRelevance(composer.doc, brandReport, {
       sourceUrl: input.url,
@@ -491,18 +544,38 @@ async function runUrlToJitter(input: {
       console.log(
         `[urlToJitter] content-relevance: ${review.issues.length} issues found → ${counts.rewritten} rewritten, ${counts.dropped} dropped`,
       );
+      await emit({
+        step: "content-review",
+        label: "Content review",
+        status: "done",
+        detail: `${review.issues.length} issues · ${counts.rewritten} rewritten · ${counts.dropped} dropped`,
+        output: { issues: review.issues },
+      });
     } else {
       console.log("[urlToJitter] content-relevance: clean (no issues)");
+      await emit({
+        step: "content-review",
+        label: "Content review",
+        status: "done",
+        detail: "clean — no issues",
+      });
     }
   } catch (err) {
     console.warn(
       `[urlToJitter] content-relevance check failed (continuing): ${err instanceof Error ? err.message : err}`,
     );
+    await emit({
+      step: "content-review",
+      label: "Content review",
+      status: "failed",
+      detail: err instanceof Error ? err.message : "check failed (skipped)",
+    });
   }
 
   // Scene critic: review the doc scene-by-scene and strip fabricated stats
   // (the stray "99%" at the end), weak endings, and empty mockups that the
   // per-layer relevance pass doesn't catch. One extra LLM call.
+  await emit({ step: "scene-critic", label: "Scene critic", status: "running" });
   try {
     const critique = await critiqueScenes(composer.doc, brandReport);
     if (critique.issues.length) {
@@ -510,13 +583,32 @@ async function runUrlToJitter(input: {
       console.log(
         `[urlToJitter] scene-critic: ${critique.issues.length} issues → ${counts.statsFixed} stats fixed, ${counts.rewritten} rewritten, ${counts.dropped} dropped`,
       );
+      await emit({
+        step: "scene-critic",
+        label: "Scene critic",
+        status: "done",
+        detail: `${critique.issues.length} issues · ${counts.statsFixed} stats fixed · ${counts.dropped} dropped`,
+        output: { issues: critique.issues },
+      });
     } else {
       console.log("[urlToJitter] scene-critic: clean (no issues)");
+      await emit({
+        step: "scene-critic",
+        label: "Scene critic",
+        status: "done",
+        detail: "clean — no issues",
+      });
     }
   } catch (err) {
     console.warn(
       `[urlToJitter] scene-critic failed (continuing): ${err instanceof Error ? err.message : err}`,
     );
+    await emit({
+      step: "scene-critic",
+      label: "Scene critic",
+      status: "failed",
+      detail: err instanceof Error ? err.message : "critic failed (skipped)",
+    });
   }
 
   // Force narration into the doc — composer can forget the field or drop

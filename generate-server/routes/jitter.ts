@@ -6,6 +6,7 @@ import { SignJWT } from "jose";
 import type { AuthenticatedRequest } from "../lib/auth";
 import { captureForJitter } from "../lib/screenshots/jitterCapture";
 import { generateVideoFromScreenshot } from "../lib/agents/urlToJitter";
+import { noopProgress, type ProgressEmit, type ProgressEvent } from "../lib/agents/progress";
 
 const router: Router = Router();
 
@@ -108,12 +109,20 @@ async function runJitterPipeline(
   body: JitterBody,
   tag: string,
   userId: string,
+  emit: ProgressEmit = noopProgress,
 ) {
+  await emit({ step: "capture", label: "Capture screenshot", status: "running" });
   const shot = await captureForJitter(body.url, tag, {
     width: body.width ?? 1920,
     height: body.height ?? 1080,
   });
   console.log(`[jitter] screenshot → ${shot.url}`);
+  await emit({
+    step: "capture",
+    label: "Capture screenshot",
+    status: "done",
+    detail: body.url,
+  });
 
   const result = await generateVideoFromScreenshot({
     url: body.url,
@@ -133,6 +142,7 @@ async function runJitterPipeline(
     jobId: tag,
     userId,
     projectId: body.projectId,
+    onProgress: emit,
   });
 
   const doc = result.composer.doc;
@@ -142,10 +152,12 @@ async function runJitterPipeline(
   const propsPath = join(propsDir, `${tag}-doc.json`);
   writeFileSync(propsPath, JSON.stringify(doc, null, 2));
 
+  await emit({ step: "render", label: "Render mp4", status: "running" });
   const mp4Filename = `${tag}-${Date.now()}.mp4`;
   const mp4Path = join(propsDir, mp4Filename);
   await runRemotionRender(propsPath, mp4Path);
   console.log(`[jitter] rendered → ${mp4Path}`);
+  await emit({ step: "render", label: "Render mp4", status: "done" });
 
   return {
     videoUrl: `/jitter/renders/${mp4Filename}`,
@@ -210,6 +222,22 @@ async function postCallback(
   }
 }
 
+/** Build a progress emitter that forwards each step event to the Next callback
+ *  (server-to-server PATCH) so the browser can poll Generation.progress. Each
+ *  emit is best-effort — a dropped progress ping must never fail the pipeline. */
+function makeProgressEmitter(callbackUrl: string | undefined): ProgressEmit {
+  if (!callbackUrl) return noopProgress;
+  return async (e: ProgressEvent) => {
+    try {
+      await postCallback(callbackUrl, {
+        progressEvent: { ...e, at: e.at ?? new Date().toISOString() },
+      });
+    } catch (err) {
+      console.warn("[jitter] progress emit failed (ignored):", err);
+    }
+  };
+}
+
 // ============================================================
 // POST /jitter — full URL → mp4 pipeline
 // ============================================================
@@ -229,9 +257,10 @@ router.post("/jitter", async (req: AuthenticatedRequest, res) => {
   // Async branch — respond 202 immediately, run pipeline detached, callback on done.
   if (body.async && body.callbackUrl) {
     res.status(202).json({ accepted: true, generationId: body.generationId });
+    const emit = makeProgressEmitter(body.callbackUrl);
     (async () => {
       try {
-        const out = await runJitterPipeline(body, tag, userId);
+        const out = await runJitterPipeline(body, tag, userId, emit);
         await postCallback(body.callbackUrl!, {
           status: "SUCCEEDED",
           videoUrl: out.videoUrl,

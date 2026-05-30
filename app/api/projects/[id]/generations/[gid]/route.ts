@@ -73,6 +73,7 @@ export async function GET(
       doc: row.doc ? safeJson(row.doc) : null,
       brandReport: row.brandReport ? safeJson(row.brandReport) : null,
       music: row.music ? safeJson(row.music) : null,
+      progress: row.progress ? safeJson(row.progress) ?? [] : [],
     },
   });
 }
@@ -90,6 +91,25 @@ export async function PATCH(
   const existing = await prisma.generation.findUnique({ where: { id: gid } });
   if (!existing || existing.projectId !== id) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  // Progress ping — append the step event to the JSON array. Collapses
+  // consecutive events for the same step so a "running"→"done" pair replaces
+  // rather than stacks. Returns early; never touches status/result fields.
+  if (body.progressEvent && typeof body.progressEvent === "object") {
+    const events: any[] = existing.progress ? safeJson(existing.progress) ?? [] : [];
+    const ev = body.progressEvent;
+    const lastIdx = events.length - 1;
+    if (lastIdx >= 0 && events[lastIdx]?.step === ev.step) {
+      events[lastIdx] = ev; // replace the running placeholder with the resolved event
+    } else {
+      events.push(ev);
+    }
+    const updated = await prisma.generation.update({
+      where: { id: gid },
+      data: { progress: JSON.stringify(events) },
+    });
+    return NextResponse.json({ ok: true, progress: safeJson(updated.progress ?? "[]") });
   }
 
   const data: Record<string, unknown> = {};

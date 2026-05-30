@@ -43,6 +43,7 @@ model Generation {
   doc         String?
   brandReport String?
   music       String?
+  progress    String?
   error       String?
   startedAt   DateTime  @default(now())
   finishedAt  DateTime?

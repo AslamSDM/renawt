@@ -26,6 +26,10 @@ import { Spinner } from "@/components/ui/spinner";
 import { AudioSelector, AudioFile } from "@/components/audio/AudioSelector";
 import { NarrationPanel, NarrationState } from "@/components/audio/NarrationPanel";
 import { JitterEditor } from "@/components/jitter/JitterEditor";
+import {
+  GenerationProgress,
+  type ProgressEvent,
+} from "@/components/jitter/GenerationProgress";
 import type { JitterDoc } from "@/components/jitter/types";
 
 interface RenderResult {
@@ -129,6 +133,7 @@ export default function JitterProjectPage({
   const [uploading, setUploading] = useState(false);
   const [generations, setGenerations] = useState<GenerationRow[]>([]);
   const [activeGenId, setActiveGenId] = useState<string | null>(null);
+  const [progress, setProgress] = useState<ProgressEvent[]>([]);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const videoInputRef = useRef<HTMLInputElement | null>(null);
   const editorRef = useRef<HTMLDivElement | null>(null);
@@ -195,6 +200,27 @@ export default function JitterProjectPage({
       alive = false;
     };
   }, [id]);
+
+  // Fast poll of the active generation's progress timeline while it runs.
+  useEffect(() => {
+    if (!generating || !activeGenId) return;
+    let alive = true;
+    const pull = async () => {
+      try {
+        const res = await fetch(`/api/projects/${id}/generations/${activeGenId}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const evts = (data?.generation?.progress ?? []) as ProgressEvent[];
+        if (alive && Array.isArray(evts)) setProgress(evts);
+      } catch {}
+    };
+    pull();
+    const t = setInterval(pull, 1500);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+  }, [generating, activeGenId, id]);
 
   // Poll while a generation is RUNNING so a refresh resumes state.
   useEffect(() => {
@@ -332,6 +358,7 @@ export default function JitterProjectPage({
     }
     setError(null);
     setResult(null);
+    setProgress([]);
     setGenerating(true);
 
     const audio = selectedAudio
@@ -767,11 +794,17 @@ export default function JitterProjectPage({
               </div>
 
               {generating && !result ? (
-                <div className="aspect-video bg-paper-2 rounded-lg flex flex-col items-center justify-center gap-3 border border-dashed border-rule">
-                  <Spinner size="lg" />
-                  <span className="text-xs text-muted">
-                    Capturing → analyzing → composing → rendering
-                  </span>
+                <div className="rounded-lg bg-paper-2 border border-dashed border-rule p-4">
+                  {progress.length ? (
+                    <GenerationProgress events={progress} running />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center gap-3 py-10">
+                      <Spinner size="lg" />
+                      <span className="text-xs text-muted">
+                        Starting pipeline…
+                      </span>
+                    </div>
+                  )}
                 </div>
               ) : result ? (
                 <div className="space-y-4">

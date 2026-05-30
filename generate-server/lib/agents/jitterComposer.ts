@@ -9,6 +9,7 @@
  */
 
 import { z } from "zod";
+import { jsonrepair } from "jsonrepair";
 import {
   chatWithGeminiPro,
   chatWithGeminiProVision,
@@ -418,6 +419,34 @@ function extractJsonBlock(text: string): string {
     throw new Error("No JSON object found in model output");
   }
   return candidate.slice(start, end + 1);
+}
+
+/**
+ * Parse the model's JSON, repairing common LLM faults if strict parsing fails.
+ * Gemini occasionally drops a comma between array elements / objects or leaves
+ * a trailing comma — e.g. "Expected ',' or ']' after array element at position
+ * N". jsonrepair fixes those structurally (string-aware, so it won't corrupt
+ * text content). We try strict first so a clean response pays no cost, then
+ * repair, and only then surface the original (more informative) parse error.
+ */
+function parseModelJson(raw: string): unknown {
+  const block = extractJsonBlock(raw);
+  try {
+    return JSON.parse(block);
+  } catch (strictErr) {
+    try {
+      const repaired = jsonrepair(block);
+      const value = JSON.parse(repaired);
+      console.warn(
+        `[JitterComposer] strict JSON parse failed (${
+          strictErr instanceof Error ? strictErr.message : strictErr
+        }) — recovered via jsonrepair`,
+      );
+      return value;
+    } catch {
+      throw strictErr;
+    }
+  }
 }
 
 function buildUserMessage(brief: JitterBrief): string {
@@ -1154,7 +1183,7 @@ export async function generateJitterDocWithMedia(
         { temperature: 0.3, maxTokens: 16000 },
       );
       raw = resp.content;
-      const json = JSON.parse(extractJsonBlock(raw));
+      const json = parseModelJson(raw);
       const parsed = JitterDocSchema.safeParse(json);
       if (!parsed.success) {
         const issues = parsed.error.issues
@@ -1282,7 +1311,7 @@ export async function generateJitterDoc(
         ? await chatWithCloudflareAI(messages, LARGE_CONFIG)
         : await chatWithGeminiPro(messages, LARGE_CONFIG);
       raw = resp.content;
-      const json = JSON.parse(extractJsonBlock(raw));
+      const json = parseModelJson(raw);
       const parsed = JitterDocSchema.safeParse(json);
       if (!parsed.success) {
         const issues = parsed.error.issues
