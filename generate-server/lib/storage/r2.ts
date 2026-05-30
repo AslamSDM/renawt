@@ -21,6 +21,42 @@ export const isR2Configured = (): boolean => {
   return !!(R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY);
 };
 
+/**
+ * Rewrite a private R2 S3-endpoint url
+ * (`<bucket>.<account>.r2.cloudflarestorage.com/<key>`) into the public domain
+ * url. Anonymous GETs to the S3 endpoint are ORB-blocked in the Chromium
+ * renderer (`net::ERR_BLOCKED_BY_ORB`), so any such url in a doc renders as a
+ * blank image and can hang the render (delayRender timeout). This heals
+ * already-persisted bad urls right before render. Other urls pass through.
+ */
+export function toPublicR2Url<T extends string | null | undefined>(url: T): T {
+  if (!url || typeof url !== "string") return url;
+  const m = url.match(/^https?:\/\/[^/]*\.r2\.cloudflarestorage\.com\/(.+)$/);
+  if (!m || !R2_PUBLIC_URL) return url;
+  return `${R2_PUBLIC_URL}/${m[1]}` as T;
+}
+
+/**
+ * Deep-walk any object/array and rewrite every private R2 url string in place
+ * to its public form. Used to sanitize a whole JitterDoc before rendering.
+ */
+export function sanitizeR2UrlsDeep<T>(value: T): T {
+  if (typeof value === "string") return toPublicR2Url(value) as T;
+  if (Array.isArray(value)) {
+    for (let i = 0; i < value.length; i++) value[i] = sanitizeR2UrlsDeep(value[i]);
+    return value;
+  }
+  if (value && typeof value === "object") {
+    for (const k of Object.keys(value as Record<string, unknown>)) {
+      (value as Record<string, unknown>)[k] = sanitizeR2UrlsDeep(
+        (value as Record<string, unknown>)[k],
+      );
+    }
+    return value;
+  }
+  return value;
+}
+
 // Initialize S3 client for R2
 const getR2Client = (): S3Client => {
   if (!isR2Configured()) {

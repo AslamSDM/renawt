@@ -78,9 +78,14 @@ export async function POST(request: NextRequest) {
 
       await client.send(command);
 
-      const url = R2_PUBLIC_URL
-        ? `${R2_PUBLIC_URL}/${key}`
-        : `https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${key}`;
+      // Only ever persist the PUBLIC domain url — the S3 endpoint is ORB-blocked
+      // in the browser/renderer and would render as a blank image.
+      if (!R2_PUBLIC_URL) {
+        throw new Error(
+          "R2_PUBLIC_URL is not set — refusing to store a private (ORB-blocked) screenshot url.",
+        );
+      }
+      const url = `${R2_PUBLIC_URL}/${key}`;
 
       results.push({
         url,

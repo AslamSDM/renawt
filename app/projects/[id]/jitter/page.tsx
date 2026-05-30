@@ -136,15 +136,13 @@ export default function JitterProjectPage({
   const [progress, setProgress] = useState<ProgressEvent[]>([]);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const videoInputRef = useRef<HTMLInputElement | null>(null);
-  const editorRef = useRef<HTMLDivElement | null>(null);
+  const [editorOpen, setEditorOpen] = useState(false);
 
-  // Jump to the inline Remotion editor. If a generation id is given, load its
-  // doc into the editor first, then scroll once React has painted the section.
+  // Open the fullscreen Remotion editor. If a generation id is given, load its
+  // doc into the editor first.
   const openEditor = async (gid?: string) => {
     if (gid) await loadGeneration(gid);
-    requestAnimationFrame(() => {
-      editorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
+    setEditorOpen(true);
   };
 
   const fetchGenerations = async () => {
@@ -884,15 +882,12 @@ export default function JitterProjectPage({
         </section>
 
         {savedDoc?.conf?.artboards?.length ? (
-          <section ref={editorRef} className="scroll-mt-6">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-medium tracking-tight">Editor</h2>
-              <span className="text-xs text-muted">
-                Live preview · edits autosave · undo restores prior version
-              </span>
-            </div>
-            <JitterEditor projectId={id} initialDoc={savedDoc} />
-          </section>
+          <JitterEditor
+            projectId={id}
+            initialDoc={savedDoc}
+            open={editorOpen}
+            onClose={() => setEditorOpen(false)}
+          />
         ) : null}
 
         <section>

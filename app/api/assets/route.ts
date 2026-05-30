@@ -126,9 +126,16 @@ export async function POST(request: NextRequest) {
         }),
       );
 
-      const publicUrl = R2_PUBLIC_URL
-        ? `${R2_PUBLIC_URL}/${key}`
-        : `https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${key}`;
+      // Only ever persist the PUBLIC domain url. The S3 endpoint
+      // (`<bucket>.<account>.r2.cloudflarestorage.com`) is ORB-blocked in the
+      // browser/Remotion renderer, so a private url stored here renders as a
+      // blank image downstream. Fail loudly instead.
+      if (!R2_PUBLIC_URL) {
+        throw new Error(
+          "R2_PUBLIC_URL is not set — refusing to store a private (ORB-blocked) asset url. Set R2_PUBLIC_URL to the bucket's public r2.dev/custom domain.",
+        );
+      }
+      const publicUrl = `${R2_PUBLIC_URL}/${key}`;
 
       uploaded.push({
         url: publicUrl,

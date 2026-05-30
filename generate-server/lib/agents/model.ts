@@ -27,7 +27,7 @@ function openAiUsage(completion: any): TokenUsage | undefined {
 }
 
 // Gemini model — configurable via env. Default to 2.5-pro for code-gen quality.
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-pro";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3-flash-preview";
 
 // Google AI client singleton
 let geminiClient: GoogleGenerativeAI | null = null;
@@ -46,6 +46,8 @@ function getGeminiClient(): GoogleGenerativeAI {
 interface ModelConfig {
   temperature?: number;
   maxTokens?: number;
+  /** Per-call model id override. Falls back to the provider's default env model. */
+  model?: string;
 }
 
 export interface ChatMessage {
@@ -91,7 +93,8 @@ function useOllama(): boolean {
 // ============================================
 // Gemini Flash (Google AI SDK) — fast, cheap
 // ============================================
-const GEMINI_FLASH_MODEL = process.env.GEMINI_FLASH_MODEL || "gemini-2.0-flash";
+const GEMINI_FLASH_MODEL =
+  process.env.GEMINI_FLASH_MODEL || "gemini-3-flash-preview";
 
 export async function chatWithGeminiFlash(
   messages: ChatMessage[],
@@ -167,12 +170,13 @@ export async function chatWithGeminiPro(
   if (useOllama()) return chatWithOllama(messages, config);
   const { temperature = 0.7, maxTokens } = config;
   const client = getGeminiClient();
+  const modelId = config.model || GEMINI_MODEL;
 
   console.log("[GeminiPro] Calling Google AI Studio...");
-  console.log("[GeminiPro] Model:", GEMINI_MODEL);
+  console.log("[GeminiPro] Model:", modelId);
 
   const model = client.getGenerativeModel({
-    model: GEMINI_MODEL,
+    model: modelId,
     generationConfig: {
       temperature,
       maxOutputTokens: maxTokens,
@@ -201,7 +205,7 @@ export async function chatWithGeminiPro(
     console.log("[GeminiPro] Response length:", text?.length || 0);
     logLlmCall({
       provider: "gemini-pro",
-      model: GEMINI_MODEL,
+      model: modelId,
       usage: geminiUsageFromResult(result),
       latencyMs: Date.now() - started,
       ok: true,
@@ -210,7 +214,7 @@ export async function chatWithGeminiPro(
   } catch (error) {
     logLlmCall({
       provider: "gemini-pro",
-      model: GEMINI_MODEL,
+      model: modelId,
       latencyMs: Date.now() - started,
       ok: false,
       error: error instanceof Error ? error.message : String(error),
@@ -798,9 +802,7 @@ function buildGemma4Prompt(messages: ChatMessage[], think: boolean): string {
   const otherMsgs = messages.filter((m) => m.role !== "system");
   const sysText = sysMsgs.map((m) => m.content).join("\n\n");
   if (sysText || think) {
-    parts.push(
-      `<|turn>system\n${think ? "<|think|>\n" : ""}${sysText}<turn|>`,
-    );
+    parts.push(`<|turn>system\n${think ? "<|think|>\n" : ""}${sysText}<turn|>`);
   }
   for (const m of otherMsgs) {
     const role = m.role === "assistant" ? "model" : "user";

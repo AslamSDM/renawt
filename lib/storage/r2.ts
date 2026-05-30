@@ -27,13 +27,50 @@ export const isR2Configured = (): boolean => {
  * Throwing here fails the upload loudly instead of persisting a dead url that
  * renders as a blank image/logo downstream.
  */
-function publicUrlForKey(key: string): string {
+export function publicUrlForKey(key: string): string {
   if (!R2_PUBLIC_URL) {
     throw new Error(
       "R2_PUBLIC_URL is not set — cannot build a public asset url. Set it to the bucket's public r2.dev/custom domain.",
     );
   }
   return `${R2_PUBLIC_URL}/${key}`;
+}
+
+/**
+ * Rewrite a private R2 S3-endpoint url (`<bucket>.<account>.r2.cloudflarestorage.com/<key>`)
+ * into the public domain url. Anonymous GETs to the S3 endpoint are blocked by
+ * the browser (ORB / `net::ERR_BLOCKED_BY_ORB`), so any such url stored on a
+ * doc renders as a blank image. This heals already-persisted bad urls at read
+ * time. Non-private urls (and anything we can't parse) pass through unchanged.
+ */
+export function toPublicR2Url<T extends string | null | undefined>(url: T): T {
+  if (!url || typeof url !== "string") return url;
+  const m = url.match(/^https?:\/\/[^/]*\.r2\.cloudflarestorage\.com\/(.+)$/);
+  if (!m) return url;
+  if (!R2_PUBLIC_URL) return url; // can't rewrite without a public domain
+  return `${R2_PUBLIC_URL}/${m[1]}` as T;
+}
+
+/**
+ * Deep-walk any object/array and rewrite every private R2 url string in place
+ * to its public form. Used to heal a stored JitterDoc before it reaches the
+ * browser <Player> (which ORB-blocks the private S3 endpoint).
+ */
+export function sanitizeR2UrlsDeep<T>(value: T): T {
+  if (typeof value === "string") return toPublicR2Url(value) as T;
+  if (Array.isArray(value)) {
+    for (let i = 0; i < value.length; i++) value[i] = sanitizeR2UrlsDeep(value[i]);
+    return value;
+  }
+  if (value && typeof value === "object") {
+    for (const k of Object.keys(value as Record<string, unknown>)) {
+      (value as Record<string, unknown>)[k] = sanitizeR2UrlsDeep(
+        (value as Record<string, unknown>)[k],
+      );
+    }
+    return value;
+  }
+  return value;
 }
 
 const getR2Client = (): S3Client => {

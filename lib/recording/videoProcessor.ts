@@ -417,9 +417,14 @@ class VideoProcessor {
         })
       );
 
-      const processedUrl = R2_PUBLIC_URL
-        ? `${R2_PUBLIC_URL}/${r2Key}`
-        : `https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${r2Key}`;
+      // Only ever persist the PUBLIC domain url — the S3 endpoint is ORB-blocked
+      // in the browser/renderer.
+      if (!R2_PUBLIC_URL) {
+        throw new Error(
+          "R2_PUBLIC_URL is not set — refusing to store a private (ORB-blocked) processed-video url.",
+        );
+      }
+      const processedUrl = `${R2_PUBLIC_URL}/${r2Key}`;
 
       job.processedVideoUrl = processedUrl;
       job.status = "complete";

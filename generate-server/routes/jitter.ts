@@ -6,6 +6,7 @@ import { SignJWT } from "jose";
 import type { AuthenticatedRequest } from "../lib/auth";
 import { captureForJitter } from "../lib/screenshots/jitterCapture";
 import { generateVideoFromScreenshot } from "../lib/agents/urlToJitter";
+import { sanitizeR2UrlsDeep } from "../lib/storage/r2";
 import { noopProgress, type ProgressEmit, type ProgressEvent } from "../lib/agents/progress";
 
 const router: Router = Router();
@@ -146,6 +147,11 @@ async function runJitterPipeline(
   });
 
   const doc = result.composer.doc;
+
+  // Heal any private R2 urls (user assets uploaded before R2_PUBLIC_URL was set
+  // on the web app) → public domain. Private S3-endpoint urls are ORB-blocked
+  // in the Chromium renderer and otherwise hang the render / show blank images.
+  sanitizeR2UrlsDeep(doc);
 
   const propsDir = join(REPO_ROOT, "public", "jitter", "renders");
   if (!existsSync(propsDir)) mkdirSync(propsDir, { recursive: true });

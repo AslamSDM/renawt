@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/auth";
+import { sanitizeR2UrlsDeep } from "@/lib/storage/r2";
 
 const MAX_HISTORY = 30;
 
@@ -27,7 +28,11 @@ export async function GET(
   const auth = await authorize(id);
   if ("error" in auth) return auth.error;
 
-  const doc = auth.project.jitterDoc ? JSON.parse(auth.project.jitterDoc) : null;
+  // Heal any private R2 urls stored before R2_PUBLIC_URL was set — the in-browser
+  // Remotion <Player> ORB-blocks the S3 endpoint just like the renderer does.
+  const doc = auth.project.jitterDoc
+    ? sanitizeR2UrlsDeep(JSON.parse(auth.project.jitterDoc))
+    : null;
   const historyCount = await prisma.jitterDocHistory.count({ where: { projectId: id } });
 
   return NextResponse.json({ doc, historyCount });

@@ -315,6 +315,7 @@ NO PLACEHOLDER CONTENT — HARD RULES:
 - NEVER drop a BrowserMockup, MacMockup, or PhoneMockup unless you have a real screenshot URL (from the hero image or stock images). An empty mockup with default chrome is forbidden.
 - NEVER drop a CodeBlock unless the product is genuinely a coding/dev tool. If you need a "code" visual for a non-dev product, use Typewriter instead with actual product copy.
 - BrowserMockup.url must be the REAL product domain (e.g. "openoutreach.app", not "yoursite.com"). Strip protocol.
+- NEVER create a "brand colors" / "color palette" / swatch scene. Color swatches, hex-code chips, palette grids, rows of colored rectangles labelled with colors, "our brand" style guides — ALL FORBIDDEN. The brand colors belong IN the design (backgrounds, text, accents), never as the SUBJECT of a scene. Every scene must communicate the PRODUCT (a headline, a feature, a mockup, the CTA) — not its visual identity. A viewer should never see a screen whose only content is colors.
 
 MOTION PRINCIPLES — HARD RULES:
 - NOTHING APPEARS OR DISAPPEARS WITHOUT MOTION. Every non-background, non-beat-overlay layer MUST have:
@@ -490,9 +491,10 @@ function buildUserMessage(brief: JitterBrief): string {
     ? `\nBEAT GRID (the music is locked at ${brief.audio.bpm} BPM — compose ON the grid):\n${describeBeatGrid(beatGridForBpm(brief.audio.bpm))}`
     : "";
 
-  const customs = brief.allowCustomComponents === false
-    ? "\nCUSTOM COMPONENTS DISABLED — leave customComponents: []."
-    : "";
+  const customs =
+    brief.allowCustomComponents === false
+      ? "\nCUSTOM COMPONENTS DISABLED — leave customComponents: []."
+      : "";
 
   const fontBlock = `\nAVAILABLE FONTS (pick from this list for any text layer's font.name — anything else falls back to Inter):\n  ${AVAILABLE_FONTS.join(", ")}`;
 
@@ -547,7 +549,11 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   const m = hex.trim().match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i);
   if (!m) return null;
   let h = m[1];
-  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  if (h.length === 3)
+    h = h
+      .split("")
+      .map((c) => c + c)
+      .join("");
   return {
     r: parseInt(h.slice(0, 2), 16),
     g: parseInt(h.slice(2, 4), 16),
@@ -555,7 +561,15 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   };
 }
 
-function relLuminance({ r, g, b }: { r: number; g: number; b: number }): number {
+function relLuminance({
+  r,
+  g,
+  b,
+}: {
+  r: number;
+  g: number;
+  b: number;
+}): number {
   const ch = [r, g, b].map((v) => {
     const s = v / 255;
     return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
@@ -667,15 +681,27 @@ function reportLayoutOverlaps(doc: JitterDoc): { overlapWarnings: number } {
   }
 
   for (const art of doc.conf.artboards) {
-    const boxes: Array<{ id: string; x: number; y: number; w: number; h: number; type: string }> =
-      [];
+    const boxes: Array<{
+      id: string;
+      x: number;
+      y: number;
+      w: number;
+      h: number;
+      type: string;
+    }> = [];
     collect(art.layers, 0, 0, boxes);
     for (let i = 0; i < boxes.length; i++) {
       for (let j = i + 1; j < boxes.length; j++) {
         const a = boxes[i];
         const b = boxes[j];
-        const ix = Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x));
-        const iy = Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+        const ix = Math.max(
+          0,
+          Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x),
+        );
+        const iy = Math.max(
+          0,
+          Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y),
+        );
         const inter = ix * iy;
         if (inter <= 0) continue;
         const minArea = Math.min(a.w * a.h, b.w * b.h);
@@ -696,7 +722,10 @@ function reportLayoutOverlaps(doc: JitterDoc): { overlapWarnings: number } {
  * Inject the auto-picked TemplateBackdrop as the FIRST layer of every
  * artboard. Set artboard.background=false so the backdrop shows through.
  */
-function injectBackdrop(doc: JitterDoc, backdrop: NonNullable<JitterBrief["backdrop"]>): { added: number; replaced: number } {
+function injectBackdrop(
+  doc: JitterDoc,
+  backdrop: NonNullable<JitterBrief["backdrop"]>,
+): { added: number; replaced: number } {
   let added = 0;
   let replaced = 0;
   let counter = 0;
@@ -758,7 +787,11 @@ function injectBackdrop(doc: JitterDoc, backdrop: NonNullable<JitterBrief["backd
  * Estimate rendered width of a single line of text given font size + weight.
  * Conservative average for sans display fonts at 700-900 weight.
  */
-function estimateTextWidth(text: string, fontSize: number, weight = 700): number {
+function estimateTextWidth(
+  text: string,
+  fontSize: number,
+  weight = 700,
+): number {
   if (!text) return 0;
   const factor = weight >= 700 ? 0.62 : 0.55;
   return text.length * fontSize * factor;
@@ -787,7 +820,9 @@ function autoFitTextLayers(doc: JitterDoc): { fitted: number } {
       const boxW = Math.max(40, Number(l.width) || 200);
 
       // 1) Find the widest single word; fontSize must be small enough for it to fit.
-      const longestWord = text.split(/\s+/).reduce((m, w) => (w.length > m.length ? w : m), "");
+      const longestWord = text
+        .split(/\s+/)
+        .reduce((m, w) => (w.length > m.length ? w : m), "");
       const wordWidth = estimateTextWidth(longestWord, fontSize, weight);
       let newFontSize = fontSize;
       if (wordWidth > boxW) {
@@ -798,7 +833,8 @@ function autoFitTextLayers(doc: JitterDoc): { fitted: number } {
       // 2) Estimate wrap line count using newFontSize, grow height if needed.
       const fullW = estimateTextWidth(text, newFontSize, weight);
       const linesEstimate = Math.max(1, Math.ceil(fullW / boxW));
-      const neededHeight = Math.ceil(newFontSize * lineHeight * linesEstimate) + 8;
+      const neededHeight =
+        Math.ceil(newFontSize * lineHeight * linesEstimate) + 8;
       if (newFontSize !== fontSize) {
         l.fontSize = newFontSize;
         fitted++;
@@ -821,7 +857,10 @@ function autoFitTextLayers(doc: JitterDoc): { fitted: number } {
  * BrowserMockup so the screenshot has chrome + a sensible aspect instead of
  * sitting raw on top of other content.
  */
-function wrapHeroImageInMockup(doc: JitterDoc, heroImageUrl: string): { wrapped: number } {
+function wrapHeroImageInMockup(
+  doc: JitterDoc,
+  heroImageUrl: string,
+): { wrapped: number } {
   let wrapped = 0;
   for (const art of doc.conf.artboards) {
     for (const l of art.layers as any[]) {
@@ -845,7 +884,10 @@ function wrapHeroImageInMockup(doc: JitterDoc, heroImageUrl: string): { wrapped:
       // 16:10ish aspect so the stacked screens have room to breathe.
       const w = Number(l.width) || art.width * 0.75;
       const targetH = Math.round(w * 0.62);
-      if (Number(l.height) > targetH * 1.2 || Number(l.height) < targetH * 0.7) {
+      if (
+        Number(l.height) > targetH * 1.2 ||
+        Number(l.height) < targetH * 0.7
+      ) {
         l.height = targetH;
       }
       delete l.url;
@@ -962,7 +1004,9 @@ function separateLayerOverlaps(doc: JitterDoc): { moved: number } {
     );
     const inter = ix * iy;
     if (inter <= 0) return 0;
-    return inter / Math.max(1, Math.min(a.width * a.height, b.width * b.height));
+    return (
+      inter / Math.max(1, Math.min(a.width * a.height, b.width * b.height))
+    );
   }
 
   for (const art of doc.conf.artboards) {
@@ -1226,7 +1270,10 @@ export async function generateJitterDocWithMedia(
             )
               return false;
           }
-          if ((l.type === "rect" || l.type === "layerGrp") && l.background === true)
+          if (
+            (l.type === "rect" || l.type === "layerGrp") &&
+            l.background === true
+          )
             return false;
           return true;
         });
@@ -1296,9 +1343,14 @@ export async function generateJitterDoc(
 
   // Default: Gemini Pro. Override with JITTER_LLM=cloudflare to try CF Kimi K2.6
   // (warning: historically produces invalid JitterDoc JSON — kept for testing).
+  // The composer emits a large, deeply-nested JSON doc — a job lite/flash models
+  // truncate (returning 1 scene or cutting off mid-array). Use a dedicated
+  // strong model here, independent of the cheap global GEMINI_MODEL used for
+  // vision/relevance. Override via JITTER_COMPOSER_MODEL.
   const LARGE_CONFIG = {
     ...CODE_GENERATOR_CONFIG,
     maxTokens: Number(process.env.JITTER_MAX_TOKENS || 16000),
+    model: process.env.JITTER_COMPOSER_MODEL || "gemini-3.5-flash-preview",
   };
   const useCloudflare = process.env.JITTER_LLM === "cloudflare";
 
@@ -1357,7 +1409,10 @@ export async function generateJitterDoc(
             )
               return false;
           }
-          if ((l.type === "rect" || l.type === "layerGrp") && l.background === true)
+          if (
+            (l.type === "rect" || l.type === "layerGrp") &&
+            l.background === true
+          )
             return false;
           return true;
         });
@@ -1407,11 +1462,24 @@ export async function generateJitterDoc(
       lastError = err;
       const errMsg = err instanceof Error ? err.message : String(err);
       console.warn(`[JitterComposer] Attempt ${attempt} failed: ${errMsg}`);
-      messages.push({ role: "assistant", content: raw || "<no output>" });
-      messages.push({
-        role: "user",
-        content: `Your previous output was invalid. Fix these issues and return ONLY the corrected JSON object (no markdown):\n${errMsg}`,
-      });
+      // A JSON parse error means the output was malformed or — most often —
+      // truncated mid-document. Echoing the broken blob back just invites the
+      // model to truncate again, so ask for a fresh, COMPLETE, compact doc and
+      // don't re-send the partial output.
+      const looksTruncated =
+        /JSON|Unexpected end|after array element|after property/i.test(errMsg);
+      if (looksTruncated) {
+        messages.push({
+          role: "user",
+          content: `Your previous output was not valid JSON (likely truncated before the closing brace): ${errMsg}\n\nReturn ONLY one COMPLETE, valid JSON object — no markdown, no commentary. Keep it compact so it fits in full: prefer fewer customComponents and fewer operations per artboard, and close every array and object.`,
+        });
+      } else {
+        messages.push({ role: "assistant", content: raw || "<no output>" });
+        messages.push({
+          role: "user",
+          content: `Your previous output was invalid. Fix these issues and return ONLY the corrected JSON object (no markdown):\n${errMsg}`,
+        });
+      }
     }
   }
 
