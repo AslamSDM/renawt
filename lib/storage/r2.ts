@@ -19,6 +19,23 @@ export const isR2Configured = (): boolean => {
   return !!(R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY);
 };
 
+/**
+ * Build a PUBLIC url for an object key. R2_PUBLIC_URL must point at the bucket's
+ * public domain (the `pub-*.r2.dev` url or a bound custom domain). The S3 API
+ * endpoint (`<bucket>.<account>.r2.cloudflarestorage.com`) is NOT public — it
+ * returns `Authorization` to anonymous GETs — so we refuse to mint that url.
+ * Throwing here fails the upload loudly instead of persisting a dead url that
+ * renders as a blank image/logo downstream.
+ */
+function publicUrlForKey(key: string): string {
+  if (!R2_PUBLIC_URL) {
+    throw new Error(
+      "R2_PUBLIC_URL is not set — cannot build a public asset url. Set it to the bucket's public r2.dev/custom domain.",
+    );
+  }
+  return `${R2_PUBLIC_URL}/${key}`;
+}
+
 const getR2Client = (): S3Client => {
   if (!isR2Configured()) {
     throw new Error("R2 not configured");
@@ -88,9 +105,7 @@ export async function listAudioFiles(): Promise<AudioFile[]> {
             // Metadata might not exist
           }
           
-          const url = R2_PUBLIC_URL 
-            ? `${R2_PUBLIC_URL}/${key}`
-            : `https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${key}`;
+          const url = publicUrlForKey(key);
           
           audioFiles.push({
             key,
@@ -137,9 +152,7 @@ export async function uploadVideoBufferToR2(
 
     await client.send(command);
 
-    const publicUrl = R2_PUBLIC_URL
-      ? `${R2_PUBLIC_URL}/${key}`
-      : `https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${key}`;
+    const publicUrl = publicUrlForKey(key);
 
     console.log(`[R2] Video buffer uploaded: ${key}`);
 
@@ -185,9 +198,7 @@ export async function uploadAudioToR2(
 
     await client.send(command);
 
-    const url = R2_PUBLIC_URL 
-      ? `${R2_PUBLIC_URL}/${key}`
-      : `https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${key}`;
+    const url = publicUrlForKey(key);
 
     return {
       success: true,
@@ -228,9 +239,7 @@ export async function uploadScreenshotBufferToR2(
 
     await client.send(command);
 
-    const publicUrl = R2_PUBLIC_URL
-      ? `${R2_PUBLIC_URL}/${key}`
-      : `https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${key}`;
+    const publicUrl = publicUrlForKey(key);
 
     console.log(`[R2] Screenshot uploaded: ${key}`);
 
@@ -276,9 +285,7 @@ export async function uploadScreenshotToR2(
 
     await client.send(command);
 
-    const publicUrl = R2_PUBLIC_URL
-      ? `${R2_PUBLIC_URL}/${key}`
-      : `https://${R2_BUCKET_NAME}.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${key}`;
+    const publicUrl = publicUrlForKey(key);
 
     console.log(`[R2] Screenshot uploaded: ${key}`);
 
