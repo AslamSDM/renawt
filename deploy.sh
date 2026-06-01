@@ -315,7 +315,10 @@ if command -v docker &>/dev/null; then
       && log "Render: healthy" || warn "Render: starting..."
   fi
   if [[ " $COMPOSE_SERVICES " == *" redis "* ]]; then
-    docker compose exec -T redis redis-cli -a "$REDIS_PASSWORD" ping 2>/dev/null | grep -q PONG \
+    # REDIS_PASSWORD isn't a shell var on --update (it only lives in the .env
+    # template written at --setup), so read it from the deployed env file.
+    REDIS_PASSWORD="$(grep -E '^REDIS_PASSWORD=' "$APP_DIR/generate-server/.env" 2>/dev/null | head -1 | cut -d= -f2-)"
+    docker compose exec -T redis redis-cli -a "${REDIS_PASSWORD:-}" ping 2>/dev/null | grep -q PONG \
       && log "Redis: healthy" || warn "Redis: starting..."
   fi
 else
