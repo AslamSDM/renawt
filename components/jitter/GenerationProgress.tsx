@@ -27,8 +27,7 @@ const STEP_ORDER: { step: string; label: string }[] = [
   { step: "brand", label: "Analyze brand" },
   { step: "music", label: "Pick music" },
   { step: "compose", label: "Compose JitterDoc" },
-  { step: "content-review", label: "Content review" },
-  { step: "scene-critic", label: "Scene critic" },
+  { step: "critique", label: "Critique" },
   { step: "render", label: "Render mp4" },
 ];
 

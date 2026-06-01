@@ -27,6 +27,7 @@ import {
   describeBeatGrid,
   snapDocToBeats,
 } from "../video/beatSnap";
+import { auditDoc, summarizeAudit } from "./jitterAudit";
 
 const AVAILABLE_FONTS = [
   "Inter",
@@ -1388,6 +1389,12 @@ function finalizeDoc(
   }
 
   reportLayoutOverlaps(finalDoc);
+
+  // Persisted quality signal — same checks finalizeDoc applies, but scored so
+  // prompt/model changes are measurable (see scripts/eval-jitter.ts).
+  const audit = auditDoc(finalDoc, { targetDurationMs: brief.durationMs });
+  console.log(`[${tag}] Audit: ${summarizeAudit(audit)}`);
+
   const totalFrames = finalDoc.conf.artboards.reduce(
     (sum, a) => sum + artboardDurationFrames(a, finalDoc.fps),
     0,

@@ -15,8 +15,7 @@ export const PROGRESS_STEPS = [
   "brand",
   "music",
   "compose",
-  "content-review",
-  "scene-critic",
+  "critique",
   "render",
 ] as const;
 
