@@ -1,0 +1,29 @@
+{
+  "name": "Revenue App (Dribbble shot)",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 11,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "1:3",
+        "name": "Revenue App (Dribbble shot)",
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 1080,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 4000,
+        "fillColor": "#ffffff",
+        "background": true,
+        "layers": [],
+        "operations": []
+      }
+    ]
+  }
+}

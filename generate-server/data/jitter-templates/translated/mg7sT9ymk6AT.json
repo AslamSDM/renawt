@@ -1,0 +1,158 @@
+{
+  "name": "Phone screens",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 3,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "vDAlT7to",
+        "name": "Hello",
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 600,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 3000,
+        "fillColor": "#e9e9e9",
+        "background": true,
+        "layers": [
+          {
+            "type": "image",
+            "id": "vRBpZf8b",
+            "name": "iPhone 12.png",
+            "x": 85,
+            "y": 165,
+            "width": 149,
+            "height": 322,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "userAsset:12d8e588-4ba4-40bf-ab56-d3e14eddafff.png"
+          },
+          {
+            "type": "image",
+            "id": "QHHANaNl",
+            "name": "iPhone 12.png",
+            "x": 568.5,
+            "y": 165,
+            "width": 149,
+            "height": 322,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "userAsset:aa578029-97fa-4288-808d-133bfcbd4c28.png"
+          },
+          {
+            "type": "image",
+            "id": "lhJUWr13",
+            "name": "iPhone 12.png",
+            "x": 452.5,
+            "y": 119,
+            "width": 175,
+            "height": 378,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "userAsset:04f4d226-b79c-49cb-9a6f-83368e944780.png"
+          },
+          {
+            "type": "image",
+            "id": "iT8elCaJ",
+            "name": "iPhone 12.png",
+            "x": 175,
+            "y": 119,
+            "width": 175,
+            "height": 378,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "userAsset:72671aba-19fb-45e2-a10a-2e127bd54578.png"
+          },
+          {
+            "type": "image",
+            "id": "3tNrngKg",
+            "name": "iPhone 12.png",
+            "x": 302.5,
+            "y": 89,
+            "width": 195,
+            "height": 422,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "userAsset:75eecb8a-5597-46fc-b24d-d8e08377d52c.png"
+          }
+        ],
+        "operations": [
+          {
+            "type": "scale",
+            "id": "KQkFMShC",
+            "targetId": "3tNrngKg",
+            "startTime": 140,
+            "endTime": 940,
+            "easing": "natural",
+            "fromValue": 1.1
+          },
+          {
+            "type": "move",
+            "id": "IOlebJJK",
+            "targetId": "iT8elCaJ",
+            "startTime": 140,
+            "endTime": 1340,
+            "easing": "natural",
+            "fromValue": {
+              "x": 137.5,
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "uoWsBrk3",
+            "targetId": "lhJUWr13",
+            "startTime": 140,
+            "endTime": 1340,
+            "easing": "natural",
+            "fromValue": {
+              "x": -140,
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "4NlmrEX0",
+            "targetId": "vRBpZf8b",
+            "startTime": 140,
+            "endTime": 1340,
+            "easing": "natural",
+            "fromValue": {
+              "x": 240.5,
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "vGiTuPhd",
+            "targetId": "QHHANaNl",
+            "startTime": 140,
+            "endTime": 1340,
+            "easing": "natural",
+            "fromValue": {
+              "x": -243,
+              "y": 0
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

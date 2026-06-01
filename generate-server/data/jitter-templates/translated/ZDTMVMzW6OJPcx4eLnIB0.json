@@ -1,0 +1,182 @@
+{
+  "name": "ZDTMVMzW6OJPcx4eLnIB0",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "eNaQhHULRnvBGd2TXWIG1",
+        "name": "CRT Effect",
+        "x": 0,
+        "y": 0,
+        "width": 1350,
+        "height": 1350,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 4000,
+        "fillColor": "#070707",
+        "background": true,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "upDzD3h8KdSsEaH-KutGK",
+            "name": "Global",
+            "x": 0,
+            "y": 190,
+            "width": 1350,
+            "height": 970,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "video",
+                "id": "5rbhrWo8sMJ7-jqS1N_bg",
+                "name": "Video Background",
+                "x": -53,
+                "y": 42,
+                "width": 1456,
+                "height": 886,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 70,
+                "cornerRadius": 0,
+                "url": "https://userdata.jitter.video/b1ldHxPw1sT8CfFfYg_1d.mp4",
+                "mediaName": "beastie-boys.mp4"
+              },
+              {
+                "type": "text",
+                "id": "3MD8skdxm8TdM3J_sXQAH",
+                "name": "Now playing",
+                "x": 532.5,
+                "y": 934,
+                "width": 285,
+                "height": 36,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "Now playing",
+                "color": "#ffffff",
+                "fontSize": 48,
+                "font": {
+                  "type": "googlefont",
+                  "name": "Inter",
+                  "weight": 800,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 75,
+                "letterSpacing": -2,
+                "textAlign": "center",
+                "verticalAlign": "center",
+                "case": "normal"
+              },
+              {
+                "type": "text",
+                "id": "cfrTfIA-ooNJyd8FATB9Y",
+                "name": "Beastie Boys",
+                "x": 217,
+                "y": 161,
+                "width": 916,
+                "height": 750,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "BEASTIE\n BOYS",
+                "color": "#ffffff",
+                "fontSize": 500,
+                "font": {
+                  "type": "googlefont",
+                  "name": "ABC Gravity X Compressed Unlicensed Trial X Compressed",
+                  "weight": 400,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 75,
+                "letterSpacing": -1,
+                "textAlign": "center",
+                "verticalAlign": "center",
+                "case": "normal"
+              },
+              {
+                "type": "svg",
+                "id": "wQjrE04jtT9Z1qOg1KW46",
+                "x": 592.5,
+                "y": 0,
+                "width": 165,
+                "height": 84,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#000000",
+                "background": true,
+                "url": "https://userdata.jitter.video/O-MYCKKZk26J2nQJCpxZe.svg",
+                "strokeEnabled": false
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "textIn",
+            "id": "pgU8fVjvfY0qAtm67lmuh",
+            "targetId": "cfrTfIA-ooNJyd8FATB9Y",
+            "startTime": 0,
+            "easing": "none",
+            "effect": "appear",
+            "split": "letters",
+            "order": "forward",
+            "offset": 100,
+            "nodeDuration": 500,
+            "nodeEasing": "none",
+            "travelDistance": 20,
+            "slideDirection": "up"
+          },
+          {
+            "type": "playVideo",
+            "id": "M8gMuMHRLyA4xh4ivN0i_",
+            "targetId": "5rbhrWo8sMJ7-jqS1N_bg",
+            "startTime": 0,
+            "endTime": 4000,
+            "offset": 0,
+            "volume": 0
+          },
+          {
+            "type": "pulse",
+            "id": "QwfDHsUn5pvuw8MgyD-IY",
+            "targetId": "5rbhrWo8sMJ7-jqS1N_bg",
+            "startTime": 0,
+            "endTime": 800,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "1Na_CSoGvSjoPHptbFga0",
+            "targetId": "5rbhrWo8sMJ7-jqS1N_bg",
+            "startTime": 0,
+            "endTime": 800,
+            "easing": "natural",
+            "fromValue": 1,
+            "toValue": 2.3
+          }
+        ]
+      }
+    ]
+  }
+}

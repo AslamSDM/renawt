@@ -1,0 +1,2022 @@
+{
+  "name": "z-NIWea1iAcyfisp9JN12",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "DdiDIwQQBqhu9Q3ONRyXk",
+        "name": "Card Stack (4:5)",
+        "x": -2715,
+        "y": -780,
+        "width": 1080,
+        "height": 1350,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 7500,
+        "fillColor": "#f8f9fa",
+        "background": true,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "SdObG5Esj9XupvU7F1xXH",
+            "name": "Cards",
+            "x": 30,
+            "y": 35,
+            "width": 1020,
+            "height": 1280,
+            "scale": 1,
+            "angle": 1.5308806722812968e-22,
+            "opacity": 100,
+            "cornerRadius": 30,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": true,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "layerGrp",
+                "id": "MkCWisA8UCo3SHIbe8gM3",
+                "name": "Card 1",
+                "x": -29,
+                "y": -70,
+                "width": 1080,
+                "height": 1460,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "image",
+                    "id": "vcokUPZgPtvriMt2XqXrg",
+                    "name": "BG Image 1",
+                    "x": -60,
+                    "y": 0,
+                    "width": 1200,
+                    "height": 1460,
+                    "scale": 1,
+                    "angle": -1.5308806722812968e-22,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "https://d154zarmrcpu4a.cloudfront.net/oSY6QOZfRe7fdro3-8shE.jpeg",
+                    "mediaName": "Stylish Portrait with Sunglasses.jpeg"
+                  },
+                  {
+                    "type": "rect",
+                    "id": "KhrRohz1AWEx-MZObrX6I",
+                    "name": "Fade (Desactivate)",
+                    "x": 29,
+                    "y": 715,
+                    "width": 1023,
+                    "height": 645,
+                    "scale": 1,
+                    "angle": -1.5308806722812968e-22,
+                    "opacity": 50,
+                    "cornerRadius": 0,
+                    "fillColor": "#ffffff",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "CzMj03-oFKGAjKW_O9NJ8",
+                    "name": "Info 1",
+                    "x": 93,
+                    "y": 141,
+                    "width": 900,
+                    "height": 235,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": false,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "layerGrp",
+                        "id": "Y6cFe_gldjGO9BW8lubco",
+                        "name": "Label 1",
+                        "x": 0,
+                        "y": 180,
+                        "width": 140,
+                        "height": 55,
+                        "scale": 1,
+                        "angle": -1.5308806722812968e-22,
+                        "opacity": 100,
+                        "cornerRadius": 100,
+                        "background": true,
+                        "fillColor": "#ffffff40",
+                        "clipsContent": true,
+                        "shadowEnabled": false,
+                        "shadowOffsetX": 0,
+                        "shadowOffsetY": 0,
+                        "shadowBlur": 0,
+                        "shadowColor": "#000000",
+                        "shadowOpacity": 50,
+                        "layers": [
+                          {
+                            "type": "text",
+                            "id": "SkXVB9G3ekMYd-bQf0ESb",
+                            "name": "Explore",
+                            "x": 30,
+                            "y": 16,
+                            "width": 81,
+                            "height": 23,
+                            "scale": 1,
+                            "angle": 0,
+                            "opacity": 100,
+                            "cornerRadius": 0,
+                            "text": "Explore",
+                            "color": "#ffffff",
+                            "fontSize": 23,
+                            "font": {
+                              "type": "googlefont",
+                              "name": "Inter",
+                              "weight": 400,
+                              "fontStyle": "regular"
+                            },
+                            "lineHeight": 100,
+                            "letterSpacing": 0,
+                            "textAlign": "left",
+                            "verticalAlign": "top",
+                            "case": "normal"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "text",
+                        "id": "vVOa5NenhXmgMpA-zumx9",
+                        "name": "Title 1",
+                        "x": 0,
+                        "y": 0,
+                        "width": 900,
+                        "height": 140,
+                        "scale": 1,
+                        "angle": -1.5308806722812968e-22,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "text": "Searching for \nsomething beyond",
+                        "color": "#ffffff",
+                        "fontSize": 64,
+                        "font": {
+                          "type": "googlefont",
+                          "name": "Poppins",
+                          "weight": 500,
+                          "fontStyle": "regular"
+                        },
+                        "lineHeight": 110,
+                        "letterSpacing": 0,
+                        "textAlign": "left",
+                        "verticalAlign": "top",
+                        "case": "normal"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "layerGrp",
+                "id": "Jsubpc5ULbXvmF3vcM24M",
+                "name": "Card 2",
+                "x": -29,
+                "y": -70,
+                "width": 1080,
+                "height": 1460,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "image",
+                    "id": "Z7B2PzSMV54baoIu5roZO",
+                    "name": "BG Image 2",
+                    "x": -60,
+                    "y": 0,
+                    "width": 1200,
+                    "height": 1460,
+                    "scale": 1,
+                    "angle": -1.5308806722812968e-22,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "https://d154zarmrcpu4a.cloudfront.net/SoiOTI2WVGS9kKEJYB2I-.jpeg",
+                    "mediaName": "Modern Blue Armchair (1).jpeg"
+                  },
+                  {
+                    "type": "rect",
+                    "id": "e7smC3dFKFhWtdnrCTSSR",
+                    "name": "Fade (Desactivate)",
+                    "x": 29,
+                    "y": 715,
+                    "width": 1023,
+                    "height": 645,
+                    "scale": 1,
+                    "angle": -1.5308806722812968e-22,
+                    "opacity": 50,
+                    "cornerRadius": 0,
+                    "fillColor": "#ffffff",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "5PBlAZpgaR7dFS1JfFKnz",
+                    "name": "Info 2",
+                    "x": 93,
+                    "y": 141,
+                    "width": 589,
+                    "height": 235,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": false,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "layerGrp",
+                        "id": "tl4MX2ZL0thTLbu7u8QpH",
+                        "name": "Label 2",
+                        "x": 0,
+                        "y": 180,
+                        "width": 140,
+                        "height": 55,
+                        "scale": 1,
+                        "angle": -1.5308806722812968e-22,
+                        "opacity": 100,
+                        "cornerRadius": 100,
+                        "background": true,
+                        "fillColor": "#ffffff40",
+                        "clipsContent": true,
+                        "shadowEnabled": false,
+                        "shadowOffsetX": 0,
+                        "shadowOffsetY": 0,
+                        "shadowBlur": 0,
+                        "shadowColor": "#000000",
+                        "shadowOpacity": 50,
+                        "layers": [
+                          {
+                            "type": "text",
+                            "id": "MrMMBHg8dd5BnkmIsiZ0B",
+                            "name": "Explore",
+                            "x": 30,
+                            "y": 16,
+                            "width": 81,
+                            "height": 23,
+                            "scale": 1,
+                            "angle": 0,
+                            "opacity": 100,
+                            "cornerRadius": 0,
+                            "text": "Explore",
+                            "color": "#ffffff",
+                            "fontSize": 23,
+                            "font": {
+                              "type": "googlefont",
+                              "name": "Inter",
+                              "weight": 400,
+                              "fontStyle": "regular"
+                            },
+                            "lineHeight": 100,
+                            "letterSpacing": 0,
+                            "textAlign": "left",
+                            "verticalAlign": "top",
+                            "case": "normal"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "text",
+                        "id": "AGYNlvcy0eUJh2MSv-wWS",
+                        "name": "Title 2",
+                        "x": 0,
+                        "y": 0,
+                        "width": 589,
+                        "height": 141,
+                        "scale": 1,
+                        "angle": -1.5308806722812968e-22,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "text": "Interiors redefined\nwith Intelligence",
+                        "color": "#ffffff",
+                        "fontSize": 64,
+                        "font": {
+                          "type": "googlefont",
+                          "name": "Poppins",
+                          "weight": 500,
+                          "fontStyle": "regular"
+                        },
+                        "lineHeight": 110,
+                        "letterSpacing": 0,
+                        "textAlign": "left",
+                        "verticalAlign": "top",
+                        "case": "normal"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "layerGrp",
+                "id": "nOxAaVA9DwBe7LDTOVqfS",
+                "name": "Card 3",
+                "x": -29,
+                "y": -70,
+                "width": 1080,
+                "height": 1460,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "image",
+                    "id": "1GfYLzSZb7mT5HuwsA8tb",
+                    "name": "BG Image 3",
+                    "x": -60,
+                    "y": 0,
+                    "width": 1200,
+                    "height": 1460,
+                    "scale": 1,
+                    "angle": -1.5308806722812968e-22,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "https://d154zarmrcpu4a.cloudfront.net/M5MEXy_fT-jlPya9iDTX1.jpeg",
+                    "mediaName": "Silhouette in Orange.jpeg"
+                  },
+                  {
+                    "type": "rect",
+                    "id": "xFGZr2y743cBw0-XKfGo4",
+                    "name": "Fade (Desactivate)",
+                    "x": 29,
+                    "y": 715,
+                    "width": 1023,
+                    "height": 645,
+                    "scale": 1,
+                    "angle": -1.5308806722812968e-22,
+                    "opacity": 50,
+                    "cornerRadius": 0,
+                    "fillColor": "#ffffff",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "2fEsw6uXv_i_9Wvzdq9gK",
+                    "name": "Info 3",
+                    "x": 93,
+                    "y": 141,
+                    "width": 900,
+                    "height": 235,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": false,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "layerGrp",
+                        "id": "3fgsQSOr1U44rSUNJ9t14",
+                        "name": "Label 3",
+                        "x": 0,
+                        "y": 180,
+                        "width": 140,
+                        "height": 55,
+                        "scale": 1,
+                        "angle": -1.5308806722812968e-22,
+                        "opacity": 100,
+                        "cornerRadius": 100,
+                        "background": true,
+                        "fillColor": "#ffffff40",
+                        "clipsContent": true,
+                        "shadowEnabled": false,
+                        "shadowOffsetX": 0,
+                        "shadowOffsetY": 0,
+                        "shadowBlur": 0,
+                        "shadowColor": "#000000",
+                        "shadowOpacity": 50,
+                        "layers": [
+                          {
+                            "type": "text",
+                            "id": "KoNOroOIlGhaypefFmhMz",
+                            "name": "Explore",
+                            "x": 30,
+                            "y": 16,
+                            "width": 81,
+                            "height": 23,
+                            "scale": 1,
+                            "angle": 0,
+                            "opacity": 100,
+                            "cornerRadius": 0,
+                            "text": "Explore",
+                            "color": "#ffffff",
+                            "fontSize": 23,
+                            "font": {
+                              "type": "googlefont",
+                              "name": "Inter",
+                              "weight": 400,
+                              "fontStyle": "regular"
+                            },
+                            "lineHeight": 100,
+                            "letterSpacing": 0,
+                            "textAlign": "left",
+                            "verticalAlign": "top",
+                            "case": "normal"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "text",
+                        "id": "-nFYY-UxChgKcsucJTV34",
+                        "name": "Title 3",
+                        "x": 0,
+                        "y": 0,
+                        "width": 900,
+                        "height": 140,
+                        "scale": 1,
+                        "angle": -1.5308806722812968e-22,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "text": "How AI shapes \nour own world",
+                        "color": "#ffffff",
+                        "fontSize": 64,
+                        "font": {
+                          "type": "googlefont",
+                          "name": "Poppins",
+                          "weight": 500,
+                          "fontStyle": "regular"
+                        },
+                        "lineHeight": 110,
+                        "letterSpacing": 0,
+                        "textAlign": "left",
+                        "verticalAlign": "top",
+                        "case": "normal"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "layerGrp",
+                "id": "T-KOY-7qiOV27T4MRQKL7",
+                "name": "Card 4",
+                "x": -29,
+                "y": -70,
+                "width": 1080,
+                "height": 1460,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "image",
+                    "id": "mPFNiaCHq4ONZJ3IwKCuQ",
+                    "name": "BG Image 4",
+                    "x": -60,
+                    "y": 0,
+                    "width": 1200,
+                    "height": 1460,
+                    "scale": 1,
+                    "angle": -1.5308806722812968e-22,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "https://d154zarmrcpu4a.cloudfront.net/Bg39vzam5TnqiEF7Vu-Cz.jpeg",
+                    "mediaName": "Minimalist Fashion Look.jpeg"
+                  },
+                  {
+                    "type": "rect",
+                    "id": "F-5tjuHd01rw-CG2QEcyV",
+                    "name": "Fade (Desactivate)",
+                    "x": 29,
+                    "y": 715,
+                    "width": 1023,
+                    "height": 645,
+                    "scale": 1,
+                    "angle": -1.5308806722812968e-22,
+                    "opacity": 50,
+                    "cornerRadius": 0,
+                    "fillColor": "#ffffff",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "Ug_WERxornj0PQDWa3l1j",
+                    "name": "Info 4",
+                    "x": 93,
+                    "y": 141,
+                    "width": 900,
+                    "height": 235,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": false,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "layerGrp",
+                        "id": "Ki_BNLn1Rv7I868LhaFGE",
+                        "name": "Label 4",
+                        "x": 0,
+                        "y": 180,
+                        "width": 140,
+                        "height": 55,
+                        "scale": 1,
+                        "angle": -1.5308806722812968e-22,
+                        "opacity": 100,
+                        "cornerRadius": 100,
+                        "background": true,
+                        "fillColor": "#ffffff40",
+                        "clipsContent": true,
+                        "shadowEnabled": false,
+                        "shadowOffsetX": 0,
+                        "shadowOffsetY": 0,
+                        "shadowBlur": 0,
+                        "shadowColor": "#000000",
+                        "shadowOpacity": 50,
+                        "layers": [
+                          {
+                            "type": "text",
+                            "id": "-9vSgLR72C4elkE7Ok3Kf",
+                            "name": "Explore",
+                            "x": 30,
+                            "y": 16,
+                            "width": 81,
+                            "height": 23,
+                            "scale": 1,
+                            "angle": 0,
+                            "opacity": 100,
+                            "cornerRadius": 0,
+                            "text": "Explore",
+                            "color": "#ffffff",
+                            "fontSize": 23,
+                            "font": {
+                              "type": "googlefont",
+                              "name": "Inter",
+                              "weight": 400,
+                              "fontStyle": "regular"
+                            },
+                            "lineHeight": 100,
+                            "letterSpacing": 0,
+                            "textAlign": "left",
+                            "verticalAlign": "top",
+                            "case": "normal"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "text",
+                        "id": "zHhMdgJNGv9YdS0-95FF2",
+                        "name": "Title 4",
+                        "x": 0,
+                        "y": 0,
+                        "width": 900,
+                        "height": 140,
+                        "scale": 1,
+                        "angle": -1.5308806722812968e-22,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "text": "Timeless forms \nElegance redefined",
+                        "color": "#ffffff",
+                        "fontSize": 64,
+                        "font": {
+                          "type": "googlefont",
+                          "name": "Poppins",
+                          "weight": 500,
+                          "fontStyle": "regular"
+                        },
+                        "lineHeight": 110,
+                        "letterSpacing": 0,
+                        "textAlign": "left",
+                        "verticalAlign": "top",
+                        "case": "normal"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "layerGrp",
+                "id": "Z4WtwT_NIWkS7fNDFiooP",
+                "name": "Card 5",
+                "x": -29,
+                "y": -70,
+                "width": 1080,
+                "height": 1460,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "image",
+                    "id": "XTQbcSxMt2KxVfQEVEDfz",
+                    "name": "BG Image 5",
+                    "x": -60,
+                    "y": 0,
+                    "width": 1200,
+                    "height": 1460,
+                    "scale": 1,
+                    "angle": -1.5308806722812968e-22,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "https://d154zarmrcpu4a.cloudfront.net/CdSZ953tEYH7BHajHNuAt.jpeg",
+                    "mediaName": "Ethereal Yellow Flower.jpeg"
+                  },
+                  {
+                    "type": "rect",
+                    "id": "Bvqkp1UPZhaGJb233CXR9",
+                    "name": "Fade (Desactivate)",
+                    "x": 29,
+                    "y": 715,
+                    "width": 1023,
+                    "height": 645,
+                    "scale": 1,
+                    "angle": -1.5308806722812968e-22,
+                    "opacity": 50,
+                    "cornerRadius": 0,
+                    "fillColor": "#ffffff",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "fNo2s2V4cZpK5Krhg1qa6",
+                    "name": "Info 5",
+                    "x": 93,
+                    "y": 141,
+                    "width": 900,
+                    "height": 235,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": false,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "layerGrp",
+                        "id": "-2t_LTbFBK6hlUF3Yc3PI",
+                        "name": "Label 5",
+                        "x": 0,
+                        "y": 180,
+                        "width": 140,
+                        "height": 55,
+                        "scale": 1,
+                        "angle": -1.5308806722812968e-22,
+                        "opacity": 100,
+                        "cornerRadius": 100,
+                        "background": true,
+                        "fillColor": "#ffffff40",
+                        "clipsContent": true,
+                        "shadowEnabled": false,
+                        "shadowOffsetX": 0,
+                        "shadowOffsetY": 0,
+                        "shadowBlur": 0,
+                        "shadowColor": "#000000",
+                        "shadowOpacity": 50,
+                        "layers": [
+                          {
+                            "type": "text",
+                            "id": "mOjY673YtpidJoCrT5kO2",
+                            "name": "Explore",
+                            "x": 30,
+                            "y": 16,
+                            "width": 81,
+                            "height": 23,
+                            "scale": 1,
+                            "angle": 0,
+                            "opacity": 100,
+                            "cornerRadius": 0,
+                            "text": "Explore",
+                            "color": "#ffffff",
+                            "fontSize": 23,
+                            "font": {
+                              "type": "googlefont",
+                              "name": "Inter",
+                              "weight": 400,
+                              "fontStyle": "regular"
+                            },
+                            "lineHeight": 100,
+                            "letterSpacing": 0,
+                            "textAlign": "left",
+                            "verticalAlign": "top",
+                            "case": "normal"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "text",
+                        "id": "95k6gen4JPQezIbrxVuAw",
+                        "name": "Title 5",
+                        "x": 0,
+                        "y": 0,
+                        "width": 900,
+                        "height": 140,
+                        "scale": 1,
+                        "angle": -1.5308806722812968e-22,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "text": "The secret dreams \nof a Machine",
+                        "color": "#ffffff",
+                        "fontSize": 64,
+                        "font": {
+                          "type": "googlefont",
+                          "name": "Poppins",
+                          "weight": 500,
+                          "fontStyle": "regular"
+                        },
+                        "lineHeight": 110,
+                        "letterSpacing": 0,
+                        "textAlign": "left",
+                        "verticalAlign": "top",
+                        "case": "normal"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "layerGrp",
+            "id": "CRHAaAbFOvIcTDQwlxYyl",
+            "name": "Nav-Bar (Hide / Show)",
+            "x": 90,
+            "y": 1137,
+            "width": 900,
+            "height": 108,
+            "scale": 1,
+            "angle": 1.5308806722812968e-22,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "image",
+                "id": "1_BZKSSTOacbcxExvxBr5",
+                "name": "Thumbnail 5",
+                "x": 740,
+                "y": 0,
+                "width": 160,
+                "height": 108,
+                "scale": 1,
+                "angle": -1.5308806722812968e-22,
+                "opacity": 100,
+                "cornerRadius": 10,
+                "url": "https://d154zarmrcpu4a.cloudfront.net/KtlgHXrFea9kEMqHbaNgY.jpg",
+                "mediaName": "5.jpg"
+              },
+              {
+                "type": "image",
+                "id": "UVcePXCa0z6A8QbPqMxW8",
+                "name": "Thumbnail 4",
+                "x": 555,
+                "y": 0,
+                "width": 160,
+                "height": 108,
+                "scale": 1,
+                "angle": -1.5308806722812968e-22,
+                "opacity": 100,
+                "cornerRadius": 10,
+                "url": "https://d154zarmrcpu4a.cloudfront.net/NB9kVptp43atxa_KUjz81.jpg",
+                "mediaName": "4.jpg"
+              },
+              {
+                "type": "image",
+                "id": "NabuO1cAbK_2M6sCbBPnl",
+                "name": "Thumbnail 3",
+                "x": 370,
+                "y": 0,
+                "width": 160,
+                "height": 108,
+                "scale": 1,
+                "angle": -1.5308806722812968e-22,
+                "opacity": 100,
+                "cornerRadius": 10,
+                "url": "https://d154zarmrcpu4a.cloudfront.net/Jmh4uDtFvQWkIHYkfKZ0u.jpg",
+                "mediaName": "3.jpg"
+              },
+              {
+                "type": "image",
+                "id": "u5ilvNQCsN9x3gC22h2aL",
+                "name": "Thumbnail 2",
+                "x": 185,
+                "y": 0,
+                "width": 160,
+                "height": 108,
+                "scale": 1,
+                "angle": -1.5308806722812968e-22,
+                "opacity": 100,
+                "cornerRadius": 10,
+                "url": "https://d154zarmrcpu4a.cloudfront.net/yrYcy9LU3bFokpS-2Uek6.jpg",
+                "mediaName": "2.jpg"
+              },
+              {
+                "type": "image",
+                "id": "32qlfFCwfm2-ZJ7EGAbVa",
+                "name": "Thumbnail 1",
+                "x": 0,
+                "y": 0,
+                "width": 160,
+                "height": 108,
+                "scale": 1,
+                "angle": -1.5308806722812968e-22,
+                "opacity": 25,
+                "cornerRadius": 10,
+                "url": "https://d154zarmrcpu4a.cloudfront.net/x3uLK_Ek-IhLLLsbczevj.jpg",
+                "mediaName": "1.jpg"
+              }
+            ]
+          },
+          {
+            "type": "layerGrp",
+            "id": "c-gbqy9dNWsj58SPAe0eO",
+            "name": "Info",
+            "x": 94,
+            "y": 665,
+            "width": 900,
+            "height": 20,
+            "scale": 1,
+            "angle": 1.5308806722812968e-22,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "text",
+                "id": "hPsIW2Ee9Y9mBw_IColn8",
+                "name": "Year",
+                "x": 838,
+                "y": 0,
+                "width": 62,
+                "height": 20,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "YEAR 25",
+                "color": "#ffffff",
+                "fontSize": 16,
+                "font": {
+                  "type": "googlefont",
+                  "name": "Poppins",
+                  "weight": 400,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 120,
+                "letterSpacing": 0,
+                "textAlign": "right",
+                "verticalAlign": "top",
+                "case": "normal"
+              },
+              {
+                "type": "text",
+                "id": "e9q2kF1fM9gjBTNpY4_Lh",
+                "name": "Template Number",
+                "x": 389,
+                "y": 0,
+                "width": 115,
+                "height": 20,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "Template — 01",
+                "color": "#ffffff",
+                "fontSize": 16,
+                "font": {
+                  "type": "googlefont",
+                  "name": "Poppins",
+                  "weight": 400,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 120,
+                "letterSpacing": 0,
+                "textAlign": "center",
+                "verticalAlign": "top",
+                "case": "normal"
+              },
+              {
+                "type": "text",
+                "id": "-ucFCsajvYUJKYhZYKXDh",
+                "name": "Blur Effect",
+                "x": 0,
+                "y": 0,
+                "width": 79,
+                "height": 20,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "Blur Effect",
+                "color": "#ffffff",
+                "fontSize": 16,
+                "font": {
+                  "type": "googlefont",
+                  "name": "Poppins",
+                  "weight": 400,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 120,
+                "letterSpacing": 0,
+                "textAlign": "left",
+                "verticalAlign": "top",
+                "case": "normal"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "blurRadius",
+            "id": "aAyGXPFgL6G69IqjTNrS5",
+            "targetId": "vcokUPZgPtvriMt2XqXrg",
+            "startTime": 0,
+            "endTime": 1000,
+            "easing": "natural",
+            "toValue": 100
+          },
+          {
+            "type": "move",
+            "id": "kc903N26QxaaVCi_oumfh",
+            "targetId": "vcokUPZgPtvriMt2XqXrg",
+            "startTime": 0,
+            "endTime": 1000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -75
+            }
+          },
+          {
+            "type": "move",
+            "id": "vi5li2UX84wPhnoyrXFKV",
+            "targetId": "vcokUPZgPtvriMt2XqXrg",
+            "startTime": 650,
+            "endTime": 1000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 75
+            }
+          },
+          {
+            "type": "move",
+            "id": "rvFOrKEQJH2sqHi_vqcvs",
+            "targetId": "vVOa5NenhXmgMpA-zumx9",
+            "startTime": 0,
+            "endTime": 1000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -25
+            }
+          },
+          {
+            "type": "move",
+            "id": "UjUqte3ilUvv9EQSRQrZl",
+            "targetId": "vVOa5NenhXmgMpA-zumx9",
+            "startTime": 650,
+            "endTime": 1000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 25
+            }
+          },
+          {
+            "type": "move",
+            "id": "GMokp4qipB7uaZx0FYIEt",
+            "targetId": "Y6cFe_gldjGO9BW8lubco",
+            "startTime": 0,
+            "endTime": 1000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -15
+            }
+          },
+          {
+            "type": "move",
+            "id": "tLr8PHEaieNrYSzWQ5P7I",
+            "targetId": "Y6cFe_gldjGO9BW8lubco",
+            "startTime": 650,
+            "endTime": 1000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 15
+            }
+          },
+          {
+            "type": "opacity",
+            "id": "y3X8hFzqiEC1yPlANXo1g",
+            "targetId": "MkCWisA8UCo3SHIbe8gM3",
+            "startTime": 650,
+            "endTime": 650,
+            "easing": "none",
+            "toValue": 0
+          },
+          {
+            "type": "move",
+            "id": "jgO7vd4zEon4AMFxLjUgk",
+            "targetId": "Z7B2PzSMV54baoIu5roZO",
+            "startTime": 0,
+            "endTime": 1000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -75
+            }
+          },
+          {
+            "type": "move",
+            "id": "EwRCdBC0Ofphnio7kln9X",
+            "targetId": "Z7B2PzSMV54baoIu5roZO",
+            "startTime": 650,
+            "endTime": 1000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 75
+            }
+          },
+          {
+            "type": "move",
+            "id": "qV6Nt_UWJX8OPh4NmBRvd",
+            "targetId": "AGYNlvcy0eUJh2MSv-wWS",
+            "startTime": 0,
+            "endTime": 1000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -25
+            }
+          },
+          {
+            "type": "move",
+            "id": "YoXQuMeqC8k3ybecLAm8G",
+            "targetId": "AGYNlvcy0eUJh2MSv-wWS",
+            "startTime": 650,
+            "endTime": 1000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 25
+            }
+          },
+          {
+            "type": "move",
+            "id": "xTt-ynceH-AL5Jf4pnorZ",
+            "targetId": "tl4MX2ZL0thTLbu7u8QpH",
+            "startTime": 0,
+            "endTime": 1000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -15
+            }
+          },
+          {
+            "type": "move",
+            "id": "2jFq0g9CtLgDH3CnS97FF",
+            "targetId": "tl4MX2ZL0thTLbu7u8QpH",
+            "startTime": 650,
+            "endTime": 1000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 15
+            }
+          },
+          {
+            "type": "opacity",
+            "id": "DEEeabgKrqyBYm2nu5JGw",
+            "targetId": "Jsubpc5ULbXvmF3vcM24M",
+            "startTime": 650,
+            "endTime": 650,
+            "easing": "none",
+            "fromValue": 0,
+            "toValue": 100
+          },
+          {
+            "type": "blurRadius",
+            "id": "_agAhv1kK9Gaqt5rEbiwS",
+            "targetId": "Z7B2PzSMV54baoIu5roZO",
+            "startTime": 1500,
+            "endTime": 2500,
+            "easing": "natural",
+            "toValue": 100
+          },
+          {
+            "type": "move",
+            "id": "jKEjO137BhzMa64GzoFyO",
+            "targetId": "Z7B2PzSMV54baoIu5roZO",
+            "startTime": 1500,
+            "endTime": 2500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -75
+            }
+          },
+          {
+            "type": "move",
+            "id": "-d45t6XBc-VjrCFR3pPIl",
+            "targetId": "Z7B2PzSMV54baoIu5roZO",
+            "startTime": 2150,
+            "endTime": 2500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 75
+            }
+          },
+          {
+            "type": "move",
+            "id": "NvfN0EOvOx82c00v8JlKu",
+            "targetId": "AGYNlvcy0eUJh2MSv-wWS",
+            "startTime": 1500,
+            "endTime": 2500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -25
+            }
+          },
+          {
+            "type": "move",
+            "id": "6k_MuYJqUryagzJUuBJ99",
+            "targetId": "AGYNlvcy0eUJh2MSv-wWS",
+            "startTime": 2150,
+            "endTime": 2500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 25
+            }
+          },
+          {
+            "type": "move",
+            "id": "XJIvcOfbabzApgfkauoBk",
+            "targetId": "tl4MX2ZL0thTLbu7u8QpH",
+            "startTime": 1500,
+            "endTime": 2500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -15
+            }
+          },
+          {
+            "type": "move",
+            "id": "cX9QE3RvqIodN2_FDQo9x",
+            "targetId": "tl4MX2ZL0thTLbu7u8QpH",
+            "startTime": 2150,
+            "endTime": 2500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 15
+            }
+          },
+          {
+            "type": "opacity",
+            "id": "kQWq9Wt5eDn-ZmRGlLngn",
+            "targetId": "Jsubpc5ULbXvmF3vcM24M",
+            "startTime": 2150,
+            "endTime": 2150,
+            "easing": "none",
+            "toValue": 0
+          },
+          {
+            "type": "move",
+            "id": "oLGMrQiNkYz3K1IzvylVw",
+            "targetId": "1GfYLzSZb7mT5HuwsA8tb",
+            "startTime": 1500,
+            "endTime": 2500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -75
+            }
+          },
+          {
+            "type": "move",
+            "id": "8Zxa3x2QpYHcrS9cGxZRQ",
+            "targetId": "1GfYLzSZb7mT5HuwsA8tb",
+            "startTime": 2150,
+            "endTime": 2500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 75
+            }
+          },
+          {
+            "type": "move",
+            "id": "u7OiJYUIaeN6HwJ_0gv0j",
+            "targetId": "-nFYY-UxChgKcsucJTV34",
+            "startTime": 1500,
+            "endTime": 2500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -25
+            }
+          },
+          {
+            "type": "move",
+            "id": "oQ08omdeAb4kHfe9PZxi1",
+            "targetId": "-nFYY-UxChgKcsucJTV34",
+            "startTime": 2150,
+            "endTime": 2500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 25
+            }
+          },
+          {
+            "type": "move",
+            "id": "hRn898-a_WguKRTvQ5HpA",
+            "targetId": "3fgsQSOr1U44rSUNJ9t14",
+            "startTime": 1500,
+            "endTime": 2500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -15
+            }
+          },
+          {
+            "type": "move",
+            "id": "KbM-LYcqhlS52cLGGqi_M",
+            "targetId": "3fgsQSOr1U44rSUNJ9t14",
+            "startTime": 2150,
+            "endTime": 2500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 15
+            }
+          },
+          {
+            "type": "opacity",
+            "id": "8iyh8L1hxthbTs2lxbzVL",
+            "targetId": "nOxAaVA9DwBe7LDTOVqfS",
+            "startTime": 2150,
+            "endTime": 2150,
+            "easing": "none",
+            "fromValue": 0,
+            "toValue": 100
+          },
+          {
+            "type": "blurRadius",
+            "id": "txLdwtJJW6ijWOIfIN4pd",
+            "targetId": "1GfYLzSZb7mT5HuwsA8tb",
+            "startTime": 3000,
+            "endTime": 4000,
+            "easing": "natural",
+            "toValue": 100
+          },
+          {
+            "type": "move",
+            "id": "fI_fmDF-5BYlYu7TxeZK6",
+            "targetId": "1GfYLzSZb7mT5HuwsA8tb",
+            "startTime": 3000,
+            "endTime": 4000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -75
+            }
+          },
+          {
+            "type": "move",
+            "id": "asnUU7B13fLB18IKJddIe",
+            "targetId": "1GfYLzSZb7mT5HuwsA8tb",
+            "startTime": 3650,
+            "endTime": 4000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 75
+            }
+          },
+          {
+            "type": "move",
+            "id": "rCb0OQEupbLoKsHaTFyMg",
+            "targetId": "-nFYY-UxChgKcsucJTV34",
+            "startTime": 3000,
+            "endTime": 4000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -25
+            }
+          },
+          {
+            "type": "move",
+            "id": "eq7xxeqsxrYlQP8AiOpTs",
+            "targetId": "-nFYY-UxChgKcsucJTV34",
+            "startTime": 3650,
+            "endTime": 4000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 25
+            }
+          },
+          {
+            "type": "move",
+            "id": "c-8xXZPYNQOO-Z6R_j0OV",
+            "targetId": "3fgsQSOr1U44rSUNJ9t14",
+            "startTime": 3000,
+            "endTime": 4000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -15
+            }
+          },
+          {
+            "type": "move",
+            "id": "Cqp9sahBpfRL9_IX4oyKm",
+            "targetId": "3fgsQSOr1U44rSUNJ9t14",
+            "startTime": 3650,
+            "endTime": 4000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 15
+            }
+          },
+          {
+            "type": "opacity",
+            "id": "jgN92lrNV1OF5FTAvJ9Q1",
+            "targetId": "nOxAaVA9DwBe7LDTOVqfS",
+            "startTime": 3650,
+            "endTime": 3650,
+            "easing": "none",
+            "toValue": 0
+          },
+          {
+            "type": "move",
+            "id": "G1SenRh_uzyxh9uU3A2Oe",
+            "targetId": "mPFNiaCHq4ONZJ3IwKCuQ",
+            "startTime": 3000,
+            "endTime": 4000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -75
+            }
+          },
+          {
+            "type": "move",
+            "id": "3oQdjIA2At_JLSX42rdEN",
+            "targetId": "mPFNiaCHq4ONZJ3IwKCuQ",
+            "startTime": 3650,
+            "endTime": 4000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 75
+            }
+          },
+          {
+            "type": "move",
+            "id": "51RJlBS2F_IESAQARqcQb",
+            "targetId": "zHhMdgJNGv9YdS0-95FF2",
+            "startTime": 3000,
+            "endTime": 4000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -25
+            }
+          },
+          {
+            "type": "move",
+            "id": "hvzQZWpEcbWz6VEE6JFOT",
+            "targetId": "zHhMdgJNGv9YdS0-95FF2",
+            "startTime": 3650,
+            "endTime": 4000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 25
+            }
+          },
+          {
+            "type": "move",
+            "id": "As2L0PQTZLv9l0h3052v7",
+            "targetId": "Ki_BNLn1Rv7I868LhaFGE",
+            "startTime": 3000,
+            "endTime": 4000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -15
+            }
+          },
+          {
+            "type": "move",
+            "id": "7HTj-ys9SjkAt_vjjCWP3",
+            "targetId": "Ki_BNLn1Rv7I868LhaFGE",
+            "startTime": 3650,
+            "endTime": 4000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 15
+            }
+          },
+          {
+            "type": "opacity",
+            "id": "gUkJ-fX98tv4Akybovg3v",
+            "targetId": "T-KOY-7qiOV27T4MRQKL7",
+            "startTime": 3650,
+            "endTime": 3650,
+            "easing": "none",
+            "fromValue": 0,
+            "toValue": 100
+          },
+          {
+            "type": "blurRadius",
+            "id": "U5OOFYNgp6mU6ZOSdr4rF",
+            "targetId": "mPFNiaCHq4ONZJ3IwKCuQ",
+            "startTime": 4500,
+            "endTime": 5500,
+            "easing": "natural",
+            "toValue": 100
+          },
+          {
+            "type": "move",
+            "id": "FVBjNgjQ3p80GxHX4G0JL",
+            "targetId": "mPFNiaCHq4ONZJ3IwKCuQ",
+            "startTime": 4500,
+            "endTime": 5500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -75
+            }
+          },
+          {
+            "type": "move",
+            "id": "tZbUqcN09ihtUdjmQhwIm",
+            "targetId": "mPFNiaCHq4ONZJ3IwKCuQ",
+            "startTime": 5150,
+            "endTime": 5500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 75
+            }
+          },
+          {
+            "type": "move",
+            "id": "KgtUbQF1hMPsPIM31bdYh",
+            "targetId": "zHhMdgJNGv9YdS0-95FF2",
+            "startTime": 4500,
+            "endTime": 5500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -25
+            }
+          },
+          {
+            "type": "move",
+            "id": "E6RiIA90UtzG23geikRCx",
+            "targetId": "zHhMdgJNGv9YdS0-95FF2",
+            "startTime": 5150,
+            "endTime": 5500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 25
+            }
+          },
+          {
+            "type": "move",
+            "id": "DjiooW-tj7Wbr0kzvI8Eq",
+            "targetId": "Ki_BNLn1Rv7I868LhaFGE",
+            "startTime": 4500,
+            "endTime": 5500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -15
+            }
+          },
+          {
+            "type": "move",
+            "id": "n7ldxeSwMDzWUhk4FUiAk",
+            "targetId": "Ki_BNLn1Rv7I868LhaFGE",
+            "startTime": 5150,
+            "endTime": 5500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 15
+            }
+          },
+          {
+            "type": "opacity",
+            "id": "gJ1HvPupENOvhlzYOBPkf",
+            "targetId": "T-KOY-7qiOV27T4MRQKL7",
+            "startTime": 5150,
+            "endTime": 5150,
+            "easing": "none",
+            "toValue": 0
+          },
+          {
+            "type": "move",
+            "id": "FoNQg3XcYZDyHwGgmc0UL",
+            "targetId": "XTQbcSxMt2KxVfQEVEDfz",
+            "startTime": 4500,
+            "endTime": 5500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -75
+            }
+          },
+          {
+            "type": "move",
+            "id": "YZdIfTDrjprBkcG4Kpde-",
+            "targetId": "XTQbcSxMt2KxVfQEVEDfz",
+            "startTime": 5150,
+            "endTime": 5500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 75
+            }
+          },
+          {
+            "type": "move",
+            "id": "VylVIzejL0VYtMlvO7PC_",
+            "targetId": "95k6gen4JPQezIbrxVuAw",
+            "startTime": 4500,
+            "endTime": 5500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -25
+            }
+          },
+          {
+            "type": "move",
+            "id": "uSBCe5i_R1nllrIwdj08g",
+            "targetId": "95k6gen4JPQezIbrxVuAw",
+            "startTime": 5150,
+            "endTime": 5500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 25
+            }
+          },
+          {
+            "type": "move",
+            "id": "kkQqrmxENCHgx6qapXhKp",
+            "targetId": "-2t_LTbFBK6hlUF3Yc3PI",
+            "startTime": 4500,
+            "endTime": 5500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -15
+            }
+          },
+          {
+            "type": "move",
+            "id": "J_H2DVjRB-YK5FqB2ApGd",
+            "targetId": "-2t_LTbFBK6hlUF3Yc3PI",
+            "startTime": 5150,
+            "endTime": 5500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 15
+            }
+          },
+          {
+            "type": "opacity",
+            "id": "0FQhrH8shUJIqXW86wNwZ",
+            "targetId": "Z4WtwT_NIWkS7fNDFiooP",
+            "startTime": 5150,
+            "endTime": 5150,
+            "easing": "none",
+            "fromValue": 0,
+            "toValue": 100
+          },
+          {
+            "type": "blurRadius",
+            "id": "QK-EZfZpuY-u-ZEdbDu0p",
+            "targetId": "XTQbcSxMt2KxVfQEVEDfz",
+            "startTime": 6000,
+            "endTime": 7000,
+            "easing": "natural",
+            "toValue": 100
+          },
+          {
+            "type": "move",
+            "id": "UW-kdizVmNA84IL4pt7GZ",
+            "targetId": "XTQbcSxMt2KxVfQEVEDfz",
+            "startTime": 6000,
+            "endTime": 7000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -75
+            }
+          },
+          {
+            "type": "move",
+            "id": "UqcK6GXKE0At6RRQ1BlAH",
+            "targetId": "XTQbcSxMt2KxVfQEVEDfz",
+            "startTime": 6650,
+            "endTime": 7000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 75
+            }
+          },
+          {
+            "type": "move",
+            "id": "txSsy7sXAodTlHpnWVNd5",
+            "targetId": "95k6gen4JPQezIbrxVuAw",
+            "startTime": 6000,
+            "endTime": 7000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -25
+            }
+          },
+          {
+            "type": "move",
+            "id": "PNTAoRbIhgiars88vvnx9",
+            "targetId": "95k6gen4JPQezIbrxVuAw",
+            "startTime": 6650,
+            "endTime": 7000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 25
+            }
+          },
+          {
+            "type": "move",
+            "id": "IQvomxXPdlwcptU7s9-wW",
+            "targetId": "-2t_LTbFBK6hlUF3Yc3PI",
+            "startTime": 6000,
+            "endTime": 7000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -15
+            }
+          },
+          {
+            "type": "move",
+            "id": "kahlkVPYdyD2Cvtun93KD",
+            "targetId": "-2t_LTbFBK6hlUF3Yc3PI",
+            "startTime": 6650,
+            "endTime": 7000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 15
+            }
+          },
+          {
+            "type": "opacity",
+            "id": "b0es39fasRNFd3c6xaHUC",
+            "targetId": "Z4WtwT_NIWkS7fNDFiooP",
+            "startTime": 6650,
+            "endTime": 6650,
+            "easing": "none",
+            "toValue": 0
+          },
+          {
+            "type": "blurRadius",
+            "id": "rG9uosANO9bkfc8uMK76y",
+            "targetId": "vcokUPZgPtvriMt2XqXrg",
+            "startTime": 6000,
+            "endTime": 7000,
+            "easing": "natural",
+            "toValue": 0
+          },
+          {
+            "type": "move",
+            "id": "rwCvK3Y9qCUBcHnAjWZW9",
+            "targetId": "vcokUPZgPtvriMt2XqXrg",
+            "startTime": 6000,
+            "endTime": 7000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -75
+            }
+          },
+          {
+            "type": "move",
+            "id": "wQqpcxr0Ald6QpRHjq647",
+            "targetId": "vcokUPZgPtvriMt2XqXrg",
+            "startTime": 6650,
+            "endTime": 7000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 75
+            }
+          },
+          {
+            "type": "move",
+            "id": "m52Lew9zSgOX7yOIzteZg",
+            "targetId": "vVOa5NenhXmgMpA-zumx9",
+            "startTime": 6000,
+            "endTime": 7000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -25
+            }
+          },
+          {
+            "type": "move",
+            "id": "Dwr3d5ec2xnh71AaHrkmA",
+            "targetId": "vVOa5NenhXmgMpA-zumx9",
+            "startTime": 6650,
+            "endTime": 7000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 25
+            }
+          },
+          {
+            "type": "move",
+            "id": "SbZM1pRwtJaZzZPmgDGy3",
+            "targetId": "Y6cFe_gldjGO9BW8lubco",
+            "startTime": 6000,
+            "endTime": 7000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -15
+            }
+          },
+          {
+            "type": "move",
+            "id": "Abatc5riN-LT5HAzma1e_",
+            "targetId": "Y6cFe_gldjGO9BW8lubco",
+            "startTime": 6650,
+            "endTime": 7000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 15
+            }
+          },
+          {
+            "type": "opacity",
+            "id": "LenmZo2XmdBVMGWNpPdf8",
+            "targetId": "MkCWisA8UCo3SHIbe8gM3",
+            "startTime": 6650,
+            "endTime": 6650,
+            "easing": "none",
+            "toValue": 100
+          },
+          {
+            "type": "opacity",
+            "id": "28Hy4T5frv2AYFSDF4UYX",
+            "targetId": "32qlfFCwfm2-ZJ7EGAbVa",
+            "startTime": 650,
+            "endTime": 650,
+            "easing": "none",
+            "toValue": 100
+          },
+          {
+            "type": "opacity",
+            "id": "yjeQBlm_wzGdg4snw4Z3G",
+            "targetId": "u5ilvNQCsN9x3gC22h2aL",
+            "startTime": 650,
+            "endTime": 650,
+            "easing": "none",
+            "toValue": 25
+          },
+          {
+            "type": "opacity",
+            "id": "X1zPkMfQRy9uhxfOJyXgY",
+            "targetId": "u5ilvNQCsN9x3gC22h2aL",
+            "startTime": 2150,
+            "endTime": 2150,
+            "easing": "none",
+            "toValue": 100
+          },
+          {
+            "type": "opacity",
+            "id": "csLQAKV3s1Nx56yHKAlvM",
+            "targetId": "NabuO1cAbK_2M6sCbBPnl",
+            "startTime": 2150,
+            "endTime": 2150,
+            "easing": "none",
+            "toValue": 25
+          },
+          {
+            "type": "opacity",
+            "id": "j1bsCbwXUEbyn3KT8kle8",
+            "targetId": "NabuO1cAbK_2M6sCbBPnl",
+            "startTime": 3650,
+            "endTime": 3650,
+            "easing": "none",
+            "toValue": 100
+          },
+          {
+            "type": "opacity",
+            "id": "bqOIMwQVp5-0syfu1vA10",
+            "targetId": "UVcePXCa0z6A8QbPqMxW8",
+            "startTime": 3650,
+            "endTime": 3650,
+            "easing": "none",
+            "toValue": 25
+          },
+          {
+            "type": "opacity",
+            "id": "ZMkWSl5J9WC6-d0EbcZxs",
+            "targetId": "UVcePXCa0z6A8QbPqMxW8",
+            "startTime": 5150,
+            "endTime": 5150,
+            "easing": "none",
+            "toValue": 100
+          },
+          {
+            "type": "opacity",
+            "id": "zxQRIVNHxDXx3kGnQHpGV",
+            "targetId": "1_BZKSSTOacbcxExvxBr5",
+            "startTime": 5150,
+            "endTime": 5150,
+            "easing": "none",
+            "toValue": 25
+          },
+          {
+            "type": "opacity",
+            "id": "vl9mTW1ktalwrenmqTbXi",
+            "targetId": "1_BZKSSTOacbcxExvxBr5",
+            "startTime": 6650,
+            "endTime": 6650,
+            "easing": "none",
+            "toValue": 100
+          },
+          {
+            "type": "opacity",
+            "id": "0qx1zbXV4hH2xghTsJLvz",
+            "targetId": "32qlfFCwfm2-ZJ7EGAbVa",
+            "startTime": 6650,
+            "endTime": 6650,
+            "easing": "none",
+            "toValue": 25
+          }
+        ]
+      }
+    ]
+  }
+}

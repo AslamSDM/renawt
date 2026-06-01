@@ -1,0 +1,302 @@
+{
+  "name": "xXDQOQkGOcaN2d9d0sRKK",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "gEc3QBrWT1aAoONH6WnlS",
+        "name": "Scene",
+        "x": 0,
+        "y": 3332,
+        "width": 1080,
+        "height": 1350,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 4250,
+        "fillColor": "#070707",
+        "background": true,
+        "layers": [
+          {
+            "type": "maskGrp",
+            "id": "69GhY-mnVKGgiDAHT5Cza",
+            "name": "Visual",
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 1,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": true,
+            "layers": [
+              {
+                "type": "rect",
+                "id": "G-Akxi0zpV3r4xXEWymk9",
+                "name": "Mask",
+                "x": 0,
+                "y": 0,
+                "width": 1080,
+                "height": 1350,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#b3b3b3",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "video",
+                "id": "SIWP6z5P4t6lWTX4_XbOF",
+                "name": "Visual",
+                "x": -161,
+                "y": -206,
+                "width": 1328,
+                "height": 1558,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://d154zarmrcpu4a.cloudfront.net/36uCgdStmrsO3Be7LG-G_.mp4",
+                "mediaName": "Professional_Mode_A_black_and_white_minimalistic_c (4).mp4"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "id": "J2WUvnopzW_SD5mmuUzhh",
+            "name": "ELEGANCE",
+            "x": 494,
+            "y": 668,
+            "width": 92,
+            "height": 14,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "ELEGANCE",
+            "color": "#ffffff",
+            "fontSize": 17,
+            "font": {
+              "type": "googlefont",
+              "name": "Quadrant Text Mono Regular",
+              "weight": 400,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 80,
+            "letterSpacing": 7.000000000000001,
+            "textAlign": "center",
+            "verticalAlign": "top",
+            "case": "upper"
+          },
+          {
+            "type": "text",
+            "id": "CKoQ44Q4gdBVwrj_2JFYK",
+            "name": "CRAFT",
+            "x": 12,
+            "y": 668,
+            "width": 57,
+            "height": 14,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "CRAFT",
+            "color": "#ffffff",
+            "fontSize": 17,
+            "font": {
+              "type": "googlefont",
+              "name": "Quadrant Text Mono Regular",
+              "weight": 400,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 80,
+            "letterSpacing": 7.000000000000001,
+            "textAlign": "left",
+            "verticalAlign": "top",
+            "case": "upper"
+          },
+          {
+            "type": "text",
+            "id": "O2ajah1-DyhfK7Y2hnRN1",
+            "name": "LEGACY",
+            "x": 999,
+            "y": 668,
+            "width": 69,
+            "height": 14,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "LEGACY",
+            "color": "#ffffff",
+            "fontSize": 17,
+            "font": {
+              "type": "googlefont",
+              "name": "Quadrant Text Mono Regular",
+              "weight": 400,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 80,
+            "letterSpacing": 7.000000000000001,
+            "textAlign": "right",
+            "verticalAlign": "top",
+            "case": "upper"
+          },
+          {
+            "type": "text",
+            "id": "q2KJRzkgmghAXLJ_dn0oZ",
+            "name": "EST. 1992",
+            "x": 965,
+            "y": 12,
+            "width": 103,
+            "height": 14,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "EST. 1972",
+            "color": "#ffffff",
+            "fontSize": 17,
+            "font": {
+              "type": "googlefont",
+              "name": "Quadrant Text Mono Regular",
+              "weight": 400,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 80,
+            "letterSpacing": 7.000000000000001,
+            "textAlign": "right",
+            "verticalAlign": "top",
+            "case": "upper"
+          },
+          {
+            "type": "text",
+            "id": "5WzXSm3S7cu_xGg5HlcG4",
+            "name": "ACME",
+            "x": 518,
+            "y": 12,
+            "width": 44,
+            "height": 14,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "ACME",
+            "color": "#ffffff",
+            "fontSize": 17,
+            "font": {
+              "type": "googlefont",
+              "name": "Quadrant Text Mono Regular",
+              "weight": 400,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 80,
+            "letterSpacing": 7.000000000000001,
+            "textAlign": "center",
+            "verticalAlign": "top",
+            "case": "upper"
+          },
+          {
+            "type": "text",
+            "id": "wefkWywKu2__yEDkbSdjg",
+            "name": "PARIS | MILAN",
+            "x": 12,
+            "y": 12,
+            "width": 149,
+            "height": 14,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "PARIS | MILAN",
+            "color": "#ffffff",
+            "fontSize": 17,
+            "font": {
+              "type": "googlefont",
+              "name": "Quadrant Text Mono Regular",
+              "weight": 400,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 80,
+            "letterSpacing": 7.000000000000001,
+            "textAlign": "left",
+            "verticalAlign": "top",
+            "case": "upper"
+          }
+        ],
+        "operations": [
+          {
+            "type": "resize",
+            "id": "f3WBzz7A3v9vIedxV5JAu",
+            "targetId": "G-Akxi0zpV3r4xXEWymk9",
+            "startTime": 460,
+            "endTime": 2030,
+            "easing": "natural",
+            "anchor": "center",
+            "fromValue": {
+              "height": 0,
+              "width": 0
+            }
+          },
+          {
+            "type": "scale",
+            "id": "vnxMi9QLTlXSPAuKkrC-F",
+            "targetId": "SIWP6z5P4t6lWTX4_XbOF",
+            "startTime": 460,
+            "endTime": 2030,
+            "easing": "natural",
+            "fromValue": 0.6,
+            "toValue": 1
+          },
+          {
+            "type": "move",
+            "id": "gELB9H9Y2Z6WciVhyfY6N",
+            "targetId": "O2ajah1-DyhfK7Y2hnRN1",
+            "startTime": 0,
+            "endTime": 1250,
+            "easing": "natural",
+            "fromValue": {
+              "x": -401
+            },
+            "toValue": {}
+          },
+          {
+            "type": "move",
+            "id": "-lLNsSFmn07A0ox5ojfmW",
+            "targetId": "CKoQ44Q4gdBVwrj_2JFYK",
+            "startTime": 0,
+            "endTime": 1250,
+            "easing": "natural",
+            "fromValue": {
+              "x": 413
+            },
+            "toValue": {}
+          },
+          {
+            "type": "playVideo",
+            "id": "yJUVtJv52EQTk_-ODaq9r",
+            "targetId": "SIWP6z5P4t6lWTX4_XbOF",
+            "startTime": 0,
+            "endTime": 4250,
+            "offset": 0,
+            "volume": 1
+          }
+        ]
+      }
+    ]
+  }
+}

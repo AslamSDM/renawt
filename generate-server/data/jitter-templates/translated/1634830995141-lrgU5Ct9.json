@@ -1,0 +1,162 @@
+{
+  "name": "New badge",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "18:165",
+        "name": "New badge",
+        "x": 2800,
+        "y": -177,
+        "width": 400,
+        "height": 400,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 4000,
+        "fillColor": "#ffffff",
+        "background": false,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "yfCzysVy",
+            "name": "Badge",
+            "x": 80,
+            "y": 80,
+            "width": 240,
+            "height": 240,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "star",
+                "id": "18:166",
+                "name": "Star",
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 240,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#2e79f5",
+                "background": true,
+                "spikes": 20,
+                "radiusRatio": 94,
+                "strokeEnabled": false
+              },
+              {
+                "type": "text",
+                "id": "18:169",
+                "name": "New",
+                "x": 51,
+                "y": 80,
+                "width": 138,
+                "height": 80,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "New",
+                "color": "#ffffff",
+                "fontSize": 80,
+                "font": {
+                  "type": "googlefont",
+                  "name": "Oswald",
+                  "weight": 600,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 100,
+                "letterSpacing": 0,
+                "textAlign": "center",
+                "verticalAlign": "center",
+                "case": "upper"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "rotate",
+            "id": "u2kVng8N",
+            "targetId": "18:166",
+            "startTime": 0,
+            "endTime": 4000,
+            "easing": "none",
+            "toValue": 45
+          },
+          {
+            "type": "rotate",
+            "id": "hiNADrIH",
+            "targetId": "yfCzysVy",
+            "startTime": 0,
+            "endTime": 400,
+            "easing": "natural",
+            "fromValue": -45,
+            "toValue": 0
+          },
+          {
+            "type": "fadeIn",
+            "id": "hiNADrIH",
+            "targetId": "yfCzysVy",
+            "startTime": 0,
+            "endTime": 400,
+            "easing": "natural"
+          },
+          {
+            "type": "textIn",
+            "id": "G4S6bc95",
+            "targetId": "18:169",
+            "startTime": 100,
+            "easing": "none",
+            "effect": "slideAndMask",
+            "split": "letters",
+            "order": "forward",
+            "offset": 50,
+            "nodeDuration": 290,
+            "nodeEasing": "natural",
+            "travelDistance": 100,
+            "slideDirection": "up"
+          },
+          {
+            "type": "spinOut",
+            "id": "K7MCRekR",
+            "targetId": "yfCzysVy",
+            "startTime": 3700,
+            "endTime": 4000,
+            "easing": "accelerate",
+            "angle": 45,
+            "direction": "cw"
+          },
+          {
+            "type": "spinOut",
+            "id": "kha465aa",
+            "targetId": "18:169",
+            "startTime": 3650,
+            "endTime": 3950,
+            "easing": "accelerate",
+            "angle": 45,
+            "direction": "cw"
+          }
+        ]
+      }
+    ]
+  }
+}

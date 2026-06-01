@@ -1,0 +1,508 @@
+{
+  "name": "1671735588073-rILrzPO8",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "artboard:60:1608",
+        "name": "Artboard",
+        "x": 3594,
+        "y": 15799,
+        "width": 1600,
+        "height": 1200,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 1,
+        "cornerRadius": 0,
+        "clipsContent": false,
+        "duration": 4000,
+        "fillColor": "#f1e5ff",
+        "background": true,
+        "layers": [
+          {
+            "type": "maskGrp",
+            "id": "k6s1xksY17m7bbzJtFruZ",
+            "name": "Background",
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 1,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": true,
+            "layers": [
+              {
+                "type": "rect",
+                "id": "PWk-MEPIjF-fdrLG9T3Ac",
+                "name": "bg mask",
+                "x": 0,
+                "y": 0,
+                "width": 1600,
+                "height": 1200,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#b3b3b3",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "image",
+                "id": "kXihhwonE_mvGfcJRRxi9",
+                "name": "bg image",
+                "x": -200,
+                "y": -150,
+                "width": 2000,
+                "height": 1500,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://snackthis-userdata.s3-eu-west-1.amazonaws.com/4c38e9ca-2ce4-480e-a71f-02ad6644a9a0.png",
+                "mediaName": "Background.png"
+              }
+            ]
+          },
+          {
+            "type": "layerGrp",
+            "id": "IdvwLSysHvJsMfsyj7X-u",
+            "name": "Text",
+            "x": 0,
+            "y": 840,
+            "width": 1600,
+            "height": 358,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "text",
+                "id": "53:1573",
+                "name": "Live action",
+                "x": 12,
+                "y": 172,
+                "width": 1204,
+                "height": 186,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "Live action",
+                "color": "#100011",
+                "fontSize": 232,
+                "font": {
+                  "type": "googlefont",
+                  "name": "DM Sans",
+                  "weight": 400,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 80,
+                "letterSpacing": -6,
+                "textAlign": "center",
+                "verticalAlign": "center",
+                "case": "upper"
+              },
+              {
+                "type": "maskGrp",
+                "id": "53:1585",
+                "name": "Mask 1",
+                "x": 0,
+                "y": 0,
+                "width": 1600,
+                "height": 172,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "53:1584",
+                    "name": "Mask",
+                    "x": 0,
+                    "y": 0,
+                    "width": 1600,
+                    "height": 172,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#d9d9d9",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 4,
+                    "shadowOffsetY": 4,
+                    "shadowBlur": 8,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "text",
+                    "id": "53:1581",
+                    "name": "Live action",
+                    "x": 12,
+                    "y": 116,
+                    "width": 1204,
+                    "height": 186,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "text": "Live action",
+                    "color": "#100011",
+                    "fontSize": 232,
+                    "font": {
+                      "type": "googlefont",
+                      "name": "DM Sans",
+                      "weight": 400,
+                      "fontStyle": "regular"
+                    },
+                    "lineHeight": 80,
+                    "letterSpacing": -6,
+                    "textAlign": "center",
+                    "verticalAlign": "center",
+                    "case": "upper"
+                  }
+                ]
+              },
+              {
+                "type": "maskGrp",
+                "id": "53:1587",
+                "name": "Mask 2",
+                "x": 0,
+                "y": 0,
+                "width": 1600,
+                "height": 116,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "53:1586",
+                    "name": "Mask",
+                    "x": 0,
+                    "y": 0,
+                    "width": 1600,
+                    "height": 116,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#d9d9d9",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 4,
+                    "shadowOffsetY": 4,
+                    "shadowBlur": 8,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "text",
+                    "id": "53:1582",
+                    "name": "Live action",
+                    "x": 12,
+                    "y": 68,
+                    "width": 1204,
+                    "height": 186,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "text": "Live action",
+                    "color": "#100011",
+                    "fontSize": 232,
+                    "font": {
+                      "type": "googlefont",
+                      "name": "DM Sans",
+                      "weight": 400,
+                      "fontStyle": "regular"
+                    },
+                    "lineHeight": 80,
+                    "letterSpacing": -6,
+                    "textAlign": "center",
+                    "verticalAlign": "center",
+                    "case": "upper"
+                  }
+                ]
+              },
+              {
+                "type": "maskGrp",
+                "id": "53:1589",
+                "name": "Mask 3",
+                "x": 0,
+                "y": 0,
+                "width": 1600,
+                "height": 68,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "53:1588",
+                    "name": "Mask",
+                    "x": 0,
+                    "y": 0,
+                    "width": 1600,
+                    "height": 68,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#d9d9d9",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 4,
+                    "shadowOffsetY": 4,
+                    "shadowBlur": 8,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "text",
+                    "id": "53:1583",
+                    "name": "Live action",
+                    "x": 12,
+                    "y": 36,
+                    "width": 1204,
+                    "height": 186,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "text": "Live action",
+                    "color": "#100011",
+                    "fontSize": 232,
+                    "font": {
+                      "type": "googlefont",
+                      "name": "DM Sans",
+                      "weight": 400,
+                      "fontStyle": "regular"
+                    },
+                    "lineHeight": 80,
+                    "letterSpacing": -6,
+                    "textAlign": "center",
+                    "verticalAlign": "center",
+                    "case": "upper"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "resize",
+            "id": "ZdqsSr-Km5tYpZwM9qIUY",
+            "targetId": "PWk-MEPIjF-fdrLG9T3Ac",
+            "startTime": 0,
+            "endTime": 800,
+            "easing": "slowDown",
+            "anchor": "s",
+            "fromValue": {
+              "height": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "vUvFUuRBPTdR205UxFlet",
+            "targetId": "kXihhwonE_mvGfcJRRxi9",
+            "startTime": 0,
+            "endTime": 800,
+            "easing": "slowDown",
+            "fromValue": {
+              "y": 600
+            },
+            "toValue": {}
+          },
+          {
+            "type": "move",
+            "id": "JLKDRzG7boWaoJB8CtOI4",
+            "targetId": "53:1573",
+            "startTime": 0,
+            "endTime": 600,
+            "easing": "slowDown",
+            "fromValue": {
+              "x": 0,
+              "y": 240
+            },
+            "toValue": {}
+          },
+          {
+            "type": "move",
+            "id": "93w0b7cOpIrL8kZi64UX3",
+            "targetId": "53:1581",
+            "startTime": 0,
+            "endTime": 700,
+            "easing": "slowDown",
+            "fromValue": {
+              "x": 0,
+              "y": 240
+            },
+            "toValue": {}
+          },
+          {
+            "type": "move",
+            "id": "Humk2AkP4arrOQueM0TrN",
+            "targetId": "53:1582",
+            "startTime": 0,
+            "endTime": 800,
+            "easing": "slowDown",
+            "fromValue": {
+              "x": 0,
+              "y": 240
+            },
+            "toValue": {}
+          },
+          {
+            "type": "move",
+            "id": "dQAiQEQOf0-2IQwgfCVy2",
+            "targetId": "53:1583",
+            "startTime": 0,
+            "endTime": 900,
+            "easing": "slowDown",
+            "fromValue": {
+              "x": 0,
+              "y": 240
+            },
+            "toValue": {}
+          },
+          {
+            "type": "move",
+            "id": "SON_Zilt2Q0puXekm-sYz",
+            "targetId": "IdvwLSysHvJsMfsyj7X-u",
+            "startTime": 0,
+            "endTime": 1200,
+            "easing": "slowDown",
+            "fromValue": {
+              "x": 0,
+              "y": 100
+            },
+            "toValue": {}
+          },
+          {
+            "type": "scale",
+            "id": "v5jD3Uy9EzX1Z2afClMcY",
+            "targetId": "kXihhwonE_mvGfcJRRxi9",
+            "startTime": 0,
+            "endTime": 4000,
+            "easing": "slowDown",
+            "fromValue": 1.2
+          },
+          {
+            "type": "rotate",
+            "id": "i7hS9TrAmQisNKihrilZt",
+            "targetId": "kXihhwonE_mvGfcJRRxi9",
+            "startTime": 0,
+            "endTime": 4000,
+            "easing": "none",
+            "toValue": 3
+          },
+          {
+            "type": "move",
+            "id": "2Qxl_7PufwTODnVw51Gy2",
+            "targetId": "53:1573",
+            "startTime": 2701,
+            "endTime": 3701,
+            "easing": "accelerate",
+            "toValue": {
+              "x": 1600,
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "_uHi02_HEKx0J23AHVHRe",
+            "targetId": "53:1581",
+            "startTime": 2741,
+            "endTime": 3741,
+            "easing": "accelerate",
+            "toValue": {
+              "x": 1600,
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "07WiiTuDTCzY4Kf5oBojK",
+            "targetId": "53:1582",
+            "startTime": 2781,
+            "endTime": 3781,
+            "easing": "accelerate",
+            "toValue": {
+              "x": 1600,
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "4TL9oXEhW0EfaXh8ZR2NN",
+            "targetId": "53:1583",
+            "startTime": 2821,
+            "endTime": 3821,
+            "easing": "accelerate",
+            "toValue": {
+              "x": 1600,
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "erkjjey8zvBuzXznt8Sj6",
+            "targetId": "kXihhwonE_mvGfcJRRxi9",
+            "startTime": 2860,
+            "endTime": 3860,
+            "easing": "accelerate",
+            "toValue": {
+              "x": 800
+            }
+          },
+          {
+            "type": "resize",
+            "id": "KP_rlnvKo1ntMb9hfBEL_",
+            "targetId": "PWk-MEPIjF-fdrLG9T3Ac",
+            "startTime": 2860,
+            "endTime": 3860,
+            "easing": "accelerate",
+            "anchor": "e",
+            "toValue": {
+              "width": 0
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

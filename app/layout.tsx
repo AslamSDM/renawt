@@ -102,6 +102,7 @@ export const metadata: Metadata = {
 
 import { Providers } from "@/components/Providers";
 import { Toaster } from "sonner";
+import { CookieConsent } from "@/components/CookieConsent";
 
 export default function RootLayout({
   children,
@@ -147,6 +148,7 @@ export default function RootLayout({
       <body className="antialiased">
         <Providers>
           {children}
+          <CookieConsent />
           <Toaster theme="dark" position="top-right" richColors />
         </Providers>
       </body>

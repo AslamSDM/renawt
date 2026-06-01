@@ -1,0 +1,484 @@
+{
+  "name": "Yps3Q-9ZpEEfqStw1uvLr",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "UuAvg09udN8YHeMSvxhWV",
+        "name": "Scene",
+        "x": 0,
+        "y": 1613,
+        "width": 1080,
+        "height": 1350,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 4250,
+        "fillColor": "#ffffff",
+        "background": true,
+        "layers": [
+          {
+            "type": "maskGrp",
+            "id": "zu95O3pvd-ov8lnXjRLaB",
+            "name": "Visual",
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 1,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": true,
+            "layers": [
+              {
+                "type": "layerGrp",
+                "id": "2IP8mXgeeOPK9YPzmINky",
+                "name": "White label",
+                "x": 367,
+                "y": 422,
+                "width": 345,
+                "height": 506,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "svg",
+                    "id": "t642xg8JQIXnpU7oT2Qzc",
+                    "name": "Bottle silhouette",
+                    "x": 0,
+                    "y": 0,
+                    "width": 345,
+                    "height": 506,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#000000",
+                    "background": true,
+                    "url": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzQ1IiBoZWlnaHQ9IjUwNiIgdmlld0JveD0iMCAwIDM0NSA1MDYiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0yOTguNjY3IDEzOC42NjVMMjY2LjEgMTMyLjYxOVYxMjEuNzQySDI4My43NTNWMTQuNzg3N0MyODMuNzUzIDYuNzcxOTggMjc3LjI2MyAwLjI3NTE3MiAyNjkuMjU2IDAuMjc1MTcyTDIxNC4zMDYgMC4xNjUxMDNWMEwxNzIuNTAzIDAuMDgyNTUxNkwxMzAuNyAwVjAuMTY1MTAzTDc1Ljc0OTggMC4yNzUxNzJDNjcuNzQyNyAwLjI3NTE3MiA2MS4yNTI5IDYuNzcxOTggNjEuMjUyOSAxNC43ODc3VjEyMS43MzlINzguOTA1NFYxMzIuNjE2TDQ2LjMzODMgMTM4LjY2MkMxOS40ODAzIDE0My42NTEgMCAxNjcuMTAxIDAgMTk0LjQ0MlY0ODMuOTIzQzAgNDk2LjExNiA5Ljg3MzQ4IDUwNiAyMi4wNTMyIDUwNkgzMjIuOTQ3QzMzNS4xMjcgNTA2IDM0NSA0OTYuMTE2IDM0NSA0ODMuOTIzVjE5NC40NDJDMzQ1IDE2Ny4xMDEgMzI1LjUyIDE0My42NTEgMjk4LjY2NCAxMzguNjY1SDI5OC42NjdaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K",
+                    "strokeEnabled": false
+                  },
+                  {
+                    "type": "rect",
+                    "id": "1Nr8bNpWHPF0d73dV2kI_",
+                    "name": "Black background",
+                    "x": -367,
+                    "y": -422,
+                    "width": 1080,
+                    "height": 1350,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#b3b3b3",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  }
+                ]
+              },
+              {
+                "type": "image",
+                "id": "YAMhg3o0AICNUthdv3XOR",
+                "name": "Visual",
+                "x": 0,
+                "y": -291,
+                "width": 1080,
+                "height": 1932,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://d154zarmrcpu4a.cloudfront.net/H5J-oBQ4yk3xE6J7qQo_s.png",
+                "mediaName": "image 814.png"
+              }
+            ]
+          },
+          {
+            "type": "rect",
+            "id": "9RJNHhgAHmYQ0gXSLQGHi",
+            "name": "Black background",
+            "x": 0,
+            "y": 0,
+            "width": 1080,
+            "height": 1350,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "fillColor": "#000000",
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50
+          },
+          {
+            "type": "text",
+            "id": "x4l3nKEd0rJFIhzon4PwD",
+            "name": "Nuit Étoilée Volume No. V",
+            "x": 492,
+            "y": 855,
+            "width": 97,
+            "height": 24,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "Nuit Étoilée\nVolume No. V",
+            "color": "#ffffff",
+            "fontSize": 12,
+            "font": {
+              "type": "googlefont",
+              "name": "Quadrant Text Mono Regular",
+              "weight": 400,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 98,
+            "letterSpacing": 7.000000000000001,
+            "textAlign": "center",
+            "verticalAlign": "top",
+            "case": "upper"
+          },
+          {
+            "type": "layerGrp",
+            "id": "vyfMBOCwyhrRHCyPr8VCJ",
+            "name": "Logo",
+            "x": 394,
+            "y": 700,
+            "width": 274,
+            "height": 72,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": true,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "svg",
+                "id": "gXl4rXDnyZBdlq5QFbPj3",
+                "name": "Vector",
+                "x": 220.27106097027968,
+                "y": 1.4833855879934248,
+                "width": 53.99406263552933,
+                "height": 68.96829476791216,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#000000",
+                "background": true,
+                "url": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTg4IiBoZWlnaHQ9IjI0NSIgdmlld0JveD0iMCAwIDE4OCAyNDUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xODcuMDc3IDAuMjMwNDY5VjUyLjE0MDdINTguMTYwNlY5Ni40ODc5SDE3NS4zODhWMTQ1LjMwNEg1OC4xNjA2VjE5My4wODlIMTg2LjczM1YyNDQuOTk5SDAuMDYyNVYwLjIzMDQ2OUgxODcuMDc3WiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+Cg==",
+                "strokeEnabled": false
+              },
+              {
+                "type": "svg",
+                "id": "c0KAQDmWF0UsB_PwEnCym",
+                "name": "Vector",
+                "x": 136.40777289117133,
+                "y": 1.4833855879934248,
+                "width": 78.11906934502117,
+                "height": 68.96829476791216,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#000000",
+                "background": true,
+                "url": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjcyIiBoZWlnaHQ9IjI0NSIgdmlld0JveD0iMCAwIDI3MiAyNDUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xNTMuMDI3IDEwNC4zOTVMMTg0Ljk5OSAwLjIzMDQ2OUgyNzEuOTc0VjI0NC45OTlIMjE2LjYyNlYxNzMuMTVDMjE2LjYyNiAxMjcuNzcyIDIxNy4zMTQgODguMjM3MiAyMTguNjg5IDU0Ljg5MDlDMjE0LjIyIDcxLjczNiAyMDguNzE5IDkwLjI5OTkgMjAyLjE4NyAxMTAuNTgzTDE1OS45MDMgMjQ0Ljk5OUgxMTIuNDYyTDcwLjE3NzIgMTEwLjU4M0M2NS4wMjA2IDk0LjQyNTIgNTkuNTIwMiA3NS44NjEzIDU0LjAxOTggNTUuMjM0N0M1NS4wNTExIDkzLjczNzcgNTUuNzM4NiAxMzMuMjcyIDU1LjczODYgMTczLjE1VjI0NC45OTlIMC4zOTA2MjVWMC4yMzA0NjlIODcuMzY2MUwxMTkuNjgxIDEwNS40MjZDMTIzLjgwNiAxMjAuNTUyIDEyOS42NTEgMTQwLjgzNSAxMzYuNTI2IDE2Ni4yNzVDMTQyLjAyNyAxNDQuNjE3IDE0Ny41MjcgMTIzLjk5IDE1My4wMjcgMTA0LjM5NVoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=",
+                "strokeEnabled": false
+              },
+              {
+                "type": "svg",
+                "id": "Zrvi1Wrpf2KL8sZ1-bgUl",
+                "name": "Vector",
+                "x": 65.18146989729021,
+                "y": -0.20561780427631504,
+                "width": 68.9285905985481,
+                "height": 72.3463336953201,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#000000",
+                "background": true,
+                "url": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjI1NyIgdmlld0JveD0iMCAwIDI0MCAyNTciIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xMjIuNDk0IDI1Ni41Qzg2LjA1MzUgMjU2LjUgNTYuNDg4NyAyNDUuMTU2IDM0LjE0MzIgMjIxLjc3OUMxMS40NTQgMTk4Ljc0NiAwLjQ1MzEyNSAxNjcuODA2IDAuNDUzMTI1IDEyOC42MTVDMC40NTMxMjUgODkuNDI0OCAxMS40NTQgNTguMTQxMSAzMy40NTU3IDM1LjEwODFDNTUuNDU3NCAxMi40MTg5IDg1LjAyMjEgMC43MzA0NjkgMTIyLjQ5NCAwLjczMDQ2OUMxNTIuNzQ2IDAuNzMwNDY5IDE3OC4xODYgOC45ODExIDE5OS41IDI0Ljc5NDhDMjIwLjgxNCA0MS4yOTYxIDIzMy44NzcgNjQuMzI5MSAyMzguMzQ2IDkzLjg5MzlIMTc5LjU2MUMxNzUuNzc5IDgwLjE0MjggMTY4LjkwNCA2OS44Mjk2IDE1OC45MzQgNjIuMjY2NUMxNDguOTY1IDU0LjcwMzQgMTM2LjkzMiA1MC45MjE4IDEyMi40OTQgNTAuOTIxOEMxMDIuNTU1IDUwLjkyMTggODcuNDI4NiA1Ny43OTc0IDc2Ljc3MTUgNzEuMjA0N0M2Ni4xMTQ1IDg0Ljk1NTcgNjAuOTU3OCAxMDMuODYzIDYwLjk1NzggMTI4LjYxNUM2MC45NTc4IDE1My4zNjcgNjYuMTE0NSAxNzIuNjE5IDc2Ljc3MTUgMTg2LjAyNkM4Ny40Mjg2IDE5OS43NzcgMTAyLjU1NSAyMDYuMzA5IDEyMi40OTQgMjA2LjMwOUMxMzcuNjIgMjA2LjMwOSAxNTAuMzQgMjAyLjE4MyAxNjAuOTk3IDE5My4yNDVDMTcxLjMxIDE4NC42NTEgMTc4LjE4NiAxNzIuNjE5IDE4MC45MzYgMTU2LjgwNUgyMzkuMDM0QzIzNS4yNTMgMTg4LjQzMiAyMjIuODc3IDIxMy4xODQgMjAxLjU2MiAyMzAuMzczQzE3OS45MDQgMjQ3LjkwNiAxNTMuNDM0IDI1Ni41IDEyMi40OTQgMjU2LjVaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K",
+                "strokeEnabled": false
+              },
+              {
+                "type": "svg",
+                "id": "M0EPt0MMpUKUou6dExp53",
+                "name": "Vector",
+                "x": -0.013566023819926443,
+                "y": 1.4833855879934248,
+                "width": 72.3750201284755,
+                "height": 68.96829476791216,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#000000",
+                "background": true,
+                "url": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUyIiBoZWlnaHQ9IjI0NSIgdmlld0JveD0iMCAwIDI1MiAyNDUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0yNTEuMzQ3IDI0NC45OTlIMTg5LjgxMUwxNzUuMzczIDIwMi4zNzFINzMuNjE1MUw1OS41MjAyIDI0NC45OTlIMC4wNDY4NzVMOTAuMTE2MyAwLjIzMDQ2OUgxNTkuMjE1TDI1MS4zNDcgMjQ0Ljk5OVpNMTAzLjg2NyAxMTEuOTU4TDg5Ljc3MjUgMTUzLjg5OUgxNTguODcyTDE0NC43NzcgMTExLjk1OEMxNDAuMzA4IDk5LjU4MTkgMTMzLjQzMiA3OC45NTUzIDEyNC4xNSA1MC4wNzhDMTExLjc3NCA4Ny41NDk3IDEwNS4yNDIgMTA4LjE3NiAxMDMuODY3IDExMS45NThaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K",
+                "strokeEnabled": false
+              },
+              {
+                "type": "image",
+                "id": "6fDoeyHX0F-tenqJc7bl6",
+                "name": "©",
+                "x": 276.77734375,
+                "y": -0.47265625,
+                "width": 14,
+                "height": 14,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://snackthis-userdata.s3-eu-west-1.amazonaws.com/57621d6b-bdb1-409c-80db-b496590ea917.png",
+                "mediaName": "fallback.png"
+              }
+            ]
+          },
+          {
+            "type": "svg",
+            "id": "0icK3topguanEn14ivZSL",
+            "name": "Bottle",
+            "x": 366,
+            "y": 420,
+            "width": 349,
+            "height": 511,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "fillColor": "#000000",
+            "background": true,
+            "url": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzE3IiBoZWlnaHQ9IjQ2MyIgdmlld0JveD0iMCAwIDMxNyA0NjMiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0yNDMuNzU0IDEyMi43MjJMMjczLjUwMyAxMjguMjQzQzI5Ny41NjMgMTMyLjcwOCAzMTUuMDE2IDE1My43MDggMzE1LjAxNiAxNzguMTkzVjQ0Mi41MzVDMzE1LjAxNiA0NTMuMTE3IDMwNi40NDMgNDYxLjY5NCAyOTUuODY5IDQ2MS42OTRIMjAuOTg2NkMxMC40MTI3IDQ2MS42OTQgMS44Mzk4NCA0NTMuMTE3IDEuODM5ODQgNDQyLjUzNVYxNzguMTkzQzEuODM5ODQgMTUzLjcwOCAxOS4yOTI4IDEzMi43MDggNDMuMzU0OCAxMjguMjRDNDMuMzU0OCAxMjguMjQgNDMuMzU0OSAxMjguMjQgNDMuMzU0OSAxMjguMjRMNzMuMTA2NSAxMjIuNzJMNzMuOTI0MSAxMjIuNTY4VjEyMS43MzZWMTExLjgwM1YxMTAuODAzSDcyLjkyNDFINTcuNzk3N1YxNC4xNDAzQzU3Ljc5NzcgNy4zNzIyOCA2My4yNzkzIDEuODg3OTkgNzAuMDQxMyAxLjg4OEw3MC4wNDMzIDEuODg3OTlMMTIwLjI0MyAxLjc4NzQ4TDEyMS4yNDEgMS43ODU0OFYxLjYzODY5TDE1OC40MjggMS43MTIxMUwxNTguNDMyIDEuNzEyMUwxOTUuNjE5IDEuNjM4NjlWMS43ODU0OEwxOTYuNjE3IDEuNzg3NDhMMjQ2LjgxNyAxLjg4Nzk5SDI0Ni44MTlDMjUzLjU4MSAxLjg4Nzk5IDI1OS4wNjMgNy4zNzIyOCAyNTkuMDYzIDE0LjE0MDNWMTEwLjgwNkgyNDMuOTM3SDI0Mi45MzdWMTExLjgwNlYxMjEuNzM5VjEyMi41N0wyNDMuNzU0IDEyMi43MjJaTTE1OC40MyAwLjcxNDAzMkwxNTguNDMgMC43MTIxMDFMMTU4LjQzIDAuNzE0MDMyWiIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIi8+Cjwvc3ZnPgo=",
+            "strokeEnabled": false
+          },
+          {
+            "type": "text",
+            "id": "7u94MDNj-DCSEfHUyfU-W",
+            "name": "Volume No. V",
+            "x": 425.5,
+            "y": 1169,
+            "width": 227,
+            "height": 46,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "Volume No. V",
+            "color": "#ffffff",
+            "fontSize": 47,
+            "font": {
+              "type": "googlefont",
+              "name": "Saol Standard Light Italic",
+              "weight": 400,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 97,
+            "letterSpacing": -3,
+            "textAlign": "center",
+            "verticalAlign": "center",
+            "case": "normal"
+          }
+        ],
+        "operations": [
+          {
+            "type": "move",
+            "id": "qnsGugizZXWS2LcObPnuG",
+            "targetId": "vyfMBOCwyhrRHCyPr8VCJ",
+            "startTime": 0,
+            "endTime": 1180,
+            "easing": "natural",
+            "fromValue": {
+              "y": 150
+            },
+            "toValue": {
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "eb93DBwnP-1sL45a_QX4H",
+            "targetId": "M0EPt0MMpUKUou6dExp53",
+            "startTime": 0,
+            "endTime": 935,
+            "easing": "natural",
+            "fromValue": {
+              "y": 270
+            },
+            "toValue": {
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "zQD9eGo_WXQ8DHW2_QpwR",
+            "targetId": "Zrvi1Wrpf2KL8sZ1-bgUl",
+            "startTime": 58,
+            "endTime": 993,
+            "easing": "natural",
+            "fromValue": {
+              "y": 270
+            },
+            "toValue": {
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "2MDg0wrmBxadOgaLQngbW",
+            "targetId": "c0KAQDmWF0UsB_PwEnCym",
+            "startTime": 117,
+            "endTime": 1052,
+            "easing": "natural",
+            "fromValue": {
+              "y": 270
+            },
+            "toValue": {
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "4UaJNxqYc9V72N5hbvUOY",
+            "targetId": "gXl4rXDnyZBdlq5QFbPj3",
+            "startTime": 175,
+            "endTime": 1110,
+            "easing": "natural",
+            "fromValue": {
+              "y": 270
+            },
+            "toValue": {
+              "y": 0
+            }
+          },
+          {
+            "type": "scale",
+            "id": "BAHIkzJqXTeoYxqR_rbCC",
+            "targetId": "YAMhg3o0AICNUthdv3XOR",
+            "startTime": 0,
+            "endTime": 1393,
+            "easing": "natural",
+            "fromValue": 1.55,
+            "toValue": 1
+          },
+          {
+            "type": "opacity",
+            "id": "FUyA9CW6lAhNKnY_r0aX_",
+            "targetId": "9RJNHhgAHmYQ0gXSLQGHi",
+            "startTime": 150,
+            "endTime": 1490,
+            "easing": "natural",
+            "toValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "4DxIvwIL5LPR_3NRDr91y",
+            "targetId": "t642xg8JQIXnpU7oT2Qzc",
+            "startTime": 410,
+            "endTime": 1861,
+            "easing": "natural",
+            "fromValue": 5.699999999999999,
+            "toValue": 1
+          },
+          {
+            "type": "textIn",
+            "id": "E780tT-TvEyMTHrKILD8n",
+            "targetId": "x4l3nKEd0rJFIhzon4PwD",
+            "startTime": 826.6666666679084,
+            "easing": "none",
+            "effect": "fade",
+            "split": "words",
+            "order": "forward",
+            "offset": 150,
+            "nodeDuration": 500,
+            "nodeEasing": "none",
+            "travelDistance": 50,
+            "slideDirection": "up"
+          },
+          {
+            "type": "opacity",
+            "id": "D1gd0I8MYxJxS-h96nCuW",
+            "targetId": "0icK3topguanEn14ivZSL",
+            "startTime": 2510,
+            "endTime": 2820,
+            "easing": "none",
+            "fromValue": 0,
+            "toValue": 100
+          },
+          {
+            "type": "resize",
+            "id": "bGzqFC83eSPpACP0iNLj_",
+            "targetId": "1Nr8bNpWHPF0d73dV2kI_",
+            "startTime": 2820,
+            "endTime": 3890,
+            "easing": "natural",
+            "anchor": "center",
+            "toValue": {
+              "width": 1246
+            }
+          },
+          {
+            "type": "opacity",
+            "id": "7bFG9Ay9f98yyaXpOUPuD",
+            "targetId": "7u94MDNj-DCSEfHUyfU-W",
+            "startTime": 3390,
+            "endTime": 4190,
+            "easing": "natural",
+            "fromValue": 0,
+            "toValue": 100
+          },
+          {
+            "type": "move",
+            "id": "_W5kSq4YZlO0WwDafFzYq",
+            "targetId": "7u94MDNj-DCSEfHUyfU-W",
+            "startTime": 3390,
+            "endTime": 4190,
+            "easing": "natural",
+            "fromValue": {
+              "y": 50
+            },
+            "toValue": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

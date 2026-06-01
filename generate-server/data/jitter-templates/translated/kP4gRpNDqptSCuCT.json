@@ -1,0 +1,165 @@
+{
+  "name": "Logo 3",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 3,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "mST7lr0L",
+        "name": "Logo 3",
+        "x": 0,
+        "y": 0,
+        "width": 1280,
+        "height": 720,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 2600,
+        "fillColor": "#000000",
+        "background": true,
+        "layers": [
+          {
+            "type": "text",
+            "id": "31AcDxO6",
+            "x": 534,
+            "y": 312,
+            "width": 412,
+            "height": 96,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "Company",
+            "color": "#ffffff",
+            "fontSize": 80,
+            "font": {
+              "type": "googlefont",
+              "name": "Montserrat",
+              "weight": 900,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 120,
+            "letterSpacing": 0,
+            "textAlign": "left",
+            "verticalAlign": "center",
+            "case": "normal"
+          },
+          {
+            "type": "image",
+            "id": "SvPGzRlJ",
+            "name": "Logo image",
+            "x": 334,
+            "y": 280,
+            "width": 160,
+            "height": 160,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "userAsset:60fe828b-2ebf-4dd2-9b4d-d78f771b83cc.png",
+            "mediaName": "Logo.png"
+          },
+          {
+            "type": "ellipse",
+            "id": "V7J4JdHS",
+            "x": 520,
+            "y": 240,
+            "width": 240,
+            "height": 240,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "fillColor": "#ffffff",
+            "background": true,
+            "startAngle": 0,
+            "sweep": 100,
+            "strokeEnabled": false
+          }
+        ],
+        "operations": [
+          {
+            "type": "growIn",
+            "id": "nfXBAAVp",
+            "targetId": "V7J4JdHS",
+            "startTime": 0,
+            "endTime": 1200,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "fadeIn",
+            "id": "nfXBAAVp",
+            "targetId": "V7J4JdHS",
+            "startTime": 0,
+            "endTime": 1200,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "I1QqAs0E",
+            "targetId": "V7J4JdHS",
+            "startTime": 0,
+            "endTime": 1200,
+            "easing": "natural",
+            "fromValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "RmeUt4u8",
+            "targetId": "SvPGzRlJ",
+            "startTime": 200,
+            "endTime": 800,
+            "easing": "natural",
+            "fromValue": 0
+          },
+          {
+            "type": "move",
+            "id": "i0Rs4qC6",
+            "targetId": "SvPGzRlJ",
+            "startTime": 1000,
+            "endTime": 1800,
+            "easing": "natural",
+            "fromValue": {
+              "x": 226,
+              "y": 0
+            },
+            "toValue": {}
+          },
+          {
+            "type": "move",
+            "id": "3L5xNTXg",
+            "targetId": "31AcDxO6",
+            "startTime": 1000,
+            "endTime": 1800,
+            "easing": "natural",
+            "fromValue": {
+              "x": 226,
+              "y": 0
+            },
+            "toValue": {}
+          },
+          {
+            "type": "textIn",
+            "id": "h0pR2IhB",
+            "targetId": "31AcDxO6",
+            "startTime": 1103,
+            "easing": "slowDown",
+            "effect": "slideAndFade",
+            "split": "letters",
+            "order": "forward",
+            "offset": 50,
+            "nodeDuration": 300,
+            "nodeEasing": "natural",
+            "travelDistance": 50,
+            "slideDirection": "left"
+          }
+        ]
+      }
+    ]
+  }
+}

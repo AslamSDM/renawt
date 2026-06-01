@@ -1,0 +1,1966 @@
+{
+  "name": "7-K0M1fvAP3EcHliiW9e3",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "BNvIkrmFJOCqmUb68OhtC",
+        "name": "Bubbles + Carousel (1:1)",
+        "x": -1135,
+        "y": -780,
+        "width": 1350,
+        "height": 1350,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 14000,
+        "fillColor": "#000000",
+        "background": true,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "mBc9ve-xdHF9jwCmN23eR",
+            "name": "Footer",
+            "x": 75,
+            "y": 1280,
+            "width": 1200,
+            "height": 20,
+            "scale": 1,
+            "angle": 1.5308806722812968e-22,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "text",
+                "id": "qQCh1xzP-Lifp2a2EdxYw",
+                "name": "Year",
+                "x": 1138.3949404761904,
+                "y": 0,
+                "width": 62,
+                "height": 20,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "YEAR 25",
+                "color": "#ffffff",
+                "fontSize": 16,
+                "font": {
+                  "type": "googlefont",
+                  "name": "Poppins",
+                  "weight": 400,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 120,
+                "letterSpacing": 0,
+                "textAlign": "right",
+                "verticalAlign": "top",
+                "case": "normal"
+              },
+              {
+                "type": "text",
+                "id": "jXBwlQ-zvctRMTEiEFZqi",
+                "name": "Template Number",
+                "x": 542.1126984126984,
+                "y": 0,
+                "width": 115,
+                "height": 20,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "Template — 01",
+                "color": "#ffffff",
+                "fontSize": 16,
+                "font": {
+                  "type": "googlefont",
+                  "name": "Poppins",
+                  "weight": 400,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 120,
+                "letterSpacing": 0,
+                "textAlign": "center",
+                "verticalAlign": "top",
+                "case": "normal"
+              },
+              {
+                "type": "text",
+                "id": "5hFbgfzM64XpsFx2CUowW",
+                "name": "Blur Effect",
+                "x": 0,
+                "y": 0,
+                "width": 79,
+                "height": 20,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "Blur Effect",
+                "color": "#ffffff",
+                "fontSize": 16,
+                "font": {
+                  "type": "googlefont",
+                  "name": "Poppins",
+                  "weight": 400,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 120,
+                "letterSpacing": 0,
+                "textAlign": "left",
+                "verticalAlign": "top",
+                "case": "normal"
+              }
+            ]
+          },
+          {
+            "type": "layerGrp",
+            "id": "IfDO4EpyoZWqixDqURSJf",
+            "name": "Bubbles",
+            "x": 495,
+            "y": 495,
+            "width": 360,
+            "height": 360.0006103515625,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "layerGrp",
+                "id": "UMDdnbb-VXNUaNVS3KWlV",
+                "name": "Bubble 3 (L2)",
+                "x": -66,
+                "y": -66,
+                "width": 491.7691397666931,
+                "height": 491.7691397666931,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "ellipse",
+                    "id": "PmDE-j5SMXG7somH1hjSH",
+                    "name": "Ellipse",
+                    "x": 65.88456988334656,
+                    "y": 65.88456988334656,
+                    "width": 360,
+                    "height": 360,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 50,
+                    "cornerRadius": 0,
+                    "fillColor": "#b3b3b3",
+                    "background": false,
+                    "startAngle": 0,
+                    "sweep": 100,
+                    "strokeColor": "#000000",
+                    "strokeWeight": 0.5,
+                    "strokeEnabled": false
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "02K4hwU-y8X1wbLY9vyIT",
+                    "name": "Image 3 (Replace)",
+                    "x": 83.79931628704071,
+                    "y": 261.7529295682907,
+                    "width": 100,
+                    "height": 100,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 50,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": true,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "rect",
+                        "id": "uTE2zrEuY2iLZYllHOCfG",
+                        "name": "BG Color",
+                        "x": 0,
+                        "y": 0,
+                        "width": 100,
+                        "height": 100,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#bcf0c5",
+                        "shadowEnabled": false,
+                        "shadowOffsetX": 0,
+                        "shadowOffsetY": 0,
+                        "shadowBlur": 0,
+                        "shadowColor": "#000000",
+                        "shadowOpacity": 50
+                      },
+                      {
+                        "type": "image",
+                        "id": "NuajQBt00kUHpnndNQiXK",
+                        "name": "Replace me",
+                        "x": 0,
+                        "y": 0,
+                        "width": 100,
+                        "height": 100,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "url": "https://d154zarmrcpu4a.cloudfront.net/8OMV4VUnJDV65D18333Yn.jpeg",
+                        "mediaName": "Minimalist Fashion Look.jpeg"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "layerGrp",
+                "id": "P6Zg1gtu06Eqn1WreeWM_",
+                "name": "Bubble 4 (L1)",
+                "x": -66,
+                "y": -66,
+                "width": 491.7691397666931,
+                "height": 491.7691397666931,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "ellipse",
+                    "id": "uoxEIVMDS_aHBmUnNLFWN",
+                    "name": "Ellipse",
+                    "x": 65.88456988334656,
+                    "y": 65.88456988334656,
+                    "width": 360,
+                    "height": 360,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 50,
+                    "cornerRadius": 0,
+                    "fillColor": "#b3b3b3",
+                    "background": false,
+                    "startAngle": 0,
+                    "sweep": 100,
+                    "strokeColor": "#000000",
+                    "strokeWeight": 0.5,
+                    "strokeEnabled": false
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "u6ZtNOu_6s9ZySQV3AXYf",
+                    "name": "Image 4 (Replace)",
+                    "x": 83.30224597454071,
+                    "y": 130.8842772245407,
+                    "width": 100,
+                    "height": 100,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 50,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": true,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "rect",
+                        "id": "40wsVYtX5BILu-Qr5s6j2",
+                        "name": "BG Color",
+                        "x": 0,
+                        "y": 0,
+                        "width": 100,
+                        "height": 100,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#c6c6c6",
+                        "shadowEnabled": false,
+                        "shadowOffsetX": 0,
+                        "shadowOffsetY": 0,
+                        "shadowBlur": 0,
+                        "shadowColor": "#000000",
+                        "shadowOpacity": 50
+                      },
+                      {
+                        "type": "image",
+                        "id": "PM9ie48jKFwEnntUkWIS0",
+                        "name": "Replace me",
+                        "x": 0,
+                        "y": 0,
+                        "width": 100,
+                        "height": 100,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "url": "https://d154zarmrcpu4a.cloudfront.net/ELcS-zt9guYIZjJokJXzG.jpeg",
+                        "mediaName": "Silhouette in Orange.jpeg"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "layerGrp",
+                "id": "4WY7r8hQF_-CQgxm5LdSP",
+                "name": "Bubble 1 (R2)",
+                "x": -66,
+                "y": -66,
+                "width": 491.7691397666931,
+                "height": 491.7691397666931,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "ellipse",
+                    "id": "B5zgUvXiooq-EmUREbg0B",
+                    "name": "Ellipse",
+                    "x": 65.88456988334656,
+                    "y": 65.88456988334656,
+                    "width": 360,
+                    "height": 360,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 50,
+                    "cornerRadius": 0,
+                    "fillColor": "#b3b3b3",
+                    "background": false,
+                    "startAngle": 0,
+                    "sweep": 100,
+                    "strokeColor": "#000000",
+                    "strokeWeight": 0.5,
+                    "strokeEnabled": false
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "g-ddMVjysUWCgV6EMsnIk",
+                    "name": "Image 1 (Replace)",
+                    "x": 308.9682615995407,
+                    "y": 260.0185545682907,
+                    "width": 100,
+                    "height": 100,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 50,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": true,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "rect",
+                        "id": "-5xFJOz_b4gXOMjIkYx7f",
+                        "name": "BG Color",
+                        "x": 0,
+                        "y": 0,
+                        "width": 100,
+                        "height": 100,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#c7a58d",
+                        "shadowEnabled": false,
+                        "shadowOffsetX": 0,
+                        "shadowOffsetY": 0,
+                        "shadowBlur": 0,
+                        "shadowColor": "#000000",
+                        "shadowOpacity": 50
+                      },
+                      {
+                        "type": "image",
+                        "id": "dGI0pHKqNaDnLIHgKFwp7",
+                        "name": "Replace me",
+                        "x": 0,
+                        "y": 0,
+                        "width": 100,
+                        "height": 100,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "url": "https://d154zarmrcpu4a.cloudfront.net/k0qJLKgeVx2RaEB77SerT.jpeg",
+                        "mediaName": "Stylized Human Bust.jpeg"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "layerGrp",
+                "id": "9rFMY9rQFIV_aNHD7Ks3z",
+                "name": "Bubble 6 (R1)",
+                "x": -66,
+                "y": -66,
+                "width": 491.7691397666931,
+                "height": 491.7691397666931,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "ellipse",
+                    "id": "_xlDr1ZW6z5KSebkl30so",
+                    "name": "Ellipse",
+                    "x": 65.88456988334656,
+                    "y": 65.88456988334656,
+                    "width": 360,
+                    "height": 360,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 50,
+                    "cornerRadius": 0,
+                    "fillColor": "#b3b3b3",
+                    "background": false,
+                    "startAngle": 0,
+                    "sweep": 100,
+                    "strokeColor": "#000000",
+                    "strokeWeight": 0.5,
+                    "strokeEnabled": false
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "XnT6858OhErWCn2K9Q2qo",
+                    "name": "Image 6 (Replace)",
+                    "x": 307.9682615995407,
+                    "y": 130.0180662870407,
+                    "width": 100,
+                    "height": 100,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 50,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": true,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "rect",
+                        "id": "Y3pRa7VJYHzjzIcKB85sN",
+                        "name": "BG Color",
+                        "x": 0,
+                        "y": 0,
+                        "width": 100,
+                        "height": 100,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#f4cf9a",
+                        "shadowEnabled": false,
+                        "shadowOffsetX": 0,
+                        "shadowOffsetY": 0,
+                        "shadowBlur": 0,
+                        "shadowColor": "#000000",
+                        "shadowOpacity": 50
+                      },
+                      {
+                        "type": "image",
+                        "id": "EQ501sit8jKqFS1rzYxsG",
+                        "name": "Replace me",
+                        "x": 0,
+                        "y": 0,
+                        "width": 100,
+                        "height": 100,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "url": "https://d154zarmrcpu4a.cloudfront.net/-ZXf87TZkm3SRCTN_eca7.jpeg",
+                        "mediaName": "Close-up Portrait of a Person in a Black Sweater.jpeg"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "layerGrp",
+                "id": "EBKsMOvp8nFxEOD6dkavV",
+                "name": "Bubble 2 (C2)",
+                "x": -66,
+                "y": -66,
+                "width": 491.7691397666931,
+                "height": 491.7691397666931,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "ellipse",
+                    "id": "xKFwG1LBdGxMTynaHod7l",
+                    "name": "Ellipse",
+                    "x": 65.88456988334656,
+                    "y": 65.88456988334656,
+                    "width": 360,
+                    "height": 360,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 50,
+                    "cornerRadius": 0,
+                    "fillColor": "#b3b3b3",
+                    "background": false,
+                    "startAngle": 0,
+                    "sweep": 100,
+                    "strokeColor": "#000000",
+                    "strokeWeight": 0.5,
+                    "strokeEnabled": false
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "89AqXGouYUqoDSVfqSZC5",
+                    "name": "Image 2 (Replace)",
+                    "x": 195.8842772245407,
+                    "y": 325.8857420682907,
+                    "width": 100,
+                    "height": 100,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 50,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": true,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "rect",
+                        "id": "hkx93cGxNQbj-YftdrJDX",
+                        "name": "BG Color",
+                        "x": 0,
+                        "y": 0,
+                        "width": 100,
+                        "height": 100,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#f4cf9a",
+                        "shadowEnabled": false,
+                        "shadowOffsetX": 0,
+                        "shadowOffsetY": 0,
+                        "shadowBlur": 0,
+                        "shadowColor": "#000000",
+                        "shadowOpacity": 50
+                      },
+                      {
+                        "type": "image",
+                        "id": "9wWPR6xpX74X7SU2Q3tfp",
+                        "name": "Replace me",
+                        "x": 0,
+                        "y": 0,
+                        "width": 100,
+                        "height": 100,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "url": "https://d154zarmrcpu4a.cloudfront.net/FcRsGhXppAegGuSCDSQ4F.jpeg",
+                        "mediaName": "Ethereal Yellow Flower.jpeg"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "layerGrp",
+                "id": "rFbeWkblxeo1oT6INKHDK",
+                "name": "Bubble 0 (Replace)",
+                "x": 130,
+                "y": 130,
+                "width": 100,
+                "height": 100,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 100,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "aMdsyz-3GyACX-8smv1UV",
+                    "name": "BG Color",
+                    "x": 0,
+                    "y": 0,
+                    "width": 100.00000000000003,
+                    "height": 100.00000000000003,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#c7a58d",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "image",
+                    "id": "cf-Dz7kzEwtqMyyQSA_uJ",
+                    "name": "Replace me",
+                    "x": 0,
+                    "y": 0,
+                    "width": 100.00000000000003,
+                    "height": 100.00000000000003,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "https://d154zarmrcpu4a.cloudfront.net/pfTIBtqAe2b5_AZ6RR4xi.jpeg",
+                    "mediaName": "Timeless Elegance Portrait.jpeg"
+                  }
+                ]
+              },
+              {
+                "type": "layerGrp",
+                "id": "17IiYbdEXWo484QL-1ddG",
+                "name": "Bubble 5 (C1)",
+                "x": -66,
+                "y": -66,
+                "width": 491.7691397666931,
+                "height": 491.7691397666931,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "ellipse",
+                    "id": "7Yz0GZbPBdqIvZODVFoqh",
+                    "name": "Ellipse",
+                    "x": 65.88456988334656,
+                    "y": 65.88456988334656,
+                    "width": 360,
+                    "height": 360,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 50,
+                    "cornerRadius": 0,
+                    "fillColor": "#b3b3b3",
+                    "background": false,
+                    "startAngle": 0,
+                    "sweep": 100,
+                    "strokeColor": "#000000",
+                    "strokeWeight": 0.5,
+                    "strokeEnabled": false
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "JzV7cwnm2WpdIGvBynk7d",
+                    "name": "Image 5 (Replace)",
+                    "x": 194.8852537870407,
+                    "y": 65.88427722454071,
+                    "width": 100,
+                    "height": 100,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 50,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": true,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "rect",
+                        "id": "-vynNs_n9ZeQ1d8FjyHRU",
+                        "name": "BG Color",
+                        "x": 0,
+                        "y": 0,
+                        "width": 100,
+                        "height": 100,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#ffc5d3",
+                        "shadowEnabled": false,
+                        "shadowOffsetX": 0,
+                        "shadowOffsetY": 0,
+                        "shadowBlur": 0,
+                        "shadowColor": "#000000",
+                        "shadowOpacity": 50
+                      },
+                      {
+                        "type": "image",
+                        "id": "RvrUzE8bxpyXDSofVTdj3",
+                        "name": "Replace me",
+                        "x": 0,
+                        "y": 0,
+                        "width": 100,
+                        "height": 100,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "url": "https://d154zarmrcpu4a.cloudfront.net/9jXjOJ8S7hrvTd_7EE-D5.jpeg",
+                        "mediaName": "Modern Blue Armchair (1).jpeg"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "layerGrp",
+            "id": "xPbaHo2FdfMkGNNOW5WbB",
+            "name": "Center",
+            "x": 555,
+            "y": 640,
+            "width": 240,
+            "height": 105,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "text",
+                "id": "5kfCdWgtdRtLc-JOd3cZe",
+                "name": "Subheadline",
+                "x": 83,
+                "y": 85,
+                "width": 75,
+                "height": 20,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "Try it now",
+                "color": "#ffffff",
+                "fontSize": 16,
+                "font": {
+                  "type": "googlefont",
+                  "name": "Poppins",
+                  "weight": 300,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 120,
+                "letterSpacing": 0,
+                "textAlign": "center",
+                "verticalAlign": "top",
+                "case": "normal"
+              },
+              {
+                "type": "text",
+                "id": "rKPELZEzPBLQAYwUWukUC",
+                "name": "Headline",
+                "x": 58,
+                "y": 0,
+                "width": 124,
+                "height": 71,
+                "scale": 1,
+                "angle": -1.5308806722812968e-22,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "Blur",
+                "color": "#ffffff",
+                "fontSize": 64,
+                "font": {
+                  "type": "googlefont",
+                  "name": "Poppins",
+                  "weight": 500,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 110,
+                "letterSpacing": 0,
+                "textAlign": "center",
+                "verticalAlign": "center",
+                "case": "normal"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "scale",
+            "id": "92GJwoMpWvmCMq23oHsw6",
+            "targetId": "xPbaHo2FdfMkGNNOW5WbB",
+            "startTime": 0,
+            "endTime": 2500,
+            "easing": "none",
+            "fromValue": 1.25,
+            "toValue": 1
+          },
+          {
+            "type": "blurRadius",
+            "id": "9SaxIMZpmV5Mp-R2sFoSs",
+            "targetId": "xPbaHo2FdfMkGNNOW5WbB",
+            "startTime": 0,
+            "endTime": 2500,
+            "easing": "natural",
+            "fromValue": 50,
+            "toValue": 0
+          },
+          {
+            "type": "opacity",
+            "id": "I_5nNcyFE6-R1BhwkfpzF",
+            "targetId": "xPbaHo2FdfMkGNNOW5WbB",
+            "startTime": 0,
+            "endTime": 2500,
+            "easing": "natural",
+            "fromValue": 0,
+            "toValue": 100
+          },
+          {
+            "type": "scale",
+            "id": "nq8S4Nk6Dc2Rc441CzdaR",
+            "targetId": "4WY7r8hQF_-CQgxm5LdSP",
+            "startTime": 0,
+            "endTime": 2000,
+            "easing": "natural",
+            "fromValue": 7.2,
+            "toValue": 1
+          },
+          {
+            "type": "blurRadius",
+            "id": "4QqnpzHOihI7NBqCifm6V",
+            "targetId": "4WY7r8hQF_-CQgxm5LdSP",
+            "startTime": 0,
+            "endTime": 2000,
+            "easing": "natural",
+            "fromValue": 8.4,
+            "toValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "q4SE-YXha9s-QudO-8pQQ",
+            "targetId": "EBKsMOvp8nFxEOD6dkavV",
+            "startTime": 48,
+            "endTime": 2000,
+            "easing": "natural",
+            "fromValue": 7.8,
+            "toValue": 1
+          },
+          {
+            "type": "blurRadius",
+            "id": "BS_nKAM1e2RYKwTmNhJ8k",
+            "targetId": "EBKsMOvp8nFxEOD6dkavV",
+            "startTime": 48,
+            "endTime": 2000,
+            "easing": "natural",
+            "fromValue": 21.6,
+            "toValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "ZaxTVgZli8ucb21iPtS0D",
+            "targetId": "UMDdnbb-VXNUaNVS3KWlV",
+            "startTime": 100,
+            "endTime": 2000,
+            "easing": "natural",
+            "fromValue": 8.4,
+            "toValue": 1
+          },
+          {
+            "type": "blurRadius",
+            "id": "rPMytv2QG-o_dWFDtgAw_",
+            "targetId": "UMDdnbb-VXNUaNVS3KWlV",
+            "startTime": 100,
+            "endTime": 2000,
+            "easing": "natural",
+            "fromValue": 18,
+            "toValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "PDaGO33fDmaWTlfaRgcbH",
+            "targetId": "P6Zg1gtu06Eqn1WreeWM_",
+            "startTime": 200,
+            "endTime": 2000,
+            "easing": "natural",
+            "fromValue": 9,
+            "toValue": 1
+          },
+          {
+            "type": "blurRadius",
+            "id": "1rwiZcgoDeMMusIL4-Y3u",
+            "targetId": "P6Zg1gtu06Eqn1WreeWM_",
+            "startTime": 200,
+            "endTime": 2000,
+            "easing": "natural",
+            "fromValue": 18,
+            "toValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "wtsuBtf4eZlBaC0LUjbP0",
+            "targetId": "17IiYbdEXWo484QL-1ddG",
+            "startTime": 291,
+            "endTime": 1991,
+            "easing": "natural",
+            "fromValue": 9.6,
+            "toValue": 1
+          },
+          {
+            "type": "blurRadius",
+            "id": "Ib3gx3eEI6jsCtaRAhkQI",
+            "targetId": "17IiYbdEXWo484QL-1ddG",
+            "startTime": 291,
+            "endTime": 1991,
+            "easing": "natural",
+            "fromValue": 19.2,
+            "toValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "4fVt5ODnu7w2gX9AmXDo_",
+            "targetId": "9rFMY9rQFIV_aNHD7Ks3z",
+            "startTime": 400,
+            "endTime": 2000,
+            "easing": "natural",
+            "fromValue": 10.2,
+            "toValue": 1
+          },
+          {
+            "type": "blurRadius",
+            "id": "QT1Yoh1rpesPE_kQIRleo",
+            "targetId": "9rFMY9rQFIV_aNHD7Ks3z",
+            "startTime": 400,
+            "endTime": 2000,
+            "easing": "natural",
+            "fromValue": 21.6,
+            "toValue": 0
+          },
+          {
+            "type": "opacity",
+            "id": "F3qU0lR17GLSXXezd1irs",
+            "targetId": "89AqXGouYUqoDSVfqSZC5",
+            "startTime": 300,
+            "endTime": 1000,
+            "easing": "natural",
+            "fromValue": 0,
+            "toValue": 100
+          },
+          {
+            "type": "opacity",
+            "id": "svZuUHH2TvQ45LJGg67Jv",
+            "targetId": "02K4hwU-y8X1wbLY9vyIT",
+            "startTime": 497,
+            "endTime": 1000,
+            "easing": "natural",
+            "fromValue": 0,
+            "toValue": 100
+          },
+          {
+            "type": "opacity",
+            "id": "8AVNkZhW0iJ4j-Pbbd0nD",
+            "targetId": "u6ZtNOu_6s9ZySQV3AXYf",
+            "startTime": 647,
+            "endTime": 1000,
+            "easing": "natural",
+            "fromValue": 0,
+            "toValue": 100
+          },
+          {
+            "type": "opacity",
+            "id": "aOwQNQr0EGJ9j_DmBJq8L",
+            "targetId": "JzV7cwnm2WpdIGvBynk7d",
+            "startTime": 750,
+            "endTime": 1000,
+            "easing": "natural",
+            "fromValue": 0,
+            "toValue": 100
+          },
+          {
+            "type": "opacity",
+            "id": "F9IK7YrHk2IIvXuwZ1RdX",
+            "targetId": "XnT6858OhErWCn2K9Q2qo",
+            "startTime": 800,
+            "endTime": 1000,
+            "easing": "natural",
+            "fromValue": 0,
+            "toValue": 100
+          },
+          {
+            "type": "rotate",
+            "id": "pQEaR1yvfNS8jzdH_sH2m",
+            "targetId": "IfDO4EpyoZWqixDqURSJf",
+            "startTime": 0,
+            "endTime": 2500,
+            "easing": "natural",
+            "fromValue": 360,
+            "toValue": 0
+          },
+          {
+            "type": "rotate",
+            "id": "dhbfThPn9Cn_IPFpYM8ax",
+            "targetId": "g-ddMVjysUWCgV6EMsnIk",
+            "startTime": 0,
+            "endTime": 2500,
+            "easing": "natural",
+            "fromValue": -360,
+            "toValue": 0
+          },
+          {
+            "type": "rotate",
+            "id": "R0H82-c8cODTDQQLRiKLc",
+            "targetId": "89AqXGouYUqoDSVfqSZC5",
+            "startTime": 0,
+            "endTime": 2500,
+            "easing": "natural",
+            "fromValue": -360,
+            "toValue": 0
+          },
+          {
+            "type": "rotate",
+            "id": "llwBXeEApvRPTQgN4oXiG",
+            "targetId": "02K4hwU-y8X1wbLY9vyIT",
+            "startTime": 0,
+            "endTime": 2500,
+            "easing": "natural",
+            "fromValue": -360,
+            "toValue": 0
+          },
+          {
+            "type": "rotate",
+            "id": "R1Kj0vu-nOePHegMiLDNI",
+            "targetId": "u6ZtNOu_6s9ZySQV3AXYf",
+            "startTime": 0,
+            "endTime": 2500,
+            "easing": "natural",
+            "fromValue": -360,
+            "toValue": 0
+          },
+          {
+            "type": "rotate",
+            "id": "V2Vh1FoE-5YytdlHm8lth",
+            "targetId": "JzV7cwnm2WpdIGvBynk7d",
+            "startTime": 0,
+            "endTime": 2500,
+            "easing": "natural",
+            "fromValue": -360,
+            "toValue": 0
+          },
+          {
+            "type": "rotate",
+            "id": "u-ObAK82ywzvNEjLaore0",
+            "targetId": "XnT6858OhErWCn2K9Q2qo",
+            "startTime": 0,
+            "endTime": 2500,
+            "easing": "natural",
+            "fromValue": -360,
+            "toValue": 0
+          },
+          {
+            "type": "rotate",
+            "id": "VqtA3WOtVUF0Xe-5qALUB",
+            "targetId": "XnT6858OhErWCn2K9Q2qo",
+            "startTime": 0,
+            "endTime": 3500,
+            "easing": "natural",
+            "fromValue": -90,
+            "toValue": 0
+          },
+          {
+            "type": "rotate",
+            "id": "xjCfdiggyE8Cb2CeGhAug",
+            "targetId": "JzV7cwnm2WpdIGvBynk7d",
+            "startTime": 0,
+            "endTime": 3500,
+            "easing": "natural",
+            "fromValue": -90,
+            "toValue": 0
+          },
+          {
+            "type": "rotate",
+            "id": "XPs37Fn2rSFjntCb4HrEu",
+            "targetId": "g-ddMVjysUWCgV6EMsnIk",
+            "startTime": 0,
+            "endTime": 3500,
+            "easing": "natural",
+            "fromValue": -90,
+            "toValue": 0
+          },
+          {
+            "type": "rotate",
+            "id": "_L3as--5oVgT_geY7h87B",
+            "targetId": "89AqXGouYUqoDSVfqSZC5",
+            "startTime": 0,
+            "endTime": 3500,
+            "easing": "natural",
+            "fromValue": -90,
+            "toValue": 0
+          },
+          {
+            "type": "rotate",
+            "id": "gn4lL7fZ_r9xGeOw0_EGA",
+            "targetId": "02K4hwU-y8X1wbLY9vyIT",
+            "startTime": 0,
+            "endTime": 3500,
+            "easing": "natural",
+            "fromValue": -90,
+            "toValue": 0
+          },
+          {
+            "type": "rotate",
+            "id": "pooum-SVdZPRghCSAU_fT",
+            "targetId": "u6ZtNOu_6s9ZySQV3AXYf",
+            "startTime": 0,
+            "endTime": 3500,
+            "easing": "natural",
+            "fromValue": -90,
+            "toValue": 0
+          },
+          {
+            "type": "rotate",
+            "id": "cFAZs-52nco6JzZw7iNBK",
+            "targetId": "IfDO4EpyoZWqixDqURSJf",
+            "startTime": 0,
+            "endTime": 3500,
+            "easing": "natural",
+            "fromValue": 90,
+            "toValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "fgM-excWqQ9Hvv1WQDWWQ",
+            "targetId": "IfDO4EpyoZWqixDqURSJf",
+            "startTime": 0,
+            "endTime": 0,
+            "easing": "natural",
+            "toValue": 1.5
+          },
+          {
+            "type": "blurScaleOut",
+            "id": "nR4HwZqwa2vO_Bb8OBB7r",
+            "targetId": "xPbaHo2FdfMkGNNOW5WbB",
+            "startTime": 3500,
+            "endTime": 4300,
+            "easing": "slowDown"
+          },
+          {
+            "type": "scale",
+            "id": "wnVt5ceKidRga4qfG5QlZ",
+            "targetId": "rFbeWkblxeo1oT6INKHDK",
+            "startTime": 3500,
+            "endTime": 4300,
+            "easing": "natural",
+            "fromValue": 0,
+            "toValue": 3.15
+          },
+          {
+            "type": "scale",
+            "id": "8XtTeCg5RHmbylLZ5fqB_",
+            "targetId": "EBKsMOvp8nFxEOD6dkavV",
+            "startTime": 3498.6666666662786,
+            "endTime": 4298.666666666279,
+            "easing": "natural",
+            "toValue": 3.15
+          },
+          {
+            "type": "scale",
+            "id": "oXSClO4gn1lFoZPxpg9hu",
+            "targetId": "17IiYbdEXWo484QL-1ddG",
+            "startTime": 3498.6666666662786,
+            "endTime": 4298.666666666279,
+            "easing": "natural",
+            "toValue": 3.15
+          },
+          {
+            "type": "scale",
+            "id": "nNFLBUTeaww7kCQsDNLgU",
+            "targetId": "4WY7r8hQF_-CQgxm5LdSP",
+            "startTime": 3500,
+            "endTime": 4300,
+            "easing": "natural",
+            "toValue": 3.15
+          },
+          {
+            "type": "scale",
+            "id": "1m7IHiIYsFbeHcoUc2vqj",
+            "targetId": "UMDdnbb-VXNUaNVS3KWlV",
+            "startTime": 3500,
+            "endTime": 4300,
+            "easing": "natural",
+            "toValue": 3.15
+          },
+          {
+            "type": "scale",
+            "id": "ZdNgC2tTtkvlMxtU99D5i",
+            "targetId": "P6Zg1gtu06Eqn1WreeWM_",
+            "startTime": 3500,
+            "endTime": 4300,
+            "easing": "natural",
+            "toValue": 3.15
+          },
+          {
+            "type": "scale",
+            "id": "ihsckAJMKMR1KYHoTnZCA",
+            "targetId": "9rFMY9rQFIV_aNHD7Ks3z",
+            "startTime": 3500,
+            "endTime": 4300,
+            "easing": "natural",
+            "toValue": 3.15
+          },
+          {
+            "type": "cornerRadius",
+            "id": "zF4peUxy0sU6k4K2RXBXl",
+            "targetId": "rFbeWkblxeo1oT6INKHDK",
+            "startTime": 3500,
+            "endTime": 4300,
+            "easing": "natural",
+            "toValue": 10
+          },
+          {
+            "type": "cornerRadius",
+            "id": "7FqW-OZfaIr3Yy8TjLbJZ",
+            "targetId": "89AqXGouYUqoDSVfqSZC5",
+            "startTime": 3500,
+            "endTime": 4300,
+            "easing": "natural",
+            "toValue": 10
+          },
+          {
+            "type": "cornerRadius",
+            "id": "NAVngKBU-Iq4HRzi1GGe8",
+            "targetId": "JzV7cwnm2WpdIGvBynk7d",
+            "startTime": 3498.6666666662786,
+            "endTime": 4298.666666666279,
+            "easing": "natural",
+            "toValue": 10
+          },
+          {
+            "type": "cornerRadius",
+            "id": "A26DKTN8XeqS5pHgjbrV3",
+            "targetId": "g-ddMVjysUWCgV6EMsnIk",
+            "startTime": 3498.6666666662786,
+            "endTime": 4298.666666666279,
+            "easing": "natural",
+            "toValue": 10
+          },
+          {
+            "type": "cornerRadius",
+            "id": "ng6mq59Q7oS4VHR3Prbn8",
+            "targetId": "02K4hwU-y8X1wbLY9vyIT",
+            "startTime": 3498.6666666662786,
+            "endTime": 4298.666666666279,
+            "easing": "natural",
+            "toValue": 10
+          },
+          {
+            "type": "cornerRadius",
+            "id": "OhoiAyj8PexwnkePT4nQL",
+            "targetId": "u6ZtNOu_6s9ZySQV3AXYf",
+            "startTime": 3498.6666666662786,
+            "endTime": 4298.666666666279,
+            "easing": "natural",
+            "toValue": 10
+          },
+          {
+            "type": "cornerRadius",
+            "id": "0ZmZcxM56MrR7O-vJNz2g",
+            "targetId": "XnT6858OhErWCn2K9Q2qo",
+            "startTime": 3498.6666666662786,
+            "endTime": 4298.666666666279,
+            "easing": "natural",
+            "toValue": 10
+          },
+          {
+            "type": "move",
+            "id": "unyblkZJcMNrCKAxvi87i",
+            "targetId": "4WY7r8hQF_-CQgxm5LdSP",
+            "startTime": 3499.6666666662786,
+            "endTime": 4299.666666666279,
+            "easing": "natural",
+            "toValue": {
+              "x": 454,
+              "y": 100
+            }
+          },
+          {
+            "type": "move",
+            "id": "LcpN1vohv9zK-GxhBDAgj",
+            "targetId": "UMDdnbb-VXNUaNVS3KWlV",
+            "startTime": 3499.6666666662786,
+            "endTime": 4299.666666666279,
+            "easing": "natural",
+            "toValue": {
+              "x": -456,
+              "y": 100
+            }
+          },
+          {
+            "type": "move",
+            "id": "kQOuiSEhfSG8KhLJV9WWU",
+            "targetId": "P6Zg1gtu06Eqn1WreeWM_",
+            "startTime": 3499.6666666662786,
+            "endTime": 4299.666666666279,
+            "easing": "natural",
+            "toValue": {
+              "x": -454,
+              "y": -100
+            }
+          },
+          {
+            "type": "move",
+            "id": "NLo8XjJ6K2Phx22EnqGG3",
+            "targetId": "9rFMY9rQFIV_aNHD7Ks3z",
+            "startTime": 3499.6666666662786,
+            "endTime": 4299.666666666279,
+            "easing": "natural",
+            "toValue": {
+              "x": 456,
+              "y": -100
+            }
+          },
+          {
+            "type": "move",
+            "id": "w83HczmaJsYytTbsFVYS3",
+            "targetId": "9rFMY9rQFIV_aNHD7Ks3z",
+            "startTime": 4300,
+            "endTime": 4300,
+            "easing": "natural",
+            "toValue": {
+              "x": -809,
+              "y": 1127
+            }
+          },
+          {
+            "type": "move",
+            "id": "DFUiszJ3O34kIueUJ2ywz",
+            "targetId": "4WY7r8hQF_-CQgxm5LdSP",
+            "startTime": 4300,
+            "endTime": 4300,
+            "easing": "natural",
+            "toValue": {
+              "x": -810,
+              "y": 517
+            }
+          },
+          {
+            "type": "move",
+            "id": "aYkFF6EzHtgetDB8JyiXt",
+            "targetId": "P6Zg1gtu06Eqn1WreeWM_",
+            "startTime": 4300,
+            "endTime": 4300,
+            "easing": "natural",
+            "toValue": {
+              "x": 809,
+              "y": 1124
+            }
+          },
+          {
+            "type": "move",
+            "id": "CU9QgSPVi1G7wmiT0RmiZ",
+            "targetId": "UMDdnbb-VXNUaNVS3KWlV",
+            "startTime": 4300,
+            "endTime": 4300,
+            "easing": "natural",
+            "toValue": {
+              "x": 810,
+              "y": 512
+            }
+          },
+          {
+            "type": "move",
+            "id": "ehfliAdyJ7626mEiXE8dX",
+            "targetId": "17IiYbdEXWo484QL-1ddG",
+            "startTime": 4900,
+            "endTime": 5700,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "JfqkgUDVADZhUfh4CX2yZ",
+            "targetId": "rFbeWkblxeo1oT6INKHDK",
+            "startTime": 4950,
+            "endTime": 5750,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "1plRH9WLTPM4-swBdRMMv",
+            "targetId": "EBKsMOvp8nFxEOD6dkavV",
+            "startTime": 5000,
+            "endTime": 5800,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "q81vgL24JDAy09QQgG39D",
+            "targetId": "9rFMY9rQFIV_aNHD7Ks3z",
+            "startTime": 5050,
+            "endTime": 5850,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "mCYT_0aw4K7hHO7LvVpSW",
+            "targetId": "17IiYbdEXWo484QL-1ddG",
+            "startTime": 6400,
+            "endTime": 7200,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "_A6j0W46uWwjCq_JbIHWk",
+            "targetId": "rFbeWkblxeo1oT6INKHDK",
+            "startTime": 6450,
+            "endTime": 7250,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "BTJ46PLUYbOtit-vad3sc",
+            "targetId": "EBKsMOvp8nFxEOD6dkavV",
+            "startTime": 6500,
+            "endTime": 7300,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "3PO8WeOax2jhbYHkuEbb6",
+            "targetId": "9rFMY9rQFIV_aNHD7Ks3z",
+            "startTime": 6550,
+            "endTime": 7350,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "ndlM7_gU6On6HcuqGL6u8",
+            "targetId": "4WY7r8hQF_-CQgxm5LdSP",
+            "startTime": 6600,
+            "endTime": 7400,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "ta85TvKZSqdg3GFpxk_Y7",
+            "targetId": "17IiYbdEXWo484QL-1ddG",
+            "startTime": 7897.866666666511,
+            "endTime": 8697.866666666512,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "sWb-BFJ8CQjMFhgXzZ8EB",
+            "targetId": "rFbeWkblxeo1oT6INKHDK",
+            "startTime": 7947.866666666511,
+            "endTime": 8747.866666666512,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "jisD2gtNH5rrF1ZfqF8Z9",
+            "targetId": "EBKsMOvp8nFxEOD6dkavV",
+            "startTime": 7997.866666666511,
+            "endTime": 8797.866666666512,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "ryRq5k5hyT-mM9WCThwSL",
+            "targetId": "9rFMY9rQFIV_aNHD7Ks3z",
+            "startTime": 8047.866666666511,
+            "endTime": 8847.866666666512,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "HQaBKxHxpLXuXCJinXCxP",
+            "targetId": "4WY7r8hQF_-CQgxm5LdSP",
+            "startTime": 8097.866666666511,
+            "endTime": 8897.866666666512,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "rQJLpM1-gJ-qmJvAxiPCI",
+            "targetId": "P6Zg1gtu06Eqn1WreeWM_",
+            "startTime": 8147.866666666511,
+            "endTime": 8947.866666666512,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "4t5KFj-gmQanyWCHwZ3oI",
+            "targetId": "17IiYbdEXWo484QL-1ddG",
+            "startTime": 9401.333333333023,
+            "endTime": 10201.333333333023,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "szlUGBUqhBYpxhcQQW4jK",
+            "targetId": "rFbeWkblxeo1oT6INKHDK",
+            "startTime": 9451.333333333023,
+            "endTime": 10251.333333333023,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "Bv8sgTjAmtt3teRqIlD7x",
+            "targetId": "EBKsMOvp8nFxEOD6dkavV",
+            "startTime": 9501.333333333023,
+            "endTime": 10301.333333333023,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "bL04eQjLn6Ipm1PwSXj_x",
+            "targetId": "9rFMY9rQFIV_aNHD7Ks3z",
+            "startTime": 9551.333333333023,
+            "endTime": 10351.333333333023,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "Dm1IsSMr6YZS0J5XAJMpY",
+            "targetId": "4WY7r8hQF_-CQgxm5LdSP",
+            "startTime": 9601.333333333023,
+            "endTime": 10401.333333333023,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "juGGlAmwtYnkJCYjguHKU",
+            "targetId": "P6Zg1gtu06Eqn1WreeWM_",
+            "startTime": 9651.333333333023,
+            "endTime": 10451.333333333023,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "MztR99wxteOXGc-wi_rgc",
+            "targetId": "UMDdnbb-VXNUaNVS3KWlV",
+            "startTime": 9701.333333333023,
+            "endTime": 10501.333333333023,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -409
+            }
+          },
+          {
+            "type": "move",
+            "id": "H90pvJJ1j7ReMjgxXUGJi",
+            "targetId": "17IiYbdEXWo484QL-1ddG",
+            "startTime": 10900,
+            "endTime": 11900,
+            "easing": "natural",
+            "toValue": {
+              "x": 3.25,
+              "y": 2045.75
+            }
+          },
+          {
+            "type": "move",
+            "id": "uyY-eVcxFGca63WlbQby9",
+            "targetId": "rFbeWkblxeo1oT6INKHDK",
+            "startTime": 10900,
+            "endTime": 11900,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1636.25
+            }
+          },
+          {
+            "type": "move",
+            "id": "2Z_XbhjFTC7cpGFoH755E",
+            "targetId": "EBKsMOvp8nFxEOD6dkavV",
+            "startTime": 10900,
+            "endTime": 11900,
+            "easing": "natural",
+            "toValue": {
+              "x": 0.25,
+              "y": 1227
+            }
+          },
+          {
+            "type": "move",
+            "id": "4VCv2qB15j4qQb4XqGLYu",
+            "targetId": "9rFMY9rQFIV_aNHD7Ks3z",
+            "startTime": 10900,
+            "endTime": 11900,
+            "easing": "natural",
+            "toValue": {
+              "x": 0.1,
+              "y": 817
+            }
+          },
+          {
+            "type": "move",
+            "id": "YRKuC-WABt1ugE58dyNRc",
+            "targetId": "4WY7r8hQF_-CQgxm5LdSP",
+            "startTime": 10900,
+            "endTime": 11900,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 408
+            }
+          },
+          {
+            "type": "move",
+            "id": "nm5pfuEJbgxgDFI-9KlrX",
+            "targetId": "UMDdnbb-VXNUaNVS3KWlV",
+            "startTime": 10900,
+            "endTime": 11900,
+            "easing": "natural",
+            "toValue": {
+              "x": -0.5,
+              "y": -410
+            }
+          },
+          {
+            "type": "cornerRadius",
+            "id": "1mcLlNr5b5lZAZe4St9wW",
+            "targetId": "02K4hwU-y8X1wbLY9vyIT",
+            "startTime": 10900,
+            "endTime": 11900,
+            "easing": "natural",
+            "toValue": 100
+          },
+          {
+            "type": "cornerRadius",
+            "id": "cMZ48lFyPh57wSJ7PIExZ",
+            "targetId": "u6ZtNOu_6s9ZySQV3AXYf",
+            "startTime": 10900,
+            "endTime": 11900,
+            "easing": "natural",
+            "toValue": 100
+          },
+          {
+            "type": "cornerRadius",
+            "id": "09Qs0OToXi9OstX8BcDYj",
+            "targetId": "g-ddMVjysUWCgV6EMsnIk",
+            "startTime": 10900,
+            "endTime": 11900,
+            "easing": "natural",
+            "toValue": 100
+          },
+          {
+            "type": "cornerRadius",
+            "id": "pDtc_jyTE9vwhX6BuL0kC",
+            "targetId": "XnT6858OhErWCn2K9Q2qo",
+            "startTime": 10900,
+            "endTime": 11900,
+            "easing": "natural",
+            "toValue": 100
+          },
+          {
+            "type": "cornerRadius",
+            "id": "hHoMNaRiyIz16lXnODueG",
+            "targetId": "89AqXGouYUqoDSVfqSZC5",
+            "startTime": 10900,
+            "endTime": 11900,
+            "easing": "natural",
+            "toValue": 100
+          },
+          {
+            "type": "cornerRadius",
+            "id": "CWSw3OZWzAQqURosdGES3",
+            "targetId": "rFbeWkblxeo1oT6INKHDK",
+            "startTime": 10900,
+            "endTime": 11900,
+            "easing": "natural",
+            "toValue": 100
+          },
+          {
+            "type": "cornerRadius",
+            "id": "WLONmuJNDlCBroHf2-xsD",
+            "targetId": "JzV7cwnm2WpdIGvBynk7d",
+            "startTime": 10900,
+            "endTime": 11900,
+            "easing": "natural",
+            "toValue": 100
+          },
+          {
+            "type": "opacity",
+            "id": "5iWDIfzYMz2rUoLB4zQ5f",
+            "targetId": "rFbeWkblxeo1oT6INKHDK",
+            "startTime": 11900,
+            "endTime": 11900,
+            "easing": "natural",
+            "toValue": 0
+          },
+          {
+            "type": "opacity",
+            "id": "vxpYmSGIKxmFiFf8gOd4D",
+            "targetId": "EBKsMOvp8nFxEOD6dkavV",
+            "startTime": 11900,
+            "endTime": 11900,
+            "easing": "natural",
+            "toValue": 0
+          },
+          {
+            "type": "opacity",
+            "id": "GiWhn6jeI6E-e6t1crpCJ",
+            "targetId": "9rFMY9rQFIV_aNHD7Ks3z",
+            "startTime": 11900,
+            "endTime": 11900,
+            "easing": "natural",
+            "toValue": 0
+          },
+          {
+            "type": "opacity",
+            "id": "EW9asaOPGRRbvWoEDoOV7",
+            "targetId": "4WY7r8hQF_-CQgxm5LdSP",
+            "startTime": 11900,
+            "endTime": 11900,
+            "easing": "natural",
+            "toValue": 0
+          },
+          {
+            "type": "opacity",
+            "id": "KwcPbVZvmiuUDdjdob20g",
+            "targetId": "P6Zg1gtu06Eqn1WreeWM_",
+            "startTime": 11900,
+            "endTime": 11900,
+            "easing": "natural",
+            "toValue": 0
+          },
+          {
+            "type": "opacity",
+            "id": "nH3NoD5t_8RGlrLE8mWzO",
+            "targetId": "UMDdnbb-VXNUaNVS3KWlV",
+            "startTime": 11900,
+            "endTime": 11900,
+            "easing": "natural",
+            "toValue": 0
+          },
+          {
+            "type": "blurRadius",
+            "id": "qNglByyz567n6bOZwuPCs",
+            "targetId": "JzV7cwnm2WpdIGvBynk7d",
+            "startTime": 12000,
+            "endTime": 13600,
+            "easing": "natural",
+            "toValue": 50
+          },
+          {
+            "type": "opacity",
+            "id": "VHdalYjAFPTPEnHX3lpuF",
+            "targetId": "JzV7cwnm2WpdIGvBynk7d",
+            "startTime": 12000,
+            "endTime": 13600,
+            "easing": "none",
+            "toValue": 0
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,565 @@
+{
+  "name": "0JZ1LrMbzTgu28Fm0CNqs",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "_j_1Vhnb6cofK0FnPf5RJ",
+        "name": "Scene",
+        "x": 0,
+        "y": -106,
+        "width": 1080,
+        "height": 1350,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 4000,
+        "fillColor": "#ffffff",
+        "background": true,
+        "layers": [
+          {
+            "type": "text",
+            "id": "B1FiEZoJx5c1yJQqi5eFJ",
+            "name": "PARIS | MILAN",
+            "x": 16,
+            "y": 1320,
+            "width": 149,
+            "height": 14,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "PARIS | MILAN",
+            "color": "#000000",
+            "fontSize": 17,
+            "font": {
+              "type": "googlefont",
+              "name": "Quadrant Text Mono Regular",
+              "weight": 400,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 80,
+            "letterSpacing": 7.000000000000001,
+            "textAlign": "left",
+            "verticalAlign": "bottom",
+            "case": "upper"
+          },
+          {
+            "type": "text",
+            "id": "Qwi-u8sBbD6rSEWPYM7u4",
+            "name": "EST. 1992",
+            "x": 961,
+            "y": 1320,
+            "width": 103,
+            "height": 14,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "EST. 1972",
+            "color": "#000000",
+            "fontSize": 17,
+            "font": {
+              "type": "googlefont",
+              "name": "Quadrant Text Mono Regular",
+              "weight": 400,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 80,
+            "letterSpacing": 7.000000000000001,
+            "textAlign": "right",
+            "verticalAlign": "bottom",
+            "case": "upper"
+          },
+          {
+            "type": "maskGrp",
+            "id": "d7tS0xvsC89CASaUpMKsd",
+            "name": "Portrait",
+            "x": -1,
+            "y": 0,
+            "width": 1,
+            "height": 1,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": true,
+            "layers": [
+              {
+                "type": "rect",
+                "id": "d603l0k5KcBsAXyjnMYEZ",
+                "name": "Mask",
+                "x": 301,
+                "y": 345,
+                "width": 480,
+                "height": 660,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#d9d9d9",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "image",
+                "id": "LulbZAEpaAn6ZBhxpTqRy",
+                "name": "Portrait",
+                "x": 245,
+                "y": 128,
+                "width": 591,
+                "height": 966,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://snackthis-userdata.s3-eu-west-1.amazonaws.com/2e5f9d7f-9706-43f5-93f6-6e79bc24a399.png",
+                "mediaName": "image"
+              }
+            ]
+          },
+          {
+            "type": "layerGrp",
+            "id": "IIdi9O1A-39eSfj3cFcM3",
+            "name": "Logo",
+            "x": 16,
+            "y": 16,
+            "width": 1048,
+            "height": 275,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": true,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "svg",
+                "id": "TsdmCELMxoQZpftsYymJD",
+                "name": "Vector",
+                "x": 840,
+                "y": 4.923126220703125,
+                "width": 209,
+                "height": 264,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#000000",
+                "background": true,
+                "url": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjA5IiBoZWlnaHQ9IjI2NCIgdmlld0JveD0iMCAwIDIwOSAyNjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0yMDguNDM4IDAuNjgxNjQxVjY2LjUxMTRINzQuNTU5OFYxMDEuMjc1SDE5Ni42MDRWMTYyLjY2N0g3NC41NTk4VjE5OC4xNzFIMjA4LjQzOFYyNjQuMDAxSDAuNTkzNzVWMC42ODE2NDFIMjA4LjQzOFoiIGZpbGw9ImJsYWNrIi8+Cjwvc3ZnPgo=",
+                "strokeEnabled": false
+              },
+              {
+                "type": "svg",
+                "id": "1zo_7nNJwxkrYJXZLcKCZ",
+                "name": "Vector",
+                "x": 522,
+                "y": 4.923126220703125,
+                "width": 305,
+                "height": 264,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#000000",
+                "background": true,
+                "url": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzA1IiBoZWlnaHQ9IjI2NCIgdmlld0JveD0iMCAwIDMwNSAyNjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xNjUuODE1IDEwMC41MzZMMTkwLjk2NCAwLjY4MTY0MUgzMDQuMTMyVjI2NC4wMDFIMjMzLjg2NFYxODkuMjk1QzIzMy44NjQgMTQxLjIxNyAyMzQuNjA0IDEwMC4xNjYgMjM2LjA4MyA2Ni4xNDE2QzIzMC41MzYgODcuOTYxNiAyMjUuMzU4IDEwNy41NjMgMjIwLjU1IDEyNC41NzVMMTgyLjQ1OCAyNjQuMDAxSDEyMi41NDVMODQuNDUyOCAxMjQuNTc1Qzc5LjI3NTEgMTA3LjU2MyA3NC4wOTc1IDg3Ljk2MTYgNjguOTE5OSA2Ni4xNDE2QzcwLjM5OTIgMTAwLjE2NiA3MS4xMzg5IDE0MS4yMTcgNzEuMTM4OSAxODkuMjk1VjI2NC4wMDFIMC44NzEwOTRWMC42ODE2NDFIMTE0LjAzOUwxMzkuMTg4IDEwMC41MzZDMTQ1LjQ3NSAxMjYuNDI0IDE0OS45MTMgMTQ1LjI4NSAxNTIuNTAyIDE1Ny4xMkMxNTQuNzIxIDE0NS4yODUgMTU5LjE1OCAxMjYuNDI0IDE2NS44MTUgMTAwLjUzNloiIGZpbGw9ImJsYWNrIi8+Cjwvc3ZnPgo=",
+                "strokeEnabled": false
+              },
+              {
+                "type": "svg",
+                "id": "TBXD_FSdbt9oppbzsumch",
+                "name": "Vector",
+                "x": 251,
+                "y": -1.076873779296875,
+                "width": 265,
+                "height": 276,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#000000",
+                "background": true,
+                "url": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjY1IiBoZWlnaHQ9IjI3NiIgdmlld0JveD0iMCAwIDI2NSAyNzYiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xMzUuMDc0IDI3NS45MTdDOTQuMDIyOCAyNzUuOTE3IDYxLjQ3NzggMjYzLjcxMyAzNy4wNjkgMjM4LjU2NUMxMi4yOTAzIDIxNC4xNTYgMC4wODU5Mzc1IDE4MC41MDEgMC4wODU5Mzc1IDEzOC4zNDFDMC4wODU5Mzc1IDk2LjE3OTkgMTEuOTIwNSA2Mi44OTUyIDM2LjMyOTMgMzcuNzQ2N0M1OS45OTg1IDEzLjMzNzkgOTIuOTEzMyAwLjc2MzY3MiAxMzUuMDc0IDAuNzYzNjcyQzE2OC43MjkgMC43NjM2NzIgMTk3LjU3NSAxMC4wMDk0IDIyMS42MTQgMjguMTMxMUMyNDQuOTE0IDQ2LjYyMjYgMjU4Ljk2NyA3Mi4xNDA5IDI2NC4xNDUgMTA0LjY4NkgxODkuNDM5QzE4NS43NDEgOTEuNzQxOSAxNzkuNDU0IDgxLjc1NjUgMTY5LjgzOCA3NC43Mjk3QzE2MC4yMjIgNjcuNzAyOSAxNDguMzg4IDY0LjAwNDcgMTM1LjA3NCA2NC4wMDQ3QzExNS44NDMgNjQuMDA0NyAxMDEuNDE5IDcwLjY2MTYgOTEuODAzOCA4My4yMzU4QzgxLjgxODQgOTYuMTc5OSA3Ny4wMTA3IDExNC42NzEgNzcuMDEwNyAxMzguMzQxQzc3LjAxMDcgMTYyLjM4IDgxLjgxODQgMTgwLjg3MSA5MS44MDM4IDE5My40NDVDMTAxLjQxOSAyMDYuMzg5IDExNS44NDMgMjEyLjY3NiAxMzUuMDc0IDIxMi42NzZDMTQ5Ljg2NyAyMTIuNjc2IDE2Mi4wNzIgMjA4Ljk3OCAxNzEuNjg3IDIwMC44NDJDMTgxLjMwMyAxOTIuNzA2IDE4Ny41OSAxODEuNjExIDE5MC41NDkgMTY2LjgxN0gyNjQuNTE1QzI2MC4wNzcgMjAxLjU4MiAyNDYuMzkzIDIyOC4yMDkgMjIzLjA5NCAyNDcuMDcxQzE5OS40MjQgMjY2LjMwMiAxNjkuODM4IDI3NS45MTcgMTM1LjA3NCAyNzUuOTE3WiIgZmlsbD0iYmxhY2siLz4KPC9zdmc+Cg==",
+                "strokeEnabled": false
+              },
+              {
+                "type": "svg",
+                "id": "_CeVFXAitjxa86fp_NBQU",
+                "name": "Vector",
+                "x": 0,
+                "y": 4.923126220703125,
+                "width": 280,
+                "height": 264,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#000000",
+                "background": true,
+                "url": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI2NCIgdmlld0JveD0iMCAwIDI4MCAyNjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0yNzkuNzk2IDI2NC4wMDFIMjAxLjM5MkwxOTAuMjk3IDIyOS42MDdIODcuMTE0NUw3Ni4wMTk2IDI2NC4wMDFIMC41NzQyMTlMOTQuMTQxMyAwLjY4MTY0MUgxODIuOTAxTDI3OS43OTYgMjY0LjAwMVpNMTI1LjU3NyAxMDcuOTMyTDEwNi4zNDYgMTY4LjU4NUgxNzAuMzI2TDE1MC43MjUgMTA3LjkzMkMxNDMuNjk5IDg2Ljg1MjEgMTM5LjYzIDcyLjc5ODUgMTM4LjE1MSA2Ni4xNDE2QzEzMS44NjQgODYuODUyMSAxMjcuNzk2IDEwMC41MzYgMTI1LjU3NyAxMDcuOTMyWiIgZmlsbD0iYmxhY2siLz4KPC9zdmc+Cg==",
+                "strokeEnabled": false
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "id": "fP2Qj8QDDs931CvRA_GUV",
+            "name": "FW24",
+            "x": 451,
+            "y": 667,
+            "width": 44,
+            "height": 14,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "FW24",
+            "color": "#000000",
+            "fontSize": 17,
+            "font": {
+              "type": "googlefont",
+              "name": "Quadrant Text Mono Regular",
+              "weight": 400,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 80,
+            "letterSpacing": 7.000000000000001,
+            "textAlign": "left",
+            "verticalAlign": "center",
+            "case": "upper"
+          },
+          {
+            "type": "text",
+            "id": "PsRTky2ewoRQcapk1BoMx",
+            "name": "COLLECTION",
+            "x": 512,
+            "y": 667,
+            "width": 114,
+            "height": 14,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "COLLECTION",
+            "color": "#000000",
+            "fontSize": 17,
+            "font": {
+              "type": "googlefont",
+              "name": "Quadrant Text Mono Regular",
+              "weight": 400,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 80,
+            "letterSpacing": 7.000000000000001,
+            "textAlign": "right",
+            "verticalAlign": "center",
+            "case": "upper"
+          },
+          {
+            "type": "maskGrp",
+            "id": "Ne42o0LFFmce-y1KBWl9g",
+            "name": "Mask",
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 1,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": true,
+            "layers": [
+              {
+                "type": "rect",
+                "id": "GxrmvnZg4DNQoe8yK9lQk",
+                "name": "Mask (no bg)",
+                "x": 300,
+                "y": 345,
+                "width": 480,
+                "height": 660,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#d9d9d9",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "image",
+                "id": "EKEZXIcyEu9-QEAey5OkU",
+                "name": "Portrait (no bg)",
+                "x": 245,
+                "y": 128,
+                "width": 590,
+                "height": 966,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://d154zarmrcpu4a.cloudfront.net/d-tQn0pTWR1fGeu7M2tTs.png",
+                "mediaName": "image 811sd3-gigapixel-low resolution v2-2xs.png"
+              },
+              {
+                "type": "text",
+                "id": "vCbwpVrDQsRxENwz24jny",
+                "name": "PARIS | MILAN",
+                "x": 16,
+                "y": 1320,
+                "width": 149,
+                "height": 14,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "PARIS | MILAN",
+                "color": "#ffffff",
+                "fontSize": 17,
+                "font": {
+                  "type": "googlefont",
+                  "name": "Quadrant Text Mono Regular",
+                  "weight": 400,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 80,
+                "letterSpacing": 7.000000000000001,
+                "textAlign": "left",
+                "verticalAlign": "bottom",
+                "case": "upper"
+              },
+              {
+                "type": "text",
+                "id": "PZhnl0NB_0AEYhUC_rf6Q",
+                "name": "EST. 1993",
+                "x": 961,
+                "y": 1320,
+                "width": 103,
+                "height": 14,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "EST. 1992",
+                "color": "#ffffff",
+                "fontSize": 17,
+                "font": {
+                  "type": "googlefont",
+                  "name": "Quadrant Text Mono Regular",
+                  "weight": 400,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 80,
+                "letterSpacing": 7.000000000000001,
+                "textAlign": "right",
+                "verticalAlign": "bottom",
+                "case": "upper"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "move",
+            "id": "LYXW-RaSjo-EXxg7w5OnT",
+            "targetId": "IIdi9O1A-39eSfj3cFcM3",
+            "startTime": 0,
+            "endTime": 1201,
+            "easing": "natural",
+            "fromValue": {
+              "y": 200
+            },
+            "toValue": {}
+          },
+          {
+            "type": "move",
+            "id": "bo7mlMPF7GWtyOrMsG9u5",
+            "targetId": "_CeVFXAitjxa86fp_NBQU",
+            "startTime": 0,
+            "endTime": 800,
+            "easing": "natural",
+            "fromValue": {
+              "y": 290
+            },
+            "toValue": {}
+          },
+          {
+            "type": "move",
+            "id": "2DBhRGohWvcdW7hOATiuh",
+            "targetId": "TBXD_FSdbt9oppbzsumch",
+            "startTime": 60,
+            "endTime": 860,
+            "easing": "natural",
+            "fromValue": {
+              "y": 290
+            },
+            "toValue": {}
+          },
+          {
+            "type": "move",
+            "id": "nQ4QaIEV6P3bLtHxfV79N",
+            "targetId": "1zo_7nNJwxkrYJXZLcKCZ",
+            "startTime": 120,
+            "endTime": 920,
+            "easing": "natural",
+            "fromValue": {
+              "y": 290
+            },
+            "toValue": {}
+          },
+          {
+            "type": "move",
+            "id": "tQ7b2OyY1rsEBDUm9M2ZN",
+            "targetId": "TsdmCELMxoQZpftsYymJD",
+            "startTime": 180,
+            "endTime": 980,
+            "easing": "natural",
+            "fromValue": {
+              "y": 290
+            },
+            "toValue": {}
+          },
+          {
+            "type": "move",
+            "id": "i93R03poN7XGQaXMR4PSf",
+            "targetId": "PsRTky2ewoRQcapk1BoMx",
+            "startTime": 120,
+            "endTime": 1570,
+            "easing": "natural",
+            "toValue": {
+              "x": 438,
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "8_k-qSvUZotUgWJiS0JYQ",
+            "targetId": "fP2Qj8QDDs931CvRA_GUV",
+            "startTime": 120,
+            "endTime": 1570,
+            "easing": "natural",
+            "toValue": {
+              "x": -435,
+              "y": 0
+            }
+          },
+          {
+            "type": "resize",
+            "id": "6fS4r3eetYDziTvs_IzBC",
+            "targetId": "d603l0k5KcBsAXyjnMYEZ",
+            "startTime": 120,
+            "endTime": 1570,
+            "easing": "natural",
+            "anchor": "center",
+            "fromValue": {
+              "height": 0,
+              "width": 0
+            }
+          },
+          {
+            "type": "scale",
+            "id": "1lzO21VstndnGgH8jMtb7",
+            "targetId": "LulbZAEpaAn6ZBhxpTqRy",
+            "startTime": 120,
+            "endTime": 1570,
+            "easing": "natural",
+            "fromValue": 0.7,
+            "toValue": 1.09
+          },
+          {
+            "type": "resize",
+            "id": "fjsurNpL7c9hNBrz75KGE",
+            "targetId": "GxrmvnZg4DNQoe8yK9lQk",
+            "startTime": 120,
+            "endTime": 1570,
+            "easing": "natural",
+            "anchor": "center",
+            "fromValue": {
+              "height": 0,
+              "width": 0
+            }
+          },
+          {
+            "type": "scale",
+            "id": "zWORUVEDbiMXPWeXO3OJk",
+            "targetId": "EKEZXIcyEu9-QEAey5OkU",
+            "startTime": 120,
+            "endTime": 1570,
+            "easing": "natural",
+            "fromValue": 0.7,
+            "toValue": 1.09
+          },
+          {
+            "type": "resize",
+            "id": "OAQ54P2SizYWShiGvAdpO",
+            "targetId": "d603l0k5KcBsAXyjnMYEZ",
+            "startTime": 1570,
+            "endTime": 3070,
+            "easing": "natural",
+            "anchor": "center",
+            "toValue": {
+              "height": 1350,
+              "width": 1080
+            }
+          },
+          {
+            "type": "scale",
+            "id": "v6KI_7knWW884ZVWVYOgb",
+            "targetId": "LulbZAEpaAn6ZBhxpTqRy",
+            "startTime": 1570,
+            "endTime": 3070,
+            "easing": "natural",
+            "toValue": 1.85
+          },
+          {
+            "type": "resize",
+            "id": "6ciLOLMG8N4zeqvawKlmC",
+            "targetId": "GxrmvnZg4DNQoe8yK9lQk",
+            "startTime": 1570,
+            "endTime": 3070,
+            "easing": "natural",
+            "anchor": "center",
+            "toValue": {
+              "height": 1350,
+              "width": 1080
+            }
+          },
+          {
+            "type": "scale",
+            "id": "C7FhpFjZ8JD7uLUov7S02",
+            "targetId": "EKEZXIcyEu9-QEAey5OkU",
+            "startTime": 1570,
+            "endTime": 3070,
+            "easing": "natural",
+            "toValue": 1.85
+          }
+        ]
+      }
+    ]
+  }
+}

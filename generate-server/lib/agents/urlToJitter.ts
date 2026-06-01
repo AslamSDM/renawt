@@ -15,6 +15,8 @@
  *   npx remotion render remotion/Root.tsx JitterComposition <out.mp4> --props=<doc.json>
  */
 
+import { createHash } from "crypto";
+import { readFileSync } from "fs";
 import { z } from "zod";
 import { chatWithGeminiProVision } from "./model";
 import {
@@ -22,6 +24,7 @@ import {
   type JitterBrief,
   type JitterComposerResult,
 } from "./jitterComposer";
+import type { JitterDoc } from "../video/jitterJson";
 import {
   pickTrack,
   moodToMusicKeyword,
@@ -36,11 +39,8 @@ import {
 } from "./jitterAssets";
 import { withLlmContext } from "../llm/tokenLogger";
 import { pickTemplateInspirations, pickBackgroundForBrand } from "./jitterTemplateRegistry";
-import {
-  reviewContentRelevance,
-  applyContentFixes,
-} from "./contentRelevanceChecker";
-import { critiqueScenes, applySceneFixes } from "./jitterSceneCritic";
+import { critiqueJitterDoc, applyCritique } from "./jitterCritic";
+import { pickTemplateExamples } from "./jitterTemplateExamples";
 import { noopProgress, type ProgressEmit } from "./progress";
 
 /** Map BrandReport.brand.mood → which scraped jitter.video sections to mine for inspiration. */
@@ -128,11 +128,35 @@ function extractJsonBlock(text: string): string {
   return candidate.slice(start, end + 1);
 }
 
+/** In-process cache of vision brand analysis, keyed by screenshot bytes + hint.
+ *  Same screenshot ⇒ same BrandReport, so this safely skips a Gemini Vision
+ *  call on warm instances / retries. Cold starts simply repopulate it. */
+const brandReportCache = new Map<string, BrandReport>();
+
+function brandCacheKey(screenshotPath: string, hint?: string): string | null {
+  try {
+    const buf = readFileSync(screenshotPath);
+    return createHash("sha1").update(buf).update(hint ?? "").digest("hex");
+  } catch {
+    return null;
+  }
+}
+
 export async function analyzeBrandFromScreenshot(
   screenshotPath: string,
   opts: { hint?: string } = {},
 ): Promise<BrandReport> {
   console.log(`[urlToJitter] Analyzing brand from ${screenshotPath}`);
+  const cacheKey = brandCacheKey(screenshotPath, opts.hint);
+  if (cacheKey) {
+    const hit = brandReportCache.get(cacheKey);
+    if (hit) {
+      console.log(
+        `[urlToJitter] Brand report cache hit (${cacheKey.slice(0, 8)})`,
+      );
+      return hit;
+    }
+  }
   const userPrompt = opts.hint
     ? `Extract the brand report. Additional hint: ${opts.hint}`
     : "Extract the brand report from this page screenshot.";
@@ -157,6 +181,7 @@ export async function analyzeBrandFromScreenshot(
           .join("\n");
         throw new Error(`Brand report schema invalid:\n${issues}`);
       }
+      if (cacheKey) brandReportCache.set(cacheKey, parsed.data);
       return parsed.data;
     } catch (err) {
       lastError = err;
@@ -245,6 +270,21 @@ Match the source page's design language exactly: same colors, same typographic w
     );
   }
 
+  const templateExamples = pickTemplateExamples({
+    sections,
+    mood: report.brand.mood,
+    width: opts.width ?? 1920,
+    height: opts.height ?? 1080,
+    limit: 2,
+  });
+  if (templateExamples.length) {
+    console.log(
+      `[urlToJitter] templateExamples: ${templateExamples
+        .map((e) => e.name)
+        .join(", ")}`,
+    );
+  }
+
   return {
     brief: briefText,
     width: opts.width ?? 1920,
@@ -262,6 +302,7 @@ Match the source page's design language exactly: same colors, same typographic w
     heroImage: opts.heroImageUrl ?? null,
     allowCustomComponents: true,
     templateInspirations: inspirations,
+    templateExamples,
     backdrop: {
       templateId: backdrop.templateId,
       templateName: backdrop.templateName,
@@ -270,6 +311,184 @@ Match the source page's design language exactly: same colors, same typographic w
       intensity: backdrop.intensity,
     },
   };
+}
+
+// ============================================================
+// Long-video chunking
+// ------------------------------------------------------------
+// A single LLM call reliably composes ~15s (2-4 scenes). Past that, flash
+// models truncate or under-deliver (1 scene for a 30s brief). So for long
+// videos we generate beat-aligned ≤15s SEGMENTS — each a small, reliable call
+// that's told what comes BEFORE and AFTER it and to keep the exact brand
+// colors/fonts — then merge the segment docs into one continuous JitterDoc.
+// Merging (not mp4 concat) keeps everything downstream single-doc: one render,
+// one stored doc, one editable timeline.
+// ============================================================
+
+const CHUNK_TARGET_MS = 15000;
+
+/** Split a list into k near-equal CONTIGUOUS groups (preserves narrative order). */
+function splitContiguous<T>(items: T[], k: number): T[][] {
+  const groups: T[][] = Array.from({ length: k }, () => []);
+  if (items.length === 0) return groups;
+  const per = Math.ceil(items.length / k);
+  for (let i = 0; i < items.length; i++) {
+    groups[Math.min(k - 1, Math.floor(i / per))].push(items[i]);
+  }
+  return groups;
+}
+
+/** Beat-aligned per-segment durations summing exactly to totalMs. */
+function splitDurations(totalMs: number, k: number, beatMs?: number): number[] {
+  if (k <= 1) return [totalMs];
+  let per = Math.round(totalMs / k);
+  if (beatMs && beatMs > 0) {
+    per = Math.max(beatMs * 4, Math.round(per / beatMs) * beatMs);
+  }
+  const minTail = beatMs ? beatMs * 4 : 2000;
+  const out: number[] = [];
+  let remaining = totalMs;
+  for (let i = 0; i < k - 1; i++) {
+    const d = Math.max(minTail, Math.min(per, remaining - (k - 1 - i) * minTail));
+    out.push(d);
+    remaining -= d;
+  }
+  out.push(remaining);
+  return out;
+}
+
+interface ChunkPlan {
+  features: BrandReport["features"];
+  includeHook: boolean;
+  includeCta: boolean;
+  /** One-line description of this segment, used as before/after context for neighbors. */
+  focus: string;
+}
+
+function planChunks(report: BrandReport, k: number): ChunkPlan[] {
+  const groups = splitContiguous(report.features, k);
+  return groups.map((features, i) => {
+    const includeHook = i === 0;
+    const includeCta = i === k - 1;
+    const titles = features.map((f) => f.title).filter(Boolean);
+    let focus: string;
+    if (includeHook) {
+      focus = `open with the hook "${report.tagline || report.headlines[0] || report.productName}"${
+        titles.length ? `, then introduce ${titles.join(", ")}` : ""
+      }`;
+    } else if (includeCta) {
+      focus = `${titles.length ? `cover ${titles.join(", ")}, then ` : ""}close with the CTA "${
+        report.cta || "Get started"
+      }"${report.price ? ` (${report.price})` : ""}`;
+    } else {
+      focus = titles.length ? `showcase ${titles.join(", ")}` : "continue the product story";
+    }
+    return { features, includeHook, includeCta, focus };
+  });
+}
+
+/**
+ * Continuity-aware brief for ONE segment. Reuses the base brief's brand,
+ * backdrop, inspirations, audio and assets verbatim so every segment renders
+ * identically — only the copy slice, duration and narrative framing change.
+ */
+function makeChunkBrief(
+  base: JitterBrief,
+  report: BrandReport,
+  plans: ChunkPlan[],
+  idx: number,
+  durationMs: number,
+  heroImage: string | null,
+): JitterBrief {
+  const total = plans.length;
+  const plan = plans[idx];
+  const prev = idx > 0 ? plans[idx - 1] : null;
+  const next = idx < total - 1 ? plans[idx + 1] : null;
+  const durSec = Math.round((base.durationMs ?? durationMs) / 1000);
+  const brandStr = [
+    report.brand.primary,
+    report.brand.secondary,
+    report.brand.accent,
+    report.brand.background,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  const briefText = `Segment ${idx + 1} of ${total} of ONE continuous ${durSec}s brand video for ${report.productName}.
+This segment is stitched end-to-end with the others, so it MUST look like the same video: identical backdrop, the exact brand palette (${brandStr}) and the same font (${report.brand.fontFamily}). Never restyle, recolor, or switch fonts between segments.
+${
+  idx === 0
+    ? "This is the OPENING segment — establish the product."
+    : `JUST BEFORE this segment the video did: ${prev?.focus}. Continue smoothly from there — do NOT re-introduce or re-title the product; pick up the momentum.`
+}
+${
+  idx === total - 1
+    ? "This is the FINAL segment — end on the CTA with a confident closing hold."
+    : `RIGHT AFTER this segment the video will: ${next?.focus}. End this segment on a clean hand-off (a held beat / outgoing transition), not a hard stop.`
+}
+THIS SEGMENT should ${plan.focus}.
+Match the source page's design language exactly. Use customComponents for elevated CSS effects (animated gradients, glow halos, glass cards, gradient text).`;
+
+  return {
+    ...base,
+    brief: briefText,
+    durationMs,
+    heroImage,
+    narration: null, // narration spans the whole video — attached to the merged doc
+    copy: {
+      productName: report.productName,
+      tagline: plan.includeHook ? report.tagline : undefined,
+      headlines: plan.includeHook ? report.headlines : [],
+      features: plan.features,
+      cta: plan.includeCta ? report.cta : undefined,
+      price: plan.includeCta ? report.price : undefined,
+    },
+  };
+}
+
+/**
+ * Merge per-segment docs into one continuous JitterDoc. Each segment's layer /
+ * artboard / operation ids and AI-authored component names are namespaced
+ * (`c{i}-…` / `C{i}…`) so nothing collides, then artboards are concatenated in
+ * order. Audio, fps and name come from the first segment.
+ */
+function mergeChunkDocs(docs: JitterDoc[]): JitterDoc {
+  const merged: JitterDoc = JSON.parse(JSON.stringify(docs[0]));
+  merged.customComponents = [];
+  merged.conf.artboards = [];
+
+  docs.forEach((doc, idx) => {
+    const localCustom = new Set(doc.customComponents.map((c) => c.name));
+    const compName = (n: string) => `C${idx}${n}`;
+    const refId = (n: string) => `c${idx}-${n}`;
+
+    for (const c of doc.customComponents) {
+      merged.customComponents.push({ ...c, name: compName(c.name) });
+    }
+
+    const walkLayers = (layers: any[]) => {
+      for (const l of layers) {
+        if (!l || typeof l !== "object") continue;
+        if (l.id) l.id = refId(l.id);
+        if (l.type === "custom" && localCustom.has(l.component)) {
+          l.component = compName(l.component);
+        }
+        if (Array.isArray(l.layers)) walkLayers(l.layers);
+      }
+    };
+
+    for (const art of doc.conf.artboards) {
+      art.id = refId(art.id);
+      for (const op of art.operations) {
+        op.id = refId(op.id);
+        op.targetId = refId(op.targetId);
+      }
+      walkLayers(art.layers);
+      merged.conf.artboards.push(art);
+    }
+  });
+
+  return merged;
 }
 
 export interface UrlToJitterResult {
@@ -509,7 +728,67 @@ async function runUrlToJitter(input: {
   }
 
   await emit({ step: "compose", label: "Compose JitterDoc", status: "running" });
-  const composer = await generateJitterDoc(brief, { maxAttempts: 3 });
+
+  // Long videos: compose in beat-aligned ≤15s segments and merge. Short ones:
+  // a single composer call as before.
+  const fullDur = brief.durationMs ?? Math.round(alignedDur);
+  const chunkCount =
+    fullDur > CHUNK_TARGET_MS ? Math.ceil(fullDur / CHUNK_TARGET_MS) : 1;
+
+  let composer: JitterComposerResult;
+  if (chunkCount > 1) {
+    const durations = splitDurations(fullDur, chunkCount, music?.beatMs);
+    const plans = planChunks(brandReport, chunkCount);
+    console.log(
+      `[urlToJitter] Long video ${fullDur}ms → ${chunkCount} segments [${durations
+        .map((d) => Math.round(d / 1000) + "s")
+        .join(", ")}]`,
+    );
+    await emit({
+      step: "compose",
+      label: "Compose JitterDoc",
+      status: "running",
+      detail: `composing ${chunkCount} segments in parallel`,
+    });
+    // Segment briefs are built from static plan context (prev/next focus), not
+    // from each other's output, so they compose independently — run in parallel.
+    const chunkBriefs = plans.map((_, i) =>
+      makeChunkBrief(
+        brief,
+        brandReport,
+        plans,
+        i,
+        durations[i],
+        i === 0 ? (input.heroImageUrl ?? null) : null,
+      ),
+    );
+    const chunkResults = await Promise.all(
+      chunkBriefs.map((cb, i) =>
+        generateJitterDoc(cb, { maxAttempts: 3 }).then((res) => {
+          console.log(
+            `[urlToJitter] segment ${i + 1}/${chunkCount}: ${res.doc.conf.artboards.length} scenes (${res.attempts} attempt(s))`,
+          );
+          return res;
+        }),
+      ),
+    );
+    const chunkDocs: JitterDoc[] = chunkResults.map((r) => r.doc);
+    const totalAttempts = chunkResults.reduce((s, r) => s + r.attempts, 0);
+    const lastRaw = chunkResults.length
+      ? chunkResults[chunkResults.length - 1].rawText
+      : "";
+    const mergedDoc = mergeChunkDocs(chunkDocs);
+    const totalFrames = mergedDoc.conf.artboards.reduce(
+      (s, a) => s + Math.max(1, Math.round((a.duration * mergedDoc.fps) / 1000)),
+      0,
+    );
+    console.log(
+      `[urlToJitter] merged ${chunkCount} segments → ${mergedDoc.conf.artboards.length} scenes, ${mergedDoc.customComponents.length} components`,
+    );
+    composer = { doc: mergedDoc, totalFrames, attempts: totalAttempts, rawText: lastRaw };
+  } else {
+    composer = await generateJitterDoc(brief, { maxAttempts: 3 });
+  }
   {
     const ab = composer.doc.conf.artboards;
     await emit({
@@ -530,84 +809,45 @@ async function runUrlToJitter(input: {
     });
   }
 
-  // Content-relevance pass: scan every text / mockup / code layer and
-  // strip placeholder content + rewrite invented text using verbatim
-  // BrandReport copy. One extra LLM call.
-  await emit({ step: "content-review", label: "Content review", status: "running" });
+  // Critic pass (merged content-relevance + scene critic): ONE LLM call scans
+  // the doc scene-by-scene and fixes placeholder/invented copy, empty mockups,
+  // wrong domains, fabricated stats, weak endings and duplicate headlines.
+  await emit({ step: "critique", label: "Critique", status: "running" });
   try {
-    const review = await reviewContentRelevance(composer.doc, brandReport, {
+    const critique = await critiqueJitterDoc(composer.doc, brandReport, {
       sourceUrl: input.url,
       heroImageUrl: input.heroImageUrl ?? null,
     });
-    if (review.issues.length) {
-      const counts = applyContentFixes(composer.doc, review);
-      console.log(
-        `[urlToJitter] content-relevance: ${review.issues.length} issues found → ${counts.rewritten} rewritten, ${counts.dropped} dropped`,
-      );
-      await emit({
-        step: "content-review",
-        label: "Content review",
-        status: "done",
-        detail: `${review.issues.length} issues · ${counts.rewritten} rewritten · ${counts.dropped} dropped`,
-        output: { issues: review.issues },
-      });
-    } else {
-      console.log("[urlToJitter] content-relevance: clean (no issues)");
-      await emit({
-        step: "content-review",
-        label: "Content review",
-        status: "done",
-        detail: "clean — no issues",
-      });
-    }
-  } catch (err) {
-    console.warn(
-      `[urlToJitter] content-relevance check failed (continuing): ${err instanceof Error ? err.message : err}`,
-    );
-    await emit({
-      step: "content-review",
-      label: "Content review",
-      status: "failed",
-      detail: err instanceof Error ? err.message : "check failed (skipped)",
-    });
-  }
-
-  // Scene critic: review the doc scene-by-scene and strip fabricated stats
-  // (the stray "99%" at the end), weak endings, and empty mockups that the
-  // per-layer relevance pass doesn't catch. One extra LLM call.
-  await emit({ step: "scene-critic", label: "Scene critic", status: "running" });
-  try {
-    const critique = await critiqueScenes(composer.doc, brandReport);
     if (critique.issues.length) {
-      const counts = applySceneFixes(composer.doc, critique);
+      const counts = applyCritique(composer.doc, critique);
       console.log(
-        `[urlToJitter] scene-critic: ${critique.issues.length} issues → ${counts.statsFixed} stats fixed, ${counts.rewritten} rewritten, ${counts.dropped} dropped`,
+        `[urlToJitter] critique: ${critique.issues.length} issues → ${counts.rewritten} rewritten, ${counts.statsFixed} stats fixed, ${counts.screenshotsFixed} screenshots set, ${counts.dropped} dropped`,
       );
       await emit({
-        step: "scene-critic",
-        label: "Scene critic",
+        step: "critique",
+        label: "Critique",
         status: "done",
-        detail: `${critique.issues.length} issues · ${counts.statsFixed} stats fixed · ${counts.dropped} dropped`,
+        detail: `${critique.issues.length} issues · ${counts.rewritten} rewritten · ${counts.statsFixed} stats · ${counts.dropped} dropped`,
         output: { issues: critique.issues },
       });
     } else {
-      console.log("[urlToJitter] scene-critic: clean (no issues)");
+      console.log("[urlToJitter] critique: clean (no issues)");
       await emit({
-        step: "scene-critic",
-        label: "Scene critic",
+        step: "critique",
+        label: "Critique",
         status: "done",
         detail: "clean — no issues",
       });
     }
   } catch (err) {
     console.warn(
-      `[urlToJitter] scene-critic failed (continuing): ${err instanceof Error ? err.message : err}`,
+      `[urlToJitter] critique failed (continuing): ${err instanceof Error ? err.message : err}`,
     );
     await emit({
-      step: "scene-critic",
-      label: "Scene critic",
+      step: "critique",
+      label: "Critique",
       status: "failed",
-      detail: err instanceof Error ? err.message : "critic failed (skipped)",
+      detail: err instanceof Error ? err.message : "critique failed (skipped)",
     });
   }
 

@@ -1,0 +1,123 @@
+{
+  "name": "YouTube Icon",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "5:108",
+        "name": "YouTube",
+        "x": 2360,
+        "y": -977,
+        "width": 400,
+        "height": 400,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 3000,
+        "fillColor": "#ffffff",
+        "background": false,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "X8EKOLsr",
+            "name": "Icon",
+            "x": 80,
+            "y": 80,
+            "width": 240,
+            "height": 240,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "ellipse",
+                "id": "5:109",
+                "name": "Ellipse",
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 240,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#FF0000",
+                "background": true,
+                "startAngle": 0,
+                "sweep": 100,
+                "strokeEnabled": false
+              },
+              {
+                "type": "image",
+                "id": "zLBGcE96",
+                "x": 40,
+                "y": 40,
+                "width": 160,
+                "height": 160,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "userAsset:d5e29306-d059-48d9-abaa-fa18cd685295.svg",
+                "mediaName": "YouTube.svg"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "scale",
+            "id": "pnQ8ZvPz",
+            "targetId": "X8EKOLsr",
+            "startTime": 0,
+            "endTime": 400,
+            "easing": "natural",
+            "fromValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "e6hP1hNl",
+            "targetId": "zLBGcE96",
+            "startTime": 100,
+            "endTime": 500,
+            "easing": "natural",
+            "fromValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "VgDBEyxb",
+            "targetId": "zLBGcE96",
+            "startTime": 2500,
+            "endTime": 2900,
+            "easing": "accelerate",
+            "toValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "ACpdTPOV",
+            "targetId": "X8EKOLsr",
+            "startTime": 2600,
+            "endTime": 3000,
+            "easing": "accelerate",
+            "toValue": 0
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,475 @@
+{
+  "name": "Uah4y9rrDUyQh7ibSzVTiXv6",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "h4TZ5G34IObPZKanDDy5I",
+        "name": "Uah4y9rrDUyQh7ibSzVTiXv6",
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 1080,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 6000,
+        "fillColor": "#000000",
+        "background": true,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "1d3lJlb3-BDZcwi_p9r1O",
+            "name": "Background",
+            "x": -67,
+            "y": -229,
+            "width": 2074,
+            "height": 1558,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "image",
+                "id": "fFpelYpIhfxKJRiM3visd",
+                "name": "Background 01",
+                "x": 0,
+                "y": 0,
+                "width": 2074,
+                "height": 1558,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://d154zarmrcpu4a.cloudfront.net/4uny67T8HN5qVXBUknkE6.jpg",
+                "mediaName": "11 3D staklo.jpg"
+              },
+              {
+                "type": "image",
+                "id": "iZQUE7vIJIcqyz2QwdFFJ",
+                "name": "Background 02",
+                "x": 0,
+                "y": 0,
+                "width": 2074,
+                "height": 1558,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://d154zarmrcpu4a.cloudfront.net/OkE_1k64Bk50ShwQ-lPg0.png",
+                "mediaName": "Screenshot 2024-11-04 at 17.11.05.png"
+              },
+              {
+                "type": "image",
+                "id": "11eiSMYIfJ8xn9Fpu3BHw",
+                "name": "Background 03",
+                "x": 0,
+                "y": 0,
+                "width": 2074,
+                "height": 1558,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://d154zarmrcpu4a.cloudfront.net/8owDg6OynKA0gHLRkgqgW.jpg",
+                "mediaName": "Mix_01.jpg"
+              },
+              {
+                "type": "video",
+                "id": "d0hiodBDsXL08U6uH0T_i",
+                "name": "Background 04",
+                "x": 0,
+                "y": 0,
+                "width": 2074,
+                "height": 1558,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://d154zarmrcpu4a.cloudfront.net/ilhknm1DV4qEDkyEoPrZ2.mp4",
+                "mediaName": "Print_02.mp4"
+              },
+              {
+                "type": "image",
+                "id": "zmwj_TV4Yyjjlrs6XcfCy",
+                "name": "Background 05",
+                "x": 0,
+                "y": 0,
+                "width": 2074,
+                "height": 1558,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://d154zarmrcpu4a.cloudfront.net/4uny67T8HN5qVXBUknkE6.jpg",
+                "mediaName": "11 3D staklo.jpg"
+              },
+              {
+                "type": "rect",
+                "id": "CZ1zY8a1iwxBbvulwLlYK",
+                "name": "Overlay",
+                "x": 42,
+                "y": 211,
+                "width": 1970,
+                "height": 1116,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#ffffff59",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              }
+            ]
+          },
+          {
+            "type": "layerGrp",
+            "id": "PrFjr6Zy6DDM5ZiGipskt",
+            "name": "Slides",
+            "x": 420,
+            "y": 135,
+            "width": 1080,
+            "height": 810,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "image",
+                "id": "wDHwNOwfOgpVTrCgTPlwH",
+                "name": "Slide 01",
+                "x": 0,
+                "y": 0,
+                "width": 1080,
+                "height": 810,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 25,
+                "url": "https://d154zarmrcpu4a.cloudfront.net/4uny67T8HN5qVXBUknkE6.jpg",
+                "mediaName": "11 3D staklo.jpg"
+              },
+              {
+                "type": "image",
+                "id": "YGccq9ZVRNyId4k2CBCZ0",
+                "name": "Slide 02",
+                "x": 0,
+                "y": 0,
+                "width": 1080,
+                "height": 810,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 25,
+                "url": "https://d154zarmrcpu4a.cloudfront.net/OkE_1k64Bk50ShwQ-lPg0.png",
+                "mediaName": "Screenshot 2024-11-04 at 17.11.05.png"
+              },
+              {
+                "type": "image",
+                "id": "w4Rqp3IMyH4sMdljnsH3d",
+                "name": "Slide 03",
+                "x": 0,
+                "y": 0,
+                "width": 1080,
+                "height": 810,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 25,
+                "url": "https://d154zarmrcpu4a.cloudfront.net/8owDg6OynKA0gHLRkgqgW.jpg",
+                "mediaName": "Mix_01.jpg"
+              },
+              {
+                "type": "video",
+                "id": "IZlDHd7EdtgmdXtw5nIxA",
+                "name": "Slide 04",
+                "x": 0,
+                "y": 0,
+                "width": 1080,
+                "height": 810,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 25,
+                "url": "https://d154zarmrcpu4a.cloudfront.net/szGq4KMQEMYFojImNrQXT.mp4",
+                "mediaName": "ilhknm1DV4qEDkyEoPrZ2_FFMPEG.mp4"
+              },
+              {
+                "type": "image",
+                "id": "xTkJhM5kdkdmbMX1mC8l_",
+                "name": "Slide 05",
+                "x": 0,
+                "y": 0,
+                "width": 1080,
+                "height": 810,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 25,
+                "url": "https://d154zarmrcpu4a.cloudfront.net/4uny67T8HN5qVXBUknkE6.jpg",
+                "mediaName": "11 3D staklo.jpg"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "scale",
+            "id": "l_ZIX-Lm6SWyc9_oj27gl",
+            "targetId": "wDHwNOwfOgpVTrCgTPlwH",
+            "startTime": 0,
+            "endTime": 609,
+            "easing": "accelerate",
+            "fromValue": 1,
+            "toValue": 0.8
+          },
+          {
+            "type": "scale",
+            "id": "B_cEE7VWOtPHpmKZa3w9m",
+            "targetId": "fFpelYpIhfxKJRiM3visd",
+            "startTime": 0,
+            "endTime": 757,
+            "easing": "accelerate",
+            "fromValue": 1,
+            "toValue": 0.8
+          },
+          {
+            "type": "move",
+            "id": "xCq5llmx02W4DuVMZNiMv",
+            "targetId": "YGccq9ZVRNyId4k2CBCZ0",
+            "startTime": 70,
+            "endTime": 833,
+            "easing": "natural",
+            "fromValue": {
+              "x": 0.000002441406195430318,
+              "y": 1167.4000091552734
+            }
+          },
+          {
+            "type": "scale",
+            "id": "fJYH7xxWKLvWiGj9siO5l",
+            "targetId": "YGccq9ZVRNyId4k2CBCZ0",
+            "startTime": 468,
+            "endTime": 1512,
+            "easing": "natural",
+            "fromValue": 1.5,
+            "toValue": 1
+          },
+          {
+            "type": "scale",
+            "id": "0L4NT-NPSnwvaPm38WySL",
+            "targetId": "YGccq9ZVRNyId4k2CBCZ0",
+            "startTime": 1410,
+            "endTime": 2044,
+            "easing": "accelerate",
+            "fromValue": 1,
+            "toValue": 0.9
+          },
+          {
+            "type": "slideIn",
+            "id": "mJo7AJH0dWe0RluxDnBaQ",
+            "targetId": "iZQUE7vIJIcqyz2QwdFFJ",
+            "startTime": 70,
+            "endTime": 1132,
+            "easing": "natural",
+            "direction": "up",
+            "distance": 60
+          },
+          {
+            "type": "scale",
+            "id": "JAWnm2T69Obd1xJP_NGiz",
+            "targetId": "iZQUE7vIJIcqyz2QwdFFJ",
+            "startTime": 1436,
+            "endTime": 2303,
+            "easing": "accelerate",
+            "fromValue": 1,
+            "toValue": 0.8
+          },
+          {
+            "type": "move",
+            "id": "OEg4PwBw9X9igetwhAwDO",
+            "targetId": "w4Rqp3IMyH4sMdljnsH3d",
+            "startTime": 1586,
+            "endTime": 2336,
+            "easing": "natural",
+            "fromValue": {
+              "x": 0.000002441406195430318,
+              "y": 1167.4000091552734
+            }
+          },
+          {
+            "type": "scale",
+            "id": "TAfTKHFOiMWz624YgEQqg",
+            "targetId": "w4Rqp3IMyH4sMdljnsH3d",
+            "startTime": 1977,
+            "endTime": 2981,
+            "easing": "natural",
+            "fromValue": 1.5,
+            "toValue": 1
+          },
+          {
+            "type": "scale",
+            "id": "dqgCxYlLMaQuINe04hQVl",
+            "targetId": "w4Rqp3IMyH4sMdljnsH3d",
+            "startTime": 2905,
+            "endTime": 3528,
+            "easing": "accelerate",
+            "fromValue": 1,
+            "toValue": 0.9
+          },
+          {
+            "type": "slideIn",
+            "id": "pUM-j6wjmDR5-nhlkdfGg",
+            "targetId": "11eiSMYIfJ8xn9Fpu3BHw",
+            "startTime": 1585,
+            "endTime": 2768,
+            "easing": "natural",
+            "direction": "up",
+            "distance": 60
+          },
+          {
+            "type": "scale",
+            "id": "seLOMcGcUDcdQ6TpfF2vR",
+            "targetId": "11eiSMYIfJ8xn9Fpu3BHw",
+            "startTime": 3108,
+            "endTime": 3785,
+            "easing": "accelerate",
+            "fromValue": 1,
+            "toValue": 0.8
+          },
+          {
+            "type": "move",
+            "id": "cUDfKu2mGeaDO3Xk4UFc_",
+            "targetId": "IZlDHd7EdtgmdXtw5nIxA",
+            "startTime": 3005,
+            "endTime": 3755,
+            "easing": "natural",
+            "fromValue": {
+              "x": 0.000002441406195430318,
+              "y": 1167.4000091552734
+            }
+          },
+          {
+            "type": "scale",
+            "id": "NfE4WShfuQ-jY4U_s6G_c",
+            "targetId": "IZlDHd7EdtgmdXtw5nIxA",
+            "startTime": 3395,
+            "endTime": 4399,
+            "easing": "natural",
+            "fromValue": 1.5,
+            "toValue": 1
+          },
+          {
+            "type": "scale",
+            "id": "piaWiwC1j4QVFBB-gZrkF",
+            "targetId": "IZlDHd7EdtgmdXtw5nIxA",
+            "startTime": 4324,
+            "endTime": 4947,
+            "easing": "accelerate",
+            "fromValue": 1,
+            "toValue": 0.9
+          },
+          {
+            "type": "slideIn",
+            "id": "WmNdcRhOgsUnxAGnjc5It",
+            "targetId": "d0hiodBDsXL08U6uH0T_i",
+            "startTime": 3005,
+            "endTime": 4188,
+            "easing": "natural",
+            "direction": "up",
+            "distance": 60
+          },
+          {
+            "type": "scale",
+            "id": "KOMOZ48pOT3E6vPBZHaaY",
+            "targetId": "d0hiodBDsXL08U6uH0T_i",
+            "startTime": 4528,
+            "endTime": 5205,
+            "easing": "accelerate",
+            "fromValue": 1,
+            "toValue": 0.8
+          },
+          {
+            "type": "move",
+            "id": "C_8jQ7Bm1sRk5P2E5ZuZr",
+            "targetId": "xTkJhM5kdkdmbMX1mC8l_",
+            "startTime": 4554,
+            "endTime": 5317,
+            "easing": "natural",
+            "fromValue": {
+              "x": 0.000002441406195430318,
+              "y": 1167.4000091552734
+            }
+          },
+          {
+            "type": "scale",
+            "id": "ZdbskzP81JiIiv_Jcw0s-",
+            "targetId": "xTkJhM5kdkdmbMX1mC8l_",
+            "startTime": 4952,
+            "endTime": 5996,
+            "easing": "natural",
+            "fromValue": 1.5,
+            "toValue": 1
+          },
+          {
+            "type": "slideIn",
+            "id": "Cbd9sfBRewO2RRusLf20s",
+            "targetId": "zmwj_TV4Yyjjlrs6XcfCy",
+            "startTime": 4554,
+            "endTime": 5616,
+            "easing": "natural",
+            "direction": "up",
+            "distance": 60
+          },
+          {
+            "type": "playVideo",
+            "id": "si69TXixT_YX5L54x7EpR",
+            "targetId": "IZlDHd7EdtgmdXtw5nIxA",
+            "startTime": 0,
+            "endTime": 6000,
+            "offset": 0,
+            "volume": 1
+          },
+          {
+            "type": "playVideo",
+            "id": "3TMtSx0q7Sh1FKrbzkxR7",
+            "targetId": "d0hiodBDsXL08U6uH0T_i",
+            "startTime": 0,
+            "endTime": 6000,
+            "offset": 0,
+            "volume": 1
+          }
+        ]
+      }
+    ]
+  }
+}

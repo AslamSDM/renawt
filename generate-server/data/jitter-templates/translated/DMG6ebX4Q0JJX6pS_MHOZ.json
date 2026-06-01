@@ -1,0 +1,139 @@
+{
+  "name": "DMG6ebX4Q0JJX6pS_MHOZ",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "v_Y-6UhW6gYEGunNw_b_D",
+        "name": "Inward Echo Repeat",
+        "x": 0,
+        "y": 0,
+        "width": 1080,
+        "height": 1080,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 6000,
+        "fillColor": "#000000",
+        "background": true,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "1FiV2fWCXsGNQPwLbj75e",
+            "name": "Reapeat Wrapper (Replace)",
+            "x": 0,
+            "y": 0,
+            "width": 1080,
+            "height": 1080,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "image",
+                "id": "5azNHPB0sCThQLQ4nVkv5",
+                "name": "01",
+                "x": 0,
+                "y": 0,
+                "width": 1080,
+                "height": 1080,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://userdata.jitter.video/UYJq3UG2DdkZPonaovyFY.png",
+                "mediaName": "Sunset Portrait.png"
+              },
+              {
+                "type": "image",
+                "id": "kh7IqGpHqhwf1GsZgOjQ7",
+                "name": "02",
+                "x": 0,
+                "y": 0,
+                "width": 1080,
+                "height": 1080,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://userdata.jitter.video/vvt5nI3LmmeFtHV3Ho3Mk.png",
+                "mediaName": "Modern Device Close-Up.png"
+              },
+              {
+                "type": "image",
+                "id": "_jOcgibpIw52lsId2A6-0",
+                "name": "03",
+                "x": 0,
+                "y": 0,
+                "width": 1080,
+                "height": 1080,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://userdata.jitter.video/UNUBPgveS4Iq2SwMGPeZS.png",
+                "mediaName": "Modern Desert Architecture.png"
+              },
+              {
+                "type": "image",
+                "id": "v9AUPZNx9kDbldvn7kL8F",
+                "name": "01 BIS",
+                "x": 0,
+                "y": 0,
+                "width": 1080,
+                "height": 1080,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://userdata.jitter.video/UYJq3UG2DdkZPonaovyFY.png",
+                "mediaName": "Sunset Portrait.png"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "fadeIn",
+            "id": "f2KOLNDUwO3L_Mip4KK9s",
+            "targetId": "kh7IqGpHqhwf1GsZgOjQ7",
+            "startTime": 500,
+            "endTime": 1500,
+            "easing": "natural"
+          },
+          {
+            "type": "fadeIn",
+            "id": "1RFOleqRCJSi-AnxsLwEJ",
+            "targetId": "_jOcgibpIw52lsId2A6-0",
+            "startTime": 2530,
+            "endTime": 3530,
+            "easing": "natural"
+          },
+          {
+            "type": "fadeIn",
+            "id": "PK7h9dP5x1vUcHU8-2vyE",
+            "targetId": "v9AUPZNx9kDbldvn7kL8F",
+            "startTime": 4190,
+            "endTime": 5190,
+            "easing": "natural"
+          }
+        ]
+      }
+    ]
+  }
+}

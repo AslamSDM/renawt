@@ -153,6 +153,7 @@ export function Navbar({
                     {[
                       { href: "/profile", label: "Profile" },
                       { href: "/projects", label: "My Projects" },
+                      { href: "/templates", label: "Templates" },
                       { href: "/pricing", label: "Buy Credits" },
                     ].map((item) => (
                       <Link

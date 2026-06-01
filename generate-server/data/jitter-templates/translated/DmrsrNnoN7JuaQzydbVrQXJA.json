@@ -1,0 +1,3198 @@
+{
+  "name": "DmrsrNnoN7JuaQzydbVrQXJA",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "yeVXuZ4HF_j7TZR7WuRQr",
+        "name": "4:5",
+        "x": -220,
+        "y": -495,
+        "width": 1080,
+        "height": 1350,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 7330,
+        "fillColor": "#010715",
+        "background": true,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "4zA-PfzYphB6YknGcyTK2",
+            "name": "Comp",
+            "x": 0,
+            "y": 0,
+            "width": 1080,
+            "height": 1696,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "maskGrp",
+                "id": "FkO8INtpnpGr_dPQ9NT3y",
+                "name": "Row 01",
+                "x": 0,
+                "y": 0,
+                "width": 1,
+                "height": 1,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "YaURFvCEUIh7EoASDIKIN",
+                    "name": "Rectangle 01",
+                    "x": 0,
+                    "y": 0,
+                    "width": 1080,
+                    "height": 170,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#b3b3b3",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "ellipse",
+                    "id": "7mdh6FWNNhvTQqlTy2naW",
+                    "name": "Ellipse 01",
+                    "x": -878.185546875,
+                    "y": -1812.8354852986452,
+                    "width": 2836.3712962962964,
+                    "height": 3626.9274074074074,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#ffffff",
+                    "background": true,
+                    "startAngle": 0,
+                    "sweep": 100,
+                    "strokeEnabled": false
+                  }
+                ]
+              },
+              {
+                "type": "maskGrp",
+                "id": "J2fDdT8dVseDSD5VxjDA2",
+                "name": "Row 02",
+                "x": 0,
+                "y": 0.399658203125,
+                "width": 1,
+                "height": 1,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "0g0RcHVSbrIzwb-e5EwPH",
+                    "name": "Rectangle 02",
+                    "x": 0,
+                    "y": 169.60040794334975,
+                    "width": 1080,
+                    "height": 170,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#b3b3b3",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "ellipse",
+                    "id": "y40p3T3KRKosD5tTDW69W",
+                    "name": "Ellipse 02",
+                    "x": -878.185546875,
+                    "y": -1812.8354852986454,
+                    "width": 2836.3712962962964,
+                    "height": 3626.9274074074074,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#ffffff",
+                    "background": true,
+                    "startAngle": 0,
+                    "sweep": 100,
+                    "strokeEnabled": false
+                  }
+                ]
+              },
+              {
+                "type": "maskGrp",
+                "id": "RDitifUJNUVbt6Uvx6SU5",
+                "name": "Row 03",
+                "x": 0,
+                "y": 0.8001708984375,
+                "width": 1,
+                "height": 1,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "68RDtu5huLYTblzWuiQmz",
+                    "name": "Rectangle 03",
+                    "x": 0,
+                    "y": 339.1997960283251,
+                    "width": 1080,
+                    "height": 170,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#b3b3b3",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "ellipse",
+                    "id": "fvTvx3zGdCklRY-XlhxEp",
+                    "name": "Ellipse 03",
+                    "x": -878.185546875,
+                    "y": -1812.8354852986452,
+                    "width": 2836.3712962962964,
+                    "height": 3626.9274074074074,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#ffffff",
+                    "background": true,
+                    "startAngle": 0,
+                    "sweep": 100,
+                    "strokeEnabled": false
+                  }
+                ]
+              },
+              {
+                "type": "maskGrp",
+                "id": "DqrtQs_i6cMefTtd0teYU",
+                "name": "Row 04",
+                "x": -1,
+                "y": 1.1998291015625,
+                "width": 1,
+                "height": 1,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "bMwMz62-7RtEdkrUNqrmj",
+                    "name": "Rectangle 04",
+                    "x": 1,
+                    "y": 508.800203971675,
+                    "width": 1080,
+                    "height": 170,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#b3b3b3",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "ellipse",
+                    "id": "9vCDW-PwhAHPwi674X6Nj",
+                    "name": "Ellipse 04",
+                    "x": -878.185546875,
+                    "y": -1812.8354852986454,
+                    "width": 2836.3712962962964,
+                    "height": 3626.9274074074074,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#ffffff",
+                    "background": true,
+                    "startAngle": 0,
+                    "sweep": 100,
+                    "strokeEnabled": false
+                  }
+                ]
+              },
+              {
+                "type": "maskGrp",
+                "id": "HWiczvpr9IH5ZGbcm5kjT",
+                "name": "Row 05",
+                "x": 0,
+                "y": 1.600341796875,
+                "width": 1,
+                "height": 1,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "DifhB8aCq7uitMYqcwdhw",
+                    "name": "Rectangle 05",
+                    "x": 0,
+                    "y": 678.3995920566502,
+                    "width": 1080,
+                    "height": 170,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#b3b3b3",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "ellipse",
+                    "id": "NL0STlQe2mnDVV3PCko2J",
+                    "name": "Ellipse 05",
+                    "x": -878.185546875,
+                    "y": -1812.8354852986452,
+                    "width": 2836.3712962962964,
+                    "height": 3626.9274074074074,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#ffffff",
+                    "background": true,
+                    "startAngle": 0,
+                    "sweep": 100,
+                    "strokeEnabled": false
+                  }
+                ]
+              },
+              {
+                "type": "maskGrp",
+                "id": "8GyT5xYW2L-t9Fg7Ry0JB",
+                "name": "Row 06",
+                "x": 0,
+                "y": 2,
+                "width": 1,
+                "height": 1,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "QBigXyOQ9sfywKkhKF8sz",
+                    "name": "Rectangle 06",
+                    "x": 0,
+                    "y": 847.9999999999999,
+                    "width": 1080,
+                    "height": 170,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#b3b3b3",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "ellipse",
+                    "id": "b90aV_xGivSezvfbTO4yg",
+                    "name": "Ellipse 06",
+                    "x": -878.185546875,
+                    "y": -1812.8354852986452,
+                    "width": 2836.3712962962964,
+                    "height": 3626.9274074074074,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#ffffff",
+                    "background": true,
+                    "startAngle": 0,
+                    "sweep": 100,
+                    "strokeEnabled": false
+                  }
+                ]
+              },
+              {
+                "type": "maskGrp",
+                "id": "ZvK2XgNcWXR9aX_zbJKLx",
+                "name": "Row 07",
+                "x": 0,
+                "y": 2.399658203125,
+                "width": 1,
+                "height": 1,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "LrgYwRvnjAToAe9170yLm",
+                    "name": "Rectangle 07",
+                    "x": 0,
+                    "y": 1017.6004079433499,
+                    "width": 1080,
+                    "height": 170,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#b3b3b3",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "ellipse",
+                    "id": "_FScnkzh7kSM3k4GpEkWq",
+                    "name": "Ellipse 07",
+                    "x": -878.185546875,
+                    "y": -1812.835485298645,
+                    "width": 2836.3712962962964,
+                    "height": 3626.9274074074074,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#ffffff",
+                    "background": true,
+                    "startAngle": 0,
+                    "sweep": 100,
+                    "strokeEnabled": false
+                  }
+                ]
+              },
+              {
+                "type": "maskGrp",
+                "id": "RfIRS-MLK4XCF7P72uydD",
+                "name": "Row 08",
+                "x": 0,
+                "y": 2.8001708984375,
+                "width": 1,
+                "height": 1,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "P5hX1hg1lXVF2pl_9rg7_",
+                    "name": "Rectangle 08",
+                    "x": 0,
+                    "y": 1187.1997960283252,
+                    "width": 1080,
+                    "height": 170,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#b3b3b3",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "ellipse",
+                    "id": "M_-uJXAZeazOsoBI7XE1R",
+                    "name": "Ellipse 08",
+                    "x": -878.185546875,
+                    "y": -1812.8354852986452,
+                    "width": 2836.3712962962964,
+                    "height": 3626.9274074074074,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#ffffff",
+                    "background": true,
+                    "startAngle": 0,
+                    "sweep": 100,
+                    "strokeEnabled": false
+                  }
+                ]
+              },
+              {
+                "type": "maskGrp",
+                "id": "QqTliq1hIvImaw9m_rUQG",
+                "name": "Row 09",
+                "x": 0,
+                "y": 3.1998291015625,
+                "width": 1,
+                "height": 1,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "8vbLTxUJzGZz3x2lPitrP",
+                    "name": "Rectangle 09",
+                    "x": 0,
+                    "y": 1356.800203971675,
+                    "width": 1080,
+                    "height": 170,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#b3b3b3",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "ellipse",
+                    "id": "tIaNiJ738xLwGdbs4e2aV",
+                    "name": "Ellipse 09",
+                    "x": -878.185546875,
+                    "y": -1812.835485298645,
+                    "width": 2836.3712962962964,
+                    "height": 3626.9274074074074,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#ffffff",
+                    "background": true,
+                    "startAngle": 0,
+                    "sweep": 100,
+                    "strokeEnabled": false
+                  }
+                ]
+              },
+              {
+                "type": "maskGrp",
+                "id": "J8puVbgHAX9cQ6_VMuZOX",
+                "name": "Row 10",
+                "x": 0,
+                "y": 3.6004638671875,
+                "width": 1,
+                "height": 1,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "QV2eD_Q_adq0UtMHW8gQr",
+                    "name": "Rectangle 10",
+                    "x": 0,
+                    "y": 1526.3995920566504,
+                    "width": 1080,
+                    "height": 170,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#b3b3b3",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "ellipse",
+                    "id": "t1X_-6WiuPwa-Gca__K9W",
+                    "name": "Ellipse 10",
+                    "x": -878.185546875,
+                    "y": -1812.8354852986452,
+                    "width": 2836.3712962962964,
+                    "height": 3626.9274074074074,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#ffffff",
+                    "background": true,
+                    "startAngle": 0,
+                    "sweep": 100,
+                    "strokeEnabled": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "video",
+            "id": "pk3GWLtjPOvpoIEmILeDz",
+            "x": 0,
+            "y": 0,
+            "width": 1080,
+            "height": 1351,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "https://d154zarmrcpu4a.cloudfront.net/0TVLlnRNUXC-GsX79ET3n.mp4",
+            "mediaName": "grain-16mm.mp4"
+          }
+        ],
+        "operations": [
+          {
+            "type": "playVideo",
+            "id": "BeJHGl6Q3Wp2aWIDfQ1cY",
+            "targetId": "pk3GWLtjPOvpoIEmILeDz",
+            "startTime": 0,
+            "endTime": 7330,
+            "offset": 0,
+            "volume": 1
+          },
+          {
+            "type": "move",
+            "id": "8y9kSk0M7-ql8VoZBCoj7",
+            "targetId": "t1X_-6WiuPwa-Gca__K9W",
+            "startTime": 0,
+            "endTime": 1900,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "MyfjWmg65PnUSD5OQCeQr",
+            "targetId": "t1X_-6WiuPwa-Gca__K9W",
+            "startTime": 0,
+            "endTime": 2200,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "color": "#1f005c",
+                  "position": 0,
+                  "id": "pssP6"
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.07270228378456933
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.16072631152764214
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.41705085490904437
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.5994363924714867
+                },
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0.8072400753921017
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "njspKSjx-biRVK5n2M7Xf",
+            "targetId": "tIaNiJ738xLwGdbs4e2aV",
+            "startTime": 40,
+            "endTime": 1940,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "YninYY058AQpuoXtQ0t7h",
+            "targetId": "tIaNiJ738xLwGdbs4e2aV",
+            "startTime": 40,
+            "endTime": 2240,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "color": "#1f005c",
+                  "position": 0,
+                  "id": "pssP6"
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.07270228378456933
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.16072631152764214
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.41705085490904437
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.5994363924714867
+                },
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0.8072400753921017
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "GvydXddfq1GaMdJ8hF1hY",
+            "targetId": "M_-uJXAZeazOsoBI7XE1R",
+            "startTime": 80,
+            "endTime": 1980,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "k6qJbKcBdohR5j092rJha",
+            "targetId": "M_-uJXAZeazOsoBI7XE1R",
+            "startTime": 80,
+            "endTime": 2280,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "color": "#1f005c",
+                  "position": 0,
+                  "id": "pssP6"
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.07270228378456933
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.16072631152764214
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.41705085490904437
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.5994363924714867
+                },
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0.8072400753921017
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "f_0N_q_J3u6YUaCVb8k03",
+            "targetId": "_FScnkzh7kSM3k4GpEkWq",
+            "startTime": 120,
+            "endTime": 2020,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "63QtlyZ_O3cmbcueFdra2",
+            "targetId": "_FScnkzh7kSM3k4GpEkWq",
+            "startTime": 120,
+            "endTime": 2320,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "color": "#1f005c",
+                  "position": 0,
+                  "id": "pssP6"
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.07270228378456933
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.16072631152764214
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.41705085490904437
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.5994363924714867
+                },
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0.8072400753921017
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "xDzTwMmf6W9aRyVlzNR0B",
+            "targetId": "b90aV_xGivSezvfbTO4yg",
+            "startTime": 160,
+            "endTime": 2060,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "f6o-l-gsMxTFMDuINIke6",
+            "targetId": "b90aV_xGivSezvfbTO4yg",
+            "startTime": 160,
+            "endTime": 2360,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "color": "#1f005c",
+                  "position": 0,
+                  "id": "pssP6"
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.07270228378456933
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.16072631152764214
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.41705085490904437
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.5994363924714867
+                },
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0.8072400753921017
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "odlPfW8eSnLnPiY8aOVKR",
+            "targetId": "NL0STlQe2mnDVV3PCko2J",
+            "startTime": 200,
+            "endTime": 2100,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "ArFjOCtDMwjzXXvkCVpzx",
+            "targetId": "NL0STlQe2mnDVV3PCko2J",
+            "startTime": 200,
+            "endTime": 2400,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "color": "#1f005c",
+                  "position": 0,
+                  "id": "pssP6"
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.07270228378456933
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.16072631152764214
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.41705085490904437
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.5994363924714867
+                },
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0.8072400753921017
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "HWeClmfjQdOiOzKLtCT1n",
+            "targetId": "9vCDW-PwhAHPwi674X6Nj",
+            "startTime": 240,
+            "endTime": 2140,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "fjZmhzWfCCb6Y83C_iza-",
+            "targetId": "9vCDW-PwhAHPwi674X6Nj",
+            "startTime": 240,
+            "endTime": 2440,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "color": "#1f005c",
+                  "position": 0,
+                  "id": "pssP6"
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.07270228378456933
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.16072631152764214
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.41705085490904437
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.5994363924714867
+                },
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0.8072400753921017
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "pxpC_l4DgaLgMO7c-LleU",
+            "targetId": "fvTvx3zGdCklRY-XlhxEp",
+            "startTime": 280,
+            "endTime": 2180,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "9X5LDbDMnKUd6KLhnXFGv",
+            "targetId": "fvTvx3zGdCklRY-XlhxEp",
+            "startTime": 280,
+            "endTime": 2480,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "color": "#1f005c",
+                  "position": 0,
+                  "id": "pssP6"
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.07270228378456933
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.16072631152764214
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.41705085490904437
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.5994363924714867
+                },
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0.8072400753921017
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "DnkX_RBxbComC_tMwo-Vy",
+            "targetId": "y40p3T3KRKosD5tTDW69W",
+            "startTime": 320,
+            "endTime": 2220,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "CcqFHM9oL9x8AFH5g1PNp",
+            "targetId": "y40p3T3KRKosD5tTDW69W",
+            "startTime": 320,
+            "endTime": 2520,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "color": "#1f005c",
+                  "position": 0,
+                  "id": "pssP6"
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.07270228378456933
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.16072631152764214
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.41705085490904437
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.5994363924714867
+                },
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0.8072400753921017
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "fW5Le9lOdY_AGtdhUVsMR",
+            "targetId": "7mdh6FWNNhvTQqlTy2naW",
+            "startTime": 360,
+            "endTime": 2260,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "C_tT7sxq5aFnteW_lxolG",
+            "targetId": "7mdh6FWNNhvTQqlTy2naW",
+            "startTime": 360,
+            "endTime": 2560,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "color": "#1f005c",
+                  "position": 0,
+                  "id": "pssP6"
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.07270228378456933
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.16072631152764214
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.41705085490904437
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.5994363924714867
+                },
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0.8072400753921017
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "color",
+            "id": "-fIFFZhl2vQHMAAC4Kz1Z",
+            "targetId": "7mdh6FWNNhvTQqlTy2naW",
+            "startTime": 2000,
+            "endTime": 3500,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.20000000298023224
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.5
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.531
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.7384955576128822
+                },
+                {
+                  "color": "#1f005c",
+                  "position": 1,
+                  "id": "pssP6"
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "vayHPLeVJdUzF8v6Z2_J4",
+            "targetId": "7mdh6FWNNhvTQqlTy2naW",
+            "startTime": 2000,
+            "endTime": 3700,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "po9U1o9f9XcNBbPbsEeK9",
+            "targetId": "y40p3T3KRKosD5tTDW69W",
+            "startTime": 2040,
+            "endTime": 3540,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.20000000298023224
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.5
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.531
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.7384955576128822
+                },
+                {
+                  "color": "#1f005c",
+                  "position": 1,
+                  "id": "pssP6"
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "tCZVYNt5vUhrETqMyQAtE",
+            "targetId": "y40p3T3KRKosD5tTDW69W",
+            "startTime": 2040,
+            "endTime": 3740,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "jH8VITPoRBUf2ROkbTRju",
+            "targetId": "fvTvx3zGdCklRY-XlhxEp",
+            "startTime": 2080,
+            "endTime": 3580,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.20000000298023224
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.5
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.531
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.7384955576128822
+                },
+                {
+                  "color": "#1f005c",
+                  "position": 1,
+                  "id": "pssP6"
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "G13_6-sXt2zGs3qdNCgiO",
+            "targetId": "fvTvx3zGdCklRY-XlhxEp",
+            "startTime": 2080,
+            "endTime": 3780,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "XhuLseNHcLFwsJaXzmUQ7",
+            "targetId": "9vCDW-PwhAHPwi674X6Nj",
+            "startTime": 2120,
+            "endTime": 3620,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.20000000298023224
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.5
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.531
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.7384955576128822
+                },
+                {
+                  "color": "#1f005c",
+                  "position": 1,
+                  "id": "pssP6"
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "k4SeFVokm5P6CNzSAmvHJ",
+            "targetId": "9vCDW-PwhAHPwi674X6Nj",
+            "startTime": 2120,
+            "endTime": 3820,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "wOj9WOOFwrigdioROCYlI",
+            "targetId": "NL0STlQe2mnDVV3PCko2J",
+            "startTime": 2160,
+            "endTime": 3660,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.20000000298023224
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.5
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.531
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.7384955576128822
+                },
+                {
+                  "color": "#1f005c",
+                  "position": 1,
+                  "id": "pssP6"
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "gydqsNd95NJ2zNF1ATCK9",
+            "targetId": "NL0STlQe2mnDVV3PCko2J",
+            "startTime": 2160,
+            "endTime": 3860,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "ZoR55CD_DiYsG7KMSfDOo",
+            "targetId": "b90aV_xGivSezvfbTO4yg",
+            "startTime": 2200,
+            "endTime": 3700,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.20000000298023224
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.5
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.531
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.7384955576128822
+                },
+                {
+                  "color": "#1f005c",
+                  "position": 1,
+                  "id": "pssP6"
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "aym7mH04U_e0hj8lQotKy",
+            "targetId": "b90aV_xGivSezvfbTO4yg",
+            "startTime": 2200,
+            "endTime": 3900,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "DpcEbPqi0Hoc404kNasP4",
+            "targetId": "_FScnkzh7kSM3k4GpEkWq",
+            "startTime": 2240,
+            "endTime": 3740,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.20000000298023224
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.5
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.531
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.7384955576128822
+                },
+                {
+                  "color": "#1f005c",
+                  "position": 1,
+                  "id": "pssP6"
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "_7LYJb6uX_7WTEk2yhD8d",
+            "targetId": "_FScnkzh7kSM3k4GpEkWq",
+            "startTime": 2240,
+            "endTime": 3940,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "QyLktPg3u2GkJe-CZyEqJ",
+            "targetId": "M_-uJXAZeazOsoBI7XE1R",
+            "startTime": 2280,
+            "endTime": 3780,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.20000000298023224
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.5
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.531
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.7384955576128822
+                },
+                {
+                  "color": "#1f005c",
+                  "position": 1,
+                  "id": "pssP6"
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "4mq6EsVOMgQa7IzHcaefG",
+            "targetId": "M_-uJXAZeazOsoBI7XE1R",
+            "startTime": 2280,
+            "endTime": 3980,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "Gpq4h8WrF1KqgRMz0MVXc",
+            "targetId": "tIaNiJ738xLwGdbs4e2aV",
+            "startTime": 2320,
+            "endTime": 3820,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.20000000298023224
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.5
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.531
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.7384955576128822
+                },
+                {
+                  "color": "#1f005c",
+                  "position": 1,
+                  "id": "pssP6"
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "jGwSEdB17El6FSxChOstI",
+            "targetId": "tIaNiJ738xLwGdbs4e2aV",
+            "startTime": 2320,
+            "endTime": 4020,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "5M1lJmxw2gdLnjUdfT2cy",
+            "targetId": "t1X_-6WiuPwa-Gca__K9W",
+            "startTime": 2360,
+            "endTime": 3860,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.20000000298023224
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.5
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.531
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.7384955576128822
+                },
+                {
+                  "color": "#1f005c",
+                  "position": 1,
+                  "id": "pssP6"
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "ow5Cd5jwO6-N2iAYrbY5B",
+            "targetId": "t1X_-6WiuPwa-Gca__K9W",
+            "startTime": 2360,
+            "endTime": 4060,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "U9zMFomeqMRhXpgofIzoW",
+            "targetId": "t1X_-6WiuPwa-Gca__K9W",
+            "startTime": 3600,
+            "endTime": 5301,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "color": "#1f005c",
+                  "position": 0,
+                  "id": "pssP6"
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.07270228378456933
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.16072631152764214
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.41705085490904437
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.5994363924714867
+                },
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0.8072400753921017
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "7Hbgh0fM-HBwUtqlw5yyx",
+            "targetId": "t1X_-6WiuPwa-Gca__K9W",
+            "startTime": 3600,
+            "endTime": 5100,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "DqpPGEQP135YzFgh8t5z_",
+            "targetId": "tIaNiJ738xLwGdbs4e2aV",
+            "startTime": 3640,
+            "endTime": 5341,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "color": "#1f005c",
+                  "position": 0,
+                  "id": "pssP6"
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.07270228378456933
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.16072631152764214
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.41705085490904437
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.5994363924714867
+                },
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0.8072400753921017
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "hdsv7qjzwYSxci6BKHVhk",
+            "targetId": "tIaNiJ738xLwGdbs4e2aV",
+            "startTime": 3640,
+            "endTime": 5140,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "04SKWKMYB0S6eLIrChS-2",
+            "targetId": "M_-uJXAZeazOsoBI7XE1R",
+            "startTime": 3680,
+            "endTime": 5381,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "color": "#1f005c",
+                  "position": 0,
+                  "id": "pssP6"
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.07270228378456933
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.16072631152764214
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.41705085490904437
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.5994363924714867
+                },
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0.8072400753921017
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "BFX6i-prhTYEgI39dK0Fp",
+            "targetId": "M_-uJXAZeazOsoBI7XE1R",
+            "startTime": 3680,
+            "endTime": 5180,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "R3txsk2iSpPtK3zqtLk5p",
+            "targetId": "_FScnkzh7kSM3k4GpEkWq",
+            "startTime": 3730,
+            "endTime": 5431,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "color": "#1f005c",
+                  "position": 0,
+                  "id": "pssP6"
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.07270228378456933
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.16072631152764214
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.41705085490904437
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.5994363924714867
+                },
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0.8072400753921017
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "U_RysEZSCdID5C8PcdIwQ",
+            "targetId": "_FScnkzh7kSM3k4GpEkWq",
+            "startTime": 3730,
+            "endTime": 5230,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "MS8-8XzydITG7OwR_eTLm",
+            "targetId": "b90aV_xGivSezvfbTO4yg",
+            "startTime": 3780,
+            "endTime": 5481,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "color": "#1f005c",
+                  "position": 0,
+                  "id": "pssP6"
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.07270228378456933
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.16072631152764214
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.41705085490904437
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.5994363924714867
+                },
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0.8072400753921017
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "XEXhfk--QaP8bgPFVQJ1X",
+            "targetId": "b90aV_xGivSezvfbTO4yg",
+            "startTime": 3780,
+            "endTime": 5280,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "vEWPfzHTzwcH0cW2PeLSR",
+            "targetId": "NL0STlQe2mnDVV3PCko2J",
+            "startTime": 3830,
+            "endTime": 5531,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "color": "#1f005c",
+                  "position": 0,
+                  "id": "pssP6"
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.07270228378456933
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.16072631152764214
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.41705085490904437
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.5994363924714867
+                },
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0.8072400753921017
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "YPbBu8YokIj6ms1T1T-LG",
+            "targetId": "NL0STlQe2mnDVV3PCko2J",
+            "startTime": 3830,
+            "endTime": 5330,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "9S_zWtt0onnnMZOd5Kyq4",
+            "targetId": "9vCDW-PwhAHPwi674X6Nj",
+            "startTime": 3880,
+            "endTime": 5581,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "color": "#1f005c",
+                  "position": 0,
+                  "id": "pssP6"
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.07270228378456933
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.16072631152764214
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.41705085490904437
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.5994363924714867
+                },
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0.8072400753921017
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "IGBIEAa91QO7IdYov45bJ",
+            "targetId": "9vCDW-PwhAHPwi674X6Nj",
+            "startTime": 3880,
+            "endTime": 5380,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "Ant1Yfq7JkIoCQ1Ata1gR",
+            "targetId": "fvTvx3zGdCklRY-XlhxEp",
+            "startTime": 3920,
+            "endTime": 5621,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "color": "#1f005c",
+                  "position": 0,
+                  "id": "pssP6"
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.07270228378456933
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.16072631152764214
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.41705085490904437
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.5994363924714867
+                },
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0.8072400753921017
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "IDc8BYLGBCh5NF0Yw4vsT",
+            "targetId": "fvTvx3zGdCklRY-XlhxEp",
+            "startTime": 3920,
+            "endTime": 5420,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "T1ik0JvM4YEEDcYLqOC4o",
+            "targetId": "y40p3T3KRKosD5tTDW69W",
+            "startTime": 3960,
+            "endTime": 5661,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "color": "#1f005c",
+                  "position": 0,
+                  "id": "pssP6"
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.07270228378456933
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.16072631152764214
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.41705085490904437
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.5994363924714867
+                },
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0.8072400753921017
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "dRdtQLIQwmOGiGv8mjBgp",
+            "targetId": "y40p3T3KRKosD5tTDW69W",
+            "startTime": 3960,
+            "endTime": 5460,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "x_8nT3963RP-xI_SecWwx",
+            "targetId": "7mdh6FWNNhvTQqlTy2naW",
+            "startTime": 4000,
+            "endTime": 5701,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "color": "#1f005c",
+                  "position": 0,
+                  "id": "pssP6"
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.07270228378456933
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.16072631152764214
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.41705085490904437
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.5994363924714867
+                },
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0.8072400753921017
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "_2tFGVDh4yXP3rqLGfHGs",
+            "targetId": "7mdh6FWNNhvTQqlTy2naW",
+            "startTime": 4000,
+            "endTime": 5500,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1500
+            }
+          },
+          {
+            "type": "color",
+            "id": "Z5apvLLuqyEC7eWpIU1oz",
+            "targetId": "7mdh6FWNNhvTQqlTy2naW",
+            "startTime": 5000,
+            "endTime": 6528,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.20000000298023224
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.5
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.531
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.7384955576128822
+                },
+                {
+                  "color": "#1f005c",
+                  "position": 1,
+                  "id": "pssP6"
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "EOoWRERMrEGByBCr6Tkve",
+            "targetId": "7mdh6FWNNhvTQqlTy2naW",
+            "startTime": 5000,
+            "endTime": 6715,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -1504
+            }
+          },
+          {
+            "type": "color",
+            "id": "mezKdUjrOrD7heEI3_awk",
+            "targetId": "y40p3T3KRKosD5tTDW69W",
+            "startTime": 5040,
+            "endTime": 6568,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.20000000298023224
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.5
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.531
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.7384955576128822
+                },
+                {
+                  "color": "#1f005c",
+                  "position": 1,
+                  "id": "pssP6"
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "ZfUF7bhcx98KnyQAxUkAr",
+            "targetId": "y40p3T3KRKosD5tTDW69W",
+            "startTime": 5040,
+            "endTime": 6755,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -1504
+            }
+          },
+          {
+            "type": "color",
+            "id": "jCRk74rEZlAUmofqZotFv",
+            "targetId": "fvTvx3zGdCklRY-XlhxEp",
+            "startTime": 5080,
+            "endTime": 6608,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.20000000298023224
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.5
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.531
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.7384955576128822
+                },
+                {
+                  "color": "#1f005c",
+                  "position": 1,
+                  "id": "pssP6"
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "ZKRPqeDMhO8MhXHeBqtmG",
+            "targetId": "fvTvx3zGdCklRY-XlhxEp",
+            "startTime": 5080,
+            "endTime": 6795,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -1504
+            }
+          },
+          {
+            "type": "color",
+            "id": "0Fr6TuyYIVw52klkfviyi",
+            "targetId": "9vCDW-PwhAHPwi674X6Nj",
+            "startTime": 5120,
+            "endTime": 6648,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.20000000298023224
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.5
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.531
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.7384955576128822
+                },
+                {
+                  "color": "#1f005c",
+                  "position": 1,
+                  "id": "pssP6"
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "NvnLv6PUQ0vs636bao5c1",
+            "targetId": "9vCDW-PwhAHPwi674X6Nj",
+            "startTime": 5120,
+            "endTime": 6835,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -1504
+            }
+          },
+          {
+            "type": "color",
+            "id": "XtCSxCb_BwVp_-9NSYoIa",
+            "targetId": "NL0STlQe2mnDVV3PCko2J",
+            "startTime": 5160,
+            "endTime": 6688,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.20000000298023224
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.5
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.531
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.7384955576128822
+                },
+                {
+                  "color": "#1f005c",
+                  "position": 1,
+                  "id": "pssP6"
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "niYoB0cs0_Vu4Gwi2iwjf",
+            "targetId": "NL0STlQe2mnDVV3PCko2J",
+            "startTime": 5160,
+            "endTime": 6875,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -1504
+            }
+          },
+          {
+            "type": "color",
+            "id": "FcePHudS9J5I90qbes5rp",
+            "targetId": "b90aV_xGivSezvfbTO4yg",
+            "startTime": 5200,
+            "endTime": 6728,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.20000000298023224
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.5
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.531
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.7384955576128822
+                },
+                {
+                  "color": "#1f005c",
+                  "position": 1,
+                  "id": "pssP6"
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "MtBHdd1QJE6J5pfnH4s31",
+            "targetId": "b90aV_xGivSezvfbTO4yg",
+            "startTime": 5200,
+            "endTime": 6915,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -1504
+            }
+          },
+          {
+            "type": "color",
+            "id": "RuYcWd32faPcQMSbIgJfE",
+            "targetId": "_FScnkzh7kSM3k4GpEkWq",
+            "startTime": 5240,
+            "endTime": 6768,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.20000000298023224
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.5
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.531
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.7384955576128822
+                },
+                {
+                  "color": "#1f005c",
+                  "position": 1,
+                  "id": "pssP6"
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "DAq_3LRfbdPjKF_IAagQy",
+            "targetId": "_FScnkzh7kSM3k4GpEkWq",
+            "startTime": 5240,
+            "endTime": 6955,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -1504
+            }
+          },
+          {
+            "type": "color",
+            "id": "MYxmVFXqHk-smBFmiwJYp",
+            "targetId": "M_-uJXAZeazOsoBI7XE1R",
+            "startTime": 5280,
+            "endTime": 6808,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.20000000298023224
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.5
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.531
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.7384955576128822
+                },
+                {
+                  "color": "#1f005c",
+                  "position": 1,
+                  "id": "pssP6"
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "70Ha-hUUhdC69VHJXhL3j",
+            "targetId": "M_-uJXAZeazOsoBI7XE1R",
+            "startTime": 5280,
+            "endTime": 6995,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -1504
+            }
+          },
+          {
+            "type": "color",
+            "id": "plkql_LKkxxPOu_rqcmqR",
+            "targetId": "tIaNiJ738xLwGdbs4e2aV",
+            "startTime": 5320,
+            "endTime": 6848,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.20000000298023224
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.5
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.531
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.7384955576128822
+                },
+                {
+                  "color": "#1f005c",
+                  "position": 1,
+                  "id": "pssP6"
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "TNVPhiT-lqSKW53082uoM",
+            "targetId": "tIaNiJ738xLwGdbs4e2aV",
+            "startTime": 5320,
+            "endTime": 7035,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -1504
+            }
+          },
+          {
+            "type": "color",
+            "id": "BMglsrqHzpwfqifXkE3U0",
+            "targetId": "t1X_-6WiuPwa-Gca__K9W",
+            "startTime": 5360,
+            "endTime": 6888,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_RADIAL",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#1a104f",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#0346b9",
+                  "position": 0.20000000298023224
+                },
+                {
+                  "id": "2",
+                  "color": "#d5d7f6",
+                  "position": 0.5
+                },
+                {
+                  "id": "3",
+                  "color": "#c86bff",
+                  "position": 0.531
+                },
+                {
+                  "id": "4",
+                  "color": "#381275",
+                  "position": 0.7384955576128822
+                },
+                {
+                  "color": "#1f005c",
+                  "position": 1,
+                  "id": "pssP6"
+                }
+              ],
+              "transform": {
+                "sx": 1.1380398914056442,
+                "sy": 1.1380398914056442,
+                "angle": 1.5707963267948966,
+                "skew": -4.468574384292018e-16,
+                "tx": 0.49999994858971886,
+                "ty": 0.4999999701976776
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "Pjv2ue6gnPptlHLC3lWeY",
+            "targetId": "t1X_-6WiuPwa-Gca__K9W",
+            "startTime": 5360,
+            "endTime": 7075,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -1504
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

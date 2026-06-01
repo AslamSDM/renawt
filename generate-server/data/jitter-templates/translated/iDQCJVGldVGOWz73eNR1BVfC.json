@@ -1,0 +1,1433 @@
+{
+  "name": "iDQCJVGldVGOWz73eNR1BVfC",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "WoZOJ1dxE0tSCqqAsBdK7",
+        "name": "4:5",
+        "x": -844.5,
+        "y": -780,
+        "width": 1080,
+        "height": 1350,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 4580,
+        "fillColor": "#e3e3e3",
+        "background": true,
+        "layers": [
+          {
+            "type": "maskGrp",
+            "id": "eHmjbXbdS0AFBOLqlqWF2",
+            "name": "Card 01",
+            "x": 92,
+            "y": 111,
+            "width": 1,
+            "height": 1,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": true,
+            "layers": [
+              {
+                "type": "rect",
+                "id": "QwdKZl_h62ycqIQ4tUCv0",
+                "name": "Mask",
+                "x": 262,
+                "y": 327,
+                "width": 388,
+                "height": 486,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#b3b3b3",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "rect",
+                "id": "9y3m2mebJyQ12Me9IbDNL",
+                "name": "Background color",
+                "x": 262,
+                "y": 327,
+                "width": 388,
+                "height": 486,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#034aff",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              }
+            ]
+          },
+          {
+            "type": "maskGrp",
+            "id": "_0Mq1denmOaKX2gW8kzYJ",
+            "name": "Card 02",
+            "x": 410,
+            "y": 517,
+            "width": 1,
+            "height": 1,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": true,
+            "layers": [
+              {
+                "type": "rect",
+                "id": "wziH9d5QwyTj8Sd6GUa9R",
+                "name": "Mask",
+                "x": 262,
+                "y": 327,
+                "width": 388,
+                "height": 486,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#b3b3b3",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "rect",
+                "id": "jdkv63NlsxU5Kxp-FfHmJ",
+                "name": "Background color",
+                "x": 262,
+                "y": 327,
+                "width": 388,
+                "height": 486,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#03FFF2",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "image",
+                "id": "kIbfnHeSOFh97k-1JHNQA",
+                "name": "Visual",
+                "x": 262,
+                "y": 327,
+                "width": 388,
+                "height": 486,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://snackthis-userdata.s3-eu-west-1.amazonaws.com/85f91646-6cda-4dd2-8caa-f91ecaab79de.png",
+                "mediaName": "image"
+              }
+            ]
+          },
+          {
+            "type": "maskGrp",
+            "id": "NYCAxa_jzrw51nDkbUW-D",
+            "name": "Card 03",
+            "x": 410,
+            "y": 517,
+            "width": 1,
+            "height": 1,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": true,
+            "layers": [
+              {
+                "type": "rect",
+                "id": "KqkmLsW67yVY6qKzlEWrm",
+                "name": "Mask",
+                "x": 262,
+                "y": 327,
+                "width": 388,
+                "height": 486,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#b3b3b3",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "rect",
+                "id": "RshDEgiV_Tb5Wej-DZ66H",
+                "name": "Background color",
+                "x": 262,
+                "y": 327,
+                "width": 388,
+                "height": 486,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#7FFF1A",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "image",
+                "id": "tqlorgo2olt2KR94w3qIa",
+                "name": "Visual",
+                "x": 228,
+                "y": 267,
+                "width": 456,
+                "height": 606,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://userdata.jitter.video/DQJ-LXeSBuPhcolEzbbCQ.png",
+                "mediaName": "Frame 1197134573.png"
+              }
+            ]
+          },
+          {
+            "type": "maskGrp",
+            "id": "xBUzI0oYBriPzeU3m2V7R",
+            "name": "Card 04",
+            "x": 410,
+            "y": 517,
+            "width": 1,
+            "height": 1,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": true,
+            "layers": [
+              {
+                "type": "rect",
+                "id": "0VXbLY2QxHfRijQlHSpAg",
+                "name": "Mask",
+                "x": 262,
+                "y": 327,
+                "width": 388,
+                "height": 486,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#b3b3b3",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "rect",
+                "id": "yb4y9RqJ4jcUr4VeE7h-X",
+                "name": "Background color",
+                "x": 262,
+                "y": 327,
+                "width": 388,
+                "height": 486,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#03FFF2",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "image",
+                "id": "EECFo0OFwqyrxoTl84K70",
+                "name": "Visual",
+                "x": 262,
+                "y": 312,
+                "width": 388,
+                "height": 516.24,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://userdata.jitter.video/boBBL-MG9XPcot5Bt6UzB.png",
+                "mediaName": "clembtc_abstract_fashion_portrait_person_wearing_an_oversized_be05896e-967b-4263-8eec-5af6d4e26412_2 1.png"
+              }
+            ]
+          },
+          {
+            "type": "maskGrp",
+            "id": "isbtC8-fVCaRuaPuEIsIx",
+            "name": "Card 05",
+            "x": 410,
+            "y": 517,
+            "width": 1,
+            "height": 1,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": true,
+            "layers": [
+              {
+                "type": "rect",
+                "id": "9htrRIDdvv40yqDSEN9zk",
+                "name": "Mask",
+                "x": 262,
+                "y": 327,
+                "width": 388,
+                "height": 486,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#b3b3b3",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "rect",
+                "id": "zGNjIdSnwX8caiNW6ylu3",
+                "name": "Background color",
+                "x": 262,
+                "y": 327,
+                "width": 388,
+                "height": 486,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#03FFF2",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "image",
+                "id": "c985lm8wQkt18OOEomNIR",
+                "name": "Visual",
+                "x": 262,
+                "y": 311.87994384765625,
+                "width": 388,
+                "height": 516.24,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://userdata.jitter.video/KcJXkY_o52XRGugqT3Bpf.png",
+                "mediaName": "Frame 1197134523.png"
+              }
+            ]
+          },
+          {
+            "type": "maskGrp",
+            "id": "oGJU7aXFbS-qFfZetcp5k",
+            "name": "Card 06",
+            "x": 410,
+            "y": 517,
+            "width": 1,
+            "height": 1,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": true,
+            "layers": [
+              {
+                "type": "rect",
+                "id": "4316FgOFewR3WZVEeqNrT",
+                "name": "Mask",
+                "x": 262,
+                "y": 327,
+                "width": 388,
+                "height": 486,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#b3b3b3",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "rect",
+                "id": "AjWGzFDqRgFt8nsjlUXli",
+                "name": "Background color",
+                "x": 262,
+                "y": 327,
+                "width": 388,
+                "height": 486,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#FFF5AD",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "image",
+                "id": "ProJLM2fI6-qzjojR53YL",
+                "name": "Visual",
+                "x": 163,
+                "y": 312,
+                "width": 832,
+                "height": 516,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://userdata.jitter.video/Y9LbhnwbqUoLLK4zqQ5ab.png",
+                "mediaName": "Gigapixel_Clipboard_6d8ee3bc99dc3e4e4efb551d54a9cf36d79b3b2f68afd670094117c734438dcd3-gigapixel-standard v2-2x.png"
+              }
+            ]
+          },
+          {
+            "type": "maskGrp",
+            "id": "Ihy_zCAZx_Gw-mLUrynqF",
+            "name": "Card 07",
+            "x": 410,
+            "y": 517,
+            "width": 1,
+            "height": 1,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": true,
+            "layers": [
+              {
+                "type": "rect",
+                "id": "PmJuPrJIhD1_0hMiEejl-",
+                "name": "Mask",
+                "x": 262,
+                "y": 327,
+                "width": 388,
+                "height": 486,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#b3b3b3",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "rect",
+                "id": "-f3KLPCvLlEcnenr5NMfd",
+                "name": "Background color",
+                "x": 262,
+                "y": 327,
+                "width": 388,
+                "height": 486,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#03FFF2",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "image",
+                "id": "AVg2tzwZQP8zwuyRe5A3G",
+                "name": "Visual",
+                "x": 262,
+                "y": 311.87994384765625,
+                "width": 388,
+                "height": 516.24,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://userdata.jitter.video/j_z5ISCLJbE9zdIet8M_B.png",
+                "mediaName": "Frame 1197134519.png"
+              }
+            ]
+          },
+          {
+            "type": "maskGrp",
+            "id": "ghKHribYV98pQEKRIGbdV",
+            "name": "Card 08",
+            "x": 410,
+            "y": 517,
+            "width": 1,
+            "height": 1,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": true,
+            "layers": [
+              {
+                "type": "rect",
+                "id": "Wz82C1GmpBtCB8iqOC9TD",
+                "name": "Mask",
+                "x": 262,
+                "y": 327,
+                "width": 388,
+                "height": 486,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#b3b3b3",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "rect",
+                "id": "zRyZKVJhDh94p1Jde3AyK",
+                "name": "Background color",
+                "x": 262,
+                "y": 327,
+                "width": 388,
+                "height": 486,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#0059dd",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "image",
+                "id": "2k9ZO8mHZtJOWRGW3mhOT",
+                "name": "Visual",
+                "x": 262,
+                "y": 311.87994384765625,
+                "width": 388,
+                "height": 516.24,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://userdata.jitter.video/ht6lKyJbCEVBc-Tg7Hblq.jpg",
+                "mediaName": "original_a3edac851aa595329e58b0e0ed3e9d02.jpg"
+              }
+            ]
+          },
+          {
+            "type": "layerGrp",
+            "id": "P6LAz2BXMUSg1qKz6isp2",
+            "name": "Top lock-up",
+            "x": 75,
+            "y": 80,
+            "width": 931,
+            "height": 47,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "shape",
+                "id": "d-iJrhB1KFmNeNwTONzZw",
+                "name": "Vector 3",
+                "x": 0,
+                "y": 44.5,
+                "width": 930.5,
+                "height": 0,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#000000",
+                "background": false,
+                "path": "M 0 0 L 930.5 0",
+                "strokeColor": "#ffffff",
+                "strokeWeight": 2,
+                "strokeEnabled": true
+              },
+              {
+                "type": "text",
+                "id": "ADiv33CyDSe-Q7FUIQvYY",
+                "name": "jitter.video",
+                "x": -1,
+                "y": 3,
+                "width": 124,
+                "height": 23,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "jitter.video",
+                "color": "#ffffff",
+                "fontSize": 25,
+                "font": {
+                  "type": "googlefont",
+                  "name": "TWK Lausanne 400 Bold",
+                  "weight": 400,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 111.09999084472658,
+                "letterSpacing": -1,
+                "textAlign": "left",
+                "verticalAlign": "top",
+                "case": "normal"
+              },
+              {
+                "type": "text",
+                "id": "CQ8oft9sqQtvvj7zWk9xN",
+                "name": "Blend modes",
+                "x": 721,
+                "y": 2,
+                "width": 210,
+                "height": 47,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "Blend modes",
+                "color": "#ffffff",
+                "fontSize": 25,
+                "font": {
+                  "type": "googlefont",
+                  "name": "TWK Lausanne 400 Bold",
+                  "weight": 400,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 111.09999084472658,
+                "letterSpacing": -1,
+                "textAlign": "right",
+                "verticalAlign": "top",
+                "case": "normal"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "hide",
+            "id": "L288LRr2OQBR0P7vjNmTg",
+            "targetId": "eHmjbXbdS0AFBOLqlqWF2",
+            "startTime": 1032
+          },
+          {
+            "type": "scale",
+            "id": "GVQ46WJktRGfpyKJ9XxH1",
+            "targetId": "eHmjbXbdS0AFBOLqlqWF2",
+            "startTime": 0,
+            "endTime": 952,
+            "easing": "natural",
+            "fromValue": 1,
+            "toValue": 0
+          },
+          {
+            "type": "move",
+            "id": "DtSrrPyJeMQqsr0aZhPF_",
+            "targetId": "eHmjbXbdS0AFBOLqlqWF2",
+            "startTime": 0,
+            "endTime": 952,
+            "easing": "natural",
+            "fromValue": {
+              "x": -326,
+              "y": -412
+            },
+            "toValue": {
+              "x": -548,
+              "y": -681
+            }
+          },
+          {
+            "type": "scale",
+            "id": "cMagv5qJVLNXIopMCK7jP",
+            "targetId": "_0Mq1denmOaKX2gW8kzYJ",
+            "startTime": 0,
+            "endTime": 952,
+            "easing": "natural",
+            "fromValue": 1.8,
+            "toValue": 1
+          },
+          {
+            "type": "move",
+            "id": "mML-cnds_WAe7eC0p22jf",
+            "targetId": "_0Mq1denmOaKX2gW8kzYJ",
+            "startTime": 0,
+            "endTime": 952,
+            "easing": "natural",
+            "fromValue": {
+              "x": -326,
+              "y": -412
+            },
+            "toValue": {
+              "x": -644,
+              "y": -814
+            }
+          },
+          {
+            "type": "color",
+            "id": "I7V_YvZ6fdAXChM7Vh_3n",
+            "targetId": "jdkv63NlsxU5Kxp-FfHmJ",
+            "startTime": 0,
+            "endTime": 952,
+            "easing": "none",
+            "colorSpace": "rgb",
+            "toValue": "#42ff60"
+          },
+          {
+            "type": "hide",
+            "id": "n--sPPSrquC_2TDL4olsd",
+            "targetId": "_0Mq1denmOaKX2gW8kzYJ",
+            "startTime": 1858
+          },
+          {
+            "type": "scale",
+            "id": "V9kJGT5IE8M-aoJePePet",
+            "targetId": "_0Mq1denmOaKX2gW8kzYJ",
+            "startTime": 906,
+            "endTime": 1858,
+            "easing": "natural",
+            "toValue": 0
+          },
+          {
+            "type": "move",
+            "id": "r0FOMLZHaBaqUUvYMKAqj",
+            "targetId": "_0Mq1denmOaKX2gW8kzYJ",
+            "startTime": 906,
+            "endTime": 1858,
+            "easing": "natural",
+            "toValue": {
+              "x": -222,
+              "y": -273
+            }
+          },
+          {
+            "type": "move",
+            "id": "pLkwORg1E0U4_YZT7oTJP",
+            "targetId": "NYCAxa_jzrw51nDkbUW-D",
+            "startTime": 0,
+            "endTime": 952,
+            "easing": "natural",
+            "toValue": {
+              "x": -326,
+              "y": -412
+            }
+          },
+          {
+            "type": "scale",
+            "id": "q0PUHCPbTQggJK0TPfad2",
+            "targetId": "NYCAxa_jzrw51nDkbUW-D",
+            "startTime": 462,
+            "endTime": 1280,
+            "easing": "natural",
+            "toValue": 1.8
+          },
+          {
+            "type": "scale",
+            "id": "XQ81goThDdK-rvCkg58HP",
+            "targetId": "tqlorgo2olt2KR94w3qIa",
+            "startTime": 462,
+            "endTime": 1280,
+            "easing": "natural",
+            "fromValue": 0.9,
+            "toValue": 1.2000000000000002
+          },
+          {
+            "type": "opacity",
+            "id": "ar7il_YMYLFqLE7YqGtpg",
+            "targetId": "tqlorgo2olt2KR94w3qIa",
+            "startTime": 309,
+            "endTime": 642,
+            "easing": "natural",
+            "fromValue": 0,
+            "toValue": 100
+          },
+          {
+            "type": "opacity",
+            "id": "KrtSNTTiwzM1w4fPmORal",
+            "targetId": "tqlorgo2olt2KR94w3qIa",
+            "startTime": 1217,
+            "endTime": 1490,
+            "easing": "natural",
+            "fromValue": 100,
+            "toValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "1pLD_JWRRj1rCVPO5KZ4E",
+            "targetId": "NYCAxa_jzrw51nDkbUW-D",
+            "startTime": 906,
+            "endTime": 1858,
+            "easing": "natural",
+            "toValue": 1
+          },
+          {
+            "type": "move",
+            "id": "02EYMst7sC_eE-VVR-8t4",
+            "targetId": "NYCAxa_jzrw51nDkbUW-D",
+            "startTime": 906,
+            "endTime": 1858,
+            "easing": "natural",
+            "toValue": {
+              "x": -326,
+              "y": -412
+            }
+          },
+          {
+            "type": "color",
+            "id": "dJm0Nr7krn10c-KduTTyg",
+            "targetId": "RshDEgiV_Tb5Wej-DZ66H",
+            "startTime": 1215,
+            "endTime": 1490,
+            "easing": "none",
+            "colorSpace": "rgb",
+            "fromValue": "#be3900",
+            "toValue": "#eb00ff"
+          },
+          {
+            "type": "hide",
+            "id": "jfJvW5O31N3PDggfEy9un",
+            "targetId": "NYCAxa_jzrw51nDkbUW-D",
+            "startTime": 2374
+          },
+          {
+            "type": "scale",
+            "id": "zlL_Ddp3Gpwo2MIyy6AOR",
+            "targetId": "NYCAxa_jzrw51nDkbUW-D",
+            "startTime": 1812,
+            "endTime": 2764,
+            "easing": "natural",
+            "toValue": 0.2
+          },
+          {
+            "type": "move",
+            "id": "NGfXDSyRHCkgdJ-r6jSTS",
+            "targetId": "NYCAxa_jzrw51nDkbUW-D",
+            "startTime": 1812,
+            "endTime": 2764,
+            "easing": "natural",
+            "toValue": {
+              "x": -233,
+              "y": -291
+            }
+          },
+          {
+            "type": "show",
+            "id": "xHJ_uWf0OhZb89K6b8uYW",
+            "targetId": "xBUzI0oYBriPzeU3m2V7R",
+            "startTime": 0
+          },
+          {
+            "type": "move",
+            "id": "oA2Kz_YwzC2VTC534xZst",
+            "targetId": "xBUzI0oYBriPzeU3m2V7R",
+            "startTime": 0,
+            "endTime": 952,
+            "easing": "natural",
+            "fromValue": {
+              "x": 253,
+              "y": 312
+            },
+            "toValue": {
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "type": "scale",
+            "id": "ox9WJJpBX4BaUexw4ClAV",
+            "targetId": "xBUzI0oYBriPzeU3m2V7R",
+            "startTime": 0,
+            "endTime": 952,
+            "easing": "natural",
+            "fromValue": 0.2,
+            "toValue": 1
+          },
+          {
+            "type": "move",
+            "id": "JmpUsE9oLyAFn-ScDE7pu",
+            "targetId": "xBUzI0oYBriPzeU3m2V7R",
+            "startTime": 906,
+            "endTime": 1858,
+            "easing": "natural",
+            "toValue": {
+              "x": -326,
+              "y": -412
+            }
+          },
+          {
+            "type": "scale",
+            "id": "VJj7WfiA6aooyRkg8M4Xe",
+            "targetId": "xBUzI0oYBriPzeU3m2V7R",
+            "startTime": 1355,
+            "endTime": 2173,
+            "easing": "natural",
+            "toValue": 1.8
+          },
+          {
+            "type": "opacity",
+            "id": "NBgloL2H7Z65f2jChNa7_",
+            "targetId": "EECFo0OFwqyrxoTl84K70",
+            "startTime": 1215,
+            "endTime": 1548,
+            "easing": "natural",
+            "fromValue": 0,
+            "toValue": 100
+          },
+          {
+            "type": "scale",
+            "id": "5QYJp2ttcIgsMrIMdtBVK",
+            "targetId": "EECFo0OFwqyrxoTl84K70",
+            "startTime": 1355,
+            "endTime": 2173,
+            "easing": "natural",
+            "fromValue": 1,
+            "toValue": 1.0999999999999999
+          },
+          {
+            "type": "opacity",
+            "id": "pVscIrY6zWRKuvzPLplSN",
+            "targetId": "EECFo0OFwqyrxoTl84K70",
+            "startTime": 2123,
+            "endTime": 2396,
+            "easing": "natural",
+            "fromValue": 100,
+            "toValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "whvekbpqiyg1hmmuXgEYV",
+            "targetId": "xBUzI0oYBriPzeU3m2V7R",
+            "startTime": 1812,
+            "endTime": 2764,
+            "easing": "natural",
+            "toValue": 1
+          },
+          {
+            "type": "move",
+            "id": "ldwey5ES8w-x8jBox-UXj",
+            "targetId": "xBUzI0oYBriPzeU3m2V7R",
+            "startTime": 1812,
+            "endTime": 2764,
+            "easing": "natural",
+            "toValue": {
+              "x": -326,
+              "y": -412
+            }
+          },
+          {
+            "type": "color",
+            "id": "SYHDgdWerGaZ-sg_yAQKq",
+            "targetId": "yb4y9RqJ4jcUr4VeE7h-X",
+            "startTime": 2123,
+            "endTime": 2396,
+            "easing": "none",
+            "colorSpace": "rgb",
+            "toValue": "#001aff"
+          },
+          {
+            "type": "hide",
+            "id": "K1EHQnQDRR7JbD0BRMQlz",
+            "targetId": "xBUzI0oYBriPzeU3m2V7R",
+            "startTime": 3280
+          },
+          {
+            "type": "scale",
+            "id": "L_fwKZf9PlV8XPFaj7hVP",
+            "targetId": "xBUzI0oYBriPzeU3m2V7R",
+            "startTime": 2718,
+            "endTime": 3670,
+            "easing": "natural",
+            "toValue": 0.2
+          },
+          {
+            "type": "move",
+            "id": "czsw4SNXgc3ZZJOLr4VbE",
+            "targetId": "xBUzI0oYBriPzeU3m2V7R",
+            "startTime": 2718,
+            "endTime": 3670,
+            "easing": "natural",
+            "toValue": {
+              "x": -233,
+              "y": -291
+            }
+          },
+          {
+            "type": "show",
+            "id": "HUfUAxSUif7NfSZv8Ucan",
+            "targetId": "isbtC8-fVCaRuaPuEIsIx",
+            "startTime": 1370
+          },
+          {
+            "type": "move",
+            "id": "ylsrTBZ3G5Vr8jpwLKPYX",
+            "targetId": "isbtC8-fVCaRuaPuEIsIx",
+            "startTime": 906,
+            "endTime": 1858,
+            "easing": "natural",
+            "fromValue": {
+              "x": 214,
+              "y": 263
+            },
+            "toValue": {
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "type": "scale",
+            "id": "GtP2A0FUdxuIvj0gAKSD2",
+            "targetId": "isbtC8-fVCaRuaPuEIsIx",
+            "startTime": 906,
+            "endTime": 1858,
+            "easing": "natural",
+            "fromValue": 0.19999999999999998,
+            "toValue": 1
+          },
+          {
+            "type": "move",
+            "id": "K4JVSxKUjMBBp445x5fGF",
+            "targetId": "isbtC8-fVCaRuaPuEIsIx",
+            "startTime": 1812,
+            "endTime": 2764,
+            "easing": "natural",
+            "toValue": {
+              "x": -326,
+              "y": -412
+            }
+          },
+          {
+            "type": "scale",
+            "id": "Hu0iMNNSBvYAuZ9JRzckh",
+            "targetId": "isbtC8-fVCaRuaPuEIsIx",
+            "startTime": 2284,
+            "endTime": 3102,
+            "easing": "natural",
+            "toValue": 1.8
+          },
+          {
+            "type": "opacity",
+            "id": "2i-KggI-Qvhe56YMC5GPV",
+            "targetId": "c985lm8wQkt18OOEomNIR",
+            "startTime": 2121,
+            "endTime": 2454,
+            "easing": "natural",
+            "fromValue": 0,
+            "toValue": 100
+          },
+          {
+            "type": "scale",
+            "id": "Lc_WRN4SGDniajnBKgVV9",
+            "targetId": "c985lm8wQkt18OOEomNIR",
+            "startTime": 2284,
+            "endTime": 3102,
+            "easing": "natural",
+            "fromValue": 0.9,
+            "toValue": 1.2000000000000002
+          },
+          {
+            "type": "opacity",
+            "id": "VCR_NB-OAa3pxijS5RqQy",
+            "targetId": "c985lm8wQkt18OOEomNIR",
+            "startTime": 3029,
+            "endTime": 3302,
+            "easing": "natural",
+            "fromValue": 100,
+            "toValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "eixpCvPXl9inzLaWuCRZw",
+            "targetId": "isbtC8-fVCaRuaPuEIsIx",
+            "startTime": 2718,
+            "endTime": 3670,
+            "easing": "natural",
+            "toValue": 1
+          },
+          {
+            "type": "move",
+            "id": "FTmhAt19S-KjUe6-QmDLq",
+            "targetId": "isbtC8-fVCaRuaPuEIsIx",
+            "startTime": 2718,
+            "endTime": 3670,
+            "easing": "natural",
+            "toValue": {
+              "x": -326,
+              "y": -412
+            }
+          },
+          {
+            "type": "color",
+            "id": "IGySe_lAQ3B6FPjqA0xYE",
+            "targetId": "zGNjIdSnwX8caiNW6ylu3",
+            "startTime": 3029,
+            "endTime": 3302,
+            "easing": "none",
+            "colorSpace": "rgb",
+            "fromValue": "#266400",
+            "toValue": "#eeff87"
+          },
+          {
+            "type": "hide",
+            "id": "GfQhwcWkmdzRpjJfet6Tm",
+            "targetId": "isbtC8-fVCaRuaPuEIsIx",
+            "startTime": 4186
+          },
+          {
+            "type": "scale",
+            "id": "VpPVmrL-d0mqJdLkRSeZo",
+            "targetId": "isbtC8-fVCaRuaPuEIsIx",
+            "startTime": 3624,
+            "endTime": 4576,
+            "easing": "natural",
+            "toValue": 0.2
+          },
+          {
+            "type": "move",
+            "id": "GHCs3bPQQYoRIsAyYcM4F",
+            "targetId": "isbtC8-fVCaRuaPuEIsIx",
+            "startTime": 3624,
+            "endTime": 4576,
+            "easing": "natural",
+            "toValue": {
+              "x": -233,
+              "y": -291
+            }
+          },
+          {
+            "type": "show",
+            "id": "4gB9_YqnILCln2FiGksy-",
+            "targetId": "oGJU7aXFbS-qFfZetcp5k",
+            "startTime": 2276
+          },
+          {
+            "type": "move",
+            "id": "FXdtBa-W8b8OauROaDcyy",
+            "targetId": "oGJU7aXFbS-qFfZetcp5k",
+            "startTime": 1812,
+            "endTime": 2764,
+            "easing": "natural",
+            "fromValue": {
+              "x": 214,
+              "y": 263
+            },
+            "toValue": {
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "type": "scale",
+            "id": "WvQlsHpUpgK880IU96xxl",
+            "targetId": "oGJU7aXFbS-qFfZetcp5k",
+            "startTime": 1812,
+            "endTime": 2764,
+            "easing": "natural",
+            "fromValue": 0.19999999999999998,
+            "toValue": 1
+          },
+          {
+            "type": "move",
+            "id": "BvgOpp0lQQxhL-154A9PB",
+            "targetId": "oGJU7aXFbS-qFfZetcp5k",
+            "startTime": 2718,
+            "endTime": 3670,
+            "easing": "natural",
+            "toValue": {
+              "x": -326,
+              "y": -412
+            }
+          },
+          {
+            "type": "scale",
+            "id": "uS5xkd6e3hekALM0PJw_j",
+            "targetId": "oGJU7aXFbS-qFfZetcp5k",
+            "startTime": 3200,
+            "endTime": 4018,
+            "easing": "natural",
+            "toValue": 1.8
+          },
+          {
+            "type": "opacity",
+            "id": "Ys7Ou7gXNB-CzyfVBze36",
+            "targetId": "ProJLM2fI6-qzjojR53YL",
+            "startTime": 3027,
+            "endTime": 3360,
+            "easing": "natural",
+            "fromValue": 0,
+            "toValue": 100
+          },
+          {
+            "type": "scale",
+            "id": "U0CgXQYqEs8hyTMb5er5n",
+            "targetId": "ProJLM2fI6-qzjojR53YL",
+            "startTime": 3200,
+            "endTime": 4018,
+            "easing": "natural",
+            "fromValue": 0.9,
+            "toValue": 1.2000000000000002
+          },
+          {
+            "type": "opacity",
+            "id": "dXA2jB8GapewoIe658ba6",
+            "targetId": "ProJLM2fI6-qzjojR53YL",
+            "startTime": 3935,
+            "endTime": 4208,
+            "easing": "natural",
+            "fromValue": 100,
+            "toValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "3NYgKzPd3ScZNY_vxTo3S",
+            "targetId": "oGJU7aXFbS-qFfZetcp5k",
+            "startTime": 3624,
+            "endTime": 4576,
+            "easing": "natural",
+            "toValue": 1
+          },
+          {
+            "type": "move",
+            "id": "R5PQO3AEU0fl3F_AK6ePP",
+            "targetId": "oGJU7aXFbS-qFfZetcp5k",
+            "startTime": 3624,
+            "endTime": 4576,
+            "easing": "natural",
+            "toValue": {
+              "x": -326,
+              "y": -412
+            }
+          },
+          {
+            "type": "color",
+            "id": "q15qTrdDvdhrQbSoyQhrU",
+            "targetId": "AjWGzFDqRgFt8nsjlUXli",
+            "startTime": 3935,
+            "endTime": 4208,
+            "easing": "none",
+            "colorSpace": "rgb",
+            "toValue": "#FF6D03"
+          },
+          {
+            "type": "show",
+            "id": "k5ICMrwavSJeCCXH9lJNI",
+            "targetId": "Ihy_zCAZx_Gw-mLUrynqF",
+            "startTime": 3182
+          },
+          {
+            "type": "move",
+            "id": "yrBwdnqNIf7X0_G40tZSV",
+            "targetId": "Ihy_zCAZx_Gw-mLUrynqF",
+            "startTime": 2718,
+            "endTime": 3670,
+            "easing": "natural",
+            "fromValue": {
+              "x": 214,
+              "y": 263
+            },
+            "toValue": {
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "type": "scale",
+            "id": "sgLWq4vGldidy5fGKcWwv",
+            "targetId": "Ihy_zCAZx_Gw-mLUrynqF",
+            "startTime": 2718,
+            "endTime": 3670,
+            "easing": "natural",
+            "fromValue": 0.19999999999999998,
+            "toValue": 1
+          },
+          {
+            "type": "move",
+            "id": "YnEBOVKxkaliaCQ-uTHOk",
+            "targetId": "Ihy_zCAZx_Gw-mLUrynqF",
+            "startTime": 3624,
+            "endTime": 4576,
+            "easing": "natural",
+            "toValue": {
+              "x": -326,
+              "y": -412
+            }
+          },
+          {
+            "type": "scale",
+            "id": "XTekrq8waUlPRsZcaQ2Dw",
+            "targetId": "Ihy_zCAZx_Gw-mLUrynqF",
+            "startTime": 4106,
+            "endTime": 4924,
+            "easing": "natural",
+            "toValue": 1.8
+          },
+          {
+            "type": "opacity",
+            "id": "Bb_XBdOCAwB73rsEiXbsM",
+            "targetId": "AVg2tzwZQP8zwuyRe5A3G",
+            "startTime": 3933,
+            "endTime": 4266,
+            "easing": "natural",
+            "fromValue": 0,
+            "toValue": 100
+          },
+          {
+            "type": "scale",
+            "id": "rbtwtOMCROzSepICpknB1",
+            "targetId": "AVg2tzwZQP8zwuyRe5A3G",
+            "startTime": 4106,
+            "endTime": 4924,
+            "easing": "natural",
+            "fromValue": 0.9,
+            "toValue": 1.2000000000000002
+          },
+          {
+            "type": "opacity",
+            "id": "YJkvxebaZrDCQkgpkWync",
+            "targetId": "AVg2tzwZQP8zwuyRe5A3G",
+            "startTime": 4841,
+            "endTime": 5114,
+            "easing": "natural",
+            "fromValue": 100
+          },
+          {
+            "type": "color",
+            "id": "GmK3V1UtvAHP-EsAOUzWm",
+            "targetId": "-f3KLPCvLlEcnenr5NMfd",
+            "startTime": 4530,
+            "endTime": 5482,
+            "easing": "none",
+            "colorSpace": "rgb",
+            "toValue": "#ff9042"
+          },
+          {
+            "type": "show",
+            "id": "4eLlBv9U1x98u4CbhYUmH",
+            "targetId": "ghKHribYV98pQEKRIGbdV",
+            "startTime": 4088
+          },
+          {
+            "type": "move",
+            "id": "5XCQJOgajmoD2XMdYPk5r",
+            "targetId": "ghKHribYV98pQEKRIGbdV",
+            "startTime": 3624,
+            "endTime": 4576,
+            "easing": "natural",
+            "fromValue": {
+              "x": 214,
+              "y": 263
+            },
+            "toValue": {
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "type": "scale",
+            "id": "s0aWeR8EO7pj-gOxus2If",
+            "targetId": "ghKHribYV98pQEKRIGbdV",
+            "startTime": 3624,
+            "endTime": 4576,
+            "easing": "natural",
+            "fromValue": 0.19999999999999998,
+            "toValue": 1
+          },
+          {
+            "type": "opacity",
+            "id": "K7nke6FmfdWY02QrmAIbO",
+            "targetId": "2k9ZO8mHZtJOWRGW3mhOT",
+            "startTime": 4839,
+            "endTime": 5172,
+            "easing": "natural",
+            "fromValue": 0,
+            "toValue": 0
+          }
+        ]
+      }
+    ]
+  }
+}

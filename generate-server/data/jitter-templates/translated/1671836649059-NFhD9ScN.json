@@ -1,0 +1,283 @@
+{
+  "name": "1671836649059-NFhD9ScN",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "45:1502",
+        "name": "Frame 20",
+        "x": -691,
+        "y": 13320,
+        "width": 1920,
+        "height": 1080,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 4000,
+        "fillColor": "#506c53",
+        "background": true,
+        "layers": [
+          {
+            "type": "rect",
+            "id": "EidrJ2nd9opxcfjAcz_os",
+            "name": "Frame",
+            "x": 460,
+            "y": 220,
+            "width": 1000,
+            "height": 640,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "fillColor": "#000000",
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50
+          },
+          {
+            "type": "maskGrp",
+            "id": "F5AH9IlGrIMlPzi2YZkrP",
+            "name": "Masked picture",
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 1,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": true,
+            "layers": [
+              {
+                "type": "rect",
+                "id": "P0hVEmsl9DxlWIliPGRKO",
+                "name": "Mask",
+                "x": 500,
+                "y": 260,
+                "width": 920,
+                "height": 560,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#b3b3b3",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "image",
+                "id": "45:1504",
+                "name": "Picture",
+                "x": 500,
+                "y": 260,
+                "width": 920,
+                "height": 560,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://snackthis-userdata.s3-eu-west-1.amazonaws.com/6f4851b5-fb4a-487a-aa97-ab078fd79235.png",
+                "mediaName": "Picture.png"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "id": "45:1526",
+            "name": "www.acme.com",
+            "x": 381,
+            "y": 459,
+            "width": 1167,
+            "height": 160,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "www. acme. com",
+            "color": "#ffffff",
+            "fontSize": 160,
+            "font": {
+              "type": "googlefont",
+              "name": "DM Sans",
+              "weight": 700,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 100,
+            "letterSpacing": -4,
+            "textAlign": "center",
+            "verticalAlign": "center",
+            "case": "normal"
+          }
+        ],
+        "operations": [
+          {
+            "type": "fadeIn",
+            "id": "DA2GWG7y05ZJyaxKYgdRm",
+            "targetId": "F5AH9IlGrIMlPzi2YZkrP",
+            "startTime": 0,
+            "endTime": 600,
+            "easing": "none"
+          },
+          {
+            "type": "resize",
+            "id": "dXpLDsQ5SKpJmqYqeJAXw",
+            "targetId": "EidrJ2nd9opxcfjAcz_os",
+            "startTime": 0,
+            "endTime": 1400,
+            "easing": "natural",
+            "anchor": "center",
+            "fromValue": {
+              "height": 840,
+              "width": 1200
+            }
+          },
+          {
+            "type": "resize",
+            "id": "K-oVgn1sr-M3ydvZ3Hmw7",
+            "targetId": "P0hVEmsl9DxlWIliPGRKO",
+            "startTime": 0,
+            "endTime": 1400,
+            "easing": "natural",
+            "anchor": "center",
+            "fromValue": {
+              "height": 840,
+              "width": 1200
+            }
+          },
+          {
+            "type": "resize",
+            "id": "kkmulBQALu3G9oXw30InL",
+            "targetId": "45:1504",
+            "startTime": 0,
+            "endTime": 1400,
+            "easing": "natural",
+            "anchor": "center",
+            "fromValue": {
+              "height": 940,
+              "width": 1300
+            },
+            "toValue": {
+              "height": 660,
+              "width": 1020
+            }
+          },
+          {
+            "type": "textIn",
+            "id": "tY1DnhRhPd_zXU9BhNsWe",
+            "targetId": "45:1526",
+            "startTime": 500,
+            "easing": "none",
+            "effect": "slideAndMask",
+            "split": "words",
+            "order": "forward",
+            "offset": 150,
+            "nodeDuration": 600,
+            "nodeEasing": "slowDown",
+            "travelDistance": 100,
+            "slideDirection": "up"
+          },
+          {
+            "type": "scale",
+            "id": "ow7AUUFp6lHyEVE9dJJCe",
+            "targetId": "45:1504",
+            "startTime": 0,
+            "endTime": 3800,
+            "easing": "slowDown",
+            "fromValue": 1.2
+          },
+          {
+            "type": "move",
+            "id": "og-newp5izkhhOOt7Hx15",
+            "targetId": "F5AH9IlGrIMlPzi2YZkrP",
+            "startTime": 4110,
+            "endTime": 5610,
+            "easing": "accelerate",
+            "toValue": {
+              "x": 1840,
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "siYllSwWjUWxtB8FvO6Sr",
+            "targetId": "EidrJ2nd9opxcfjAcz_os",
+            "startTime": 4110,
+            "endTime": 5610,
+            "easing": "accelerate",
+            "toValue": {
+              "x": 1840,
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "RhR0t11zCBQ0iGGHxrJup",
+            "targetId": "45:1526",
+            "startTime": 4110,
+            "endTime": 5610,
+            "easing": "accelerate",
+            "toValue": {
+              "x": 1600,
+              "y": 0
+            }
+          },
+          {
+            "type": "textOut",
+            "id": "24A3iSlA0Of_Cavj0AMrd",
+            "targetId": "45:1526",
+            "startTime": 2800,
+            "easing": "none",
+            "effect": "slideAndMaskOut",
+            "split": "words",
+            "order": "forward",
+            "offset": 100,
+            "nodeDuration": 800,
+            "nodeEasing": "accelerate",
+            "travelDistance": 100,
+            "slideDirection": "down"
+          },
+          {
+            "type": "resize",
+            "id": "wmJeO1bWkJgRTcj3QOdsb",
+            "targetId": "P0hVEmsl9DxlWIliPGRKO",
+            "startTime": 3200,
+            "endTime": 3800,
+            "easing": "natural",
+            "anchor": "se",
+            "toValue": {
+              "height": 0,
+              "width": 0
+            }
+          },
+          {
+            "type": "resize",
+            "id": "4oVubN58cyEWI0IzrMoT9",
+            "targetId": "EidrJ2nd9opxcfjAcz_os",
+            "startTime": 3200,
+            "endTime": 3800,
+            "easing": "natural",
+            "anchor": "center",
+            "toValue": {
+              "height": 840,
+              "width": 1200
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

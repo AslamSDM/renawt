@@ -1,0 +1,114 @@
+{
+  "name": "Apple Icon",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "5:108",
+        "name": "Apple",
+        "x": 2360,
+        "y": -977,
+        "width": 400,
+        "height": 400,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 3000,
+        "fillColor": "#ffffff",
+        "background": false,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "X8EKOLsr",
+            "name": "Icon",
+            "x": 80,
+            "y": 80,
+            "width": 240,
+            "height": 240,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "ellipse",
+                "id": "5:109",
+                "name": "Ellipse",
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 240,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#1D1D1F",
+                "background": true,
+                "startAngle": 0,
+                "sweep": 100,
+                "strokeEnabled": false
+              },
+              {
+                "type": "image",
+                "id": "yoVOJRT5",
+                "x": 60,
+                "y": 60,
+                "width": 120,
+                "height": 120,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "userAsset:660d5308-5d12-4492-9602-535278186abf.svg",
+                "mediaName": "Apple.svg"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "scale",
+            "id": "pnQ8ZvPz",
+            "targetId": "X8EKOLsr",
+            "startTime": 0,
+            "endTime": 400,
+            "easing": "natural",
+            "fromValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "TaEpDmmO",
+            "targetId": "yoVOJRT5",
+            "startTime": 100,
+            "endTime": 500,
+            "easing": "natural",
+            "fromValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "ACpdTPOV",
+            "targetId": "X8EKOLsr",
+            "startTime": 2600,
+            "endTime": 3000,
+            "easing": "accelerate",
+            "toValue": 0
+          }
+        ]
+      }
+    ]
+  }
+}

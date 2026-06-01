@@ -1,0 +1,162 @@
+{
+  "name": "Adobe After Effects Icon",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "7:135",
+        "name": "After Effects",
+        "x": -280,
+        "y": -1777,
+        "width": 400,
+        "height": 400,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 4000,
+        "fillColor": "#ffffff",
+        "background": false,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "89:24",
+            "name": "Icon",
+            "x": 80,
+            "y": 80,
+            "width": 240,
+            "height": 240,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 4,
+            "shadowOffsetY": 4,
+            "shadowBlur": 8,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "ellipse",
+                "id": "7:136",
+                "name": "Ellipse",
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 240,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#9999FF",
+                "background": true,
+                "startAngle": 0,
+                "sweep": 100,
+                "strokeEnabled": false
+              },
+              {
+                "type": "ellipse",
+                "id": "7:248",
+                "name": "Ellipse",
+                "x": 20,
+                "y": 20,
+                "width": 200,
+                "height": 200,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#00005B",
+                "background": true,
+                "startAngle": 0,
+                "sweep": 100,
+                "strokeEnabled": false
+              },
+              {
+                "type": "image",
+                "id": "APJmcfno",
+                "x": 40,
+                "y": 43,
+                "width": 160,
+                "height": 160,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "userAsset:b642a82d-c25d-4cca-8342-633a4821f2da.svg",
+                "mediaName": "Adobe After Effects CC.svg"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "scale",
+            "id": "bONBBeCG",
+            "targetId": "7:136",
+            "startTime": 0,
+            "endTime": 600,
+            "easing": "natural",
+            "fromValue": 0,
+            "toValue": 1
+          },
+          {
+            "type": "scale",
+            "id": "wczecBew",
+            "targetId": "7:248",
+            "startTime": 50,
+            "endTime": 650,
+            "easing": "natural",
+            "fromValue": 0,
+            "toValue": 1
+          },
+          {
+            "type": "scale",
+            "id": "o7a7kvE0",
+            "targetId": "APJmcfno",
+            "startTime": 100,
+            "endTime": 700,
+            "easing": "natural",
+            "fromValue": 0,
+            "toValue": 1
+          },
+          {
+            "type": "scale",
+            "id": "LeML2zBo",
+            "targetId": "APJmcfno",
+            "startTime": 3400,
+            "endTime": 3800,
+            "easing": "accelerate",
+            "toValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "EB8vlh7h",
+            "targetId": "7:248",
+            "startTime": 3500,
+            "endTime": 3900,
+            "easing": "accelerate",
+            "toValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "OrLoTqdL",
+            "targetId": "7:136",
+            "startTime": 3600,
+            "endTime": 4000,
+            "easing": "accelerate",
+            "toValue": 0
+          }
+        ]
+      }
+    ]
+  }
+}

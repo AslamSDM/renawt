@@ -1,0 +1,192 @@
+{
+  "name": "Pacman",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "IZXSgxDs",
+        "name": "Pacman",
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 600,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 4000,
+        "fillColor": "#000000",
+        "background": true,
+        "layers": [
+          {
+            "type": "ellipse",
+            "id": "1RI9eAG5",
+            "x": -100,
+            "y": 250,
+            "width": 100,
+            "height": 100,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "fillColor": "#ffffff",
+            "background": true,
+            "startAngle": 45,
+            "sweep": 75,
+            "strokeEnabled": false
+          }
+        ],
+        "operations": [
+          {
+            "type": "growIn",
+            "id": "tXzRlZwG",
+            "targetId": "1RI9eAG5",
+            "startTime": 0,
+            "endTime": 500,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "fadeIn",
+            "id": "tXzRlZwG",
+            "targetId": "1RI9eAG5",
+            "startTime": 0,
+            "endTime": 500,
+            "easing": "natural"
+          },
+          {
+            "type": "growIn",
+            "id": "b2lqJNCr",
+            "targetId": "1RI9eAG5",
+            "startTime": 499,
+            "endTime": 999,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "fadeIn",
+            "id": "b2lqJNCr",
+            "targetId": "1RI9eAG5",
+            "startTime": 499,
+            "endTime": 999,
+            "easing": "natural"
+          },
+          {
+            "type": "growIn",
+            "id": "cTzNHM9W",
+            "targetId": "1RI9eAG5",
+            "startTime": 1000,
+            "endTime": 1500,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "fadeIn",
+            "id": "cTzNHM9W",
+            "targetId": "1RI9eAG5",
+            "startTime": 1000,
+            "endTime": 1500,
+            "easing": "natural"
+          },
+          {
+            "type": "growIn",
+            "id": "TasTKu9T",
+            "targetId": "1RI9eAG5",
+            "startTime": 1499,
+            "endTime": 1999,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "fadeIn",
+            "id": "TasTKu9T",
+            "targetId": "1RI9eAG5",
+            "startTime": 1499,
+            "endTime": 1999,
+            "easing": "natural"
+          },
+          {
+            "type": "growIn",
+            "id": "kT3RW4FV",
+            "targetId": "1RI9eAG5",
+            "startTime": 2000,
+            "endTime": 2500,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "fadeIn",
+            "id": "kT3RW4FV",
+            "targetId": "1RI9eAG5",
+            "startTime": 2000,
+            "endTime": 2500,
+            "easing": "natural"
+          },
+          {
+            "type": "growIn",
+            "id": "rM2zqs4c",
+            "targetId": "1RI9eAG5",
+            "startTime": 2499,
+            "endTime": 2999,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "fadeIn",
+            "id": "rM2zqs4c",
+            "targetId": "1RI9eAG5",
+            "startTime": 2499,
+            "endTime": 2999,
+            "easing": "natural"
+          },
+          {
+            "type": "growIn",
+            "id": "eZvtlyVr",
+            "targetId": "1RI9eAG5",
+            "startTime": 2999,
+            "endTime": 3499,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "fadeIn",
+            "id": "eZvtlyVr",
+            "targetId": "1RI9eAG5",
+            "startTime": 2999,
+            "endTime": 3499,
+            "easing": "natural"
+          },
+          {
+            "type": "growIn",
+            "id": "hN5DsVoS",
+            "targetId": "1RI9eAG5",
+            "startTime": 3500,
+            "endTime": 4000,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "fadeIn",
+            "id": "hN5DsVoS",
+            "targetId": "1RI9eAG5",
+            "startTime": 3500,
+            "endTime": 4000,
+            "easing": "natural"
+          },
+          {
+            "type": "move",
+            "id": "LrTBtqP0",
+            "targetId": "1RI9eAG5",
+            "startTime": 0,
+            "endTime": 4000,
+            "easing": "none"
+          }
+        ]
+      }
+    ]
+  }
+}

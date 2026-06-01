@@ -1,0 +1,273 @@
+{
+  "name": "Apple Watch Charging",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "CAyMugAq",
+        "name": "Apple Watch Charging",
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 600,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 3600,
+        "fillColor": "#212121",
+        "background": true,
+        "layers": [
+          {
+            "type": "ellipse",
+            "id": "i0OZ8vgN",
+            "name": "Ellipse (outer)",
+            "x": 220,
+            "y": 120,
+            "width": 360,
+            "height": 360,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 25,
+            "cornerRadius": 0,
+            "fillColor": "#00ff91",
+            "background": true,
+            "startAngle": 0,
+            "sweep": 100,
+            "strokeEnabled": false
+          },
+          {
+            "type": "ellipse",
+            "id": "CzARicFA",
+            "name": "Ellipse (inner)",
+            "x": 220,
+            "y": 120,
+            "width": 360,
+            "height": 360,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "fillColor": "#00ff91",
+            "background": true,
+            "startAngle": -90,
+            "sweep": 80,
+            "strokeEnabled": false
+          },
+          {
+            "type": "star",
+            "id": "po2ftHZw",
+            "x": 340,
+            "y": 240,
+            "width": 120,
+            "height": 120,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "fillColor": "#00ff91",
+            "background": true,
+            "spikes": 5,
+            "radiusRatio": 50,
+            "strokeEnabled": false
+          }
+        ],
+        "operations": [
+          {
+            "type": "scale",
+            "id": "e8nqOMa9",
+            "targetId": "i0OZ8vgN",
+            "startTime": 0,
+            "endTime": 600,
+            "easing": "natural"
+          },
+          {
+            "type": "opacity",
+            "id": "R49ECn7g",
+            "targetId": "i0OZ8vgN",
+            "startTime": 0,
+            "endTime": 600,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "kvRvSgqK",
+            "targetId": "po2ftHZw",
+            "startTime": 50,
+            "endTime": 649,
+            "easing": "natural"
+          },
+          {
+            "type": "opacity",
+            "id": "WuQcZSCP",
+            "targetId": "po2ftHZw",
+            "startTime": 50,
+            "endTime": 646,
+            "easing": "none"
+          },
+          {
+            "type": "growIn",
+            "id": "m7tkODrC",
+            "targetId": "po2ftHZw",
+            "startTime": 50,
+            "endTime": 651,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "fadeIn",
+            "id": "m7tkODrC",
+            "targetId": "po2ftHZw",
+            "startTime": 50,
+            "endTime": 651,
+            "easing": "natural"
+          },
+          {
+            "type": "growIn",
+            "id": "NonuKQuO",
+            "targetId": "i0OZ8vgN",
+            "startTime": 900,
+            "endTime": 2100,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "fadeIn",
+            "id": "NonuKQuO",
+            "targetId": "i0OZ8vgN",
+            "startTime": 900,
+            "endTime": 2100,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "7rgTvXTM",
+            "targetId": "i0OZ8vgN",
+            "startTime": 900,
+            "endTime": 2100,
+            "easing": "natural"
+          },
+          {
+            "type": "growIn",
+            "id": "aWxhpyGp",
+            "targetId": "CzARicFA",
+            "startTime": 900,
+            "endTime": 2100,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "fadeIn",
+            "id": "aWxhpyGp",
+            "targetId": "CzARicFA",
+            "startTime": 900,
+            "endTime": 2100,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "7UWP5fP3",
+            "targetId": "CzARicFA",
+            "startTime": 900,
+            "endTime": 2100,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "BeZdRz10",
+            "targetId": "po2ftHZw",
+            "startTime": 900,
+            "endTime": 1400,
+            "easing": "natural"
+          },
+          {
+            "type": "growIn",
+            "id": "k0kOgXRf",
+            "targetId": "i0OZ8vgN",
+            "startTime": 2400,
+            "endTime": 3200,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "fadeIn",
+            "id": "k0kOgXRf",
+            "targetId": "i0OZ8vgN",
+            "startTime": 2400,
+            "endTime": 3200,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "6gL7BDbM",
+            "targetId": "i0OZ8vgN",
+            "startTime": 2400,
+            "endTime": 3200,
+            "easing": "natural"
+          },
+          {
+            "type": "opacity",
+            "id": "sr8T7T17",
+            "targetId": "i0OZ8vgN",
+            "startTime": 2400,
+            "endTime": 3200,
+            "easing": "none"
+          },
+          {
+            "type": "growIn",
+            "id": "ig7n8Hzy",
+            "targetId": "CzARicFA",
+            "startTime": 2400,
+            "endTime": 3200,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "fadeIn",
+            "id": "ig7n8Hzy",
+            "targetId": "CzARicFA",
+            "startTime": 2400,
+            "endTime": 3200,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "k4zNZIma",
+            "targetId": "CzARicFA",
+            "startTime": 2400,
+            "endTime": 3200,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "vf6uguoV",
+            "targetId": "po2ftHZw",
+            "startTime": 2400,
+            "endTime": 3000,
+            "easing": "natural"
+          },
+          {
+            "type": "rotate",
+            "id": "a31O0GTO",
+            "targetId": "po2ftHZw",
+            "startTime": 2400,
+            "endTime": 3000,
+            "easing": "natural"
+          },
+          {
+            "type": "opacity",
+            "id": "Td7TwHIX",
+            "targetId": "po2ftHZw",
+            "startTime": 2400,
+            "endTime": 2999,
+            "easing": "none"
+          }
+        ]
+      }
+    ]
+  }
+}

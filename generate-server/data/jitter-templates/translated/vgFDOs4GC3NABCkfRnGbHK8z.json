@@ -1,0 +1,424 @@
+{
+  "name": "vgFDOs4GC3NABCkfRnGbHK8z",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "jks0QBcdPWpwmyi_qzchD",
+        "name": "Scene 3",
+        "x": 2596,
+        "y": 0,
+        "width": 1080,
+        "height": 1350,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 36160,
+        "fillColor": "#ffffff",
+        "background": true,
+        "layers": [
+          {
+            "type": "image",
+            "id": "MiKT0f_68Ta4n0jhmZX2B",
+            "name": "Image-1",
+            "x": 0,
+            "y": 0,
+            "width": 1080,
+            "height": 1351,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "https://d154zarmrcpu4a.cloudfront.net/6MJ7ICiv_hkfgCaM2fE60.png",
+            "mediaName": "Image-1.png"
+          },
+          {
+            "type": "video",
+            "id": "6uFnnzLVpE6MLcOW5vSIl",
+            "name": "Image-2",
+            "x": 0,
+            "y": 675,
+            "width": 1080,
+            "height": 0,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "https://d154zarmrcpu4a.cloudfront.net/e6qp8mUUI5FrQ3YthVOP8.mp4",
+            "mediaName": "April.mp4"
+          },
+          {
+            "type": "image",
+            "id": "A-4E2eHh7jwlywfzkUt-t",
+            "name": "Image-3",
+            "x": 540,
+            "y": 0,
+            "width": 0,
+            "height": 1351,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "https://d154zarmrcpu4a.cloudfront.net/Pj2-n98coSmOpIY6ERI7b.png",
+            "mediaName": "Image-3.png"
+          },
+          {
+            "type": "image",
+            "id": "B3oc3TgFRld9xqFOL6W1-",
+            "name": "Image-4",
+            "x": 0,
+            "y": 675,
+            "width": 1080,
+            "height": 0,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "https://d154zarmrcpu4a.cloudfront.net/O3TjQGmZKlWc-CxbIZs9c.png",
+            "mediaName": "Image-4.png"
+          },
+          {
+            "type": "video",
+            "id": "NpVgkLSa9ctGSdfXYndYm",
+            "name": "Image-5",
+            "x": 540,
+            "y": 0,
+            "width": 0,
+            "height": 1351,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "https://d154zarmrcpu4a.cloudfront.net/xkjD2yNSombAWacF7yIiF.mp4",
+            "mediaName": "3D.mp4"
+          },
+          {
+            "type": "image",
+            "id": "v8LaKkCda98kiAQ2uc0iA",
+            "name": "Image-6",
+            "x": 0,
+            "y": 675,
+            "width": 1080,
+            "height": 0,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "https://d154zarmrcpu4a.cloudfront.net/2FHbuCs6E9Mr0c3n9V-i5.png",
+            "mediaName": "Image-6.png"
+          },
+          {
+            "type": "image",
+            "id": "pAtiT90JAn8nwzk0Z0MH-",
+            "name": "Image-7",
+            "x": 540,
+            "y": 0,
+            "width": 0,
+            "height": 1351,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "https://d154zarmrcpu4a.cloudfront.net/30tjEi6ULfrgDOFG5AKP0.png",
+            "mediaName": "Image-7.png"
+          },
+          {
+            "type": "image",
+            "id": "QBWKkl1dtmXfzwOs0N7Xg",
+            "name": "Image-8",
+            "x": 0,
+            "y": 675,
+            "width": 1080,
+            "height": 0,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "https://d154zarmrcpu4a.cloudfront.net/TIFlV3XJTTXSWrHE5LrYQ.png",
+            "mediaName": "Image-8.png"
+          },
+          {
+            "type": "image",
+            "id": "KkahvwwoC5BIogL7Q3yhW",
+            "name": "Image-9",
+            "x": 540,
+            "y": 0,
+            "width": 0,
+            "height": 1351,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "https://d154zarmrcpu4a.cloudfront.net/qnCv-AIyOJX_Xit2G3FAG.png",
+            "mediaName": "Image-9.png"
+          },
+          {
+            "type": "image",
+            "id": "Lodr_8wGUHLD9hbQgLAT-",
+            "name": "Image-10",
+            "x": 0,
+            "y": 675,
+            "width": 1080,
+            "height": 0,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "https://d154zarmrcpu4a.cloudfront.net/9lWabbUPnI2ToAzsz4_x1.png",
+            "mediaName": "Image-10.png"
+          },
+          {
+            "type": "image",
+            "id": "pRJ4cWNVQCumkPOA8VTJ9",
+            "name": "Image-1",
+            "x": 540,
+            "y": 0,
+            "width": 0,
+            "height": 1351,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "https://d154zarmrcpu4a.cloudfront.net/6MJ7ICiv_hkfgCaM2fE60.png",
+            "mediaName": "Image-1.png"
+          }
+        ],
+        "operations": [
+          {
+            "type": "resize",
+            "id": "kdb8PyYutTItiMYJDTS0z",
+            "targetId": "6uFnnzLVpE6MLcOW5vSIl",
+            "startTime": 0,
+            "endTime": 626,
+            "easing": "natural",
+            "anchor": "center",
+            "toValue": {
+              "height": 1350,
+              "width": 1080
+            }
+          },
+          {
+            "type": "playVideo",
+            "id": "HnmG1XXxULWAt6maGMP0J",
+            "targetId": "6uFnnzLVpE6MLcOW5vSIl",
+            "startTime": 0,
+            "endTime": 626,
+            "offset": 1290,
+            "volume": 1
+          },
+          {
+            "type": "growIn",
+            "id": "y38qm55pz3Q85GCPh4eCV",
+            "targetId": "6uFnnzLVpE6MLcOW5vSIl",
+            "startTime": 0,
+            "endTime": 626,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "resize",
+            "id": "aVxWZeG0DRb85l0ho-XyO",
+            "targetId": "A-4E2eHh7jwlywfzkUt-t",
+            "startTime": 125,
+            "endTime": 751,
+            "easing": "natural",
+            "anchor": "center",
+            "toValue": {
+              "height": 1350,
+              "width": 1080
+            }
+          },
+          {
+            "type": "growIn",
+            "id": "SNUmDKp9LQdq6T7TVHNyd",
+            "targetId": "A-4E2eHh7jwlywfzkUt-t",
+            "startTime": 125,
+            "endTime": 751,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "resize",
+            "id": "MyBjyLl4uy2EgoJIARk3L",
+            "targetId": "B3oc3TgFRld9xqFOL6W1-",
+            "startTime": 376,
+            "endTime": 1002,
+            "easing": "natural",
+            "anchor": "center",
+            "toValue": {
+              "height": 1350,
+              "width": 1080
+            }
+          },
+          {
+            "type": "growIn",
+            "id": "LWc759HQCUFGpjQl1Hd1V",
+            "targetId": "B3oc3TgFRld9xqFOL6W1-",
+            "startTime": 376,
+            "endTime": 1002,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "resize",
+            "id": "BLjeJPOv-27qX9RKh3Unm",
+            "targetId": "NpVgkLSa9ctGSdfXYndYm",
+            "startTime": 501,
+            "endTime": 1127,
+            "easing": "natural",
+            "anchor": "center",
+            "toValue": {
+              "height": 1350,
+              "width": 1080
+            }
+          },
+          {
+            "type": "growIn",
+            "id": "blJEWBYitB_mdUZhJ-6nE",
+            "targetId": "NpVgkLSa9ctGSdfXYndYm",
+            "startTime": 501,
+            "endTime": 1127,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "resize",
+            "id": "ConlrJSFBjFt3hnBlTeHT",
+            "targetId": "v8LaKkCda98kiAQ2uc0iA",
+            "startTime": 683,
+            "endTime": 1309,
+            "easing": "natural",
+            "anchor": "center",
+            "toValue": {
+              "height": 1350,
+              "width": 1080
+            }
+          },
+          {
+            "type": "growIn",
+            "id": "MUxH9-qdfECtXwb3Y7Xz8",
+            "targetId": "v8LaKkCda98kiAQ2uc0iA",
+            "startTime": 652,
+            "endTime": 1278,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "resize",
+            "id": "cqLeRGsbFuAewc5EKgg8s",
+            "targetId": "pAtiT90JAn8nwzk0Z0MH-",
+            "startTime": 808,
+            "endTime": 1434,
+            "easing": "natural",
+            "anchor": "center",
+            "toValue": {
+              "height": 1350,
+              "width": 1080
+            }
+          },
+          {
+            "type": "growIn",
+            "id": "N6mIHeLtNGH61hsLPsO_g",
+            "targetId": "pAtiT90JAn8nwzk0Z0MH-",
+            "startTime": 808,
+            "endTime": 1434,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "resize",
+            "id": "K0z3xUJURSbraxknhXSOp",
+            "targetId": "QBWKkl1dtmXfzwOs0N7Xg",
+            "startTime": 977,
+            "endTime": 1603,
+            "easing": "natural",
+            "anchor": "center",
+            "toValue": {
+              "height": 1350,
+              "width": 1080
+            }
+          },
+          {
+            "type": "growIn",
+            "id": "9vWSi6DrLxvTEThxqRV35",
+            "targetId": "QBWKkl1dtmXfzwOs0N7Xg",
+            "startTime": 977,
+            "endTime": 1603,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "resize",
+            "id": "nvsoAug2M0FwPjUc1Pl08",
+            "targetId": "KkahvwwoC5BIogL7Q3yhW",
+            "startTime": 1103,
+            "endTime": 1729,
+            "easing": "natural",
+            "anchor": "center",
+            "toValue": {
+              "height": 1350,
+              "width": 1080
+            }
+          },
+          {
+            "type": "growIn",
+            "id": "5MLoIgHRaxIchULa5mOJf",
+            "targetId": "KkahvwwoC5BIogL7Q3yhW",
+            "startTime": 1103,
+            "endTime": 1729,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "resize",
+            "id": "pX5SIt-lr6WSc0GIvW3s5",
+            "targetId": "Lodr_8wGUHLD9hbQgLAT-",
+            "startTime": 1278,
+            "endTime": 1904,
+            "easing": "natural",
+            "anchor": "center",
+            "toValue": {
+              "height": 1350,
+              "width": 1080
+            }
+          },
+          {
+            "type": "growIn",
+            "id": "eQJj8AbBNYD9i0bUG7lnk",
+            "targetId": "Lodr_8wGUHLD9hbQgLAT-",
+            "startTime": 1278,
+            "endTime": 1904,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "playVideo",
+            "id": "w3NMx94e0mSzmGRQdG9Ih",
+            "targetId": "NpVgkLSa9ctGSdfXYndYm",
+            "startTime": 1278,
+            "endTime": 1904,
+            "offset": 1621,
+            "volume": 1
+          },
+          {
+            "type": "playAudio",
+            "id": "ULTkzXRgwoDwXJYnH509B",
+            "targetId": "jks0QBcdPWpwmyi_qzchD",
+            "startTime": 0,
+            "endTime": 126824.48999999998,
+            "offset": 0,
+            "volume": 1,
+            "url": "https://d154zarmrcpu4a.cloudfront.net/zE7IT58cQKsXIM1wBAatJ.mp3",
+            "mediaName": "Skrillex, Missy Elliott, & Mr. Oizo - RATATA [Official Visualizer].mp3",
+            "audioDuration": 126824.48999999999
+          }
+        ]
+      }
+    ]
+  }
+}

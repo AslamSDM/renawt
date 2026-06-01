@@ -1,0 +1,342 @@
+{
+  "name": "Apple HomePod mini",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 1,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "qdQhDmSz",
+        "name": "Apple HomePod mini",
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 600,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 4000,
+        "fillColor": "#e6e8f0",
+        "background": true,
+        "layers": [
+          {
+            "type": "ellipse",
+            "id": "PIdHqMoM",
+            "x": 184,
+            "y": 84,
+            "width": 432,
+            "height": 432,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "fillColor": "#d9dce7",
+            "background": true,
+            "startAngle": 0,
+            "sweep": 100,
+            "strokeEnabled": false
+          },
+          {
+            "type": "rect",
+            "id": "ODWzNG3Z",
+            "x": 261,
+            "y": 100,
+            "width": 280,
+            "height": 400,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 32,
+            "fillColor": "#f5f7ff",
+            "shadowEnabled": true,
+            "shadowOffsetX": 8,
+            "shadowOffsetY": 8,
+            "shadowBlur": 16,
+            "shadowColor": "#000000",
+            "shadowOpacity": 10
+          },
+          {
+            "type": "text",
+            "id": "yseV8eKO",
+            "x": 284,
+            "y": 381,
+            "width": 232,
+            "height": 45,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "Apple\nHomePod mini",
+            "color": "#606980",
+            "fontSize": 18,
+            "font": {
+              "type": "googlefont",
+              "name": "Open Sans",
+              "weight": 400,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 1.25,
+            "letterSpacing": 0,
+            "textAlign": "left",
+            "verticalAlign": "center",
+            "case": "normal"
+          },
+          {
+            "type": "text",
+            "id": "Mlqn3byC",
+            "x": 284,
+            "y": 436,
+            "width": 35,
+            "height": 24,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "$99",
+            "color": "#606980",
+            "fontSize": 20,
+            "font": {
+              "type": "googlefont",
+              "name": "Open Sans",
+              "weight": 600,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 1.2,
+            "letterSpacing": 0,
+            "textAlign": "left",
+            "verticalAlign": "center",
+            "case": "normal"
+          },
+          {
+            "type": "image",
+            "id": "rft9L5Lm",
+            "name": "HomePod mini.png",
+            "x": 320,
+            "y": 166,
+            "width": 160,
+            "height": 160,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "userAsset:47f82820-6aa5-4533-8548-4bf168ee2fcf.png"
+          },
+          {
+            "type": "ellipse",
+            "id": "K3DTvS9W",
+            "x": 468,
+            "y": 325,
+            "width": 48,
+            "height": 48,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "fillColor": "#fcfcfd",
+            "background": true,
+            "startAngle": 0,
+            "sweep": 100,
+            "strokeEnabled": false
+          },
+          {
+            "type": "image",
+            "id": "LUpbwLVx",
+            "name": "Plus icon.png",
+            "x": 480,
+            "y": 337,
+            "width": 24,
+            "height": 24,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "userAsset:d2796ff8-f124-4a2b-9334-a2fa39f85dee.png"
+          }
+        ],
+        "operations": [
+          {
+            "type": "scale",
+            "id": "werNK1uT",
+            "targetId": "PIdHqMoM",
+            "startTime": 300,
+            "endTime": 1050,
+            "easing": "natural"
+          },
+          {
+            "type": "resize",
+            "id": "Qr3BWic7",
+            "targetId": "ODWzNG3Z",
+            "startTime": 450,
+            "endTime": 1050,
+            "easing": "natural",
+            "anchor": "center"
+          },
+          {
+            "type": "scale",
+            "id": "OvhOC65L",
+            "targetId": "ODWzNG3Z",
+            "startTime": 450,
+            "endTime": 1050,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "RUBMPln0",
+            "targetId": "rft9L5Lm",
+            "startTime": 550,
+            "endTime": 1050,
+            "easing": "natural"
+          },
+          {
+            "type": "move",
+            "id": "z7dakyfS",
+            "targetId": "Mlqn3byC",
+            "startTime": 700,
+            "endTime": 1300,
+            "easing": "natural"
+          },
+          {
+            "type": "opacity",
+            "id": "be9cqA5q",
+            "targetId": "Mlqn3byC",
+            "startTime": 700,
+            "endTime": 1300,
+            "easing": "none"
+          },
+          {
+            "type": "move",
+            "id": "4EZ1N7XS",
+            "targetId": "yseV8eKO",
+            "startTime": 750,
+            "endTime": 1350,
+            "easing": "natural"
+          },
+          {
+            "type": "opacity",
+            "id": "UogxtyBa",
+            "targetId": "yseV8eKO",
+            "startTime": 750,
+            "endTime": 1350,
+            "easing": "none"
+          },
+          {
+            "type": "scale",
+            "id": "4UPPa8W0",
+            "targetId": "K3DTvS9W",
+            "startTime": 700,
+            "endTime": 1300,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "CNtETPH0",
+            "targetId": "LUpbwLVx",
+            "startTime": 850,
+            "endTime": 1450,
+            "easing": "natural"
+          },
+          {
+            "type": "move",
+            "id": "238ui9r2",
+            "targetId": "Mlqn3byC",
+            "startTime": 2600,
+            "endTime": 2850,
+            "easing": "natural"
+          },
+          {
+            "type": "opacity",
+            "id": "uArZ5Pmx",
+            "targetId": "Mlqn3byC",
+            "startTime": 2600,
+            "endTime": 2750,
+            "easing": "none"
+          },
+          {
+            "type": "move",
+            "id": "1V7S5xXW",
+            "targetId": "yseV8eKO",
+            "startTime": 2600,
+            "endTime": 2850,
+            "easing": "natural"
+          },
+          {
+            "type": "opacity",
+            "id": "rSiftks3",
+            "targetId": "yseV8eKO",
+            "startTime": 2600,
+            "endTime": 2750,
+            "easing": "none"
+          },
+          {
+            "type": "scale",
+            "id": "B3ONW52n",
+            "targetId": "rft9L5Lm",
+            "startTime": 2600,
+            "endTime": 2850,
+            "easing": "natural"
+          },
+          {
+            "type": "move",
+            "id": "DL5SdI4C",
+            "targetId": "rft9L5Lm",
+            "startTime": 2600,
+            "endTime": 2850,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "NIDUEtkJ",
+            "targetId": "LUpbwLVx",
+            "startTime": 2600,
+            "endTime": 2850,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "OcSkHDqZ",
+            "targetId": "K3DTvS9W",
+            "startTime": 2600,
+            "endTime": 2850,
+            "easing": "natural"
+          },
+          {
+            "type": "resize",
+            "id": "bZTFL3sf",
+            "targetId": "ODWzNG3Z",
+            "startTime": 2600,
+            "endTime": 3100,
+            "easing": "natural",
+            "anchor": "center"
+          },
+          {
+            "type": "opacity",
+            "id": "dBnrI1vR",
+            "targetId": "ODWzNG3Z",
+            "startTime": 2850,
+            "endTime": 3100,
+            "easing": "none"
+          },
+          {
+            "type": "scale",
+            "id": "7IEfW60V",
+            "targetId": "PIdHqMoM",
+            "startTime": 3000,
+            "endTime": 3600,
+            "easing": "natural"
+          },
+          {
+            "type": "opacity",
+            "id": "uvuewUVT",
+            "targetId": "PIdHqMoM",
+            "startTime": 3000,
+            "endTime": 4000,
+            "easing": "none"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "name": "nEw4jXUhgsc_PmyrVeHP3",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "ui9McTEn4ukshMr1J25Yv",
+        "name": "Pixel Dissolve Transition",
+        "x": 0,
+        "y": 0,
+        "width": 1080,
+        "height": 1350,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 4000,
+        "fillColor": "#070707",
+        "background": true,
+        "layers": [
+          {
+            "type": "video",
+            "id": "AnJOvBa9aXkbpA4dfXtLn",
+            "name": "Background video",
+            "x": 1,
+            "y": 0,
+            "width": 1079,
+            "height": 1350,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "https://userdata.jitter.video/AXp404g4gsDH1wWQ8W60X.mp4",
+            "mediaName": "15187481_1080_1920_30fps.mp4"
+          },
+          {
+            "type": "rect",
+            "id": "U9b0cbLVyBH2S_GcUWb2T",
+            "name": "Dissolve Overlay",
+            "x": 0,
+            "y": 0,
+            "width": 1080,
+            "height": 1350,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "fillColor": "#47c8ff",
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50
+          },
+          {
+            "type": "text",
+            "id": "HIt2k1pNufWRCJPiQyrby",
+            "name": "In the news today",
+            "x": 56,
+            "y": 806,
+            "width": 573,
+            "height": 480,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "In the\nnews\ntoday",
+            "color": "#ffffff",
+            "fontSize": 200,
+            "font": {
+              "type": "googlefont",
+              "name": "Reddit Sans Condensed",
+              "weight": 800,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 80,
+            "letterSpacing": -1,
+            "textAlign": "left",
+            "verticalAlign": "center",
+            "case": "upper"
+          },
+          {
+            "type": "image",
+            "id": "wSw9dDx0GQD0fE6OYI_C1",
+            "name": "Logo",
+            "x": 805,
+            "y": 0,
+            "width": 275,
+            "height": 275,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "https://userdata.jitter.video/rH1gy67y3JnvrzJBmtgqX.png",
+            "mediaName": "id81odIqJS_1777923252929.png"
+          }
+        ],
+        "operations": [
+          {
+            "type": "textIn",
+            "id": "d0AHkw8QVQ8Y7i2z9j0fs",
+            "targetId": "HIt2k1pNufWRCJPiQyrby",
+            "startTime": 542.6666666666861,
+            "easing": "none",
+            "effect": "customIn",
+            "split": "lines",
+            "order": "forward",
+            "offset": 200,
+            "nodeDuration": 500,
+            "nodeEasing": "slowDown",
+            "travelDistance": 20,
+            "slideDirection": "up"
+          },
+          {
+            "type": "playVideo",
+            "id": "NKFhemUb1Kr3Ov4WGOe2z",
+            "targetId": "AnJOvBa9aXkbpA4dfXtLn",
+            "startTime": 0,
+            "endTime": 4000,
+            "offset": 0,
+            "volume": 1
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "name": "Cross Icon",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "1:2",
+        "name": "Cross",
+        "x": -280,
+        "y": -177,
+        "width": 400,
+        "height": 400,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 3000,
+        "fillColor": "#ffffff",
+        "background": false,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "fcUgPK3x",
+            "name": "Icon",
+            "x": 80,
+            "y": 80,
+            "width": 240,
+            "height": 240,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "ellipse",
+                "id": "2:3",
+                "name": "Ellipse",
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 240,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#EC5545",
+                "background": true,
+                "startAngle": 0,
+                "sweep": 100,
+                "strokeEnabled": false
+              },
+              {
+                "type": "image",
+                "id": "g87CMpZf",
+                "x": 60,
+                "y": 60,
+                "width": 120,
+                "height": 120,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "userAsset:61e8f9bb-23be-46f2-b1ef-96bf0cf8a0ea.svg",
+                "mediaName": "Cross.svg"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "rotate",
+            "id": "KJlOATNn",
+            "targetId": "2:3",
+            "startTime": 0,
+            "endTime": 1500,
+            "easing": "natural",
+            "fromValue": 45,
+            "toValue": 0
+          },
+          {
+            "type": "fadeIn",
+            "id": "KJlOATNn",
+            "targetId": "2:3",
+            "startTime": 0,
+            "endTime": 1500,
+            "easing": "natural"
+          },
+          {
+            "type": "rotate",
+            "id": "CJ8ypXeD",
+            "targetId": "g87CMpZf",
+            "startTime": 100,
+            "endTime": 1600,
+            "easing": "natural",
+            "fromValue": 45,
+            "toValue": 0
+          },
+          {
+            "type": "fadeIn",
+            "id": "CJ8ypXeD",
+            "targetId": "g87CMpZf",
+            "startTime": 100,
+            "endTime": 1600,
+            "easing": "natural"
+          },
+          {
+            "type": "spinOut",
+            "id": "Evc9Jrxf",
+            "targetId": "g87CMpZf",
+            "startTime": 2500,
+            "endTime": 2900,
+            "easing": "accelerate",
+            "angle": 45,
+            "direction": "ccw"
+          },
+          {
+            "type": "spinOut",
+            "id": "tzzyXtx2",
+            "targetId": "fcUgPK3x",
+            "startTime": 2600,
+            "endTime": 3000,
+            "easing": "accelerate",
+            "angle": 45,
+            "direction": "ccw"
+          }
+        ]
+      }
+    ]
+  }
+}

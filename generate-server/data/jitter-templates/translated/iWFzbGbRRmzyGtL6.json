@@ -1,0 +1,123 @@
+{
+  "name": "Heart Icon",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "1:2",
+        "name": "Heart",
+        "x": -280,
+        "y": -177,
+        "width": 400,
+        "height": 400,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 3000,
+        "fillColor": "#ffffff",
+        "background": false,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "fcUgPK3x",
+            "name": "Icon",
+            "x": 80,
+            "y": 80,
+            "width": 240,
+            "height": 240,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "ellipse",
+                "id": "2:3",
+                "name": "Ellipse",
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 240,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#ED7299",
+                "background": true,
+                "startAngle": 0,
+                "sweep": 100,
+                "strokeEnabled": false
+              },
+              {
+                "type": "image",
+                "id": "g87CMpZf",
+                "x": 60,
+                "y": 60,
+                "width": 120,
+                "height": 120,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 75,
+                "cornerRadius": 0,
+                "url": "userAsset:eb4dad16-0888-4e66-b1ce-b19aa50fe582.svg",
+                "mediaName": "Heart.svg"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "scale",
+            "id": "dq1CVFWd",
+            "targetId": "2:3",
+            "startTime": 0,
+            "endTime": 1500,
+            "easing": "natural",
+            "fromValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "MP2IFqAv",
+            "targetId": "g87CMpZf",
+            "startTime": 300,
+            "endTime": 1800,
+            "easing": "natural",
+            "fromValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "LFE3UxR6",
+            "targetId": "g87CMpZf",
+            "startTime": 2600,
+            "endTime": 2900,
+            "easing": "accelerate",
+            "toValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "cq7q03UT",
+            "targetId": "fcUgPK3x",
+            "startTime": 2700,
+            "endTime": 3000,
+            "easing": "accelerate",
+            "toValue": 0
+          }
+        ]
+      }
+    ]
+  }
+}

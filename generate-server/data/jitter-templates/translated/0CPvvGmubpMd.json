@@ -1,0 +1,105 @@
+{
+  "name": "Simple text",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 1,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "06uSeJBP",
+        "name": "Simple text",
+        "x": 0,
+        "y": 10,
+        "width": 800,
+        "height": 600,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 2800,
+        "fillColor": "#d6e0f0",
+        "background": true,
+        "layers": [
+          {
+            "type": "text",
+            "id": "vQl85RwB",
+            "x": 132.49836260721713,
+            "y": 228,
+            "width": 535,
+            "height": 144,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "MOTION",
+            "color": "#8d93ab",
+            "fontSize": 120,
+            "font": {
+              "type": "googlefont",
+              "name": "Montserrat",
+              "weight": 900,
+              "fontStyle": "italic"
+            },
+            "lineHeight": 1.2,
+            "letterSpacing": 0,
+            "textAlign": "center",
+            "verticalAlign": "center",
+            "case": "normal"
+          }
+        ],
+        "operations": [
+          {
+            "type": "textIn",
+            "id": "N7HIJs7r",
+            "targetId": "vQl85RwB",
+            "startTime": 0,
+            "endTime": 4500,
+            "easing": "natural",
+            "effect": "slideAndFade",
+            "split": "letters",
+            "order": "forward",
+            "offset": 80,
+            "nodeDuration": 400,
+            "nodeEasing": "natural",
+            "travelDistance": 40,
+            "slideDirection": "up"
+          },
+          {
+            "type": "move",
+            "id": "fNtTz7vW",
+            "targetId": "vQl85RwB",
+            "startTime": 0,
+            "endTime": 1000,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "erNfcbvz",
+            "targetId": "vQl85RwB",
+            "startTime": 1400,
+            "endTime": 1800,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "NkQKsLNT",
+            "targetId": "vQl85RwB",
+            "startTime": 1800,
+            "endTime": 2200,
+            "easing": "accelerate"
+          },
+          {
+            "type": "opacity",
+            "id": "3izotRQV",
+            "targetId": "vQl85RwB",
+            "startTime": 1800,
+            "endTime": 2000,
+            "easing": "slowDown"
+          }
+        ]
+      }
+    ]
+  }
+}

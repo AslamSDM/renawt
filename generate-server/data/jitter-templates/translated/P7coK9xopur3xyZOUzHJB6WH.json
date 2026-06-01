@@ -1,0 +1,449 @@
+{
+  "name": "P7coK9xopur3xyZOUzHJB6WH",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "51m89pqtMucwbSj_ArLSp",
+        "name": "P7coK9xopur3xyZOUzHJB6WH",
+        "x": 0,
+        "y": 0,
+        "width": 400,
+        "height": 300,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 4000,
+        "fillColor": "#ffffff",
+        "background": true,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "naBfIw9FX-d2lHS1uPT5z",
+            "name": "Button",
+            "x": 102,
+            "y": 122,
+            "width": 196,
+            "height": 56,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "layerGrp",
+                "id": "L-wGzvlWdHC2kQoQDCJAF",
+                "name": "Arrow (left)",
+                "x": 0,
+                "y": 0,
+                "width": 56,
+                "height": 56,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 40,
+                "background": true,
+                "fillColor": "#000000",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "maskGrp",
+                    "id": "lWbT3QZQxjVOQRY1EbuUR",
+                    "x": 0,
+                    "y": 0,
+                    "width": 1,
+                    "height": 1,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": true,
+                    "layers": [
+                      {
+                        "type": "ellipse",
+                        "id": "fqGGoz8qPqg_uQsOqrt1x",
+                        "name": "Mask",
+                        "x": 0,
+                        "y": 0,
+                        "width": 56,
+                        "height": 56,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#b3b3b3",
+                        "background": true,
+                        "startAngle": 0,
+                        "sweep": 100,
+                        "strokeEnabled": false
+                      },
+                      {
+                        "type": "svg",
+                        "id": "C2G4pV2LcFMUWBWMu0cTm",
+                        "name": "Arrow (SVG)",
+                        "x": 12,
+                        "y": 12,
+                        "width": 32,
+                        "height": 32,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#000000",
+                        "background": true,
+                        "url": "https://d154zarmrcpu4a.cloudfront.net/0abada47-7e9a-458f-9678-1ea62b95183e.svg",
+                        "strokeEnabled": false
+                      },
+                      {
+                        "type": "svg",
+                        "id": "eaGfUk9w7TRQa8GQeEvN8",
+                        "name": "Arrow (SVG)",
+                        "x": -44,
+                        "y": 12,
+                        "width": 32,
+                        "height": 32,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#000000",
+                        "background": true,
+                        "url": "https://d154zarmrcpu4a.cloudfront.net/0abada47-7e9a-458f-9678-1ea62b95183e.svg",
+                        "strokeEnabled": false
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "layerGrp",
+                "id": "yHIUVsyY7ixrlWqRE7gQ2",
+                "name": "Arrow (right)",
+                "x": 140,
+                "y": 0,
+                "width": 56,
+                "height": 56,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 40,
+                "background": true,
+                "fillColor": "#000000",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "svg",
+                    "id": "2CjtAKRnQE-84VeHxotlX",
+                    "name": "Arrow (SVG)",
+                    "x": 12,
+                    "y": 12,
+                    "width": 32,
+                    "height": 32,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#000000",
+                    "background": true,
+                    "url": "https://d154zarmrcpu4a.cloudfront.net/0abada47-7e9a-458f-9678-1ea62b95183e.svg",
+                    "strokeEnabled": false
+                  }
+                ]
+              },
+              {
+                "type": "layerGrp",
+                "id": "J64kgZmt6yeLU4Z28Hpj2",
+                "name": "Main",
+                "x": 0,
+                "y": 0,
+                "width": 140,
+                "height": 56,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 28,
+                "background": true,
+                "fillColor": "#000000",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "text",
+                    "id": "JbhRZ2K_1xD5l_7Jzcv3e",
+                    "x": 28,
+                    "y": 18,
+                    "width": 84,
+                    "height": 20,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "text": "Continue",
+                    "color": "#ffffff",
+                    "fontSize": 20,
+                    "font": {
+                      "type": "googlefont",
+                      "name": "Inter",
+                      "weight": 500,
+                      "fontStyle": "regular"
+                    },
+                    "lineHeight": 100,
+                    "letterSpacing": -2,
+                    "textAlign": "center",
+                    "verticalAlign": "center",
+                    "case": "normal"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "image",
+            "id": "pflDx0uJ0t0-Gc_IRwuIk",
+            "name": "Cursor",
+            "x": 284,
+            "y": 300,
+            "width": 28,
+            "height": 33,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgiIGhlaWdodD0iMzMiIHZpZXdCb3g9IjAgMCAyOCAzMyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9Ikdyb3VwIj4KPGcgaWQ9IlZlY3RvciI+CjxtYXNrIGlkPSJwYXRoLTEtaW5zaWRlLTFfOF82IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik0wIDBMMjcuNzUgMTcuMjVMMTMuMTI1IDE5LjY4NzVMNS4yNSAzMi4yNUwwIDBaIi8+CjwvbWFzaz4KPHBhdGggZD0iTTAgMEwyNy43NSAxNy4yNUwxMy4xMjUgMTkuNjg3NUw1LjI1IDMyLjI1TDAgMFoiIGZpbGw9ImJsYWNrIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjMiIG1hc2s9InVybCgjcGF0aC0xLWluc2lkZS0xXzhfNikiLz4KPC9nPgoKPC9nPgo8L3N2Zz4K",
+            "mediaName": "Vector.svg"
+          }
+        ],
+        "operations": [
+          {
+            "type": "move",
+            "id": "H34RJ5Gye43lk9e2xpuWm",
+            "targetId": "pflDx0uJ0t0-Gc_IRwuIk",
+            "startTime": 200,
+            "endTime": 800,
+            "easing": "natural",
+            "fromValue": {
+              "x": 0,
+              "y": 0
+            },
+            "toValue": {
+              "x": -70,
+              "y": -130
+            }
+          },
+          {
+            "type": "scale",
+            "id": "tuwCP17-z_sMwypEVj1ch",
+            "targetId": "yHIUVsyY7ixrlWqRE7gQ2",
+            "startTime": 500,
+            "endTime": 900,
+            "easing": "natural",
+            "toValue": 0
+          },
+          {
+            "type": "move",
+            "id": "YlnRiJWrho7GmtfBLlHIH",
+            "targetId": "yHIUVsyY7ixrlWqRE7gQ2",
+            "startTime": 500,
+            "endTime": 900,
+            "easing": "natural",
+            "toValue": {
+              "x": 28
+            }
+          },
+          {
+            "type": "move",
+            "id": "vCdfVLkT7ucnI5bObO_Gc",
+            "targetId": "J64kgZmt6yeLU4Z28Hpj2",
+            "startTime": 500,
+            "endTime": 900,
+            "easing": "natural",
+            "toValue": {
+              "x": 56
+            }
+          },
+          {
+            "type": "scale",
+            "id": "QKdvgM8e4oFRZS_2pEglc",
+            "targetId": "L-wGzvlWdHC2kQoQDCJAF",
+            "startTime": 500,
+            "endTime": 900,
+            "easing": "natural",
+            "fromValue": 0
+          },
+          {
+            "type": "move",
+            "id": "thOY2j_V_hpIww0c1IKTo",
+            "targetId": "L-wGzvlWdHC2kQoQDCJAF",
+            "startTime": 500,
+            "endTime": 900,
+            "easing": "natural",
+            "fromValue": {
+              "x": -28
+            },
+            "toValue": {
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "_-qJhVH9-f5lcF8XWXKkI",
+            "targetId": "C2G4pV2LcFMUWBWMu0cTm",
+            "startTime": 1350,
+            "endTime": 1650,
+            "easing": "accelerate",
+            "toValue": {
+              "x": 56,
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "RGHbHpFIzVk71hFf_rO7x",
+            "targetId": "eaGfUk9w7TRQa8GQeEvN8",
+            "startTime": 1450,
+            "endTime": 1750,
+            "easing": "slowDown",
+            "toValue": {
+              "x": 56,
+              "y": 0
+            }
+          },
+          {
+            "type": "scale",
+            "id": "gvWc85EiG4mxcJ92i50B1",
+            "targetId": "naBfIw9FX-d2lHS1uPT5z",
+            "startTime": 1450,
+            "endTime": 1547,
+            "easing": "natural",
+            "toValue": 0.96
+          },
+          {
+            "type": "scale",
+            "id": "szXumYWU_a8Z1d8-zZ6Ok",
+            "targetId": "naBfIw9FX-d2lHS1uPT5z",
+            "startTime": 1547,
+            "endTime": 1839,
+            "easing": "natural",
+            "toValue": 1
+          },
+          {
+            "type": "scale",
+            "id": "RNHAbIXOLCvoLkv9UklUu",
+            "targetId": "pflDx0uJ0t0-Gc_IRwuIk",
+            "startTime": 1400,
+            "endTime": 1497,
+            "easing": "natural",
+            "toValue": 0.96
+          },
+          {
+            "type": "scale",
+            "id": "efkRyIqKPOkkjouVYzmPW",
+            "targetId": "pflDx0uJ0t0-Gc_IRwuIk",
+            "startTime": 1497,
+            "endTime": 1789,
+            "easing": "natural",
+            "toValue": 1
+          },
+          {
+            "type": "move",
+            "id": "Ndxjx9GWwhmyEamhwq6DT",
+            "targetId": "pflDx0uJ0t0-Gc_IRwuIk",
+            "startTime": 2000,
+            "endTime": 2600,
+            "easing": "accelerate",
+            "toValue": {
+              "x": -70,
+              "y": 130
+            }
+          },
+          {
+            "type": "scale",
+            "id": "zHcpCgfv_90BSVjo_LIFP",
+            "targetId": "yHIUVsyY7ixrlWqRE7gQ2",
+            "startTime": 2200,
+            "endTime": 2600,
+            "easing": "natural",
+            "toValue": 1
+          },
+          {
+            "type": "move",
+            "id": "Xnw52fGZZBtg7Mh5GTuhw",
+            "targetId": "yHIUVsyY7ixrlWqRE7gQ2",
+            "startTime": 2200,
+            "endTime": 2600,
+            "easing": "natural",
+            "toValue": {
+              "x": -28
+            }
+          },
+          {
+            "type": "move",
+            "id": "9taAwA6ZtCOO0LXOKUW0U",
+            "targetId": "J64kgZmt6yeLU4Z28Hpj2",
+            "startTime": 2200,
+            "endTime": 2600,
+            "easing": "natural",
+            "toValue": {
+              "x": -56
+            }
+          },
+          {
+            "type": "scale",
+            "id": "ubz0vP6R8czOxBc-QGUxm",
+            "targetId": "L-wGzvlWdHC2kQoQDCJAF",
+            "startTime": 2200,
+            "endTime": 2600,
+            "easing": "natural",
+            "toValue": 0
+          },
+          {
+            "type": "move",
+            "id": "fGnzICOMPHGwa3eSthmUT",
+            "targetId": "L-wGzvlWdHC2kQoQDCJAF",
+            "startTime": 2200,
+            "endTime": 2600,
+            "easing": "natural",
+            "toValue": {
+              "x": -28,
+              "y": 0
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

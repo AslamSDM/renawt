@@ -1,0 +1,97 @@
+{
+  "name": "Story: Classic 06",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 2,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "Dmqef2oP",
+        "name": "Story: Classic 06",
+        "x": 0,
+        "y": 0,
+        "width": 1080,
+        "height": 1920,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 4000,
+        "fillColor": "#ffffff",
+        "background": true,
+        "layers": [
+          {
+            "type": "image",
+            "id": "2CJw3i3E",
+            "name": "Image big",
+            "x": 80,
+            "y": 420,
+            "width": 600,
+            "height": 1020,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "userAsset:37ad9bf9-4ac2-4e3a-8db4-b7e035aeb006.jpeg",
+            "mediaName": "pexels-threeshots-714525.jpeg"
+          },
+          {
+            "type": "image",
+            "id": "EIQT42VV",
+            "name": "Image small",
+            "x": 600,
+            "y": 1080,
+            "width": 400,
+            "height": 560,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "userAsset:aff4ce9c-aa23-4d12-a662-f6660550e69c.jpeg",
+            "mediaName": "pexels-pixabay-67833.jpeg"
+          }
+        ],
+        "operations": [
+          {
+            "type": "growIn",
+            "id": "FNxdimT6",
+            "targetId": "2CJw3i3E",
+            "startTime": 0,
+            "endTime": 1200,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "growIn",
+            "id": "FWVwbWoz",
+            "targetId": "EIQT42VV",
+            "startTime": 100,
+            "endTime": 1300,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "growIn",
+            "id": "SoMMl7Ra",
+            "targetId": "2CJw3i3E",
+            "startTime": 3200,
+            "endTime": 3700,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "growIn",
+            "id": "SKvqhUQR",
+            "targetId": "EIQT42VV",
+            "startTime": 3250,
+            "endTime": 3750,
+            "easing": "natural",
+            "scale": 0
+          }
+        ]
+      }
+    ]
+  }
+}

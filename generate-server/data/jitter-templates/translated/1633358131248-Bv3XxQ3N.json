@@ -1,0 +1,194 @@
+{
+  "name": "Social handle (Dark)",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "19:180",
+        "name": "Social handle",
+        "x": -280,
+        "y": 3852,
+        "width": 456,
+        "height": 160,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 4000,
+        "fillColor": "#ffffff",
+        "background": false,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "19:208",
+            "name": "Badge",
+            "x": 20,
+            "y": 20,
+            "width": 416,
+            "height": 120,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 4,
+            "shadowOffsetY": 4,
+            "shadowBlur": 8,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "rect",
+                "id": "19:181",
+                "name": "Rectangle",
+                "x": 0,
+                "y": 0,
+                "width": 416,
+                "height": 120,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 80,
+                "cornerRadius": 60,
+                "fillColor": "#000000",
+                "shadowEnabled": false,
+                "shadowOffsetX": 4,
+                "shadowOffsetY": 4,
+                "shadowBlur": 8,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "image",
+                "id": "VdlGhSGW",
+                "x": 20,
+                "y": 20,
+                "width": 80,
+                "height": 80,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "userAsset:a5b8933a-8a56-431c-bda3-76a62208ced0.png",
+                "mediaName": "Icon.png"
+              },
+              {
+                "type": "text",
+                "id": "19:189",
+                "name": "jitter.video",
+                "x": 120,
+                "y": 36,
+                "width": 250,
+                "height": 48,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "jitter.video",
+                "color": "#ffffff",
+                "fontSize": 48,
+                "font": {
+                  "type": "googlefont",
+                  "name": "Inter",
+                  "weight": 700,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 100,
+                "letterSpacing": 0,
+                "textAlign": "left",
+                "verticalAlign": "center",
+                "case": "normal"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "growIn",
+            "id": "4p9NUiXw",
+            "targetId": "19:208",
+            "startTime": 0,
+            "endTime": 300,
+            "easing": "slowDown",
+            "scale": 0.5
+          },
+          {
+            "type": "growIn",
+            "id": "1LOBZThr",
+            "targetId": "VdlGhSGW",
+            "startTime": 100,
+            "endTime": 400,
+            "easing": "slowDown",
+            "scale": 0.5
+          },
+          {
+            "type": "move",
+            "id": "CCBivwRU",
+            "targetId": "VdlGhSGW",
+            "startTime": 300,
+            "endTime": 900,
+            "easing": "natural",
+            "fromValue": {
+              "x": 148
+            },
+            "toValue": {}
+          },
+          {
+            "type": "resize",
+            "id": "aKyuMIRK",
+            "targetId": "19:181",
+            "startTime": 300,
+            "endTime": 900,
+            "easing": "natural",
+            "anchor": "center",
+            "fromValue": {
+              "width": 120
+            }
+          },
+          {
+            "type": "move",
+            "id": "6rS94cKN",
+            "targetId": "19:189",
+            "startTime": 300,
+            "endTime": 900,
+            "easing": "natural",
+            "fromValue": {
+              "x": 148
+            },
+            "toValue": {}
+          },
+          {
+            "type": "textIn",
+            "id": "c7sWC87X",
+            "targetId": "19:189",
+            "startTime": 400,
+            "easing": "natural",
+            "effect": "slideAndFade",
+            "split": "letters",
+            "order": "forward",
+            "offset": 50,
+            "nodeDuration": 200,
+            "nodeEasing": "natural",
+            "travelDistance": 25,
+            "slideDirection": "down"
+          },
+          {
+            "type": "shrinkOut",
+            "id": "N8hqbqLb",
+            "targetId": "19:208",
+            "startTime": 3000,
+            "endTime": 3200,
+            "easing": "accelerate",
+            "scale": 0.5
+          }
+        ]
+      }
+    ]
+  }
+}

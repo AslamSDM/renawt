@@ -1,0 +1,157 @@
+{
+  "name": "Behance Icon",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "5:81",
+        "name": "Behance",
+        "x": 1480,
+        "y": -977,
+        "width": 400,
+        "height": 400,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 3000,
+        "fillColor": "#ffffff",
+        "background": false,
+        "layers": [
+          {
+            "type": "maskGrp",
+            "id": "DLD2vS6W",
+            "name": "Icon",
+            "x": 80,
+            "y": 80,
+            "width": 240,
+            "height": 240,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": true,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "ellipse",
+                "id": "5:82",
+                "name": "Mask",
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 240,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#000000",
+                "background": true,
+                "startAngle": -90,
+                "sweep": 100,
+                "strokeEnabled": false
+              },
+              {
+                "type": "ellipse",
+                "id": "wpuXTdvw",
+                "name": "Ellipse",
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 240,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#0057FF",
+                "background": true,
+                "startAngle": 0,
+                "sweep": 100,
+                "strokeEnabled": false
+              },
+              {
+                "type": "image",
+                "id": "E5yT3r7G",
+                "x": 40,
+                "y": 40,
+                "width": 160,
+                "height": 160,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "userAsset:c7d78b85-0387-46e1-9d6f-977f1d401947.svg",
+                "mediaName": "Behance.svg"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "growIn",
+            "id": "ICmBtEg5",
+            "targetId": "5:82",
+            "startTime": 0,
+            "endTime": 800,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "fadeIn",
+            "id": "ICmBtEg5",
+            "targetId": "5:82",
+            "startTime": 0,
+            "endTime": 800,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "CPiJTU3E",
+            "targetId": "E5yT3r7G",
+            "startTime": 0,
+            "endTime": 600,
+            "easing": "natural",
+            "fromValue": 0
+          },
+          {
+            "type": "growIn",
+            "id": "DTbIGwDR",
+            "targetId": "5:82",
+            "startTime": 2590,
+            "endTime": 3000,
+            "easing": "natural",
+            "scale": 0
+          },
+          {
+            "type": "fadeIn",
+            "id": "DTbIGwDR",
+            "targetId": "5:82",
+            "startTime": 2590,
+            "endTime": 3000,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "cddbaTIn",
+            "targetId": "E5yT3r7G",
+            "startTime": 2590,
+            "endTime": 3000,
+            "easing": "accelerate",
+            "toValue": 5
+          }
+        ]
+      }
+    ]
+  }
+}

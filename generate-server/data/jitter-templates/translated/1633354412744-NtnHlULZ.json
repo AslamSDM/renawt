@@ -1,0 +1,150 @@
+{
+  "name": "Search bar",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "2:54",
+        "name": "Search",
+        "x": -280,
+        "y": 1223,
+        "width": 680,
+        "height": 120,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 40,
+        "clipsContent": true,
+        "duration": 4000,
+        "fillColor": "#ffffff",
+        "background": false,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "2:67",
+            "name": "Search bar",
+            "x": 20,
+            "y": 20,
+            "width": 640,
+            "height": 80,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 40,
+            "background": true,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 4,
+            "shadowOffsetY": 4,
+            "shadowBlur": 8,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "image",
+                "id": "TPow4AfN",
+                "x": 20,
+                "y": 20,
+                "width": 40,
+                "height": 40,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "userAsset:c4227637-6911-4975-9f1a-5edce0f1992f.svg",
+                "mediaName": "Icon.svg"
+              },
+              {
+                "type": "text",
+                "id": "2:61",
+                "name": "Best motion design tool",
+                "x": 80,
+                "y": 20,
+                "width": 520,
+                "height": 40,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "Best motion design tool",
+                "color": "#404040",
+                "fontSize": 24,
+                "font": {
+                  "type": "googlefont",
+                  "name": "Inter",
+                  "weight": 500,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 166.66667,
+                "letterSpacing": 0,
+                "textAlign": "left",
+                "verticalAlign": "center",
+                "case": "normal"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "growIn",
+            "id": "vq04xmuZ",
+            "targetId": "2:67",
+            "startTime": 0,
+            "endTime": 400,
+            "easing": "slowDown",
+            "scale": 0.5
+          },
+          {
+            "type": "growIn",
+            "id": "Wx2eq9xT",
+            "targetId": "TPow4AfN",
+            "startTime": 100,
+            "endTime": 500,
+            "easing": "slowDown",
+            "scale": 0.5
+          },
+          {
+            "type": "resize",
+            "id": "GwZcqotK",
+            "targetId": "2:67",
+            "startTime": 400,
+            "endTime": 1100,
+            "easing": "natural",
+            "anchor": "center",
+            "fromValue": {
+              "width": 80
+            }
+          },
+          {
+            "type": "textIn",
+            "id": "cHMLsazs",
+            "targetId": "2:61",
+            "startTime": 900,
+            "easing": "none",
+            "effect": "appear",
+            "split": "letters",
+            "order": "forward",
+            "offset": 50,
+            "nodeDuration": 500,
+            "nodeEasing": "slowDown",
+            "travelDistance": 20,
+            "slideDirection": "up"
+          },
+          {
+            "type": "shrinkOut",
+            "id": "4L1TwDaW",
+            "targetId": "2:67",
+            "startTime": 3200,
+            "endTime": 3500,
+            "easing": "accelerate",
+            "scale": 0.8
+          }
+        ]
+      }
+    ]
+  }
+}

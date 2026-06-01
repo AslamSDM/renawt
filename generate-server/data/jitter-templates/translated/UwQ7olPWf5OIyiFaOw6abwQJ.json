@@ -1,0 +1,731 @@
+{
+  "name": "UwQ7olPWf5OIyiFaOw6abwQJ",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "xeFW77SmePrs-xqALrk3Z",
+        "name": "16:9",
+        "x": 1103,
+        "y": -495,
+        "width": 1920,
+        "height": 1080,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 5230,
+        "fillColor": "#041424",
+        "background": true,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "ZW8TkJyo4d-dyd-Kf9cqc",
+            "name": "Comp",
+            "x": 422,
+            "y": -135,
+            "width": 1076,
+            "height": 1350,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "text",
+                "id": "Gw8hK8xPQalo1QOt4LbpH",
+                "name": "01 Text",
+                "x": -518,
+                "y": -783,
+                "width": 4935,
+                "height": 3255,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "Acme",
+                "color": "#000000",
+                "fontSize": 2513.84,
+                "font": {
+                  "type": "googlefont",
+                  "name": "ABC Gravity ExtraCondensed",
+                  "weight": 400,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 129.4724393537409,
+                "letterSpacing": -2,
+                "textAlign": "center",
+                "verticalAlign": "top",
+                "case": "normal"
+              },
+              {
+                "type": "layerGrp",
+                "id": "dS7wxO4KkAEkiU72xtPXD",
+                "name": "02",
+                "x": -1.5,
+                "y": -1,
+                "width": 2421,
+                "height": 1350,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "J0S5xviDLqpXKj6JqE8dR",
+                    "name": "Background",
+                    "x": -436,
+                    "y": 130,
+                    "width": 1952,
+                    "height": 1090,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "fillColor": "#ffffff",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "text",
+                    "id": "YMUIk3oLfnWL1RxqYmKWF",
+                    "name": "Jitter",
+                    "x": 1008,
+                    "y": 217,
+                    "width": 1539,
+                    "height": 995,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "text": "Acme",
+                    "color": "#041424",
+                    "fontSize": 767.9,
+                    "font": {
+                      "type": "googlefont",
+                      "name": "ABC Gravity ExtraCondensed",
+                      "weight": 400,
+                      "fontStyle": "regular"
+                    },
+                    "lineHeight": 129.47243421444966,
+                    "letterSpacing": -1,
+                    "textAlign": "center",
+                    "verticalAlign": "top",
+                    "case": "normal"
+                  }
+                ]
+              },
+              {
+                "type": "layerGrp",
+                "id": "S5fJ0EXM2qEu-W4-LXkcJ",
+                "name": "03",
+                "x": -472,
+                "y": -1,
+                "width": 1983,
+                "height": 1350,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": true,
+                "fillColor": "#041424",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "maskGrp",
+                    "id": "MXacN35O9hXnOMc-jmIY1",
+                    "name": "Mask 1",
+                    "x": 0,
+                    "y": 0,
+                    "width": 1,
+                    "height": 1,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": true,
+                    "layers": [
+                      {
+                        "type": "shape",
+                        "id": "erE23h7OGAbeUCIzlaV-v",
+                        "name": "Mask",
+                        "x": -537,
+                        "y": 104,
+                        "width": 1564,
+                        "height": 1142,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#b3b3b3",
+                        "background": true,
+                        "path": "M 0 0 L 1564 0 L 934.749 1142 L 0 1142 Z",
+                        "strokeEnabled": false
+                      },
+                      {
+                        "type": "text",
+                        "id": "1e4QaqUdDXfd9zaXYWOGL",
+                        "name": "Jitter",
+                        "x": 814.5,
+                        "y": 546,
+                        "width": 394,
+                        "height": 255,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "text": "Acme",
+                        "color": "#000000",
+                        "fontSize": 196.3436737060547,
+                        "font": {
+                          "type": "googlefont",
+                          "name": "ABC Gravity ExtraCondensed",
+                          "weight": 400,
+                          "fontStyle": "regular"
+                        },
+                        "lineHeight": 129.36500331569755,
+                        "letterSpacing": -1,
+                        "textAlign": "center",
+                        "verticalAlign": "top",
+                        "case": "normal"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "move",
+            "id": "Gq0NXa9C5Kch0zLOuSf5d",
+            "targetId": "Gw8hK8xPQalo1QOt4LbpH",
+            "startTime": 0,
+            "endTime": 1110,
+            "easing": "natural",
+            "toValue": {
+              "x": -1411,
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "iDtQBDPH0UYTqAxR0l1iW",
+            "targetId": "Gw8hK8xPQalo1QOt4LbpH",
+            "startTime": 730,
+            "endTime": 1610,
+            "easing": "natural",
+            "toValue": {
+              "x": -909,
+              "y": 0
+            }
+          },
+          {
+            "type": "color",
+            "id": "tIliw8VABYuj_WF2D9Idc",
+            "targetId": "Gw8hK8xPQalo1QOt4LbpH",
+            "startTime": 0,
+            "endTime": 1350,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "fromValue": {
+              "type": "GRADIENT_LINEAR",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#031424",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#15147d",
+                  "position": 0.27719223499298096
+                },
+                {
+                  "id": "2",
+                  "color": "#3a53df",
+                  "position": 0.5096133947372437
+                },
+                {
+                  "id": "3",
+                  "color": "#cfa5f7",
+                  "position": 0.7691128849983215
+                },
+                {
+                  "id": "4",
+                  "color": "#c8bee7",
+                  "position": 0.8661431074142456
+                },
+                {
+                  "id": "5",
+                  "color": "#e8dec9",
+                  "position": 1
+                }
+              ],
+              "transform": {
+                "angle": 1.2731608560003216,
+                "sx": 0.8016568953472315,
+                "tx": 0.6593665448129555,
+                "ty": 1.0473094706632653
+              }
+            },
+            "toValue": {
+              "type": "GRADIENT_LINEAR",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#031424",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#15147d",
+                  "position": 0.27719223499298096
+                },
+                {
+                  "id": "2",
+                  "color": "#3a53df",
+                  "position": 0.5096133947372437
+                },
+                {
+                  "id": "3",
+                  "color": "#cfa5f7",
+                  "position": 0.7691128849983215
+                },
+                {
+                  "id": "4",
+                  "color": "#c8bee7",
+                  "position": 0.8661431074142456
+                },
+                {
+                  "id": "5",
+                  "color": "#e8dec9",
+                  "position": 1
+                }
+              ],
+              "transform": {
+                "tx": 0.5532195412462957,
+                "ty": 0.39144742488861084,
+                "angle": 1.355155604226663,
+                "sx": 0.6065136837096974
+              }
+            }
+          },
+          {
+            "type": "color",
+            "id": "gziUpW0cgqDhWem1lykio",
+            "targetId": "Gw8hK8xPQalo1QOt4LbpH",
+            "startTime": 1150,
+            "endTime": 1610,
+            "easing": "none",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_LINEAR",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#06101b",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#15147d",
+                  "position": 0.27719223499298096
+                },
+                {
+                  "id": "2",
+                  "color": "#3a53df",
+                  "position": 0.5096133947372437
+                },
+                {
+                  "id": "3",
+                  "color": "#cfa5f7",
+                  "position": 0.6217464588548045
+                },
+                {
+                  "id": "4",
+                  "color": "#c8bee7",
+                  "position": 0.8661431074142456
+                },
+                {
+                  "id": "5",
+                  "color": "#e8dec9",
+                  "position": 1
+                }
+              ],
+              "transform": {
+                "angle": 1.386997224467875,
+                "sx": 0.48319015363207424,
+                "tx": 0.5350002583744257,
+                "ty": 0.30343721350845027
+              }
+            }
+          },
+          {
+            "type": "textIn",
+            "id": "uNb-Lhsei5mRuffIY66aY",
+            "targetId": "1e4QaqUdDXfd9zaXYWOGL",
+            "startTime": 2420,
+            "easing": "natural",
+            "effect": "fade",
+            "split": "letters",
+            "order": "forward",
+            "offset": 56,
+            "nodeDuration": 186,
+            "nodeEasing": "none",
+            "travelDistance": 50,
+            "slideDirection": "up"
+          },
+          {
+            "type": "textIn",
+            "id": "5sgwz1YviwWYzWluR-PpS",
+            "targetId": "YMUIk3oLfnWL1RxqYmKWF",
+            "startTime": 1590,
+            "easing": "natural",
+            "effect": "fade",
+            "split": "letters",
+            "order": "forward",
+            "offset": 191,
+            "nodeDuration": 636,
+            "nodeEasing": "none",
+            "travelDistance": 50,
+            "slideDirection": "up"
+          },
+          {
+            "type": "move",
+            "id": "VqLft_0bk2i4L-QOi8H1B",
+            "targetId": "YMUIk3oLfnWL1RxqYmKWF",
+            "startTime": 1610,
+            "endTime": 2720,
+            "easing": "natural",
+            "toValue": {
+              "x": -1212,
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "NBo50FiZhmvcJJ4TGt5dB",
+            "targetId": "YMUIk3oLfnWL1RxqYmKWF",
+            "startTime": 2450,
+            "endTime": 3090,
+            "easing": "natural",
+            "toValue": {
+              "x": -770,
+              "y": 0
+            }
+          },
+          {
+            "type": "color",
+            "id": "6l_GjRtYPIfC0woJbj-df",
+            "targetId": "J0S5xviDLqpXKj6JqE8dR",
+            "startTime": 1610,
+            "endTime": 2720,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "fromValue": {
+              "type": "GRADIENT_LINEAR",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#06101b",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#15147d",
+                  "position": 0.27719223499298096
+                },
+                {
+                  "id": "2",
+                  "color": "#3a53df",
+                  "position": 0.5096133947372437
+                },
+                {
+                  "id": "3",
+                  "color": "#cfa5f7",
+                  "position": 0.7691128849983215
+                },
+                {
+                  "id": "4",
+                  "color": "#c8bee7",
+                  "position": 0.8661431074142456
+                },
+                {
+                  "id": "5",
+                  "color": "#e8dec9",
+                  "position": 1
+                }
+              ],
+              "transform": {
+                "angle": 1.5454394439367996,
+                "sx": 1.203046085858586,
+                "tx": 0.5194444444444445,
+                "ty": 1.0125925925925925
+              }
+            },
+            "toValue": {
+              "type": "GRADIENT_LINEAR",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#06101b",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#15147d",
+                  "position": 0.27719223499298096
+                },
+                {
+                  "id": "2",
+                  "color": "#3a53df",
+                  "position": 0.5096133947372437
+                },
+                {
+                  "id": "3",
+                  "color": "#cfa5f7",
+                  "position": 0.7691128849983215
+                },
+                {
+                  "id": "4",
+                  "color": "#c8bee7",
+                  "position": 0.8661431074142456
+                },
+                {
+                  "id": "5",
+                  "color": "#e8dec9",
+                  "position": 1
+                }
+              ],
+              "transform": {
+                "tx": 0.5000000074505806,
+                "ty": 0.5,
+                "angle": 1.5707963267948966,
+                "sx": 1
+              }
+            }
+          },
+          {
+            "type": "color",
+            "id": "zJB6L0JBO8tW070v2wyQJ",
+            "targetId": "J0S5xviDLqpXKj6JqE8dR",
+            "startTime": 2450,
+            "endTime": 3040,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "toValue": {
+              "type": "GRADIENT_LINEAR",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#06101b",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#15147d",
+                  "position": 0.27719223499298096
+                },
+                {
+                  "id": "2",
+                  "color": "#3a53df",
+                  "position": 0.30590064437085385
+                },
+                {
+                  "id": "3",
+                  "color": "#cfa5f7",
+                  "position": 0.6254880681932409
+                },
+                {
+                  "id": "4",
+                  "color": "#c8bee7",
+                  "position": 0.7537835568524478
+                },
+                {
+                  "id": "5",
+                  "color": "#e8dec9",
+                  "position": 1
+                }
+              ],
+              "transform": {
+                "angle": 1.5707963267948966,
+                "sx": 1.6296296296296295,
+                "tx": 0.5,
+                "ty": 0.2725925925925926
+              }
+            }
+          },
+          {
+            "type": "show",
+            "id": "_mekTmotICWUYH83IlLI2",
+            "targetId": "dS7wxO4KkAEkiU72xtPXD",
+            "startTime": 1610
+          },
+          {
+            "type": "show",
+            "id": "-Z8_FMU5zAmh6WTKp0w77",
+            "targetId": "S5fJ0EXM2qEu-W4-LXkcJ",
+            "startTime": 3040
+          },
+          {
+            "type": "color",
+            "id": "dmqRY3xjrghk6HeyWm_mf",
+            "targetId": "1e4QaqUdDXfd9zaXYWOGL",
+            "startTime": 2990,
+            "endTime": 5440,
+            "easing": "natural",
+            "colorSpace": "rgb",
+            "fromValue": {
+              "type": "GRADIENT_LINEAR",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#06101b",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#15147d",
+                  "position": 0.27719223499298096
+                },
+                {
+                  "id": "2",
+                  "color": "#3a53df",
+                  "position": 0.5096133947372437
+                },
+                {
+                  "id": "3",
+                  "color": "#cfa5f7",
+                  "position": 0.7691128849983215
+                },
+                {
+                  "id": "4",
+                  "color": "#c8bee7",
+                  "position": 0.8661431074142456
+                },
+                {
+                  "id": "5",
+                  "color": "#e8dec9",
+                  "position": 1
+                }
+              ],
+              "transform": {
+                "angle": 2.3694477115186188,
+                "sx": 0.7665028216840222,
+                "tx": 1.2308351280045335,
+                "ty": 0.6522317624559589
+              }
+            },
+            "toValue": {
+              "type": "GRADIENT_LINEAR",
+              "stops": [
+                {
+                  "id": "0",
+                  "color": "#06101b",
+                  "position": 0
+                },
+                {
+                  "id": "1",
+                  "color": "#15147d",
+                  "position": 0.27719223499298096
+                },
+                {
+                  "id": "2",
+                  "color": "#3a53df",
+                  "position": 0.5096133947372437
+                },
+                {
+                  "id": "3",
+                  "color": "#cfa5f7",
+                  "position": 0.7691128849983215
+                },
+                {
+                  "id": "4",
+                  "color": "#c8bee7",
+                  "position": 0.8661431074142456
+                },
+                {
+                  "id": "5",
+                  "color": "#e8dec9",
+                  "position": 1
+                }
+              ],
+              "transform": {
+                "angle": 1.186866841028489,
+                "sx": 0.954793536413664,
+                "tx": 0.4364312350604946,
+                "ty": 0.1051728790881587
+              }
+            }
+          },
+          {
+            "type": "move",
+            "id": "DJjxQYe3rxj38s52c9AHk",
+            "targetId": "erE23h7OGAbeUCIzlaV-v",
+            "startTime": 2990,
+            "endTime": 4050,
+            "easing": "natural",
+            "fromValue": {},
+            "toValue": {
+              "x": 640,
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "aMeCua5WYrIrEAqqsyueN",
+            "targetId": "MXacN35O9hXnOMc-jmIY1",
+            "startTime": 2990,
+            "endTime": 4050,
+            "easing": "natural",
+            "fromValue": {
+              "x": 786,
+              "y": 0
+            },
+            "toValue": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,281 @@
+{
+  "name": "Wow",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 1,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "oSJxkZ8k",
+        "name": "Wow",
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 600,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 5000,
+        "fillColor": "#f6f6f6",
+        "background": true,
+        "layers": [
+          {
+            "type": "star",
+            "id": "vgWcg9wa",
+            "x": 260,
+            "y": 160,
+            "width": 280,
+            "height": 280,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "fillColor": "#515070",
+            "background": true,
+            "spikes": 5,
+            "radiusRatio": 38.2,
+            "strokeEnabled": false
+          },
+          {
+            "type": "ellipse",
+            "id": "rUHdJEGN",
+            "x": -140,
+            "y": -240,
+            "width": 1080,
+            "height": 1080,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "fillColor": "#ff8e6e",
+            "background": true,
+            "startAngle": 0,
+            "sweep": 100,
+            "strokeEnabled": false
+          },
+          {
+            "type": "ellipse",
+            "id": "BOmqNaaR",
+            "x": -140,
+            "y": -240,
+            "width": 1080,
+            "height": 1080,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "fillColor": "#ffbb91",
+            "background": true,
+            "startAngle": 0,
+            "sweep": 100,
+            "strokeEnabled": false
+          },
+          {
+            "type": "ellipse",
+            "id": "EOSezebU",
+            "x": -140,
+            "y": -240,
+            "width": 1080,
+            "height": 1080,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "fillColor": "#f6f6f6",
+            "background": true,
+            "startAngle": 0,
+            "sweep": 100,
+            "strokeEnabled": false
+          },
+          {
+            "type": "text",
+            "id": "S8sxbVxK",
+            "x": 245.5,
+            "y": 242,
+            "width": 309,
+            "height": 116,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "WOW",
+            "color": "#515070",
+            "fontSize": 96,
+            "font": {
+              "type": "googlefont",
+              "name": "Montserrat",
+              "weight": 800,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 1.2,
+            "letterSpacing": 0,
+            "textAlign": "center",
+            "verticalAlign": "center",
+            "case": "normal"
+          },
+          {
+            "type": "ellipse",
+            "id": "zviVzbwu",
+            "x": -140,
+            "y": -240,
+            "width": 1080,
+            "height": 1080,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "fillColor": "#ff8e6e",
+            "background": true,
+            "startAngle": 0,
+            "sweep": 100,
+            "strokeEnabled": false
+          },
+          {
+            "type": "ellipse",
+            "id": "xzBP01rQ",
+            "x": -140,
+            "y": -240,
+            "width": 1080,
+            "height": 1080,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "fillColor": "#ffbb91",
+            "background": true,
+            "startAngle": 0,
+            "sweep": 100,
+            "strokeEnabled": false
+          },
+          {
+            "type": "ellipse",
+            "id": "sJVuK9TO",
+            "x": -140,
+            "y": -240,
+            "width": 1080,
+            "height": 1080,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "fillColor": "#f6f6f6",
+            "background": true,
+            "startAngle": 0,
+            "sweep": 100,
+            "strokeEnabled": false
+          },
+          {
+            "type": "star",
+            "id": "z5oOday5",
+            "x": 260,
+            "y": 160,
+            "width": 280,
+            "height": 280,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "fillColor": "#515070",
+            "background": true,
+            "spikes": 5,
+            "radiusRatio": 38.2,
+            "strokeEnabled": false
+          }
+        ],
+        "operations": [
+          {
+            "type": "scale",
+            "id": "L8JXLDms",
+            "targetId": "vgWcg9wa",
+            "startTime": 500,
+            "endTime": 2000,
+            "easing": "accelerate"
+          },
+          {
+            "type": "scale",
+            "id": "VxwSEahc",
+            "targetId": "rUHdJEGN",
+            "startTime": 700,
+            "endTime": 1700,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "QfaIb8Ua",
+            "targetId": "BOmqNaaR",
+            "startTime": 850,
+            "endTime": 1850,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "xbaw13ZU",
+            "targetId": "EOSezebU",
+            "startTime": 1000,
+            "endTime": 2000,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "5B1OTcQE",
+            "targetId": "S8sxbVxK",
+            "startTime": 1000,
+            "endTime": 2000,
+            "easing": "slowDown"
+          },
+          {
+            "type": "rotate",
+            "id": "S8G81eg1",
+            "targetId": "S8sxbVxK",
+            "startTime": 1000,
+            "endTime": 2000,
+            "easing": "slowDown"
+          },
+          {
+            "type": "scale",
+            "id": "38cW3rG9",
+            "targetId": "S8sxbVxK",
+            "startTime": 3000,
+            "endTime": 4500,
+            "easing": "accelerate"
+          },
+          {
+            "type": "scale",
+            "id": "qASbitfN",
+            "targetId": "zviVzbwu",
+            "startTime": 3200,
+            "endTime": 4200,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "5NruHXIC",
+            "targetId": "xzBP01rQ",
+            "startTime": 3350,
+            "endTime": 4350,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "ysxQqZlR",
+            "targetId": "sJVuK9TO",
+            "startTime": 3500,
+            "endTime": 4500,
+            "easing": "natural"
+          },
+          {
+            "type": "scale",
+            "id": "xEDpTO5q",
+            "targetId": "z5oOday5",
+            "startTime": 3500,
+            "endTime": 4500,
+            "easing": "natural"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "Showreel Grid Mobile 003",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 12,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "472:256",
+        "name": "Showreel Grid Mobile 003",
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 1080,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 4000,
+        "fillColor": "#ffffff",
+        "background": true,
+        "layers": [],
+        "operations": []
+      }
+    ]
+  }
+}

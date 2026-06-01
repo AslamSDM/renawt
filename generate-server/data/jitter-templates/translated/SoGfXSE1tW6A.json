@@ -1,0 +1,72 @@
+{
+  "name": "[Apple Event] List",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 1,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "To58LLtn",
+        "name": "[Apple Event] List",
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 1080,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 4000,
+        "fillColor": "#000000",
+        "background": true,
+        "layers": [
+          {
+            "type": "text",
+            "id": "EhL9nTvm",
+            "x": 623.5,
+            "y": 144,
+            "width": 673,
+            "height": 792,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "Retina resolution\nMulti-Touch\nOleophobic coating\nP3 wide color\nTrue Tone\nProMotion\nIndustry-leading color accuracy\n100% factory callibration\nUltralow reflectivity\n600 nits brightness\nSupport for Apple Pencil",
+            "color": "#ffffff",
+            "fontSize": 48,
+            "font": {
+              "type": "googlefont",
+              "name": "SF Pro Display Semibold",
+              "weight": 400,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 1.5,
+            "letterSpacing": 0,
+            "textAlign": "center",
+            "verticalAlign": "center",
+            "case": "normal"
+          }
+        ],
+        "operations": [
+          {
+            "type": "textIn",
+            "id": "T0Oz88Co",
+            "targetId": "EhL9nTvm",
+            "startTime": 300,
+            "easing": "none",
+            "effect": "slideAndFade",
+            "split": "lines",
+            "order": "forward",
+            "offset": 50,
+            "nodeDuration": 200,
+            "nodeEasing": "natural",
+            "travelDistance": 50,
+            "slideDirection": "up"
+          }
+        ]
+      }
+    ]
+  }
+}

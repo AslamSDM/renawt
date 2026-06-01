@@ -1,0 +1,82 @@
+{
+  "name": "Big waves",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "g8v7SnUW",
+        "name": "Big waves",
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 1080,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 6000,
+        "fillColor": "#c77dff",
+        "background": true,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "TRXayMph",
+            "x": -3840,
+            "y": -4260,
+            "width": 9600,
+            "height": 9600,
+            "scale": 1,
+            "angle": -45,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "svg",
+                "id": "kwhpvNWS",
+                "x": 3200,
+                "y": 0,
+                "width": 9600,
+                "height": 9600,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#000000",
+                "background": true,
+                "url": "userAsset:ab4e8079-a5bf-4a55-89ce-ce7902566ee9.svg",
+                "strokeEnabled": false
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "move",
+            "id": "lzFGp5kM",
+            "targetId": "kwhpvNWS",
+            "startTime": 0,
+            "endTime": 6000,
+            "easing": "none",
+            "toValue": {
+              "x": -6400,
+              "y": 0
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

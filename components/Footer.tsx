@@ -40,7 +40,7 @@ const COLS = [
       { label: "Customers", href: "/#customers" },
       { label: "Careers", href: "/#" },
       { label: "Press", href: "/#" },
-      { label: "Contact", href: "mailto:support@remawt.com" },
+      { label: "Contact", href: "/contact" },
     ],
   },
   {
@@ -48,6 +48,8 @@ const COLS = [
     items: [
       { label: "Terms", href: "/terms" },
       { label: "Privacy", href: "/privacy" },
+      { label: "Refunds", href: "/refund" },
+      { label: "Cookies", href: "/cookies" },
       { label: "Security", href: "/#" },
     ],
   },

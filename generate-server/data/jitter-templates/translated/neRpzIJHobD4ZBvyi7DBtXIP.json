@@ -1,0 +1,4210 @@
+{
+  "name": "neRpzIJHobD4ZBvyi7DBtXIP",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "qC7ur7Nhv-OqmOtIpAMHD",
+        "name": "Scene 1",
+        "x": -544,
+        "y": -344.5,
+        "width": 1728,
+        "height": 1049,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 5360,
+        "fillColor": "#ffffff",
+        "background": true,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "_5HH9QF6KIzTS4QdICFgG",
+            "name": "Icon animation",
+            "x": 0,
+            "y": 0,
+            "width": 1728,
+            "height": 1050,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "rect",
+                "id": "c7aNlKK8G5J_m6VbPgp1S",
+                "name": "Background",
+                "x": 0,
+                "y": 0,
+                "width": 1728,
+                "height": 1050,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "fillColor": "#C0B5F9",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "layerGrp",
+                "id": "nhwd6xA4fBeN210KRwkFl",
+                "name": "Icon",
+                "x": 740.75,
+                "y": 401,
+                "width": 246.44140625,
+                "height": 246.44140625,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "layerGrp",
+                    "id": "4pYj-Vpe66vo1F0ht6vX_",
+                    "name": "Shape 01",
+                    "x": 89.25,
+                    "y": 0,
+                    "width": 70.94112491607666,
+                    "height": 75.44133186340332,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": false,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "rect",
+                        "id": "ctf06_3PniUeWaNW1omyP",
+                        "name": "Rectangle 1",
+                        "x": 9.94140625,
+                        "y": 17.50020694732666,
+                        "width": 48,
+                        "height": 48,
+                        "scale": 1,
+                        "angle": 45,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#571b2f",
+                        "shadowEnabled": false,
+                        "shadowOffsetX": 0,
+                        "shadowOffsetY": 0,
+                        "shadowBlur": 0,
+                        "shadowColor": "#000000",
+                        "shadowOpacity": 50
+                      },
+                      {
+                        "type": "shape",
+                        "id": "YqiJRIQCgHGhnw3yspU1y",
+                        "name": "Rectangle 3",
+                        "x": 45.94140625,
+                        "y": 0,
+                        "width": 25,
+                        "height": 0,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#571b2f",
+                        "background": true,
+                        "path": "M 0 0 L 25 0 L 25 0 L 0 0 Z",
+                        "strokeEnabled": false
+                      }
+                    ]
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "jmVXqCwi0pkryLDZVyMr_",
+                    "name": "Shape 02",
+                    "x": 86,
+                    "y": 171,
+                    "width": 70.94112491607666,
+                    "height": 75.44133186340332,
+                    "scale": 1,
+                    "angle": 180,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": false,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "rect",
+                        "id": "9booBXpYzaUF6G_1ibqcV",
+                        "name": "Rectangle 1",
+                        "x": 9.94140625,
+                        "y": 17.50020694732666,
+                        "width": 48,
+                        "height": 48,
+                        "scale": 1,
+                        "angle": 45,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#571b2f",
+                        "shadowEnabled": false,
+                        "shadowOffsetX": 0,
+                        "shadowOffsetY": 0,
+                        "shadowBlur": 0,
+                        "shadowColor": "#000000",
+                        "shadowOpacity": 50
+                      },
+                      {
+                        "type": "shape",
+                        "id": "FGQbI_A7gUt8LEVNaEfHw",
+                        "name": "Rectangle 3",
+                        "x": 45.94140625,
+                        "y": 0,
+                        "width": 25,
+                        "height": 0,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#571b2f",
+                        "background": true,
+                        "path": "M 0 0 L 25 0 L 25 0 L 0 0 Z",
+                        "strokeEnabled": false
+                      }
+                    ]
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "SHoiQ6PC4zKeO74Fvybsu",
+                    "name": "Shape 03",
+                    "x": 173.12514066696167,
+                    "y": 87.12503719329834,
+                    "width": 70.94112491607666,
+                    "height": 75.44133186340332,
+                    "scale": 1,
+                    "angle": 90,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": false,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "rect",
+                        "id": "OVcqk6-1ZoVKutGXl4EUi",
+                        "name": "Rectangle 1",
+                        "x": 9.94140625,
+                        "y": 17.50020694732666,
+                        "width": 48,
+                        "height": 48,
+                        "scale": 1,
+                        "angle": 45,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#571b2f",
+                        "shadowEnabled": false,
+                        "shadowOffsetX": 0,
+                        "shadowOffsetY": 0,
+                        "shadowBlur": 0,
+                        "shadowColor": "#000000",
+                        "shadowOpacity": 50
+                      },
+                      {
+                        "type": "shape",
+                        "id": "quTfPTzV7DqG5HQ96u5IF",
+                        "name": "Rectangle 3",
+                        "x": 45.94140625,
+                        "y": 0,
+                        "width": 25,
+                        "height": 0,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#571b2f",
+                        "background": true,
+                        "path": "M 0 0 L 25 0 L 25 0 L 0 0 Z",
+                        "strokeEnabled": false
+                      }
+                    ]
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "jcPgKTqqTpbNOg-v5yLqn",
+                    "name": "Shape 04",
+                    "x": 2.12514066696167,
+                    "y": 83.87503719329834,
+                    "width": 70.94112491607666,
+                    "height": 75.44133186340332,
+                    "scale": 1,
+                    "angle": 270,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": false,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "rect",
+                        "id": "oiKjc5gOOO_xijUZTr98f",
+                        "name": "Rectangle 1",
+                        "x": 9.94140625,
+                        "y": 17.50020694732666,
+                        "width": 48,
+                        "height": 48,
+                        "scale": 1,
+                        "angle": 45,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#571b2f",
+                        "shadowEnabled": false,
+                        "shadowOffsetX": 0,
+                        "shadowOffsetY": 0,
+                        "shadowBlur": 0,
+                        "shadowColor": "#000000",
+                        "shadowOpacity": 50
+                      },
+                      {
+                        "type": "shape",
+                        "id": "Zq9Un75yMkLZBMPj45Hrn",
+                        "name": "Rectangle 3",
+                        "x": 45.94140625,
+                        "y": 0,
+                        "width": 25,
+                        "height": 0,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#571b2f",
+                        "background": true,
+                        "path": "M 0 0 L 25 0 L 25 0 L 0 0 Z",
+                        "strokeEnabled": false
+                      }
+                    ]
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "QVj1ftzi6aUJxLPjSm-v0",
+                    "name": "Shape 05",
+                    "x": 149.2318189778398,
+                    "y": 26.191455921276884,
+                    "width": 70.94112491607666,
+                    "height": 75.44133186340332,
+                    "scale": 1,
+                    "angle": 45,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": false,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "rect",
+                        "id": "QY2I3jDJIxTxTNyfKpNKV",
+                        "name": "Rectangle 1",
+                        "x": 9.94140625,
+                        "y": 17.50020694732666,
+                        "width": 48,
+                        "height": 48,
+                        "scale": 1,
+                        "angle": 45,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#571b2f",
+                        "shadowEnabled": false,
+                        "shadowOffsetX": 0,
+                        "shadowOffsetY": 0,
+                        "shadowBlur": 0,
+                        "shadowColor": "#000000",
+                        "shadowOpacity": 50
+                      },
+                      {
+                        "type": "shape",
+                        "id": "bTYpHabyd5Eehi7KHyMsL",
+                        "name": "Rectangle 3",
+                        "x": 45.94140625,
+                        "y": 0,
+                        "width": 25,
+                        "height": 0,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#571b2f",
+                        "background": true,
+                        "path": "M 0 0 L 25 0 L 25 0 L 0 0 Z",
+                        "strokeEnabled": false
+                      }
+                    ]
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "lNuRJh2UvPf0XyBB4jblG",
+                    "name": "Shape 06",
+                    "x": 26.018462356083546,
+                    "y": 144.8086184653198,
+                    "width": 70.94112491607666,
+                    "height": 75.44133186340332,
+                    "scale": 1,
+                    "angle": 225,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": false,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "rect",
+                        "id": "WVMZ8Kr3rG7JP5eSq0rqd",
+                        "name": "Rectangle 1",
+                        "x": 9.94140625,
+                        "y": 17.50020694732666,
+                        "width": 48,
+                        "height": 48,
+                        "scale": 1,
+                        "angle": 45,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#571b2f",
+                        "shadowEnabled": false,
+                        "shadowOffsetX": 0,
+                        "shadowOffsetY": 0,
+                        "shadowBlur": 0,
+                        "shadowColor": "#000000",
+                        "shadowOpacity": 50
+                      },
+                      {
+                        "type": "shape",
+                        "id": "b_9sijcWuTkYlFJlaGbEY",
+                        "name": "Rectangle 3",
+                        "x": 45.94140625,
+                        "y": 0,
+                        "width": 25,
+                        "height": 0,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#571b2f",
+                        "background": true,
+                        "path": "M 0 0 L 25 0 L 25 0 L 0 0 Z",
+                        "strokeEnabled": false
+                      }
+                    ]
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "K0FnKLDvFJ8lnahd-gEg7",
+                    "name": "Shape 07",
+                    "x": 146.93389457247395,
+                    "y": 147.10654287068473,
+                    "width": 70.94112491607666,
+                    "height": 75.44133186340332,
+                    "scale": 1,
+                    "angle": 135,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": false,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "rect",
+                        "id": "uJaD6g1jCYfA16LEww__G",
+                        "name": "Rectangle 1",
+                        "x": 9.94140625,
+                        "y": 17.50020694732666,
+                        "width": 48,
+                        "height": 48,
+                        "scale": 1,
+                        "angle": 45,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#571b2f",
+                        "shadowEnabled": false,
+                        "shadowOffsetX": 0,
+                        "shadowOffsetY": 0,
+                        "shadowBlur": 0,
+                        "shadowColor": "#000000",
+                        "shadowOpacity": 50
+                      },
+                      {
+                        "type": "shape",
+                        "id": "M9fAi3wGmAEQYQ8OTz_42",
+                        "name": "Rectangle 3",
+                        "x": 45.94140625,
+                        "y": 0,
+                        "width": 25,
+                        "height": 0,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#571b2f",
+                        "background": true,
+                        "path": "M 0 0 L 25 0 L 25 0 L 0 0 Z",
+                        "strokeEnabled": false
+                      }
+                    ]
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "e1M8WhsHKvLsKUKZImfsA",
+                    "name": "Shape 08",
+                    "x": 28.316386761449394,
+                    "y": 23.893531515911945,
+                    "width": 70.94112491607666,
+                    "height": 75.44133186340332,
+                    "scale": 1,
+                    "angle": -45.00000000000003,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": false,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "rect",
+                        "id": "djdDCLMErvufw46OjjrYU",
+                        "name": "Rectangle 1",
+                        "x": 9.94140625,
+                        "y": 17.50020694732666,
+                        "width": 48,
+                        "height": 48,
+                        "scale": 1,
+                        "angle": 45,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#571b2f",
+                        "shadowEnabled": false,
+                        "shadowOffsetX": 0,
+                        "shadowOffsetY": 0,
+                        "shadowBlur": 0,
+                        "shadowColor": "#000000",
+                        "shadowOpacity": 50
+                      },
+                      {
+                        "type": "shape",
+                        "id": "0rQoT7lane3uhvLzvXTXQ",
+                        "name": "Rectangle 3",
+                        "x": 45.94140625,
+                        "y": 0,
+                        "width": 25,
+                        "height": 0,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "fillColor": "#571b2f",
+                        "background": true,
+                        "path": "M 0 0 L 25 0 L 25 0 L 0 0 Z",
+                        "strokeEnabled": false
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "rotate",
+            "id": "dgRS1ix9r71UQMOIsXILo",
+            "targetId": "nhwd6xA4fBeN210KRwkFl",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": -45
+          },
+          {
+            "type": "rotate",
+            "id": "ZQoUieFPWgeI5TjqG9Y8l",
+            "targetId": "nhwd6xA4fBeN210KRwkFl",
+            "startTime": 900,
+            "endTime": 2040,
+            "easing": "natural",
+            "toValue": -45
+          },
+          {
+            "type": "rotate",
+            "id": "yIoMr20WTa0EbGIclsnc9",
+            "targetId": "nhwd6xA4fBeN210KRwkFl",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": -135
+          },
+          {
+            "type": "rotate",
+            "id": "7Y-uOjHFyWLhPYSWO0rt9",
+            "targetId": "nhwd6xA4fBeN210KRwkFl",
+            "startTime": 3260,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": -45
+          },
+          {
+            "type": "rotate",
+            "id": "WR3c4dwd34erVA5M7ENFt",
+            "targetId": "nhwd6xA4fBeN210KRwkFl",
+            "startTime": 4350,
+            "endTime": 5610,
+            "easing": "natural",
+            "toValue": -45
+          },
+          {
+            "type": "scale",
+            "id": "HmGixtMmazH060eBcWjHP",
+            "targetId": "nhwd6xA4fBeN210KRwkFl",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "fromValue": 1.6,
+            "toValue": 1.9000000000000001
+          },
+          {
+            "type": "morph",
+            "id": "8uFs_F4E6TbO8XUwf0uRu",
+            "targetId": "ctf06_3PniUeWaNW1omyP",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": {
+              "height": 77.16163814417828,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      1.7015931172175838e-14,
+                      0.2979473036028015
+                    ],
+                    "leadingHandle": [
+                      -8.572668418025719e-8,
+                      0.2979473036028222
+                    ],
+                    "tag": "rect-4-0",
+                    "trailingHandle": [
+                      0.2341833644922459,
+                      -0.013637203471750833
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8398677939614742,
+                      0.16911309327635585
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.6229128779550045,
+                      -0.1195486831280777
+                    ],
+                    "tag": "9bnskGnTju",
+                    "trailingHandle": [
+                      0.9087468939221452,
+                      0.2607577709714818
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.9083426701292256,
+                      0.2612915990375951
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.9083409424811795,
+                      0.2612893003758222
+                    ],
+                    "tag": "rect-4-1",
+                    "trailingHandle": [
+                      1.0357635306509387,
+                      0.43082697465538233
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.90834268114224,
+                      0.8833618236531812
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      1.0252278707287792,
+                      0.7278442628835903
+                    ],
+                    "tag": "rect-4-2",
+                    "trailingHandle": [
+                      0.7914574915556998,
+                      1.038879384422775
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.4408019117830668,
+                      0.8833618421159721
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      0.5576871068761231,
+                      1.0388793936541727
+                    ],
+                    "tag": "rect-4-3",
+                    "trailingHandle": [
+                      0.3239167166900238,
+                      0.7278442905777731
+                    ]
+                  }
+                ]
+              },
+              "width": 102.66472704733572,
+              "x": -45.92132854594435,
+              "y": -39.21167276686446
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "0mHH3kjoz-aR-LA-mX-9G",
+            "targetId": "ctf06_3PniUeWaNW1omyP",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": -135
+          },
+          {
+            "type": "scale",
+            "id": "U483YxcAliVjStdgXfdDE",
+            "targetId": "ctf06_3PniUeWaNW1omyP",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": 0.79
+          },
+          {
+            "type": "rotate",
+            "id": "WB2giVIi8_LP2YWeVXSa-",
+            "targetId": "ctf06_3PniUeWaNW1omyP",
+            "startTime": 900,
+            "endTime": 2040,
+            "easing": "natural",
+            "toValue": -225
+          },
+          {
+            "type": "scale",
+            "id": "zKLEdcoBAzP5i5UcMOpyR",
+            "targetId": "4pYj-Vpe66vo1F0ht6vX_",
+            "startTime": 900,
+            "endTime": 2040,
+            "easing": "natural",
+            "toValue": 0.7999999999999999
+          },
+          {
+            "type": "morph",
+            "id": "jIZcFFLpIP18pOpZycbBM",
+            "targetId": "ctf06_3PniUeWaNW1omyP",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": {
+              "height": 63.473867116579555,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0.019201017358186787,
+                      0.7029565296166124
+                    ],
+                    "leadingHandle": [
+                      0.0192008897028153,
+                      0.7029565296166427
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.7589725048930621,
+                      0.000128869805578653
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.7487224461822938,
+                      -0.011004572694919626
+                    ],
+                    "tag": "9bnskGnTju",
+                    "trailingHandle": [
+                      0.8615401732387794,
+                      0.11153615733045974
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8609382448915802,
+                      0.11218510205733365
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.8609356722558752,
+                      0.11218230770332244
+                    ],
+                    "tag": "rect-4-1",
+                    "trailingHandle": [
+                      1.0506802795437995,
+                      0.31827973623323286
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8490295650247323,
+                      0.8740615168007543
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      1.045815146547158,
+                      0.6667615532605066
+                    ],
+                    "tag": "rect-4-2",
+                    "trailingHandle": [
+                      0.6522439835023064,
+                      1.081361480341002
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.11462787847697324,
+                      0.8098306188295697
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      0.29283656323892443,
+                      1.013595960882508
+                    ],
+                    "tag": "rect-4-3",
+                    "trailingHandle": [
+                      -0.06358080628497792,
+                      0.6060652767766314
+                    ]
+                  }
+                ]
+              },
+              "width": 68.94425829577818,
+              "x": -47.12447776914978,
+              "y": -34.66460381386508
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "FZvz4JGYp_8NI5cpwQrqy",
+            "targetId": "ctf06_3PniUeWaNW1omyP",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": -375
+          },
+          {
+            "type": "scale",
+            "id": "cWiTxBqNqV_l5VJ0-RqDE",
+            "targetId": "4pYj-Vpe66vo1F0ht6vX_",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": 1.3
+          },
+          {
+            "type": "scale",
+            "id": "dvKX4SqdtoFkS4G4VtD8y",
+            "targetId": "ctf06_3PniUeWaNW1omyP",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": 0.71
+          },
+          {
+            "type": "rotate",
+            "id": "_soWdiNEHV9IvJdQxKNFe",
+            "targetId": "ctf06_3PniUeWaNW1omyP",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": -255
+          },
+          {
+            "type": "morph",
+            "id": "maZul8R_hCL0S1EcfHKqU",
+            "targetId": "ctf06_3PniUeWaNW1omyP",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": {
+              "height": 70.00000319239007,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0,
+                      6.424657287542338e-9
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999935753422,
+                      0
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999999999999,
+                      0.9999999935753422
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      6.424659013146046e-9,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-3"
+                  }
+                ]
+              },
+              "width": 70.00000319239007,
+              "x": -37.031731520469535,
+              "y": -50.02260589189074
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "vLfh0O__uqWzZF-29H3Uc",
+            "targetId": "ctf06_3PniUeWaNW1omyP",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": -90
+          },
+          {
+            "type": "morph",
+            "id": "2S3Vrc2LZRrjHD28rjO-F",
+            "targetId": "ctf06_3PniUeWaNW1omyP",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": {
+              "height": 68.94256944810877,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0.6504447652302834,
+                      0.6461520740788967
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.6504350116068123,
+                      0
+                    ],
+                    "tag": "YuXyeYbxWV"
+                  },
+                  {
+                    "anchor": [
+                      1,
+                      0.000005008037901005774
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      0.9950207752179936,
+                      1
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      0,
+                      0.9978147739622092
+                    ],
+                    "tag": "rect-4-3"
+                  },
+                  {
+                    "anchor": [
+                      0.0012192029338899443,
+                      0.6359156446095984
+                    ],
+                    "tag": "aS35eesnN4"
+                  }
+                ]
+              },
+              "width": 70.79768808241624,
+              "x": -13.283754914863618,
+              "y": -50.78972184250815
+            }
+          },
+          {
+            "type": "morph",
+            "id": "deHwbQTfXpComyagRQTO2",
+            "targetId": "YqiJRIQCgHGhnw3yspU1y",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": {
+              "height": 63.0694580078125,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0,
+                      0
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999821617775,
+                      0
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      1,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      1.7838222553400048e-8,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-3"
+                  }
+                ]
+              },
+              "width": 18,
+              "x": -0.7694825008434769,
+              "y": 11.902895276436837
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "QoE7x2O_neg2Rwnd3KETd",
+            "targetId": "YqiJRIQCgHGhnw3yspU1y",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "fromValue": 45
+          },
+          {
+            "type": "scale",
+            "id": "PCGatUOj12vMG2U6eYUja",
+            "targetId": "4pYj-Vpe66vo1F0ht6vX_",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": 0.94
+          },
+          {
+            "type": "morph",
+            "id": "iY8ItPhy3eFU3UpO1ctok",
+            "targetId": "9booBXpYzaUF6G_1ibqcV",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": {
+              "height": 77.16163814417828,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      1.7015931172175838e-14,
+                      0.2979473036028015
+                    ],
+                    "leadingHandle": [
+                      -8.572668418025719e-8,
+                      0.2979473036028222
+                    ],
+                    "tag": "rect-4-0",
+                    "trailingHandle": [
+                      0.2341833644922459,
+                      -0.013637203471750833
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8398677939614742,
+                      0.16911309327635585
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.6229128779550045,
+                      -0.1195486831280777
+                    ],
+                    "tag": "9bnskGnTju",
+                    "trailingHandle": [
+                      0.9087468939221452,
+                      0.2607577709714818
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.9083426701292256,
+                      0.2612915990375951
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.9083409424811795,
+                      0.2612893003758222
+                    ],
+                    "tag": "rect-4-1",
+                    "trailingHandle": [
+                      1.0357635306509387,
+                      0.43082697465538233
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.90834268114224,
+                      0.8833618236531812
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      1.0252278707287792,
+                      0.7278442628835903
+                    ],
+                    "tag": "rect-4-2",
+                    "trailingHandle": [
+                      0.7914574915556998,
+                      1.038879384422775
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.4408019117830668,
+                      0.8833618421159721
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      0.5576871068761231,
+                      1.0388793936541727
+                    ],
+                    "tag": "rect-4-3",
+                    "trailingHandle": [
+                      0.3239167166900238,
+                      0.7278442905777731
+                    ]
+                  }
+                ]
+              },
+              "width": 102.66472704733572,
+              "x": -45.92132854594435,
+              "y": -39.21167276686446
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "hycnQliZwalGSVuith2xM",
+            "targetId": "9booBXpYzaUF6G_1ibqcV",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": -135
+          },
+          {
+            "type": "scale",
+            "id": "id08vwxBcYwY0kVpalQQF",
+            "targetId": "9booBXpYzaUF6G_1ibqcV",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": 0.79
+          },
+          {
+            "type": "rotate",
+            "id": "WTZDjFBLiXJ_Z1PcApDhk",
+            "targetId": "9booBXpYzaUF6G_1ibqcV",
+            "startTime": 900,
+            "endTime": 2040,
+            "easing": "natural",
+            "toValue": -225
+          },
+          {
+            "type": "scale",
+            "id": "IGJGAbMQItQTQqEf0IU0S",
+            "targetId": "jmVXqCwi0pkryLDZVyMr_",
+            "startTime": 900,
+            "endTime": 2040,
+            "easing": "natural",
+            "toValue": 0.7999999999999999
+          },
+          {
+            "type": "morph",
+            "id": "ENPP07prZw78BcbaOerzs",
+            "targetId": "9booBXpYzaUF6G_1ibqcV",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": {
+              "height": 63.473867116579555,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0.019201017358186787,
+                      0.7029565296166124
+                    ],
+                    "leadingHandle": [
+                      0.0192008897028153,
+                      0.7029565296166427
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.7589725048930621,
+                      0.000128869805578653
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.7487224461822938,
+                      -0.011004572694919626
+                    ],
+                    "tag": "9bnskGnTju",
+                    "trailingHandle": [
+                      0.8615401732387794,
+                      0.11153615733045974
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8609382448915802,
+                      0.11218510205733365
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.8609356722558752,
+                      0.11218230770332244
+                    ],
+                    "tag": "rect-4-1",
+                    "trailingHandle": [
+                      1.0506802795437995,
+                      0.31827973623323286
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8490295650247323,
+                      0.8740615168007543
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      1.045815146547158,
+                      0.6667615532605066
+                    ],
+                    "tag": "rect-4-2",
+                    "trailingHandle": [
+                      0.6522439835023064,
+                      1.081361480341002
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.11462787847697324,
+                      0.8098306188295697
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      0.29283656323892443,
+                      1.013595960882508
+                    ],
+                    "tag": "rect-4-3",
+                    "trailingHandle": [
+                      -0.06358080628497792,
+                      0.6060652767766314
+                    ]
+                  }
+                ]
+              },
+              "width": 68.94425829577818,
+              "x": -47.12447776914978,
+              "y": -34.66460381386508
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "WuxluP_qnDfwRIc0kmbBs",
+            "targetId": "9booBXpYzaUF6G_1ibqcV",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": -375
+          },
+          {
+            "type": "scale",
+            "id": "d0b80m21v-5TMC2SPosKe",
+            "targetId": "jmVXqCwi0pkryLDZVyMr_",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": 1.3
+          },
+          {
+            "type": "scale",
+            "id": "ga1IVKj-CJTx6TLoeJIiZ",
+            "targetId": "9booBXpYzaUF6G_1ibqcV",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": 0.71
+          },
+          {
+            "type": "rotate",
+            "id": "o6Iws27GgU1vq8W5-nCaJ",
+            "targetId": "9booBXpYzaUF6G_1ibqcV",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": -255
+          },
+          {
+            "type": "morph",
+            "id": "nUixjQsjHGXAdt2G-DXZ3",
+            "targetId": "9booBXpYzaUF6G_1ibqcV",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": {
+              "height": 70.00000319239007,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0,
+                      6.424657287542338e-9
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999935753422,
+                      0
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999999999999,
+                      0.9999999935753422
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      6.424659013146046e-9,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-3"
+                  }
+                ]
+              },
+              "width": 70.00000319239007,
+              "x": -37.031731520469535,
+              "y": -50.02260589189074
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "hyU6yhldoK0C65wC50w8i",
+            "targetId": "9booBXpYzaUF6G_1ibqcV",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": -90
+          },
+          {
+            "type": "morph",
+            "id": "0orOTDOrE0PgvQZ3wGpxe",
+            "targetId": "9booBXpYzaUF6G_1ibqcV",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": {
+              "height": 68.94256944810877,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0.6504447652302834,
+                      0.6461520740788967
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.6504350116068123,
+                      0
+                    ],
+                    "tag": "YuXyeYbxWV"
+                  },
+                  {
+                    "anchor": [
+                      1,
+                      0.000005008037901005774
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      0.9950207752179936,
+                      1
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      0,
+                      0.9978147739622092
+                    ],
+                    "tag": "rect-4-3"
+                  },
+                  {
+                    "anchor": [
+                      0.0012192029338899443,
+                      0.6359156446095984
+                    ],
+                    "tag": "aS35eesnN4"
+                  }
+                ]
+              },
+              "width": 70.79768808241624,
+              "x": -13.283754914863618,
+              "y": -50.78972184250815
+            }
+          },
+          {
+            "type": "morph",
+            "id": "HsjF6J57BdmAvhnclL_bD",
+            "targetId": "FGQbI_A7gUt8LEVNaEfHw",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": {
+              "height": 63.0694580078125,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0,
+                      0
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999821617775,
+                      0
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      1,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      1.7838222553400048e-8,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-3"
+                  }
+                ]
+              },
+              "width": 18,
+              "x": -0.7694825008434769,
+              "y": 11.902895276436837
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "Jqdxzj8RkeBNOX4VuxPCX",
+            "targetId": "FGQbI_A7gUt8LEVNaEfHw",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "fromValue": 45
+          },
+          {
+            "type": "scale",
+            "id": "hnc_vNhmib9pQcKoWSHt1",
+            "targetId": "jmVXqCwi0pkryLDZVyMr_",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": 0.94
+          },
+          {
+            "type": "morph",
+            "id": "DrQ8_oNznuptvIZOe7D7w",
+            "targetId": "OVcqk6-1ZoVKutGXl4EUi",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": {
+              "height": 77.16163814417828,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      1.7015931172175838e-14,
+                      0.2979473036028015
+                    ],
+                    "leadingHandle": [
+                      -8.572668418025719e-8,
+                      0.2979473036028222
+                    ],
+                    "tag": "rect-4-0",
+                    "trailingHandle": [
+                      0.2341833644922459,
+                      -0.013637203471750833
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8398677939614742,
+                      0.16911309327635585
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.6229128779550045,
+                      -0.1195486831280777
+                    ],
+                    "tag": "9bnskGnTju",
+                    "trailingHandle": [
+                      0.9087468939221452,
+                      0.2607577709714818
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.9083426701292256,
+                      0.2612915990375951
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.9083409424811795,
+                      0.2612893003758222
+                    ],
+                    "tag": "rect-4-1",
+                    "trailingHandle": [
+                      1.0357635306509387,
+                      0.43082697465538233
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.90834268114224,
+                      0.8833618236531812
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      1.0252278707287792,
+                      0.7278442628835903
+                    ],
+                    "tag": "rect-4-2",
+                    "trailingHandle": [
+                      0.7914574915556998,
+                      1.038879384422775
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.4408019117830668,
+                      0.8833618421159721
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      0.5576871068761231,
+                      1.0388793936541727
+                    ],
+                    "tag": "rect-4-3",
+                    "trailingHandle": [
+                      0.3239167166900238,
+                      0.7278442905777731
+                    ]
+                  }
+                ]
+              },
+              "width": 102.66472704733572,
+              "x": -45.92132854594435,
+              "y": -39.21167276686446
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "Shcb1vtHNjOICxeiINRoi",
+            "targetId": "OVcqk6-1ZoVKutGXl4EUi",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": -135
+          },
+          {
+            "type": "scale",
+            "id": "rO_d-Ndj7iAqKT8YsTXw_",
+            "targetId": "OVcqk6-1ZoVKutGXl4EUi",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": 0.79
+          },
+          {
+            "type": "rotate",
+            "id": "5JH6e6aSUOHUvDLwAYUSF",
+            "targetId": "OVcqk6-1ZoVKutGXl4EUi",
+            "startTime": 900,
+            "endTime": 2040,
+            "easing": "natural",
+            "toValue": -225
+          },
+          {
+            "type": "scale",
+            "id": "JnZqdO1oGiluoGRqCpZ6e",
+            "targetId": "SHoiQ6PC4zKeO74Fvybsu",
+            "startTime": 900,
+            "endTime": 2040,
+            "easing": "natural",
+            "toValue": 0.7999999999999999
+          },
+          {
+            "type": "morph",
+            "id": "_3eOEeJwHPJus8sH41RK1",
+            "targetId": "OVcqk6-1ZoVKutGXl4EUi",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": {
+              "height": 63.473867116579555,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0.019201017358186787,
+                      0.7029565296166124
+                    ],
+                    "leadingHandle": [
+                      0.0192008897028153,
+                      0.7029565296166427
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.7589725048930621,
+                      0.000128869805578653
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.7487224461822938,
+                      -0.011004572694919626
+                    ],
+                    "tag": "9bnskGnTju",
+                    "trailingHandle": [
+                      0.8615401732387794,
+                      0.11153615733045974
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8609382448915802,
+                      0.11218510205733365
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.8609356722558752,
+                      0.11218230770332244
+                    ],
+                    "tag": "rect-4-1",
+                    "trailingHandle": [
+                      1.0506802795437995,
+                      0.31827973623323286
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8490295650247323,
+                      0.8740615168007543
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      1.045815146547158,
+                      0.6667615532605066
+                    ],
+                    "tag": "rect-4-2",
+                    "trailingHandle": [
+                      0.6522439835023064,
+                      1.081361480341002
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.11462787847697324,
+                      0.8098306188295697
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      0.29283656323892443,
+                      1.013595960882508
+                    ],
+                    "tag": "rect-4-3",
+                    "trailingHandle": [
+                      -0.06358080628497792,
+                      0.6060652767766314
+                    ]
+                  }
+                ]
+              },
+              "width": 68.94425829577818,
+              "x": -47.12447776914978,
+              "y": -34.66460381386508
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "uq4WoSYjWt1LXWbEnKrBG",
+            "targetId": "OVcqk6-1ZoVKutGXl4EUi",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": -375
+          },
+          {
+            "type": "scale",
+            "id": "2yPvbAWSTc401E_xE4r2F",
+            "targetId": "SHoiQ6PC4zKeO74Fvybsu",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": 1.3
+          },
+          {
+            "type": "scale",
+            "id": "g6Hg5UIX9XhbecqNHu2SG",
+            "targetId": "OVcqk6-1ZoVKutGXl4EUi",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": 0.71
+          },
+          {
+            "type": "rotate",
+            "id": "xFVopB7sChYSBgWVtT0pj",
+            "targetId": "OVcqk6-1ZoVKutGXl4EUi",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": -255
+          },
+          {
+            "type": "morph",
+            "id": "ed1nDoRC3V8mBdPGJ69OV",
+            "targetId": "OVcqk6-1ZoVKutGXl4EUi",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": {
+              "height": 70.00000319239007,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0,
+                      6.424657287542338e-9
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999935753422,
+                      0
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999999999999,
+                      0.9999999935753422
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      6.424659013146046e-9,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-3"
+                  }
+                ]
+              },
+              "width": 70.00000319239007,
+              "x": -37.031731520469535,
+              "y": -50.02260589189074
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "mG0uJHYuKscshBM0kjLYV",
+            "targetId": "OVcqk6-1ZoVKutGXl4EUi",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": -90
+          },
+          {
+            "type": "morph",
+            "id": "1GjWH7xF1r5NbCYxTSd1j",
+            "targetId": "OVcqk6-1ZoVKutGXl4EUi",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": {
+              "height": 68.94256944810877,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0.6504447652302834,
+                      0.6461520740788967
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.6504350116068123,
+                      0
+                    ],
+                    "tag": "YuXyeYbxWV"
+                  },
+                  {
+                    "anchor": [
+                      1,
+                      0.000005008037901005774
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      0.9950207752179936,
+                      1
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      0,
+                      0.9978147739622092
+                    ],
+                    "tag": "rect-4-3"
+                  },
+                  {
+                    "anchor": [
+                      0.0012192029338899443,
+                      0.6359156446095984
+                    ],
+                    "tag": "aS35eesnN4"
+                  }
+                ]
+              },
+              "width": 70.79768808241624,
+              "x": -13.283754914863618,
+              "y": -50.78972184250815
+            }
+          },
+          {
+            "type": "morph",
+            "id": "G5-TbJem4vsDW5lysO9E4",
+            "targetId": "quTfPTzV7DqG5HQ96u5IF",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": {
+              "height": 63.0694580078125,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0,
+                      0
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999821617775,
+                      0
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      1,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      1.7838222553400048e-8,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-3"
+                  }
+                ]
+              },
+              "width": 18,
+              "x": -0.7694825008434769,
+              "y": 11.902895276436837
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "gOLKMmuMD6woAP1JwnDP6",
+            "targetId": "quTfPTzV7DqG5HQ96u5IF",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "fromValue": 45
+          },
+          {
+            "type": "scale",
+            "id": "UKsj9YftorR_qzua4bk1l",
+            "targetId": "SHoiQ6PC4zKeO74Fvybsu",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": 0.94
+          },
+          {
+            "type": "morph",
+            "id": "TRCNy4Z-WfJdm5jsk6fj4",
+            "targetId": "oiKjc5gOOO_xijUZTr98f",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": {
+              "height": 77.16163814417828,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      1.7015931172175838e-14,
+                      0.2979473036028015
+                    ],
+                    "leadingHandle": [
+                      -8.572668418025719e-8,
+                      0.2979473036028222
+                    ],
+                    "tag": "rect-4-0",
+                    "trailingHandle": [
+                      0.2341833644922459,
+                      -0.013637203471750833
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8398677939614742,
+                      0.16911309327635585
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.6229128779550045,
+                      -0.1195486831280777
+                    ],
+                    "tag": "9bnskGnTju",
+                    "trailingHandle": [
+                      0.9087468939221452,
+                      0.2607577709714818
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.9083426701292256,
+                      0.2612915990375951
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.9083409424811795,
+                      0.2612893003758222
+                    ],
+                    "tag": "rect-4-1",
+                    "trailingHandle": [
+                      1.0357635306509387,
+                      0.43082697465538233
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.90834268114224,
+                      0.8833618236531812
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      1.0252278707287792,
+                      0.7278442628835903
+                    ],
+                    "tag": "rect-4-2",
+                    "trailingHandle": [
+                      0.7914574915556998,
+                      1.038879384422775
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.4408019117830668,
+                      0.8833618421159721
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      0.5576871068761231,
+                      1.0388793936541727
+                    ],
+                    "tag": "rect-4-3",
+                    "trailingHandle": [
+                      0.3239167166900238,
+                      0.7278442905777731
+                    ]
+                  }
+                ]
+              },
+              "width": 102.66472704733572,
+              "x": -45.92132854594435,
+              "y": -39.21167276686446
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "eVynBPuiWELB8uc8wViMD",
+            "targetId": "oiKjc5gOOO_xijUZTr98f",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": -135
+          },
+          {
+            "type": "scale",
+            "id": "Hs2L5joG8yww-ZcE7yA4E",
+            "targetId": "oiKjc5gOOO_xijUZTr98f",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": 0.79
+          },
+          {
+            "type": "rotate",
+            "id": "OFGBJXpiGQTT3kUdnpqhR",
+            "targetId": "oiKjc5gOOO_xijUZTr98f",
+            "startTime": 900,
+            "endTime": 2040,
+            "easing": "natural",
+            "toValue": -225
+          },
+          {
+            "type": "scale",
+            "id": "9VOdgrxj0TUx5zFJKwJg9",
+            "targetId": "jcPgKTqqTpbNOg-v5yLqn",
+            "startTime": 900,
+            "endTime": 2040,
+            "easing": "natural",
+            "toValue": 0.7999999999999999
+          },
+          {
+            "type": "morph",
+            "id": "CwDCiRCJIwgO--KZGewkW",
+            "targetId": "oiKjc5gOOO_xijUZTr98f",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": {
+              "height": 63.473867116579555,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0.019201017358186787,
+                      0.7029565296166124
+                    ],
+                    "leadingHandle": [
+                      0.0192008897028153,
+                      0.7029565296166427
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.7589725048930621,
+                      0.000128869805578653
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.7487224461822938,
+                      -0.011004572694919626
+                    ],
+                    "tag": "9bnskGnTju",
+                    "trailingHandle": [
+                      0.8615401732387794,
+                      0.11153615733045974
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8609382448915802,
+                      0.11218510205733365
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.8609356722558752,
+                      0.11218230770332244
+                    ],
+                    "tag": "rect-4-1",
+                    "trailingHandle": [
+                      1.0506802795437995,
+                      0.31827973623323286
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8490295650247323,
+                      0.8740615168007543
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      1.045815146547158,
+                      0.6667615532605066
+                    ],
+                    "tag": "rect-4-2",
+                    "trailingHandle": [
+                      0.6522439835023064,
+                      1.081361480341002
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.11462787847697324,
+                      0.8098306188295697
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      0.29283656323892443,
+                      1.013595960882508
+                    ],
+                    "tag": "rect-4-3",
+                    "trailingHandle": [
+                      -0.06358080628497792,
+                      0.6060652767766314
+                    ]
+                  }
+                ]
+              },
+              "width": 68.94425829577818,
+              "x": -47.12447776914978,
+              "y": -34.66460381386508
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "WJAs0vT6L-HQk3Kao_Hze",
+            "targetId": "oiKjc5gOOO_xijUZTr98f",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": -375
+          },
+          {
+            "type": "scale",
+            "id": "slfzS1bkgU_ty1ShAZtaZ",
+            "targetId": "jcPgKTqqTpbNOg-v5yLqn",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": 1.3
+          },
+          {
+            "type": "scale",
+            "id": "ZB5AOiffWQB2Qsam1hkKx",
+            "targetId": "oiKjc5gOOO_xijUZTr98f",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": 0.71
+          },
+          {
+            "type": "rotate",
+            "id": "eOwBaCi3Yoa6X_33uwm2l",
+            "targetId": "oiKjc5gOOO_xijUZTr98f",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": -255
+          },
+          {
+            "type": "morph",
+            "id": "dumRX3X--1zBM-h_TdyNk",
+            "targetId": "oiKjc5gOOO_xijUZTr98f",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": {
+              "height": 70.00000319239007,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0,
+                      6.424657287542338e-9
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999935753422,
+                      0
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999999999999,
+                      0.9999999935753422
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      6.424659013146046e-9,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-3"
+                  }
+                ]
+              },
+              "width": 70.00000319239007,
+              "x": -37.031731520469535,
+              "y": -50.02260589189074
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "dpOmNLsN-MElxLjxZetkC",
+            "targetId": "oiKjc5gOOO_xijUZTr98f",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": -90
+          },
+          {
+            "type": "morph",
+            "id": "mpMHOVN27mjAnprxcAblD",
+            "targetId": "oiKjc5gOOO_xijUZTr98f",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": {
+              "height": 68.94256944810877,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0.6504447652302834,
+                      0.6461520740788967
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.6504350116068123,
+                      0
+                    ],
+                    "tag": "YuXyeYbxWV"
+                  },
+                  {
+                    "anchor": [
+                      1,
+                      0.000005008037901005774
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      0.9950207752179936,
+                      1
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      0,
+                      0.9978147739622092
+                    ],
+                    "tag": "rect-4-3"
+                  },
+                  {
+                    "anchor": [
+                      0.0012192029338899443,
+                      0.6359156446095984
+                    ],
+                    "tag": "aS35eesnN4"
+                  }
+                ]
+              },
+              "width": 70.79768808241624,
+              "x": -13.283754914863618,
+              "y": -50.78972184250815
+            }
+          },
+          {
+            "type": "morph",
+            "id": "OG2OguYLS5doNIjw_8k1_",
+            "targetId": "Zq9Un75yMkLZBMPj45Hrn",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": {
+              "height": 63.0694580078125,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0,
+                      0
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999821617775,
+                      0
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      1,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      1.7838222553400048e-8,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-3"
+                  }
+                ]
+              },
+              "width": 18,
+              "x": -0.7694825008434769,
+              "y": 11.902895276436837
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "rqE_B3MKSgC7WyNZJPlG5",
+            "targetId": "Zq9Un75yMkLZBMPj45Hrn",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "fromValue": 45
+          },
+          {
+            "type": "scale",
+            "id": "z_Mh4q7OKN3LKDVg3AnCK",
+            "targetId": "jcPgKTqqTpbNOg-v5yLqn",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": 0.94
+          },
+          {
+            "type": "morph",
+            "id": "TSIlF35oj1FEnx1lvxqQj",
+            "targetId": "QY2I3jDJIxTxTNyfKpNKV",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": {
+              "height": 77.16163814417828,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      1.7015931172175838e-14,
+                      0.2979473036028015
+                    ],
+                    "leadingHandle": [
+                      -8.572668418025719e-8,
+                      0.2979473036028222
+                    ],
+                    "tag": "rect-4-0",
+                    "trailingHandle": [
+                      0.2341833644922459,
+                      -0.013637203471750833
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8398677939614742,
+                      0.16911309327635585
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.6229128779550045,
+                      -0.1195486831280777
+                    ],
+                    "tag": "9bnskGnTju",
+                    "trailingHandle": [
+                      0.9087468939221452,
+                      0.2607577709714818
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.9083426701292256,
+                      0.2612915990375951
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.9083409424811795,
+                      0.2612893003758222
+                    ],
+                    "tag": "rect-4-1",
+                    "trailingHandle": [
+                      1.0357635306509387,
+                      0.43082697465538233
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.90834268114224,
+                      0.8833618236531812
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      1.0252278707287792,
+                      0.7278442628835903
+                    ],
+                    "tag": "rect-4-2",
+                    "trailingHandle": [
+                      0.7914574915556998,
+                      1.038879384422775
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.4408019117830668,
+                      0.8833618421159721
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      0.5576871068761231,
+                      1.0388793936541727
+                    ],
+                    "tag": "rect-4-3",
+                    "trailingHandle": [
+                      0.3239167166900238,
+                      0.7278442905777731
+                    ]
+                  }
+                ]
+              },
+              "width": 102.66472704733572,
+              "x": -45.92132854594435,
+              "y": -39.21167276686446
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "lrTFUKQ2-9g-moZuEQBCD",
+            "targetId": "QY2I3jDJIxTxTNyfKpNKV",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": -135
+          },
+          {
+            "type": "scale",
+            "id": "TgjZ_twXl0ch-XeP-N1RE",
+            "targetId": "QY2I3jDJIxTxTNyfKpNKV",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": 0.79
+          },
+          {
+            "type": "rotate",
+            "id": "zGESS73-ZF86PPO_eI8m4",
+            "targetId": "QY2I3jDJIxTxTNyfKpNKV",
+            "startTime": 900,
+            "endTime": 2040,
+            "easing": "natural",
+            "toValue": -225
+          },
+          {
+            "type": "scale",
+            "id": "zYnzWsHJ9aOyglIVmbrdE",
+            "targetId": "QVj1ftzi6aUJxLPjSm-v0",
+            "startTime": 900,
+            "endTime": 2040,
+            "easing": "natural",
+            "toValue": 0.7999999999999999
+          },
+          {
+            "type": "morph",
+            "id": "rxxP415cTgM9JWxBx2Qpc",
+            "targetId": "QY2I3jDJIxTxTNyfKpNKV",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": {
+              "height": 63.473867116579555,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0.019201017358186787,
+                      0.7029565296166124
+                    ],
+                    "leadingHandle": [
+                      0.0192008897028153,
+                      0.7029565296166427
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.7589725048930621,
+                      0.000128869805578653
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.7487224461822938,
+                      -0.011004572694919626
+                    ],
+                    "tag": "9bnskGnTju",
+                    "trailingHandle": [
+                      0.8615401732387794,
+                      0.11153615733045974
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8609382448915802,
+                      0.11218510205733365
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.8609356722558752,
+                      0.11218230770332244
+                    ],
+                    "tag": "rect-4-1",
+                    "trailingHandle": [
+                      1.0506802795437995,
+                      0.31827973623323286
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8490295650247323,
+                      0.8740615168007543
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      1.045815146547158,
+                      0.6667615532605066
+                    ],
+                    "tag": "rect-4-2",
+                    "trailingHandle": [
+                      0.6522439835023064,
+                      1.081361480341002
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.11462787847697324,
+                      0.8098306188295697
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      0.29283656323892443,
+                      1.013595960882508
+                    ],
+                    "tag": "rect-4-3",
+                    "trailingHandle": [
+                      -0.06358080628497792,
+                      0.6060652767766314
+                    ]
+                  }
+                ]
+              },
+              "width": 68.94425829577818,
+              "x": -47.12447776914978,
+              "y": -34.66460381386508
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "TDl7PlFWpW3C-sYCD2dNN",
+            "targetId": "QY2I3jDJIxTxTNyfKpNKV",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": -375
+          },
+          {
+            "type": "scale",
+            "id": "DYEHSEcjONvpUgOKGwOCD",
+            "targetId": "QVj1ftzi6aUJxLPjSm-v0",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": 1.3
+          },
+          {
+            "type": "scale",
+            "id": "oY-TrirqVxDX1wAmvxvNR",
+            "targetId": "QY2I3jDJIxTxTNyfKpNKV",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": 0.71
+          },
+          {
+            "type": "rotate",
+            "id": "rzwBD6yJwMf2Y6w9YLsK1",
+            "targetId": "QY2I3jDJIxTxTNyfKpNKV",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": -255
+          },
+          {
+            "type": "morph",
+            "id": "CeLBgKpvjJvA3cAIS1t7M",
+            "targetId": "QY2I3jDJIxTxTNyfKpNKV",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": {
+              "height": 70.00000319239007,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0,
+                      6.424657287542338e-9
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999935753422,
+                      0
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999999999999,
+                      0.9999999935753422
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      6.424659013146046e-9,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-3"
+                  }
+                ]
+              },
+              "width": 70.00000319239007,
+              "x": -37.031731520469535,
+              "y": -50.02260589189074
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "TXwh0bsF2o0qCxBYiW8Bh",
+            "targetId": "QY2I3jDJIxTxTNyfKpNKV",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": -90
+          },
+          {
+            "type": "morph",
+            "id": "bVkuaBOskdUMQrtpkSx-K",
+            "targetId": "QY2I3jDJIxTxTNyfKpNKV",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": {
+              "height": 68.94256944810877,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0.6504447652302834,
+                      0.6461520740788967
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.6504350116068123,
+                      0
+                    ],
+                    "tag": "YuXyeYbxWV"
+                  },
+                  {
+                    "anchor": [
+                      1,
+                      0.000005008037901005774
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      0.9950207752179936,
+                      1
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      0,
+                      0.9978147739622092
+                    ],
+                    "tag": "rect-4-3"
+                  },
+                  {
+                    "anchor": [
+                      0.0012192029338899443,
+                      0.6359156446095984
+                    ],
+                    "tag": "aS35eesnN4"
+                  }
+                ]
+              },
+              "width": 70.79768808241624,
+              "x": -13.283754914863618,
+              "y": -50.78972184250815
+            }
+          },
+          {
+            "type": "morph",
+            "id": "aLKaJrYADUYjq_DfIXfKI",
+            "targetId": "bTYpHabyd5Eehi7KHyMsL",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": {
+              "height": 63.0694580078125,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0,
+                      0
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999821617775,
+                      0
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      1,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      1.7838222553400048e-8,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-3"
+                  }
+                ]
+              },
+              "width": 18,
+              "x": -0.7694825008434769,
+              "y": 11.902895276436837
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "MEvUsdY8uRbmgBbU1Ln4-",
+            "targetId": "bTYpHabyd5Eehi7KHyMsL",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "fromValue": 45
+          },
+          {
+            "type": "scale",
+            "id": "ozLgZqWosQGiZpmdYwF5S",
+            "targetId": "QVj1ftzi6aUJxLPjSm-v0",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": 0.94
+          },
+          {
+            "type": "morph",
+            "id": "ekaHrmIND0i7ZC-TNtLgO",
+            "targetId": "WVMZ8Kr3rG7JP5eSq0rqd",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": {
+              "height": 77.16163814417828,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      1.7015931172175838e-14,
+                      0.2979473036028015
+                    ],
+                    "leadingHandle": [
+                      -8.572668418025719e-8,
+                      0.2979473036028222
+                    ],
+                    "tag": "rect-4-0",
+                    "trailingHandle": [
+                      0.2341833644922459,
+                      -0.013637203471750833
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8398677939614742,
+                      0.16911309327635585
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.6229128779550045,
+                      -0.1195486831280777
+                    ],
+                    "tag": "9bnskGnTju",
+                    "trailingHandle": [
+                      0.9087468939221452,
+                      0.2607577709714818
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.9083426701292256,
+                      0.2612915990375951
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.9083409424811795,
+                      0.2612893003758222
+                    ],
+                    "tag": "rect-4-1",
+                    "trailingHandle": [
+                      1.0357635306509387,
+                      0.43082697465538233
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.90834268114224,
+                      0.8833618236531812
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      1.0252278707287792,
+                      0.7278442628835903
+                    ],
+                    "tag": "rect-4-2",
+                    "trailingHandle": [
+                      0.7914574915556998,
+                      1.038879384422775
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.4408019117830668,
+                      0.8833618421159721
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      0.5576871068761231,
+                      1.0388793936541727
+                    ],
+                    "tag": "rect-4-3",
+                    "trailingHandle": [
+                      0.3239167166900238,
+                      0.7278442905777731
+                    ]
+                  }
+                ]
+              },
+              "width": 102.66472704733572,
+              "x": -45.92132854594435,
+              "y": -39.21167276686446
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "Bka2OdFfWSRzZCEI140mJ",
+            "targetId": "WVMZ8Kr3rG7JP5eSq0rqd",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": -135
+          },
+          {
+            "type": "scale",
+            "id": "CfHS8non3vBqdMPIvhrpi",
+            "targetId": "WVMZ8Kr3rG7JP5eSq0rqd",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": 0.79
+          },
+          {
+            "type": "rotate",
+            "id": "1e6ViQDxm8LD0yEtIIHrG",
+            "targetId": "WVMZ8Kr3rG7JP5eSq0rqd",
+            "startTime": 900,
+            "endTime": 2040,
+            "easing": "natural",
+            "toValue": -225
+          },
+          {
+            "type": "scale",
+            "id": "MWDzt8f0go1we1L0HNXYY",
+            "targetId": "lNuRJh2UvPf0XyBB4jblG",
+            "startTime": 900,
+            "endTime": 2040,
+            "easing": "natural",
+            "toValue": 0.7999999999999999
+          },
+          {
+            "type": "morph",
+            "id": "4R96rxfEaDw8FnROjWo94",
+            "targetId": "WVMZ8Kr3rG7JP5eSq0rqd",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": {
+              "height": 63.473867116579555,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0.019201017358186787,
+                      0.7029565296166124
+                    ],
+                    "leadingHandle": [
+                      0.0192008897028153,
+                      0.7029565296166427
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.7589725048930621,
+                      0.000128869805578653
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.7487224461822938,
+                      -0.011004572694919626
+                    ],
+                    "tag": "9bnskGnTju",
+                    "trailingHandle": [
+                      0.8615401732387794,
+                      0.11153615733045974
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8609382448915802,
+                      0.11218510205733365
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.8609356722558752,
+                      0.11218230770332244
+                    ],
+                    "tag": "rect-4-1",
+                    "trailingHandle": [
+                      1.0506802795437995,
+                      0.31827973623323286
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8490295650247323,
+                      0.8740615168007543
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      1.045815146547158,
+                      0.6667615532605066
+                    ],
+                    "tag": "rect-4-2",
+                    "trailingHandle": [
+                      0.6522439835023064,
+                      1.081361480341002
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.11462787847697324,
+                      0.8098306188295697
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      0.29283656323892443,
+                      1.013595960882508
+                    ],
+                    "tag": "rect-4-3",
+                    "trailingHandle": [
+                      -0.06358080628497792,
+                      0.6060652767766314
+                    ]
+                  }
+                ]
+              },
+              "width": 68.94425829577818,
+              "x": -47.12447776914978,
+              "y": -34.66460381386508
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "uh-cPLcEAbDbN69QXI163",
+            "targetId": "WVMZ8Kr3rG7JP5eSq0rqd",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": -375
+          },
+          {
+            "type": "scale",
+            "id": "2NnkZ7FjlTRML5HlNW-AV",
+            "targetId": "lNuRJh2UvPf0XyBB4jblG",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": 1.3
+          },
+          {
+            "type": "scale",
+            "id": "EObYY7nslGyc4cOwfEggL",
+            "targetId": "WVMZ8Kr3rG7JP5eSq0rqd",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": 0.71
+          },
+          {
+            "type": "rotate",
+            "id": "xquoLVdG8r1nmBV12fZmD",
+            "targetId": "WVMZ8Kr3rG7JP5eSq0rqd",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": -255
+          },
+          {
+            "type": "morph",
+            "id": "jiRZObsdaG34lP7n38mRm",
+            "targetId": "WVMZ8Kr3rG7JP5eSq0rqd",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": {
+              "height": 70.00000319239007,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0,
+                      6.424657287542338e-9
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999935753422,
+                      0
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999999999999,
+                      0.9999999935753422
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      6.424659013146046e-9,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-3"
+                  }
+                ]
+              },
+              "width": 70.00000319239007,
+              "x": -37.031731520469535,
+              "y": -50.02260589189074
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "gxfWjDEdJ16K-FH9SKx14",
+            "targetId": "WVMZ8Kr3rG7JP5eSq0rqd",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": -90
+          },
+          {
+            "type": "morph",
+            "id": "6JTACgN406Wt_4SM3RP3z",
+            "targetId": "WVMZ8Kr3rG7JP5eSq0rqd",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": {
+              "height": 68.94256944810877,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0.6504447652302834,
+                      0.6461520740788967
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.6504350116068123,
+                      0
+                    ],
+                    "tag": "YuXyeYbxWV"
+                  },
+                  {
+                    "anchor": [
+                      1,
+                      0.000005008037901005774
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      0.9950207752179936,
+                      1
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      0,
+                      0.9978147739622092
+                    ],
+                    "tag": "rect-4-3"
+                  },
+                  {
+                    "anchor": [
+                      0.0012192029338899443,
+                      0.6359156446095984
+                    ],
+                    "tag": "aS35eesnN4"
+                  }
+                ]
+              },
+              "width": 70.79768808241624,
+              "x": -13.283754914863618,
+              "y": -50.78972184250815
+            }
+          },
+          {
+            "type": "morph",
+            "id": "-pYvlpSuKJQ9AOJQNM6hK",
+            "targetId": "b_9sijcWuTkYlFJlaGbEY",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": {
+              "height": 63.0694580078125,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0,
+                      0
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999821617775,
+                      0
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      1,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      1.7838222553400048e-8,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-3"
+                  }
+                ]
+              },
+              "width": 18,
+              "x": -0.7694825008434769,
+              "y": 11.902895276436837
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "G7Lbd00hzPjzIPATg3nSN",
+            "targetId": "b_9sijcWuTkYlFJlaGbEY",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "fromValue": 45
+          },
+          {
+            "type": "scale",
+            "id": "Vn3gqRNisJiiobyk9iPr7",
+            "targetId": "lNuRJh2UvPf0XyBB4jblG",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": 0.94
+          },
+          {
+            "type": "morph",
+            "id": "976BhXOEqi9yWVwaP0Fkx",
+            "targetId": "uJaD6g1jCYfA16LEww__G",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": {
+              "height": 77.16163814417828,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      1.7015931172175838e-14,
+                      0.2979473036028015
+                    ],
+                    "leadingHandle": [
+                      -8.572668418025719e-8,
+                      0.2979473036028222
+                    ],
+                    "tag": "rect-4-0",
+                    "trailingHandle": [
+                      0.2341833644922459,
+                      -0.013637203471750833
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8398677939614742,
+                      0.16911309327635585
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.6229128779550045,
+                      -0.1195486831280777
+                    ],
+                    "tag": "9bnskGnTju",
+                    "trailingHandle": [
+                      0.9087468939221452,
+                      0.2607577709714818
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.9083426701292256,
+                      0.2612915990375951
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.9083409424811795,
+                      0.2612893003758222
+                    ],
+                    "tag": "rect-4-1",
+                    "trailingHandle": [
+                      1.0357635306509387,
+                      0.43082697465538233
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.90834268114224,
+                      0.8833618236531812
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      1.0252278707287792,
+                      0.7278442628835903
+                    ],
+                    "tag": "rect-4-2",
+                    "trailingHandle": [
+                      0.7914574915556998,
+                      1.038879384422775
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.4408019117830668,
+                      0.8833618421159721
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      0.5576871068761231,
+                      1.0388793936541727
+                    ],
+                    "tag": "rect-4-3",
+                    "trailingHandle": [
+                      0.3239167166900238,
+                      0.7278442905777731
+                    ]
+                  }
+                ]
+              },
+              "width": 102.66472704733572,
+              "x": -45.92132854594435,
+              "y": -39.21167276686446
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "MysGT3LNGM-BpxURRa2f5",
+            "targetId": "uJaD6g1jCYfA16LEww__G",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": -135
+          },
+          {
+            "type": "scale",
+            "id": "gxu5v_Os_w-Vaqo16s7R_",
+            "targetId": "uJaD6g1jCYfA16LEww__G",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": 0.79
+          },
+          {
+            "type": "rotate",
+            "id": "WPUUBiChaqln5FD3zbgaT",
+            "targetId": "uJaD6g1jCYfA16LEww__G",
+            "startTime": 900,
+            "endTime": 2040,
+            "easing": "natural",
+            "toValue": -225
+          },
+          {
+            "type": "scale",
+            "id": "S3Ql6l0Xke5jlQYd9Jsmy",
+            "targetId": "K0FnKLDvFJ8lnahd-gEg7",
+            "startTime": 900,
+            "endTime": 2040,
+            "easing": "natural",
+            "toValue": 0.7999999999999999
+          },
+          {
+            "type": "morph",
+            "id": "QI-DOqmFHCBbjuZ5lHbc8",
+            "targetId": "uJaD6g1jCYfA16LEww__G",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": {
+              "height": 63.473867116579555,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0.019201017358186787,
+                      0.7029565296166124
+                    ],
+                    "leadingHandle": [
+                      0.0192008897028153,
+                      0.7029565296166427
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.7589725048930621,
+                      0.000128869805578653
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.7487224461822938,
+                      -0.011004572694919626
+                    ],
+                    "tag": "9bnskGnTju",
+                    "trailingHandle": [
+                      0.8615401732387794,
+                      0.11153615733045974
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8609382448915802,
+                      0.11218510205733365
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.8609356722558752,
+                      0.11218230770332244
+                    ],
+                    "tag": "rect-4-1",
+                    "trailingHandle": [
+                      1.0506802795437995,
+                      0.31827973623323286
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8490295650247323,
+                      0.8740615168007543
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      1.045815146547158,
+                      0.6667615532605066
+                    ],
+                    "tag": "rect-4-2",
+                    "trailingHandle": [
+                      0.6522439835023064,
+                      1.081361480341002
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.11462787847697324,
+                      0.8098306188295697
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      0.29283656323892443,
+                      1.013595960882508
+                    ],
+                    "tag": "rect-4-3",
+                    "trailingHandle": [
+                      -0.06358080628497792,
+                      0.6060652767766314
+                    ]
+                  }
+                ]
+              },
+              "width": 68.94425829577818,
+              "x": -47.12447776914978,
+              "y": -34.66460381386508
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "pIImbcwqt4XsmY6g33qLu",
+            "targetId": "uJaD6g1jCYfA16LEww__G",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": -375
+          },
+          {
+            "type": "scale",
+            "id": "zUDYrpirIQzQzKCblU81d",
+            "targetId": "K0FnKLDvFJ8lnahd-gEg7",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": 1.3
+          },
+          {
+            "type": "scale",
+            "id": "gXkZvkui3PgBRDmq8XV_M",
+            "targetId": "uJaD6g1jCYfA16LEww__G",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": 0.71
+          },
+          {
+            "type": "rotate",
+            "id": "87jaSYMGggLcLm8tsZs6t",
+            "targetId": "uJaD6g1jCYfA16LEww__G",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": -255
+          },
+          {
+            "type": "morph",
+            "id": "3-0QKuXYAmmzcFepBXcNX",
+            "targetId": "uJaD6g1jCYfA16LEww__G",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": {
+              "height": 70.00000319239007,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0,
+                      6.424657287542338e-9
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999935753422,
+                      0
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999999999999,
+                      0.9999999935753422
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      6.424659013146046e-9,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-3"
+                  }
+                ]
+              },
+              "width": 70.00000319239007,
+              "x": -37.031731520469535,
+              "y": -50.02260589189074
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "8q2fiIP6bbpsC5-g3qk-B",
+            "targetId": "uJaD6g1jCYfA16LEww__G",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": -90
+          },
+          {
+            "type": "morph",
+            "id": "lXkVUAG9X1_bwSgb2yQ7V",
+            "targetId": "uJaD6g1jCYfA16LEww__G",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": {
+              "height": 68.94256944810877,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0.6504447652302834,
+                      0.6461520740788967
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.6504350116068123,
+                      0
+                    ],
+                    "tag": "YuXyeYbxWV"
+                  },
+                  {
+                    "anchor": [
+                      1,
+                      0.000005008037901005774
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      0.9950207752179936,
+                      1
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      0,
+                      0.9978147739622092
+                    ],
+                    "tag": "rect-4-3"
+                  },
+                  {
+                    "anchor": [
+                      0.0012192029338899443,
+                      0.6359156446095984
+                    ],
+                    "tag": "aS35eesnN4"
+                  }
+                ]
+              },
+              "width": 70.79768808241624,
+              "x": -13.283754914863618,
+              "y": -50.78972184250815
+            }
+          },
+          {
+            "type": "morph",
+            "id": "q8zkTclKibH9Vpr3NucuG",
+            "targetId": "M9fAi3wGmAEQYQ8OTz_42",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": {
+              "height": 63.0694580078125,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0,
+                      0
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999821617775,
+                      0
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      1,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      1.7838222553400048e-8,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-3"
+                  }
+                ]
+              },
+              "width": 18,
+              "x": -0.7694825008434769,
+              "y": 11.902895276436837
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "NWN86mb0PvMVpLuSp43ro",
+            "targetId": "M9fAi3wGmAEQYQ8OTz_42",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "fromValue": 45
+          },
+          {
+            "type": "scale",
+            "id": "f1pEhNxbAPxzXaw4-azAF",
+            "targetId": "K0FnKLDvFJ8lnahd-gEg7",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": 0.94
+          },
+          {
+            "type": "morph",
+            "id": "-qVDnfkcuJJqtCtYtS8f2",
+            "targetId": "djdDCLMErvufw46OjjrYU",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": {
+              "height": 77.16163814417828,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      1.7015931172175838e-14,
+                      0.2979473036028015
+                    ],
+                    "leadingHandle": [
+                      -8.572668418025719e-8,
+                      0.2979473036028222
+                    ],
+                    "tag": "rect-4-0",
+                    "trailingHandle": [
+                      0.2341833644922459,
+                      -0.013637203471750833
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8398677939614742,
+                      0.16911309327635585
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.6229128779550045,
+                      -0.1195486831280777
+                    ],
+                    "tag": "9bnskGnTju",
+                    "trailingHandle": [
+                      0.9087468939221452,
+                      0.2607577709714818
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.9083426701292256,
+                      0.2612915990375951
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.9083409424811795,
+                      0.2612893003758222
+                    ],
+                    "tag": "rect-4-1",
+                    "trailingHandle": [
+                      1.0357635306509387,
+                      0.43082697465538233
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.90834268114224,
+                      0.8833618236531812
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      1.0252278707287792,
+                      0.7278442628835903
+                    ],
+                    "tag": "rect-4-2",
+                    "trailingHandle": [
+                      0.7914574915556998,
+                      1.038879384422775
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.4408019117830668,
+                      0.8833618421159721
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      0.5576871068761231,
+                      1.0388793936541727
+                    ],
+                    "tag": "rect-4-3",
+                    "trailingHandle": [
+                      0.3239167166900238,
+                      0.7278442905777731
+                    ]
+                  }
+                ]
+              },
+              "width": 102.66472704733572,
+              "x": -45.92132854594435,
+              "y": -39.21167276686446
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "LVK9wgG0nvEGQ1K0vsK_3",
+            "targetId": "djdDCLMErvufw46OjjrYU",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": -135
+          },
+          {
+            "type": "scale",
+            "id": "HOoybl5hlihDX7H1KuHTU",
+            "targetId": "djdDCLMErvufw46OjjrYU",
+            "startTime": 0,
+            "endTime": 1040,
+            "easing": "natural",
+            "toValue": 0.79
+          },
+          {
+            "type": "rotate",
+            "id": "QSVETUQ8PLBKeBKPi91lR",
+            "targetId": "djdDCLMErvufw46OjjrYU",
+            "startTime": 900,
+            "endTime": 2040,
+            "easing": "natural",
+            "toValue": -225
+          },
+          {
+            "type": "scale",
+            "id": "OYg0DRgVIUbbUMgJEfl2_",
+            "targetId": "e1M8WhsHKvLsKUKZImfsA",
+            "startTime": 900,
+            "endTime": 2040,
+            "easing": "natural",
+            "toValue": 0.7999999999999999
+          },
+          {
+            "type": "morph",
+            "id": "6gz8gGlW9O5NyZ0jNq3AM",
+            "targetId": "djdDCLMErvufw46OjjrYU",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": {
+              "height": 63.473867116579555,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0.019201017358186787,
+                      0.7029565296166124
+                    ],
+                    "leadingHandle": [
+                      0.0192008897028153,
+                      0.7029565296166427
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.7589725048930621,
+                      0.000128869805578653
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.7487224461822938,
+                      -0.011004572694919626
+                    ],
+                    "tag": "9bnskGnTju",
+                    "trailingHandle": [
+                      0.8615401732387794,
+                      0.11153615733045974
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8609382448915802,
+                      0.11218510205733365
+                    ],
+                    "constraint": "mirrorAngle",
+                    "leadingHandle": [
+                      0.8609356722558752,
+                      0.11218230770332244
+                    ],
+                    "tag": "rect-4-1",
+                    "trailingHandle": [
+                      1.0506802795437995,
+                      0.31827973623323286
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.8490295650247323,
+                      0.8740615168007543
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      1.045815146547158,
+                      0.6667615532605066
+                    ],
+                    "tag": "rect-4-2",
+                    "trailingHandle": [
+                      0.6522439835023064,
+                      1.081361480341002
+                    ]
+                  },
+                  {
+                    "anchor": [
+                      0.11462787847697324,
+                      0.8098306188295697
+                    ],
+                    "constraint": "mirror",
+                    "leadingHandle": [
+                      0.29283656323892443,
+                      1.013595960882508
+                    ],
+                    "tag": "rect-4-3",
+                    "trailingHandle": [
+                      -0.06358080628497792,
+                      0.6060652767766314
+                    ]
+                  }
+                ]
+              },
+              "width": 68.94425829577818,
+              "x": -47.12447776914978,
+              "y": -34.66460381386508
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "m_THUQHrh63ZzVJ5wej_c",
+            "targetId": "djdDCLMErvufw46OjjrYU",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": -375
+          },
+          {
+            "type": "scale",
+            "id": "1WgRMSlwOIwDmPK2fFCTX",
+            "targetId": "e1M8WhsHKvLsKUKZImfsA",
+            "startTime": 1820,
+            "endTime": 3400,
+            "easing": "natural",
+            "toValue": 1.3
+          },
+          {
+            "type": "scale",
+            "id": "mmpg0FLUResJ4fjdmkmMB",
+            "targetId": "djdDCLMErvufw46OjjrYU",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": 0.71
+          },
+          {
+            "type": "rotate",
+            "id": "6N2xTrIi_J8njxfJNXqe1",
+            "targetId": "djdDCLMErvufw46OjjrYU",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": -255
+          },
+          {
+            "type": "morph",
+            "id": "IF7i_czyOXkqSYT0XmbbH",
+            "targetId": "djdDCLMErvufw46OjjrYU",
+            "startTime": 3240,
+            "endTime": 4520,
+            "easing": "natural",
+            "toValue": {
+              "height": 70.00000319239007,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0,
+                      6.424657287542338e-9
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999935753422,
+                      0
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999999999999,
+                      0.9999999935753422
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      6.424659013146046e-9,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-3"
+                  }
+                ]
+              },
+              "width": 70.00000319239007,
+              "x": -37.031731520469535,
+              "y": -50.02260589189074
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "PCLKuBH8zhn38SjHVdZ4f",
+            "targetId": "djdDCLMErvufw46OjjrYU",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": -90
+          },
+          {
+            "type": "morph",
+            "id": "l77zySSpuD5PTStzQ3kWY",
+            "targetId": "djdDCLMErvufw46OjjrYU",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": {
+              "height": 68.94256944810877,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0.6504447652302834,
+                      0.6461520740788967
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.6504350116068123,
+                      0
+                    ],
+                    "tag": "YuXyeYbxWV"
+                  },
+                  {
+                    "anchor": [
+                      1,
+                      0.000005008037901005774
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      0.9950207752179936,
+                      1
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      0,
+                      0.9978147739622092
+                    ],
+                    "tag": "rect-4-3"
+                  },
+                  {
+                    "anchor": [
+                      0.0012192029338899443,
+                      0.6359156446095984
+                    ],
+                    "tag": "aS35eesnN4"
+                  }
+                ]
+              },
+              "width": 70.79768808241624,
+              "x": -13.283754914863618,
+              "y": -50.78972184250815
+            }
+          },
+          {
+            "type": "morph",
+            "id": "aw3-l6X_wdAtr7S37nUOD",
+            "targetId": "0rQoT7lane3uhvLzvXTXQ",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": {
+              "height": 63.0694580078125,
+              "spline": {
+                "closed": true,
+                "controls": [
+                  {
+                    "anchor": [
+                      0,
+                      0
+                    ],
+                    "tag": "rect-4-0"
+                  },
+                  {
+                    "anchor": [
+                      0.9999999821617775,
+                      0
+                    ],
+                    "tag": "rect-4-1"
+                  },
+                  {
+                    "anchor": [
+                      1,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-2"
+                  },
+                  {
+                    "anchor": [
+                      1.7838222553400048e-8,
+                      0.9999999999999999
+                    ],
+                    "tag": "rect-4-3"
+                  }
+                ]
+              },
+              "width": 18,
+              "x": -0.7694825008434769,
+              "y": 11.902895276436837
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "p4JH5H0xlkPsjJAcDVRiI",
+            "targetId": "0rQoT7lane3uhvLzvXTXQ",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "fromValue": 45
+          },
+          {
+            "type": "scale",
+            "id": "j8PezFJhs9b0jBonhybzM",
+            "targetId": "e1M8WhsHKvLsKUKZImfsA",
+            "startTime": 4350,
+            "endTime": 5600,
+            "easing": "natural",
+            "toValue": 0.94
+          }
+        ]
+      }
+    ]
+  }
+}

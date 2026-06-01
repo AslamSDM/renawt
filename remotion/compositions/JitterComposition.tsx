@@ -12,7 +12,9 @@ import * as Remotion from "remotion";
 import {
   AbsoluteFill,
   Audio,
+  Easing as RemotionEasing,
   Img,
+  OffthreadVideo,
   Sequence,
   staticFile,
   useCurrentFrame,
@@ -67,6 +69,83 @@ interface ImageLayer extends BaseLayer {
   mediaName?: string;
 }
 
+interface TextImgLayer extends BaseLayer {
+  type: "textImg";
+  url?: string;
+  textVector?: string;
+  text?: string;
+  mediaName?: string;
+}
+
+interface GifLayer extends BaseLayer {
+  type: "gif";
+  url: string;
+  mediaName?: string;
+}
+
+interface VideoLayer extends BaseLayer {
+  type: "video";
+  url: string;
+  mediaName?: string;
+  fillColor?: string;
+  volume?: number;
+  loop?: boolean;
+}
+
+interface EllipseLayer extends BaseLayer {
+  type: "ellipse";
+  fillColor?: string;
+  background?: boolean;
+  strokeEnabled?: boolean;
+  strokeColor?: string;
+  strokeWeight?: number;
+  startAngle?: number;
+  sweep?: number;
+}
+
+interface StarLayer extends BaseLayer {
+  type: "star";
+  fillColor?: string;
+  background?: boolean;
+  strokeEnabled?: boolean;
+  strokeColor?: string;
+  strokeWeight?: number;
+  spikes?: number;
+  radiusRatio?: number;
+}
+
+interface SvgLayer extends BaseLayer {
+  type: "svg" | "shape";
+  url?: string;
+  path?: string;
+  fillColor?: string;
+  background?: boolean;
+  strokeEnabled?: boolean;
+  strokeColor?: string;
+  strokeWeight?: number;
+  viewBoxWidth?: number;
+  viewBoxHeight?: number;
+}
+
+interface CustomShaderLayer extends BaseLayer {
+  type: "customShader";
+  fillColor?: string;
+}
+
+interface MaskGroupLayer extends BaseLayer {
+  type: "maskGrp";
+  background?: boolean;
+  fillColor?: string;
+  clipsContent?: boolean;
+  layers: AnyLayer[];
+}
+
+interface UnknownLayer extends BaseLayer {
+  type: string;
+  fillColor?: string;
+  layers?: AnyLayer[];
+}
+
 interface RectLayer extends BaseLayer {
   type: "rect";
   fillColor?: string;
@@ -104,7 +183,24 @@ interface JitterCustomComponent {
   description?: string;
 }
 
-type AnyLayer = TextLayer | ImageLayer | RectLayer | LayerGroup | CustomLayer;
+// Known layer types form a proper discriminated union so `layer.type === "x"`
+// narrows correctly. Unknown/unmapped types arrive at runtime and are handled
+// in the render fallback via a cast — they are intentionally NOT part of this
+// union (a `type: string` member would defeat all literal narrowing).
+type AnyLayer =
+  | TextLayer
+  | ImageLayer
+  | TextImgLayer
+  | GifLayer
+  | VideoLayer
+  | RectLayer
+  | EllipseLayer
+  | StarLayer
+  | SvgLayer
+  | CustomShaderLayer
+  | LayerGroup
+  | MaskGroupLayer
+  | CustomLayer;
 
 interface OpBase {
   id: string;
@@ -141,7 +237,7 @@ type Operation =
       intervalMs?: number;
     })
   | (OpBase & {
-      type: "textIn";
+      type: "textIn" | "textOut";
       effect?: "appear" | "slide" | "fade";
       split?: "letters" | "words" | "none";
       order?: "forward" | "reverse" | "random";
@@ -150,6 +246,47 @@ type Operation =
       nodeEasing?: Easing;
       travelDistance?: number;
       slideDirection?: "up" | "down" | "left" | "right";
+    })
+  | (OpBase & { type: "growOut"; scale?: number })
+  | (OpBase & {
+      type: "move";
+      fromValue?: { x?: number; y?: number };
+      toValue?: { x?: number; y?: number };
+    })
+  | (OpBase & { type: "scale"; fromValue?: number; toValue?: number })
+  | (OpBase & { type: "rotate"; fromValue?: number; toValue?: number })
+  | (OpBase & { type: "opacity"; fromValue?: number; toValue?: number })
+  | (OpBase & { type: "color"; fromValue?: string; toValue?: string })
+  | (OpBase & { type: "cornerRadius"; fromValue?: number; toValue?: number })
+  | (OpBase & { type: "hide" })
+  | (OpBase & { type: "show" })
+  | (OpBase & { type: "blurRadius"; fromValue?: number; toValue?: number })
+  | (OpBase & {
+      type:
+        | "blurIn"
+        | "blurOut"
+        | "blurScaleIn"
+        | "blurScaleOut"
+        | "blurSlideIn"
+        | "blurSlideOut";
+      blurRadius?: number;
+      scale?: number;
+      direction?: "up" | "down" | "left" | "right";
+      distance?: number;
+    })
+  | (OpBase & { type: "morph"; fromValue?: unknown; toValue?: unknown })
+  | (OpBase & {
+      type: "spinOut";
+      angle?: number;
+      direction?: "cw" | "ccw";
+    })
+  | (OpBase & { type: "playVideo"; offset?: number; volume?: number })
+  | (OpBase & {
+      type: "playAudio";
+      url?: string;
+      offset?: number;
+      volume?: number;
+      audioDuration?: number;
     });
 
 interface Artboard {
@@ -254,19 +391,28 @@ function compileCustomComponents(
 
 // ---- Easings ----
 
-function ease(t: number, kind: Easing = "natural"): number {
+/**
+ * Jitter easing → eased progress. Mirrors Remotion's Easing curves:
+ *   none       → linear
+ *   slowDown   → ease-out (cubic)         Remotion: Easing.out(Easing.cubic)
+ *   accelerate → ease-in (cubic)          Remotion: Easing.in(Easing.cubic)
+ *   natural    → ease-in-out (cubic)      Remotion: Easing.inOut(Easing.cubic)
+ * Unknown/object easings (raw Jitter passthrough) fall back to "natural".
+ */
+const EASING_FNS: Record<Easing, (x: number) => number> = {
+  none: RemotionEasing.linear,
+  slowDown: RemotionEasing.out(RemotionEasing.cubic),
+  accelerate: RemotionEasing.in(RemotionEasing.cubic),
+  natural: RemotionEasing.inOut(RemotionEasing.cubic),
+};
+
+function ease(t: number, kind?: Easing | string): number {
   const x = Math.max(0, Math.min(1, t));
-  switch (kind) {
-    case "none":
-      return x;
-    case "slowDown":
-      return 1 - Math.pow(1 - x, 3);
-    case "accelerate":
-      return x * x * x;
-    case "natural":
-    default:
-      return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
-  }
+  const fn =
+    typeof kind === "string" && kind in EASING_FNS
+      ? EASING_FNS[kind as Easing]
+      : EASING_FNS.natural;
+  return fn(x);
 }
 
 // ---- Layer state computation ----
@@ -279,6 +425,10 @@ interface LayerState {
   scale: number;
   opacity: number; // 0..100
   angle: number;
+  blur: number; // CSS blur in px
+  cornerRadius?: number;
+  fillColor?: string; // overridden by `color` op
+  visible: boolean; // hide/show toggles
   textProgress?: TextProgress;
   scaleOrigin?: string; // CSS transform-origin
 }
@@ -307,7 +457,87 @@ function baseState(layer: AnyLayer): LayerState {
     scale: layer.scale ?? 1,
     opacity: layer.opacity ?? 100,
     angle: layer.angle ?? 0,
+    blur: 0,
+    cornerRadius: layer.cornerRadius,
+    fillColor: (layer as { fillColor?: string }).fillColor,
+    visible: true,
   };
+}
+
+function clamp01(x: number): number {
+  return Math.max(0, Math.min(1, x));
+}
+
+/** Parse any Jitter color form — hex string, {r,g,b} object (0–255 or 0–1),
+ *  or [r,g,b] array — into an rgb triple. Returns null if unrecognizable. */
+function colorToRgb(c: unknown): [number, number, number] | null {
+  if (typeof c === "string") {
+    let h = c.trim().replace(/^#/, "");
+    if (h.length === 3) h = h.split("").map((x) => x + x).join("");
+    if (h.length !== 6) return null;
+    const n = parseInt(h, 16);
+    if (Number.isNaN(n)) return null;
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+  const pick = (...vals: unknown[]): number | null => {
+    const v = vals.find((x) => typeof x === "number");
+    return typeof v === "number" ? v : null;
+  };
+  let r: number | null = null,
+    g: number | null = null,
+    b: number | null = null;
+  if (Array.isArray(c) && c.length >= 3) {
+    [r, g, b] = [pick(c[0]), pick(c[1]), pick(c[2])];
+  } else if (c && typeof c === "object") {
+    const o = c as Record<string, unknown>;
+    r = pick(o.r, o.red);
+    g = pick(o.g, o.green);
+    b = pick(o.b, o.blue);
+  }
+  if (r == null || g == null || b == null) return null;
+  // Channels in 0–1 → scale to 0–255.
+  const scale = r <= 1 && g <= 1 && b <= 1 ? 255 : 1;
+  return [Math.round(r * scale), Math.round(g * scale), Math.round(b * scale)];
+}
+
+function rgbStr(rgb: [number, number, number]): string {
+  return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+}
+
+/** Linear interpolate two colors (any form); falls back to whichever end
+ *  parses, else a safe string, so it never throws on non-hex input. */
+function lerpColor(from: unknown, to: unknown, t: number): string {
+  const a = colorToRgb(from);
+  const b = colorToRgb(to);
+  if (a && b) {
+    const r = Math.round(a[0] + (b[0] - a[0]) * t);
+    const g = Math.round(a[1] + (b[1] - a[1]) * t);
+    const bl = Math.round(a[2] + (b[2] - a[2]) * t);
+    return `rgb(${r}, ${g}, ${bl})`;
+  }
+  const fallback = t < 0.5 ? a : b;
+  if (fallback) return rgbStr(fallback);
+  return typeof (t < 0.5 ? from : to) === "string"
+    ? ((t < 0.5 ? from : to) as string)
+    : "transparent";
+}
+
+/** Ops the renderer has chosen to ignore — warned about once each. */
+const warnedOps = new Set<string>();
+function warnUnknownOp(type: string): void {
+  if (warnedOps.has(type)) return;
+  warnedOps.add(type);
+  console.warn(`[Jitter] unsupported op "${type}" — treated as no-op`);
+}
+
+/** Unknown layer types — warned about once each. */
+const warnedLayers = new Set<string>();
+function warnUnknownLayer(type: string): void {
+  if (warnedLayers.has(type)) return;
+  warnedLayers.add(type);
+  console.warn(
+    `[Jitter] unsupported layer "${type}" — bounding-box fallback`,
+  );
 }
 
 function splitText(text: string, mode: "letters" | "words" | "none"): string[] {
@@ -423,15 +653,18 @@ function applyOperation(
         scaleOrigin: "center",
       };
     }
-    case "textIn": {
+    case "textIn":
+    case "textOut": {
       if (layer.type !== "text") return state;
+      const isOut = op.type === "textOut";
       const split = op.split ?? "letters";
       const order = op.order ?? "forward";
       const offsetMs = op.offset ?? 50;
       const nodeDurMs = op.nodeDuration ?? 500;
       const dist = op.travelDistance ?? 20;
-      const dir = op.slideDirection ?? "up";
-      const effect = op.effect ?? "appear";
+      const dir = op.slideDirection ?? (isOut ? "down" : "up");
+      const effect = op.effect ?? (isOut ? "fade" : "appear");
+      const full = layer.opacity ?? 100;
 
       const tokens = splitText(layer.text, split);
       const indices = tokens.map((_, i) => i);
@@ -439,7 +672,7 @@ function applyOperation(
       // (random: deterministic shuffle could go here; skip for now.)
 
       const nodes: TextNodeState[] = tokens.map(() => ({
-        opacity: layer.opacity ?? 100,
+        opacity: full,
         translateX: 0,
         translateY: 0,
       }));
@@ -455,14 +688,17 @@ function applyOperation(
         else if (frame <= nodeStartF) nt = 0;
         else nt = (frame - nodeStartF) / (nodeEndF - nodeStartF);
         const eased = ease(nt, op.nodeEasing);
+        // For textOut, the per-token "progress" is the disappearance amount.
+        const vis = isOut ? 1 - eased : eased;
+        const visStep = isOut ? (nt >= 1 ? 0 : 1) : nt > 0 ? 1 : 0;
         if (effect === "appear") {
-          nodes[i].opacity = nt > 0 ? layer.opacity ?? 100 : 0;
+          nodes[i].opacity = visStep * full;
         } else if (effect === "fade") {
-          nodes[i].opacity = eased * (layer.opacity ?? 100);
+          nodes[i].opacity = vis * full;
         } else {
           // slide
-          nodes[i].opacity = eased * (layer.opacity ?? 100);
-          const remaining = (1 - eased) * dist;
+          nodes[i].opacity = vis * full;
+          const remaining = (1 - vis) * dist;
           if (dir === "up") nodes[i].translateY = remaining;
           if (dir === "down") nodes[i].translateY = -remaining;
           if (dir === "left") nodes[i].translateX = remaining;
@@ -475,7 +711,146 @@ function applyOperation(
         textProgress: { split, nodes },
       };
     }
+    case "growOut": {
+      const from = layer.scale ?? 1;
+      const to = op.scale ?? 0;
+      return {
+        ...state,
+        scale: from + (to - from) * t,
+        opacity: (1 - t) * state.opacity,
+        scaleOrigin: "center",
+      };
+    }
+    case "move": {
+      const fromX = op.fromValue?.x ?? 0;
+      const fromY = op.fromValue?.y ?? 0;
+      const toX = op.toValue?.x ?? 0;
+      const toY = op.toValue?.y ?? 0;
+      return {
+        ...state,
+        x: state.x + (fromX + (toX - fromX) * t),
+        y: state.y + (fromY + (toY - fromY) * t),
+      };
+    }
+    case "scale": {
+      const from = op.fromValue ?? layer.scale ?? 1;
+      const to = op.toValue ?? layer.scale ?? 1;
+      return {
+        ...state,
+        scale: from + (to - from) * t,
+        scaleOrigin: "center",
+      };
+    }
+    case "rotate": {
+      const from = op.fromValue ?? layer.angle ?? 0;
+      const to = op.toValue ?? layer.angle ?? 0;
+      return { ...state, angle: from + (to - from) * t };
+    }
+    case "opacity": {
+      const from = op.fromValue ?? state.opacity;
+      const to = op.toValue ?? state.opacity;
+      return { ...state, opacity: from + (to - from) * t };
+    }
+    case "color": {
+      const from = op.fromValue ?? state.fillColor ?? "#000000";
+      const to = op.toValue ?? state.fillColor ?? from;
+      return { ...state, fillColor: lerpColor(from, to, t) };
+    }
+    case "cornerRadius": {
+      const from = op.fromValue ?? state.cornerRadius ?? 0;
+      const to = op.toValue ?? state.cornerRadius ?? 0;
+      return { ...state, cornerRadius: from + (to - from) * t };
+    }
+    case "blurRadius": {
+      const from = op.fromValue ?? 0;
+      const to = op.toValue ?? 0;
+      return { ...state, blur: from + (to - from) * t };
+    }
+    case "hide": {
+      // Hidden from startTime onward.
+      return { ...state, visible: false };
+    }
+    case "show": {
+      // Visible from startTime onward (pre-start handled in applyPreStart).
+      return { ...state, visible: true };
+    }
+    case "blurIn":
+    case "blurScaleIn":
+    case "blurSlideIn": {
+      const peak = op.blurRadius ?? 40;
+      const blur = (1 - t) * peak;
+      let next: LayerState = {
+        ...state,
+        blur: state.blur + blur,
+        opacity: t * state.opacity,
+      };
+      if (op.type === "blurScaleIn") {
+        const from = op.scale ?? 0.8;
+        next = { ...next, scale: from + (1 - from) * t, scaleOrigin: "center" };
+      }
+      if (op.type === "blurSlideIn") {
+        const dist = op.distance ?? 40;
+        const dir = op.direction ?? "up";
+        const remaining = (1 - t) * dist;
+        if (dir === "up") next.y += remaining;
+        if (dir === "down") next.y -= remaining;
+        if (dir === "left") next.x += remaining;
+        if (dir === "right") next.x -= remaining;
+      }
+      return next;
+    }
+    case "blurOut":
+    case "blurScaleOut":
+    case "blurSlideOut": {
+      const peak = op.blurRadius ?? 40;
+      const blur = t * peak;
+      let next: LayerState = {
+        ...state,
+        blur: state.blur + blur,
+        opacity: (1 - t) * state.opacity,
+      };
+      if (op.type === "blurScaleOut") {
+        const to = op.scale ?? 0.8;
+        next = { ...next, scale: 1 + (to - 1) * t, scaleOrigin: "center" };
+      }
+      if (op.type === "blurSlideOut") {
+        const dist = op.distance ?? 40;
+        const dir = op.direction ?? "down";
+        const travel = t * dist;
+        if (dir === "up") next.y -= travel;
+        if (dir === "down") next.y += travel;
+        if (dir === "left") next.x -= travel;
+        if (dir === "right") next.x += travel;
+      }
+      return next;
+    }
+    case "morph": {
+      // Best-effort: a soft resize + opacity dip-and-recover crossfade.
+      const dip = Math.sin(t * Math.PI); // 0 → 1 → 0
+      return {
+        ...state,
+        opacity: state.opacity * (1 - 0.25 * dip),
+        scale: state.scale * (1 + 0.04 * dip),
+        scaleOrigin: "center",
+      };
+    }
+    case "spinOut": {
+      const spin = op.angle ?? 180;
+      const sign = op.direction === "ccw" ? -1 : 1;
+      return {
+        ...state,
+        angle: state.angle + sign * spin * t,
+        opacity: (1 - t) * state.opacity,
+        scaleOrigin: "center",
+      };
+    }
+    case "playVideo":
+    case "playAudio":
+      // Media start cues — handled by the media layer / audio sequence, not a
+      // transform. No-op for layer state.
+      return state;
     default:
+      warnUnknownOp((op as { type: string }).type);
       return state;
   }
 }
@@ -534,6 +909,48 @@ function applyPreStart(
         },
       };
     }
+    case "move": {
+      // Hold the "from" pose before the move begins.
+      const fromX = op.fromValue?.x ?? 0;
+      const fromY = op.fromValue?.y ?? 0;
+      return { ...state, x: state.x + fromX, y: state.y + fromY };
+    }
+    case "scale":
+      return op.fromValue != null
+        ? { ...state, scale: op.fromValue, scaleOrigin: "center" }
+        : state;
+    case "rotate":
+      return op.fromValue != null ? { ...state, angle: op.fromValue } : state;
+    case "opacity":
+      return op.fromValue != null ? { ...state, opacity: op.fromValue } : state;
+    case "color":
+      return op.fromValue != null ? { ...state, fillColor: op.fromValue } : state;
+    case "cornerRadius":
+      return op.fromValue != null ? { ...state, cornerRadius: op.fromValue } : state;
+    case "blurRadius":
+      return op.fromValue != null ? { ...state, blur: op.fromValue } : state;
+    case "blurIn":
+    case "blurScaleIn":
+    case "blurSlideIn": {
+      // Entrance ops start fully blurred / invisible.
+      const peak = op.blurRadius ?? 40;
+      let next: LayerState = { ...state, blur: state.blur + peak, opacity: 0 };
+      if (op.type === "blurScaleIn") {
+        next = { ...next, scale: op.scale ?? 0.8, scaleOrigin: "center" };
+      }
+      if (op.type === "blurSlideIn") {
+        const dist = op.distance ?? 40;
+        const dir = op.direction ?? "up";
+        if (dir === "up") next.y += dist;
+        if (dir === "down") next.y -= dist;
+        if (dir === "left") next.x += dist;
+        if (dir === "right") next.x -= dist;
+      }
+      return next;
+    }
+    case "show":
+      // Hidden until the show op fires.
+      return { ...state, visible: false };
     default:
       return state;
   }
@@ -633,10 +1050,39 @@ function renderText(layer: TextLayer, st: LayerState) {
 }
 
 function resolveImageSrc(url: string): string {
-  if (!url) return url;
+  if (!url) return "";
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
   if (url.startsWith("data:")) return url;
+  // Custom Jitter asset schemes (userAsset:, localAsset:, …) aren't fetchable
+  // at render time. Returning "" makes the caller skip <Img> so it doesn't hang
+  // on a delayRender() that never clears.
+  if (/^[a-zA-Z][\w+.-]*:/.test(url)) return "";
   return staticFile(url.replace(/^\//, ""));
+}
+
+/** <Img> blocks the render until decode; skip entirely when the src isn't a
+ *  fetchable url so an unresolvable asset can't stall/fail the whole render. */
+function SafeImg({
+  url,
+  alt,
+  style,
+}: {
+  url?: string;
+  alt?: string;
+  style?: React.CSSProperties;
+}) {
+  const src = resolveImageSrc(url ?? "");
+  if (!src) return null;
+  return (
+    <Img
+      src={src}
+      alt={alt ?? ""}
+      style={style}
+      onError={(e) => {
+        (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
+      }}
+    />
+  );
 }
 
 function renderImage(layer: ImageLayer) {
@@ -645,32 +1091,206 @@ function renderImage(layer: ImageLayer) {
   // fetch, which is why logos/screenshots came out blank. onError keeps a
   // single bad asset (e.g. dead R2 url) from cancelling the whole render.
   return (
-    <Img
-      src={resolveImageSrc(layer.url)}
+    <SafeImg
+      url={layer.url}
       alt={layer.mediaName ?? ""}
       style={{ width: "100%", height: "100%", objectFit: "contain" }}
-      onError={(e) => {
-        console.warn(
-          `[Jitter] image failed to load: ${resolveImageSrc(layer.url)}`,
-        );
-        (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
-      }}
     />
   );
 }
 
-function renderRect(layer: RectLayer) {
+function renderRect(layer: RectLayer, st: LayerState) {
   return (
     <div
       style={{
         width: "100%",
         height: "100%",
-        backgroundColor: layer.fillColor ?? "#fff",
-        borderRadius: layer.cornerRadius ?? 0,
+        backgroundColor: st.fillColor ?? layer.fillColor ?? "#fff",
+        borderRadius: st.cornerRadius ?? layer.cornerRadius ?? 0,
         boxShadow: layer.shadowEnabled
           ? `${layer.shadowOffsetX ?? 0}px ${layer.shadowOffsetY ?? 0}px ${layer.shadowBlur ?? 0}px rgba(0,0,0,${(layer.shadowOpacity ?? 50) / 100})`
           : undefined,
       }}
+    />
+  );
+}
+
+function renderEllipse(layer: EllipseLayer, st: LayerState) {
+  const fill =
+    layer.background === false ? "none" : st.fillColor ?? layer.fillColor ?? "#fff";
+  const stroke = layer.strokeEnabled ? layer.strokeColor ?? "#000" : "none";
+  const strokeW = layer.strokeEnabled ? layer.strokeWeight ?? 0 : 0;
+  return (
+    <svg
+      width="100%"
+      height="100%"
+      viewBox="0 0 100 100"
+      preserveAspectRatio="none"
+      style={{ display: "block", overflow: "visible" }}
+    >
+      <ellipse
+        cx={50}
+        cy={50}
+        rx={50 - strokeW / 2}
+        ry={50 - strokeW / 2}
+        fill={fill}
+        stroke={stroke}
+        strokeWidth={strokeW}
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
+/** Build an SVG star polygon points string in a 0..100 viewBox. */
+function starPoints(spikes: number, radiusRatio: number): string {
+  const cx = 50;
+  const cy = 50;
+  const outer = 50;
+  const inner = (Math.max(0, Math.min(100, radiusRatio)) / 100) * outer;
+  const pts: string[] = [];
+  const n = Math.max(3, Math.round(spikes));
+  for (let i = 0; i < n * 2; i++) {
+    const r = i % 2 === 0 ? outer : inner;
+    const a = (Math.PI / n) * i - Math.PI / 2;
+    pts.push(`${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`);
+  }
+  return pts.join(" ");
+}
+
+function renderStar(layer: StarLayer, st: LayerState) {
+  const fill =
+    layer.background === false ? "none" : st.fillColor ?? layer.fillColor ?? "#fff";
+  const stroke = layer.strokeEnabled ? layer.strokeColor ?? "#000" : "none";
+  const strokeW = layer.strokeEnabled ? layer.strokeWeight ?? 0 : 0;
+  return (
+    <svg
+      width="100%"
+      height="100%"
+      viewBox="0 0 100 100"
+      preserveAspectRatio="none"
+      style={{ display: "block", overflow: "visible" }}
+    >
+      <polygon
+        points={starPoints(layer.spikes ?? 5, layer.radiusRatio ?? 50)}
+        fill={fill}
+        stroke={stroke}
+        strokeWidth={strokeW}
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
+function renderSvg(layer: SvgLayer, st: LayerState) {
+  // Prefer a data-uri svg export when present (Jitter ships svg layers this way).
+  // Only when it's a fetchable url — otherwise fall through to the path/box.
+  if (resolveImageSrc(layer.url ?? "")) {
+    return (
+      <SafeImg
+        url={layer.url}
+        style={{ width: "100%", height: "100%", objectFit: "contain" }}
+      />
+    );
+  }
+  // Otherwise draw the extracted path `d` directly.
+  if (layer.path) {
+    const vbW = layer.viewBoxWidth ?? layer.width ?? 100;
+    const vbH = layer.viewBoxHeight ?? layer.height ?? 100;
+    const fill =
+      layer.background === false ? "none" : st.fillColor ?? layer.fillColor ?? "#000";
+    const stroke = layer.strokeEnabled ? layer.strokeColor ?? "#000" : "none";
+    const strokeW = layer.strokeEnabled ? layer.strokeWeight ?? 0 : 0;
+    return (
+      <svg
+        width="100%"
+        height="100%"
+        viewBox={`0 0 ${vbW} ${vbH}`}
+        preserveAspectRatio="none"
+        style={{ display: "block", overflow: "visible" }}
+      >
+        <path
+          d={layer.path}
+          fill={fill}
+          stroke={stroke}
+          strokeWidth={strokeW}
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+    );
+  }
+  // Nothing renderable — fall back to a faint box so layout stays intact.
+  return (
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        backgroundColor: st.fillColor ?? layer.fillColor ?? "transparent",
+      }}
+    />
+  );
+}
+
+function renderTextImg(layer: TextImgLayer) {
+  const src = layer.textVector ?? layer.url;
+  // Render as image only when it resolves to a fetchable url; otherwise show
+  // the text fallback so nothing hangs on an unresolvable asset.
+  if (resolveImageSrc(src ?? "")) {
+    return (
+      <SafeImg
+        url={src}
+        alt={layer.text ?? layer.mediaName ?? ""}
+        style={{ width: "100%", height: "100%", objectFit: "contain" }}
+      />
+    );
+  }
+  return (
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
+      {layer.text ?? ""}
+    </div>
+  );
+}
+
+function renderGif(layer: GifLayer) {
+  // GIFs render via <Img>; the browser animates them during capture.
+  return (
+    <SafeImg
+      url={layer.url}
+      alt={layer.mediaName ?? ""}
+      style={{ width: "100%", height: "100%", objectFit: "contain" }}
+    />
+  );
+}
+
+function renderVideo(layer: VideoLayer) {
+  const src = layer.url ?? "";
+  const isRemote =
+    src.startsWith("http://") || src.startsWith("https://") || src.startsWith("data:");
+  // localAsset: / unresolved urls can't be fetched — show a fill placeholder.
+  if (!isRemote) {
+    return (
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          backgroundColor: layer.fillColor ?? "#000",
+        }}
+      />
+    );
+  }
+  return (
+    <OffthreadVideo
+      src={src}
+      muted={(layer.volume ?? 0) <= 0}
+      volume={layer.volume ?? 0}
+      style={{ width: "100%", height: "100%", objectFit: "cover" }}
     />
   );
 }
@@ -695,6 +1315,8 @@ function LayerNode({
     : resolveLayerState(layer, ops, frame, fps);
   // Only set transform when it actually changes anything — a non-`none` transform
   // creates a stacking context that traps mix-blend-mode inside this wrapper.
+  // hide/show ops can drop a layer out of the frame entirely.
+  if (!isBeatOverlay && st.visible === false) return null;
   const hasTransform =
     !isBeatOverlay && (st.scale !== 1 || st.angle !== 0);
   const containerStyle: React.CSSProperties = {
@@ -704,7 +1326,8 @@ function LayerNode({
     width: st.width,
     height: st.height,
     opacity: isBeatOverlay ? 1 : st.opacity / 100,
-    borderRadius: layer.cornerRadius ?? 0,
+    borderRadius: st.cornerRadius ?? layer.cornerRadius ?? 0,
+    ...(st.blur > 0.01 ? { filter: `blur(${st.blur}px)` } : {}),
     ...(hasTransform
       ? {
           transform: `rotate(${st.angle}deg) scale(${st.scale})`,
@@ -739,14 +1362,68 @@ function LayerNode({
     );
   }
 
+  if (layer.type === "maskGrp") {
+    // Mask group — clip children to the group's box.
+    const grp = layer;
+    return (
+      <div
+        style={{
+          ...containerStyle,
+          backgroundColor: grp.background ? grp.fillColor ?? "#fff" : undefined,
+          overflow: grp.clipsContent === false ? "visible" : "hidden",
+          borderRadius: st.cornerRadius ?? layer.cornerRadius ?? 0,
+        }}
+      >
+        {(grp.layers ?? []).map((child) => (
+          <LayerNode
+            key={child.id}
+            layer={child}
+            ops={ops}
+            frame={frame}
+            fps={fps}
+          />
+        ))}
+      </div>
+    );
+  }
+
   if (layer.type === "text") {
     return <div style={containerStyle}>{renderText(layer, st)}</div>;
   }
   if (layer.type === "image") {
     return <div style={containerStyle}>{renderImage(layer)}</div>;
   }
+  if (layer.type === "textImg") {
+    return <div style={containerStyle}>{renderTextImg(layer)}</div>;
+  }
+  if (layer.type === "gif") {
+    return <div style={containerStyle}>{renderGif(layer)}</div>;
+  }
+  if (layer.type === "video") {
+    return <div style={containerStyle}>{renderVideo(layer)}</div>;
+  }
   if (layer.type === "rect") {
-    return <div style={containerStyle}>{renderRect(layer)}</div>;
+    return <div style={containerStyle}>{renderRect(layer, st)}</div>;
+  }
+  if (layer.type === "ellipse") {
+    return <div style={containerStyle}>{renderEllipse(layer, st)}</div>;
+  }
+  if (layer.type === "star") {
+    return <div style={containerStyle}>{renderStar(layer, st)}</div>;
+  }
+  if (layer.type === "svg" || layer.type === "shape") {
+    return <div style={containerStyle}>{renderSvg(layer, st)}</div>;
+  }
+  if (layer.type === "customShader") {
+    // No WebGL — render the layer's fill as a flat rect.
+    return (
+      <div
+        style={{
+          ...containerStyle,
+          backgroundColor: st.fillColor ?? layer.fillColor ?? "#000",
+        }}
+      />
+    );
   }
   if (layer.type === "custom") {
     return (
@@ -755,7 +1432,28 @@ function LayerNode({
       </div>
     );
   }
-  return null;
+  // Unknown layer type → bounding-box rect using fillColor (never throws).
+  const unknown = layer as UnknownLayer;
+  if (Array.isArray(unknown.layers)) {
+    // Unknown container-ish node — recurse so children aren't lost.
+    return (
+      <div style={{ ...containerStyle, overflow: "visible" }}>
+        {(unknown.layers ?? []).map((child) => (
+          <LayerNode
+            key={child.id}
+            layer={child}
+            ops={ops}
+            frame={frame}
+            fps={fps}
+          />
+        ))}
+      </div>
+    );
+  }
+  warnUnknownLayer(unknown.type);
+  const fallbackFill = st.fillColor ?? unknown.fillColor;
+  if (!fallbackFill) return null;
+  return <div style={{ ...containerStyle, backgroundColor: fallbackFill }} />;
 }
 
 class ComponentErrorBoundary extends React.Component<
@@ -834,8 +1532,29 @@ function ArtboardScene({ art }: { art: Artboard }) {
   const offsetX = (compW - art.width * scale) / 2;
   const offsetY = (compH - art.height * scale) / 2;
 
+  // playAudio ops with a real url become Audio cues anchored at startTime.
+  const audioCues = art.operations.filter(
+    (o): o is Operation & { type: "playAudio"; url?: string } =>
+      o.type === "playAudio" &&
+      typeof (o as { url?: unknown }).url === "string" &&
+      (o as { url: string }).url.startsWith("http"),
+  );
+
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
+      {audioCues.map((cue) => {
+        const fromF = Math.max(0, Math.round((cue.startTime * fps) / 1000));
+        return (
+          <Sequence
+            key={cue.id}
+            from={fromF}
+            durationInFrames={Number.MAX_SAFE_INTEGER}
+            layout="none"
+          >
+            <Audio src={cue.url as string} volume={cue.volume ?? 1} />
+          </Sequence>
+        );
+      })}
       <div
         style={{
           position: "absolute",

@@ -1,0 +1,451 @@
+{
+  "name": "0vfhsd6SBd11XYkI6qX_7",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "5jeGPICkD1ATPfHzWIQzF",
+        "name": "Pixelate Slideshow",
+        "x": 0,
+        "y": 0,
+        "width": 1080,
+        "height": 1350,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 8000,
+        "fillColor": "#ffffff",
+        "background": true,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "-OId7y5Ey8cTCWpmiBsvE",
+            "name": "Slideshow",
+            "x": 0,
+            "y": 0,
+            "width": 5400,
+            "height": 1350,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "layerGrp",
+                "id": "pvP1yHMgUvSc5K9ZNsJ-E",
+                "name": "01",
+                "x": 0,
+                "y": 0,
+                "width": 1080,
+                "height": 1350,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "image",
+                    "id": "JU14GCkpuHD0xLLHAlmQK",
+                    "name": "IMG_01",
+                    "x": -49,
+                    "y": -61,
+                    "width": 1178,
+                    "height": 1472,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "https://userdata.jitter.video/xZqdWo0Rgt3ChkHDXfrFY.png",
+                    "mediaName": "Futuristic Humanoid Robot.png"
+                  }
+                ]
+              },
+              {
+                "type": "layerGrp",
+                "id": "XYlAwjrKg7wmRYp3IIamc",
+                "name": "02",
+                "x": 1080,
+                "y": 0,
+                "width": 1080,
+                "height": 1350,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "image",
+                    "id": "l6PrxqGlsvMcL7d4_o9Rx",
+                    "name": "IMG_02",
+                    "x": -38,
+                    "y": -78,
+                    "width": 1156,
+                    "height": 1506,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "https://userdata.jitter.video/sgiuJ-vXUl1chApwNCq9h.png",
+                    "mediaName": "Modern Nature Retreat.png"
+                  }
+                ]
+              },
+              {
+                "type": "layerGrp",
+                "id": "n_EsDQCDayxWgvgHEFzVk",
+                "name": "03",
+                "x": 2160,
+                "y": 0,
+                "width": 1080,
+                "height": 1350,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "image",
+                    "id": "6QTVXz7k-WfWWrRVkTNgt",
+                    "name": "IMG_03",
+                    "x": -25,
+                    "y": -88,
+                    "width": 1130,
+                    "height": 1526,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "https://userdata.jitter.video/7PlOVWBxVjSiBJaicdAZY.png",
+                    "mediaName": "Minimalist Cosmetics Display (1).png"
+                  }
+                ]
+              },
+              {
+                "type": "layerGrp",
+                "id": "RQpm5GFUSK91fIrSa8fYY",
+                "name": "04",
+                "x": 3240,
+                "y": 0,
+                "width": 1080,
+                "height": 1350,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "image",
+                    "id": "drW9iBIrqUtcjvy5_8s8c",
+                    "name": "IMG_04",
+                    "x": -47,
+                    "y": -90,
+                    "width": 1175,
+                    "height": 1530,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "https://userdata.jitter.video/j5jiw7Bl5t72OwD7NN0DH.jpg",
+                    "mediaName": "Stylish Metallic Portrait 1.jpg"
+                  }
+                ]
+              },
+              {
+                "type": "layerGrp",
+                "id": "dYdNawer0TsT7eYntk_sb",
+                "name": "05",
+                "x": 4320,
+                "y": 0,
+                "width": 1080,
+                "height": 1350,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "image",
+                    "id": "vkksBCbl7QTEKcNsF6mPX",
+                    "name": "IMG_05",
+                    "x": -27,
+                    "y": -85,
+                    "width": 1135,
+                    "height": 1480,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "https://userdata.jitter.video/2m35v2NuaFi4FS7S6JwHF.png",
+                    "mediaName": "Modern Metal Chair.png"
+                  }
+                ]
+              },
+              {
+                "type": "layerGrp",
+                "id": "UYBvGUJCUntYzJPrVi-wS",
+                "name": "06",
+                "x": 5400,
+                "y": 0,
+                "width": 1080,
+                "height": 1350,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "image",
+                    "id": "SpkPtS2QHEgg_j6G_9Nmc",
+                    "name": "IMG_06",
+                    "x": -49,
+                    "y": -61,
+                    "width": 1178,
+                    "height": 1472,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "https://userdata.jitter.video/k09e-PESeglTx6IsJ6eOV.png",
+                    "mediaName": "Futuristic Humanoid Robot.png"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "layerGrp",
+            "id": "XIacVS5QbUa3gm32zZz02",
+            "name": "Desc-group",
+            "x": 80,
+            "y": 1210,
+            "width": 458,
+            "height": 60,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": true,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "text",
+                "id": "0nD5r48IcRXipf_hRE_Bz",
+                "name": "DESC",
+                "x": 17,
+                "y": 8.571428571428573,
+                "width": 815.3189655172414,
+                "height": 40,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "for system magazine",
+                "color": "#141414",
+                "fontSize": 40,
+                "font": {
+                  "type": "googlefont",
+                  "name": "Chakra Petch",
+                  "weight": 700,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 100,
+                "letterSpacing": 0,
+                "textAlign": "left",
+                "verticalAlign": "top",
+                "case": "upper"
+              }
+            ]
+          },
+          {
+            "type": "layerGrp",
+            "id": "A73Jqcv5p-cBtyG4JYYV4",
+            "name": "Title-group",
+            "x": 80,
+            "y": 1146,
+            "width": 144,
+            "height": 60,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": true,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "text",
+                "id": "y6qI6XscpeatRs9LvIFhl",
+                "name": "TITLE",
+                "x": 18,
+                "y": 9.571446305614405,
+                "width": 108,
+                "height": 42.85714285714286,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "text": "acme",
+                "color": "#141414",
+                "fontSize": 40,
+                "font": {
+                  "type": "googlefont",
+                  "name": "Chakra Petch",
+                  "weight": 700,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 100,
+                "letterSpacing": 0,
+                "textAlign": "center",
+                "verticalAlign": "top",
+                "case": "upper"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "move",
+            "id": "oDSdJLzu8IXrvDfOaNGBv",
+            "targetId": "-OId7y5Ey8cTCWpmiBsvE",
+            "startTime": 180,
+            "endTime": 1180,
+            "easing": "natural",
+            "toValue": {
+              "x": -1080,
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "hVnF8cZZMc3yJBQu34hWL",
+            "targetId": "-OId7y5Ey8cTCWpmiBsvE",
+            "startTime": 1810,
+            "endTime": 2810,
+            "easing": "natural",
+            "toValue": {
+              "x": -1080,
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "vDyy7UAeIJIZRO31pQzAW",
+            "targetId": "-OId7y5Ey8cTCWpmiBsvE",
+            "startTime": 3397,
+            "endTime": 4397,
+            "easing": "natural",
+            "toValue": {
+              "x": -1080,
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "fwY8k3D_3vwXvAG9jc2Kr",
+            "targetId": "-OId7y5Ey8cTCWpmiBsvE",
+            "startTime": 5027,
+            "endTime": 6027,
+            "easing": "natural",
+            "toValue": {
+              "x": -1080,
+              "y": 0
+            }
+          },
+          {
+            "type": "move",
+            "id": "pQutD62OQWeuv9XdnYE0q",
+            "targetId": "-OId7y5Ey8cTCWpmiBsvE",
+            "startTime": 6610,
+            "endTime": 7610,
+            "easing": "natural",
+            "toValue": {
+              "x": -1080,
+              "y": 0
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,629 @@
+{
+  "name": "Showreel Grid Mobile",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "w4dpZGoZ1Kr0MXJmD_6_l",
+        "name": "Showreel Grid Mobile",
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 1200,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 4000,
+        "fillColor": "#000000",
+        "background": true,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "8quI9nIFrOI9AkJM-BFw7",
+            "name": "Showreel: Mobile gallery",
+            "x": 0,
+            "y": 0,
+            "width": 1600,
+            "height": 1200,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "layerGrp",
+                "id": "FZ7lfS4C2SLIdw3CFv8nC",
+                "name": "Left column",
+                "x": 157.5,
+                "y": -738,
+                "width": 375,
+                "height": 2849,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "layerGrp",
+                    "id": "ENcS2J5rGNU8H0AkCRzub",
+                    "name": "Holder 1",
+                    "x": 0,
+                    "y": 932,
+                    "width": 375,
+                    "height": 812,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 40,
+                    "background": false,
+                    "fillColor": "#29a9ff",
+                    "clipsContent": true,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "image",
+                        "id": "WZmTXSHV_HDIe0W9AFtoN",
+                        "x": 0,
+                        "y": 0,
+                        "width": 375,
+                        "height": 812,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "url": "https://d154zarmrcpu4a.cloudfront.net/sokfhOp-08jb7noL48jwu.jpg",
+                        "mediaName": "profile.jpg"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "MtDiisrJbB5r2WIB1fczk",
+                    "name": "Holder 5",
+                    "x": 0,
+                    "y": 1864,
+                    "width": 375,
+                    "height": 812,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 50,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": true,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "image",
+                        "id": "WFRleKguzqEALIhxgZZSr",
+                        "x": 0,
+                        "y": 0,
+                        "width": 375,
+                        "height": 812,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "url": "https://d154zarmrcpu4a.cloudfront.net/8Lp4O41zwVZiiDtafDpiN.png",
+                        "mediaName": "Feedback 01.png"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "NswXj6c3PIx1GDrBaUYBS",
+                    "name": "Holder 4",
+                    "x": 0,
+                    "y": 0,
+                    "width": 375,
+                    "height": 812,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 40,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": true,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "image",
+                        "id": "ybkVVxMDMxn-pUj3zC7zd",
+                        "x": 0,
+                        "y": 0,
+                        "width": 375,
+                        "height": 812,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "url": "https://d154zarmrcpu4a.cloudfront.net/IjEt2PK6WtYbjWNSLFOQW.jpg",
+                        "mediaName": "results.jpg"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "layerGrp",
+                "id": "HyGpL_zjbJ1XNiBrgM44k",
+                "name": "Center column",
+                "x": 612.5,
+                "y": -738,
+                "width": 375,
+                "height": 2849,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "layerGrp",
+                    "id": "V4aAhZXBFMbp5UzeyDCKK",
+                    "name": "Holder 2",
+                    "x": 0,
+                    "y": 932,
+                    "width": 375,
+                    "height": 812,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 40,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": true,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "image",
+                        "id": "Me6fejNmFJ3PFuRHRFDHX",
+                        "x": 0,
+                        "y": 0,
+                        "width": 375,
+                        "height": 812,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "url": "https://d154zarmrcpu4a.cloudfront.net/SjBGcwO5Cui99Q4Y_pYlg.jpg",
+                        "mediaName": "homescreen.jpg"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "1GScrV5B-miIi57gUWVmu",
+                    "name": "Holder 6",
+                    "x": 0,
+                    "y": 1864,
+                    "width": 375,
+                    "height": 812,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 40,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": true,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "image",
+                        "id": "rM8hrV5TpnvxJg9lJvhlA",
+                        "x": 0,
+                        "y": 0,
+                        "width": 375,
+                        "height": 812,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "url": "https://d154zarmrcpu4a.cloudfront.net/8mSzRRGR8ytkB5XZYHVPq.jpg",
+                        "mediaName": "pollution.jpg"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "b4FyawpER6Wk9xgeryDux",
+                    "name": "Holder 7",
+                    "x": 0,
+                    "y": 0,
+                    "width": 375,
+                    "height": 812,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 40,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": true,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "image",
+                        "id": "btpyGdFe4cjru3wk3V7w9",
+                        "x": 0,
+                        "y": 0,
+                        "width": 375,
+                        "height": 812,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "url": "https://d154zarmrcpu4a.cloudfront.net/ZRFHji5H7NdwTOH65Rgid.png",
+                        "mediaName": "6-digit Code.png"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "layerGrp",
+                "id": "YF234jJcsUKDyLPygG_HM",
+                "name": "Right column",
+                "x": 1067.5,
+                "y": -738,
+                "width": 375,
+                "height": 2849,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": false,
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "layerGrp",
+                    "id": "5xa19PrnlFmAZ-4Kd781P",
+                    "name": "Holder 8",
+                    "x": 0,
+                    "y": 1864,
+                    "width": 375,
+                    "height": 812,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 40,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": true,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "image",
+                        "id": "ARweBVOdrjz3iC6Ti396m",
+                        "x": 0,
+                        "y": 0,
+                        "width": 375,
+                        "height": 812,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "url": "https://d154zarmrcpu4a.cloudfront.net/r4xs-WR33PftNFUXJX6MY.png",
+                        "mediaName": "Feedback 05.png"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "pew4OFTEQePQH4IRRKY95",
+                    "name": "Holder 3",
+                    "x": 0,
+                    "y": 932,
+                    "width": 375,
+                    "height": 812,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 40,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": true,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "image",
+                        "id": "XgJrwR-U_Leyvef9DMjZ9",
+                        "x": 0,
+                        "y": 0,
+                        "width": 375,
+                        "height": 812,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "url": "https://d154zarmrcpu4a.cloudfront.net/sBOleHhCF7qnlAL-7TGPj.png",
+                        "mediaName": "Sign up.png"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "layerGrp",
+                    "id": "e0CKJr0uYrmylFwHKGVrY",
+                    "name": "Holder 9",
+                    "x": 0,
+                    "y": 0,
+                    "width": 375,
+                    "height": 812,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 40,
+                    "background": false,
+                    "fillColor": "#ffffff",
+                    "clipsContent": true,
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50,
+                    "layers": [
+                      {
+                        "type": "image",
+                        "id": "yHrmcWeB7oingM-H_VwGN",
+                        "x": 0,
+                        "y": 0,
+                        "width": 375,
+                        "height": 812,
+                        "scale": 1,
+                        "angle": 0,
+                        "opacity": 100,
+                        "cornerRadius": 0,
+                        "url": "https://d154zarmrcpu4a.cloudfront.net/KwwCc6SqyFI8UE9uxlDVQ.png",
+                        "mediaName": "Story 07.png"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "id": "2FtnobLMBoqLbotUuetl2",
+            "x": 649,
+            "y": 1142.5,
+            "width": 302,
+            "height": 26,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 54,
+            "cornerRadius": 0,
+            "text": "© Routinely, Numbered Studio",
+            "color": "#ffffff",
+            "fontSize": 21,
+            "font": {
+              "type": "googlefont",
+              "name": "Inter",
+              "weight": 400,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 120,
+            "letterSpacing": 0,
+            "textAlign": "center",
+            "verticalAlign": "center",
+            "case": "normal"
+          }
+        ],
+        "operations": [
+          {
+            "type": "move",
+            "id": "05haBWrLz-W6hX3LGXiJF",
+            "targetId": "FZ7lfS4C2SLIdw3CFv8nC",
+            "startTime": 0,
+            "endTime": 1300,
+            "easing": "slowDown",
+            "fromValue": {
+              "y": 2400
+            },
+            "toValue": {}
+          },
+          {
+            "type": "scale",
+            "id": "L0PA7t0NDPMpv0A29tDJN",
+            "targetId": "FZ7lfS4C2SLIdw3CFv8nC",
+            "startTime": 0,
+            "endTime": 1100,
+            "easing": "slowDown",
+            "fromValue": 1.2
+          },
+          {
+            "type": "move",
+            "id": "aHKGFM_R5O8Ee1zeeBD3l",
+            "targetId": "HyGpL_zjbJ1XNiBrgM44k",
+            "startTime": 0,
+            "endTime": 1400,
+            "easing": "slowDown",
+            "fromValue": {
+              "y": -2400
+            },
+            "toValue": {}
+          },
+          {
+            "type": "scale",
+            "id": "Zo_oJvDiDJ8aWWvfhNg4V",
+            "targetId": "HyGpL_zjbJ1XNiBrgM44k",
+            "startTime": 0,
+            "endTime": 1200,
+            "easing": "slowDown",
+            "fromValue": 1.2
+          },
+          {
+            "type": "move",
+            "id": "ALqQXy0hDDZWWuFEJ707j",
+            "targetId": "YF234jJcsUKDyLPygG_HM",
+            "startTime": 0,
+            "endTime": 1500,
+            "easing": "slowDown",
+            "fromValue": {
+              "y": 2400
+            },
+            "toValue": {}
+          },
+          {
+            "type": "scale",
+            "id": "VIC4q9-jlGBR8UyC4dyAv",
+            "targetId": "YF234jJcsUKDyLPygG_HM",
+            "startTime": 0,
+            "endTime": 1300,
+            "easing": "slowDown",
+            "fromValue": 1.2
+          },
+          {
+            "type": "scale",
+            "id": "F_LYf6V0s9RjgSei592fp",
+            "targetId": "8quI9nIFrOI9AkJM-BFw7",
+            "startTime": 0,
+            "endTime": 3500,
+            "easing": "none",
+            "fromValue": 0.9,
+            "toValue": 1.1
+          },
+          {
+            "type": "move",
+            "id": "dU8OpfBBeyZc06rKBAKM9",
+            "targetId": "YF234jJcsUKDyLPygG_HM",
+            "startTime": 2000,
+            "endTime": 3500,
+            "easing": "accelerate",
+            "toValue": {
+              "y": 2400
+            }
+          },
+          {
+            "type": "scale",
+            "id": "P1R-zKVFFD_yMe_Re7IgY",
+            "targetId": "YF234jJcsUKDyLPygG_HM",
+            "startTime": 2200,
+            "endTime": 3500,
+            "easing": "accelerate",
+            "toValue": 1.1
+          },
+          {
+            "type": "move",
+            "id": "laA4aBbvENVLmljgYhMsF",
+            "targetId": "HyGpL_zjbJ1XNiBrgM44k",
+            "startTime": 2100,
+            "endTime": 3500,
+            "easing": "accelerate",
+            "toValue": {
+              "y": -2400
+            }
+          },
+          {
+            "type": "scale",
+            "id": "b-nfApHSGMpHXKuKp-5IE",
+            "targetId": "HyGpL_zjbJ1XNiBrgM44k",
+            "startTime": 2300,
+            "endTime": 3500,
+            "easing": "accelerate",
+            "toValue": 1.1
+          },
+          {
+            "type": "move",
+            "id": "BwQt9_SGV7L8CBAriV0OU",
+            "targetId": "FZ7lfS4C2SLIdw3CFv8nC",
+            "startTime": 2200,
+            "endTime": 3500,
+            "easing": "accelerate",
+            "toValue": {
+              "x": 0,
+              "y": 2400
+            }
+          },
+          {
+            "type": "scale",
+            "id": "ZLA1B2P3Zr4oHUxLporIc",
+            "targetId": "FZ7lfS4C2SLIdw3CFv8nC",
+            "startTime": 2400,
+            "endTime": 3500,
+            "easing": "accelerate",
+            "toValue": 1.1
+          }
+        ]
+      }
+    ]
+  }
+}

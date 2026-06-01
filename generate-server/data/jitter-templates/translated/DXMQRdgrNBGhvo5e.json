@@ -1,0 +1,249 @@
+{
+  "name": "DXMQRdgrNBGhvo5e",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "7RvVAxyH",
+        "name": "DXMQRdgrNBGhvo5e",
+        "x": 0,
+        "y": 0,
+        "width": 1080,
+        "height": 1920,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 6000,
+        "fillColor": "#ffffff",
+        "background": true,
+        "layers": [
+          {
+            "type": "text",
+            "id": "TDSATmDI",
+            "x": 140,
+            "y": 572,
+            "width": 800,
+            "height": 216,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "text": "Check the link in our bio!",
+            "color": "#000000",
+            "fontSize": 108,
+            "font": {
+              "type": "googlefont",
+              "name": "Poppins",
+              "weight": 700,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 100,
+            "letterSpacing": 0,
+            "textAlign": "center",
+            "verticalAlign": "top",
+            "case": "normal"
+          },
+          {
+            "type": "text",
+            "id": "oUGCvqUx",
+            "x": 427.5,
+            "y": 420,
+            "width": 225,
+            "height": 72,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 25,
+            "cornerRadius": 0,
+            "text": "Numa",
+            "color": "#000000",
+            "fontSize": 72,
+            "font": {
+              "type": "googlefont",
+              "name": "Poppins",
+              "weight": 600,
+              "fontStyle": "regular"
+            },
+            "lineHeight": 100,
+            "letterSpacing": 0,
+            "textAlign": "center",
+            "verticalAlign": "center",
+            "case": "normal"
+          },
+          {
+            "type": "image",
+            "id": "X6tgSTqUrBVLNQqP6z_-3",
+            "name": "Point up",
+            "x": -160,
+            "y": 880,
+            "width": 1400,
+            "height": 1400,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "url": "https://d154zarmrcpu4a.cloudfront.net/df368244-869f-426a-b55b-12b34d8d71c7.png",
+            "mediaName": "Point right 👉.png"
+          }
+        ],
+        "operations": [
+          {
+            "type": "textIn",
+            "id": "fF3m6sLe",
+            "targetId": "TDSATmDI",
+            "startTime": 0,
+            "endTime": 4500,
+            "easing": "natural",
+            "effect": "slideAndMask",
+            "split": "lines",
+            "order": "forward",
+            "offset": 200,
+            "nodeDuration": 1200,
+            "nodeEasing": "natural",
+            "travelDistance": 100,
+            "slideDirection": "up"
+          },
+          {
+            "type": "move",
+            "id": "MkhsucbXwy752bgFXhwkn",
+            "targetId": "X6tgSTqUrBVLNQqP6z_-3",
+            "startTime": 0,
+            "endTime": 600,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -40
+            }
+          },
+          {
+            "type": "move",
+            "id": "LrTmTb5MkaShWShHOzMdr",
+            "targetId": "X6tgSTqUrBVLNQqP6z_-3",
+            "startTime": 600,
+            "endTime": 1200,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 40
+            }
+          },
+          {
+            "type": "move",
+            "id": "Q7jBMN2vID7NI7fVL5LtA",
+            "targetId": "X6tgSTqUrBVLNQqP6z_-3",
+            "startTime": 1200,
+            "endTime": 1800,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -40
+            }
+          },
+          {
+            "type": "move",
+            "id": "B4KXytgi711rJRXWd7zJT",
+            "targetId": "X6tgSTqUrBVLNQqP6z_-3",
+            "startTime": 1800,
+            "endTime": 2400,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 40
+            }
+          },
+          {
+            "type": "move",
+            "id": "5mzj6gvlnh8BHRLqiZGJH",
+            "targetId": "X6tgSTqUrBVLNQqP6z_-3",
+            "startTime": 2400,
+            "endTime": 3000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -40
+            }
+          },
+          {
+            "type": "move",
+            "id": "jmVdejdCRgzhq-9_JztNv",
+            "targetId": "X6tgSTqUrBVLNQqP6z_-3",
+            "startTime": 3000,
+            "endTime": 3600,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 40
+            }
+          },
+          {
+            "type": "move",
+            "id": "2s024cLRFfj6yZiffp2kv",
+            "targetId": "X6tgSTqUrBVLNQqP6z_-3",
+            "startTime": 3600,
+            "endTime": 4200,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -40
+            }
+          },
+          {
+            "type": "move",
+            "id": "zClU_I4nGWbICi9sBkKNJ",
+            "targetId": "X6tgSTqUrBVLNQqP6z_-3",
+            "startTime": 4200,
+            "endTime": 4800,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 40
+            }
+          },
+          {
+            "type": "move",
+            "id": "1qWl6TCIEzKTwobXwoyZg",
+            "targetId": "X6tgSTqUrBVLNQqP6z_-3",
+            "startTime": 4800,
+            "endTime": 5400,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -40
+            }
+          },
+          {
+            "type": "move",
+            "id": "jYHUl4QEcRl3b2YjwQiXY",
+            "targetId": "X6tgSTqUrBVLNQqP6z_-3",
+            "startTime": 5400,
+            "endTime": 6000,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 40
+            }
+          },
+          {
+            "type": "textOut",
+            "id": "bzSRi0Ou",
+            "targetId": "TDSATmDI",
+            "startTime": 5270,
+            "easing": "natural",
+            "effect": "fadeOut",
+            "split": "letters",
+            "order": "forward",
+            "offset": 5,
+            "nodeDuration": 400,
+            "nodeEasing": "slowDown",
+            "travelDistance": 20,
+            "slideDirection": "up"
+          }
+        ]
+      }
+    ]
+  }
+}

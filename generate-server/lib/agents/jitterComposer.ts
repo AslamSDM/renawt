@@ -126,6 +126,28 @@ USAGE PATTERNS:
 - Builtins still respect parent-layer Jitter operations for entry/exit — REMEMBER EVERY non-background layer needs an entry op AND an exit op.
 - BEAT HITS go as the LAST (top-most) full-bleed layer in their scene, so they invert / flash everything beneath. Compute beats[] from the ARTBOARD START (not the video start).`;
 
+/** A tiny, valid reference doc. Shows the SHAPE and motion discipline (every
+ *  content layer gets an entry + an exit op) — not the content. The model is
+ *  told to invent its own copy/colors/components, never to copy this. */
+const STRUCTURE_EXAMPLE = `SHAPE EXAMPLE — copy the STRUCTURE and motion discipline only (one entry op + one exit op per content layer). Do NOT reuse any text, color, or component below:
+{
+  "name": "Example",
+  "fps": 30,
+  "audio": null,
+  "customComponents": [],
+  "conf": { "id": "root", "version": 4, "artboards": [
+    { "id": "a1", "name": "Hook", "width": 1920, "height": 1080, "duration": 4000, "fillColor": "#0b1020", "background": true,
+      "layers": [
+        { "type": "custom", "id": "bg1", "x": 0, "y": 0, "width": 1920, "height": 1080, "component": "MeshGradient", "props": { "colors": ["#0b1020", "#1b2440", "#26305a", "#0b1020"] } },
+        { "type": "text", "id": "h1", "x": 200, "y": 440, "width": 1520, "height": 180, "text": "Your real headline", "color": "#ffffff", "fontSize": 128, "font": { "name": "Inter", "weight": 800 }, "textAlign": "center" }
+      ],
+      "operations": [
+        { "id": "o1", "type": "textIn", "targetId": "h1", "effect": "slide", "split": "words", "offset": 90, "nodeDuration": 500, "startTime": 300 },
+        { "id": "o2", "type": "fadeOut", "targetId": "h1", "startTime": 3400, "endTime": 3800, "easing": "accelerate" }
+      ] }
+  ] }
+}`;
+
 export interface JitterBrief {
   /** Free-form goal of the video (product blurb, scene description, etc.) */
   brief: string;
@@ -203,6 +225,10 @@ export interface JitterBrief {
     opCount?: number;
     totalDurationMs?: number;
   }>;
+  /** Concrete layout skeletons from the translated template corpus — real
+   *  proven structure (layer placement + op timing, no verbatim copy) for the
+   *  model to imitate. Retrieved via jitterTemplateExamples.pickTemplateExamples. */
+  templateExamples?: Array<{ name: string; skeleton: string }>;
 }
 
 const SYSTEM_PROMPT = `You are a motion-graphics composer. You design short videos as Jitter-style documents: primitive layers placed in absolute coordinates, animated by an OPERATIONS timeline that targets layers by id.
@@ -260,6 +286,15 @@ LAYER TYPES — every layer needs a unique \`id\` (string):
    { "type": "custom", "id": "c1", "x": 0, "y": 0, "width": 1920, "height": 1080,
      "component": "MyComponent", "props": { "anyJson": "ok" } }
 
+6) ellipse (circle / dot / ring — width=height for a circle; supports stroke for rings, and pie-slice arcs):
+   { "type": "ellipse", "id": "e1", "x": 0, "y": 0, "width": 120, "height": 120,
+     "fillColor": "#ffffff", "strokeEnabled": false, "strokeColor": "#000", "strokeWeight": 0,
+     "startAngle": 0, "sweep": 100 }   (sweep<100 + strokeEnabled makes a progress arc/ring)
+
+7) star (star / sparkle / burst):
+   { "type": "star", "id": "s1", "x": 0, "y": 0, "width": 80, "height": 80,
+     "fillColor": "#ffd400", "spikes": 5, "radiusRatio": 50 }
+
 OPERATION TYPES — all times in MILLISECONDS, targetId references a layer id:
 
 - growIn:   { "type": "growIn",   "targetId": "g1", "scale": 0.5, "startTime": 0,    "endTime": 400,  "easing": "slowDown" }
@@ -273,6 +308,20 @@ OPERATION TYPES — all times in MILLISECONDS, targetId references a layer id:
 - textIn:   { "type": "textIn",   "targetId": "t1", "effect": "appear|slide|fade", "split": "letters|words|none",
               "order": "forward|reverse", "offset": 50, "nodeDuration": 500, "nodeEasing": "slowDown",
               "travelDistance": 20, "slideDirection": "up", "startTime": 900 }
+- textOut:  { "type": "textOut",  "targetId": "t1", "effect": "fade|slide", "split": "letters|words", "startTime": 3000, "endTime": 3400 }   (per-token text EXIT, mirror of textIn)
+- growOut:  { "type": "growOut",  "targetId": "g1", "scale": 0, "startTime": 3200, "endTime": 3500, "easing": "accelerate" }   (scale-down EXIT, pairs with growIn)
+- spinOut:  { "type": "spinOut",  "targetId": "i1", "angle": 180, "direction": "cw|ccw", "startTime": 3200, "endTime": 3600, "easing": "accelerate" }   (rotate-while-fading EXIT)
+
+ADVANCED OPS — sustained transforms for mid-scene life (use to satisfy "no persistent layers"; from→to over the window):
+- move:    { "type": "move",    "targetId": "i1", "fromValue": { "x": 0, "y": 0 }, "toValue": { "x": 40, "y": 0 }, "startTime": 600, "endTime": 2800, "easing": "natural" }
+- scale:   { "type": "scale",   "targetId": "i1", "fromValue": 1, "toValue": 1.06, "startTime": 600, "endTime": 2800 }
+- rotate:  { "type": "rotate",  "targetId": "s1", "fromValue": 0, "toValue": 360, "startTime": 0, "endTime": 3000 }   (degrees; great for star/ring spinners)
+- opacity: { "type": "opacity", "targetId": "t1", "fromValue": 100, "toValue": 60, "startTime": 800, "endTime": 2400 }   (0–100)
+- color:   { "type": "color",   "targetId": "t1", "fromValue": "#ffffff", "toValue": "#ffd400", "startTime": 800, "endTime": 1600 }   (crossfade text/fill color)
+- cornerRadius: { "type": "cornerRadius", "targetId": "r1", "fromValue": 0, "toValue": 40, "startTime": 400, "endTime": 1000 }
+- blurIn:  { "type": "blurIn",  "targetId": "i1", "blurRadius": 40, "startTime": 200, "endTime": 700 }   (focus-in ENTRY; also blurScaleIn / blurSlideIn{direction,distance})
+- blurOut: { "type": "blurOut", "targetId": "i1", "blurRadius": 40, "startTime": 3000, "endTime": 3500 }   (defocus EXIT; also blurScaleOut / blurSlideOut)
+- blurRadius: { "type": "blurRadius", "targetId": "i1", "fromValue": 0, "toValue": 12, "startTime": 600, "endTime": 1200 }   (sustained blur)
 
 Each operation MUST include a unique \`id\` string.
 
@@ -319,18 +368,18 @@ NO PLACEHOLDER CONTENT — HARD RULES:
 
 MOTION PRINCIPLES — HARD RULES:
 - NOTHING APPEARS OR DISAPPEARS WITHOUT MOTION. Every non-background, non-beat-overlay layer MUST have:
-    (a) an ENTRY op at its first visible moment — one of growIn, slideIn, fadeIn (paired with another), or textIn for text.
-    (b) an EXIT op before scene end — one of shrinkOut, slideOut, fadeOut (paired). Pop-in / pop-out is a BUG.
-- Pair complementary entries/exits (slideIn-up → slideOut-down, growIn → shrinkOut, slideIn-left → slideOut-right).
+    (a) an ENTRY op at its first visible moment — one of growIn, slideIn, fadeIn (paired with another), blurIn, or textIn for text.
+    (b) an EXIT op before scene end — one of shrinkOut, growOut, slideOut, fadeOut, spinOut, blurOut, textOut (paired). Pop-in / pop-out is a BUG.
+- Pair complementary entries/exits (slideIn-up → slideOut-down, growIn → shrinkOut/growOut, blurIn → blurOut, slideIn-left → slideOut-right).
 - Decisive ease curves: \`slowDown\` for entries, \`accelerate\` for exits, \`natural\` for sustained transforms.
 - Stagger text reveals with split="letters" at offset 40-60ms; words at offset 80-120ms.
 - Snap event times to the beat / half-beat grid.
 - Avoid pure opacity-only animation — pair fades with subtle translate or scale.
 
 LAYOUT QUALITY — HARD RULES (audited after generation):
-- CONTRAST: every text layer's color MUST hit at least 4.5:1 WCAG contrast against the visible background BEHIND its bounding box. Default to white on dark bg, near-black on light bg. Never put gray-on-gray, brand-color-on-brand-color, or text that fades into a similar-luminance bg.
+- CONTRAST: design text to read clearly — light text on dark bg, near-black on light bg; never gray-on-gray or brand-color-on-brand-color (a post-pass auto-corrects to 4.5:1, but get it right so it isn't fighting you).
 - NO OVERLAP: layer bounding boxes (x..x+width, y..y+height) must NOT overlap one another within the same scene unless the overlap is deliberate (e.g. text sitting on a GlassCard, an icon badge on a card corner). When two non-background layers overlap by more than 30% of either's area, that's a BUG.
-- NO PERSISTENT LAYERS: no element should just "sit there" for an entire scene. After its entry op finishes, a layer's dwell (time with no motion) must be ≤60% of the scene duration. If a layer must stay visible long, add a pulse / resize / subtle slide mid-scene so it doesn't look frozen.
+- NO PERSISTENT LAYERS: no element should just "sit there" for an entire scene. After its entry op finishes, a layer's dwell (time with no motion) must be ≤60% of the scene duration. If a layer must stay visible long, add a sustained mid-scene transform (pulse, resize, subtle move, scale, rotate, opacity drift, blurRadius, or color shift) so it doesn't look frozen.
 - DO NOT REUSE LAYER IDS ACROSS ARTBOARDS expecting them to "continue" — each artboard is rendered as its own Sequence and resets. If you want the same content in two scenes, declare new layers with new ids (the visual continuity comes from matching colors / fonts, not from shared ids).
 
 COHERENCE BUDGET (HARD CAPS — do not exceed):
@@ -340,13 +389,7 @@ COHERENCE BUDGET (HARD CAPS — do not exceed):
 - Pick a "motion theme" per scene and stick to it. Reuse the same builtins across scenes when sensible (e.g. same BlurredBlob colors, same Typewriter font).
 - Less is more. A scene with 4 well-staged layers + 1 strong beat hit beats a scene with 12 layers fighting for attention.
 
-BEAT HITS — pick ONE method for the whole video. These are SUSTAINED, not strobes.
-- BeatInvert    — full-bleed TOP-most layer. Inversion fades in over fadeBeats, holds for ~1 beat, fades out. Use 1-2 hits per VIDEO (not per scene) at climactic moments. Props: { bpm, beats:[8, 24], holdBeats?:1, fadeBeats?:0.25 }.
-- BeatColorSwap — scene BACKGROUND. Crossfades between two colors on each listed beat and HOLDS until the next. Place as the FIRST layer of the scene. Props: { bpm, beats:[8, 16, 24], fromColor, toColor, fadeBeats?:0.5, minHoldBeats?:4 }.
-   - When using BeatColorSwap, place a BeatTextSwap with the SAME beats[] for any large heading layer so the text color flips with the bg and contrast stays correct. Same fromColor/toColor pair, but mapped INVERTED (text fromColor = bg toColor).
-- DO NOT strobe on every beat. Pick 1-3 sparse hit beats only.
-- Beats[] are integer beat indices counted from ARTBOARD START. Skip 0. Land on 8, 16, 24 (every 2 bars) or just one peak beat per scene.
-- BEAT OVERLAYS MUST NOT HAVE ANY OPS APPLIED TO THEM (no fadeIn / slideIn / etc). Their parent wrapper would create an opacity stacking context that traps the blend mode. They animate themselves via the bpm prop.
+BEAT HITS (props in the catalog below) — pick ONE method for the whole video: BeatInvert OR BeatColorSwap. These are SUSTAINED holds, never per-beat strobes — choose only 1-3 sparse hit beats, as integer indices counted from ARTBOARD START (skip 0; e.g. 8, 16, 24). With BeatColorSwap, pair a BeatTextSwap (same beats[], color mapping inverted) on big headings so contrast survives the flip. NEVER apply ops (fadeIn / slideIn / etc.) to a beat overlay — it traps the difference-blend; they self-animate via the bpm prop.
 
 CUSTOM COMPONENT AUTHORING (READ CAREFULLY — these rules prevent runtime crashes):
 - Source is a TypeScript function-component string. JSX IS supported (transpiled at runtime).
@@ -511,6 +554,12 @@ function buildUserMessage(brief: JitterBrief): string {
         .join("\n")}`
     : "";
 
+  const examples = brief.templateExamples?.length
+    ? `\nPROVEN LAYOUT SKELETONS (real templates from our library — imitate the LAYOUT and MOTION patterns: where layers sit, how many per scene, op types + timing. Each line is "id: kind @x,y WxH" or "op type→target start-end". Do NOT copy any text — fill every layer with the brand copy above):\n${brief.templateExamples
+        .map((e) => `--- ${e.name} ---\n${e.skeleton}`)
+        .join("\n\n")}`
+    : "";
+
   // Hint scene count from duration. If audio.bpm given, prefer 2-bar (8 beats) units.
   const beatMs = brief.audio?.bpm ? 60000 / brief.audio.bpm : 0;
   let sceneHint = "";
@@ -531,9 +580,11 @@ ${brief.brief.trim()}
 TARGET:
 - Canvas: ${w} x ${h}
 - Total duration: ${dur}ms (sum of artboard durations MUST equal this ±200ms)
-- fps: 30${sceneHint}${beatBlock}${brand}${copy}${hero}${stock}${audio}${narration}${userAssetsBlock}${fontBlock}${backdropBlock}${inspirations}${customs}
+- fps: 30${sceneHint}${beatBlock}${brand}${copy}${hero}${stock}${audio}${narration}${userAssetsBlock}${fontBlock}${backdropBlock}${inspirations}${examples}${customs}
 
 ${BUILTIN_CATALOG}
+
+${STRUCTURE_EXAMPLE}
 
 Return the JSON document now.`;
 }
@@ -543,6 +594,28 @@ const BEAT_OVERLAY_NAMES = new Set([
   "BeatColorSwap",
   "BeatTextSwap",
 ]);
+
+/** Builtins that fill the frame as decoration, never count as "content".
+ *  Single source of truth for the empty-artboard check + finalizers. */
+const BACKGROUND_COMPONENT_NAMES = new Set([
+  "TemplateBackdrop",
+  "AbstractBackdrop",
+  "MeshGradient",
+  "DotGrid",
+  "LineGrid",
+  "AnimatedGradient",
+  "BlurredBlob",
+  "NoiseField",
+  "FloatingDots",
+  "BeatInvert",
+  "BeatColorSwap",
+]);
+
+function isBackgroundComponent(component: unknown): boolean {
+  return (
+    typeof component === "string" && BACKGROUND_COMPONENT_NAMES.has(component)
+  );
+}
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   if (!hex) return null;
@@ -1037,13 +1110,26 @@ function separateLayerOverlaps(doc: JitterDoc): { moved: number } {
   return { moved };
 }
 
-const EXIT_OP_TYPES = new Set(["fadeOut", "slideOut", "shrinkOut"]);
+const EXIT_OP_TYPES = new Set([
+  "fadeOut",
+  "slideOut",
+  "shrinkOut",
+  "growOut",
+  "spinOut",
+  "textOut",
+  "blurOut",
+  "blurScaleOut",
+  "blurSlideOut",
+]);
 const ENTRY_OP_TYPES = new Set([
   "fadeIn",
   "slideIn",
   "growIn",
   "textIn",
   "resize",
+  "blurIn",
+  "blurScaleIn",
+  "blurSlideIn",
 ]);
 
 /**
@@ -1195,6 +1281,121 @@ export interface JitterComposerResult {
 }
 
 /**
+ * Throw on a hard-contract violation (cross-refs, total-duration deficit, or a
+ * scene with no real content). Shared by both composer entry points so the
+ * retry loop sees identical errors regardless of provider. Returning normally
+ * means the doc is structurally acceptable.
+ */
+function validateDocContract(doc: JitterDoc, brief: JitterBrief): void {
+  const refErrors = validateCrossRefs(doc);
+  if (refErrors.length) {
+    throw new Error(`Cross-reference errors:\n${refErrors.join("\n")}`);
+  }
+  // Duration contract: total artboard duration must hit the requested ms within
+  // tolerance. Lite models love to ship 2 short scenes regardless of brief.
+  const targetMs = brief.durationMs ?? 5000;
+  const sumMs = doc.conf.artboards.reduce((s, a) => s + (a.duration || 0), 0);
+  if (sumMs < targetMs * 0.85) {
+    throw new Error(
+      `Duration deficit: artboards sum to ${sumMs}ms but brief requested ${targetMs}ms. Add ${Math.ceil((targetMs - sumMs) / 4000)} more artboards (hook → features → CTA). Each artboard should be ~4000-8000ms.`,
+    );
+  }
+  const emptyArts: string[] = [];
+  for (const a of doc.conf.artboards) {
+    const contentLayers = (a.layers || []).filter((l: any) => {
+      if (!l) return false;
+      if (l.type === "custom" && isBackgroundComponent(l.component))
+        return false;
+      if ((l.type === "rect" || l.type === "layerGrp") && l.background === true)
+        return false;
+      return true;
+    });
+    if (contentLayers.length === 0) emptyArts.push(a.id);
+  }
+  if (emptyArts.length) {
+    throw new Error(
+      `Empty artboards (no content layers, only background): ${emptyArts.join(", ")}. Every artboard MUST have AT LEAST 2 content layers (text/image/mockup/card). Add headlines, feature copy, CTAs, or mockups to these scenes.`,
+    );
+  }
+}
+
+/**
+ * Deterministic post-pass applied to every accepted doc. Wires together the
+ * full layout/motion safety net (hero→mockup wrap, auto backdrop, text fit,
+ * frame clamp, overlap separation, beat snap, entry/exit coverage, contrast).
+ * Set JITTER_DISABLE_LAYOUT_FIX=1 to skip the geometry heuristics if they ever
+ * fight the model on a given job.
+ */
+function finalizeDoc(
+  doc: JitterDoc,
+  brief: JitterBrief,
+  tag = "JitterComposer",
+): { doc: JitterDoc; totalFrames: number } {
+  let finalDoc = doc;
+
+  // Raw hero <image> → staged ScreenshotShowcase (chrome + sensible aspect).
+  if (brief.heroImage) {
+    const w = wrapHeroImageInMockup(finalDoc, brief.heroImage);
+    if (w.wrapped) {
+      console.log(`[${tag}] Hero image → ScreenshotShowcase x${w.wrapped}`);
+    }
+  }
+
+  // Auto backdrop as the first full-bleed layer of every artboard.
+  if (brief.backdrop) {
+    const bd = injectBackdrop(finalDoc, brief.backdrop);
+    console.log(
+      `[${tag}] Backdrop injected on ${bd.added} artboards (template=${brief.backdrop.templateName} variant=${brief.backdrop.variant}), replaced ${bd.replaced} model bg layers`,
+    );
+  }
+
+  // Geometry safety net: shrink/grow text to its box → clamp to frame → push
+  // overlapping siblings apart. These were authored but previously never run.
+  if (process.env.JITTER_DISABLE_LAYOUT_FIX !== "1") {
+    const fit = autoFitTextLayers(finalDoc);
+    const clamp = clampLayersToArtboard(finalDoc);
+    const sep = separateLayerOverlaps(finalDoc);
+    if (fit.fitted || clamp.clamped || sep.moved) {
+      console.log(
+        `[${tag}] Layout fix: ${fit.fitted} text-fit, ${clamp.clamped} clamped, ${sep.moved} overlap-moved`,
+      );
+    }
+  }
+
+  // Beat snap (only when a BPM is known).
+  if (finalDoc.audio?.bpm) {
+    const { doc: snapped, stats } = snapDocToBeats(finalDoc);
+    if (stats.opsShifted || stats.artboardsResized) {
+      console.log(
+        `[${tag}] Beat-snap: ${stats.opsShifted} ops shifted, ${stats.artboardsResized} artboards resized, total drift ${stats.totalDriftMs}ms`,
+      );
+    }
+    finalDoc = snapped;
+  }
+
+  const motion = enforceMotionCoverage(finalDoc);
+  if (motion.exitsAdded || motion.entriesAdded) {
+    console.log(
+      `[${tag}] Motion coverage: injected ${motion.entriesAdded} entries, ${motion.exitsAdded} exits`,
+    );
+  }
+
+  const contrast = enforceTextContrast(finalDoc);
+  if (contrast.textFlipped) {
+    console.log(
+      `[${tag}] Contrast: flipped ${contrast.textFlipped} text colors to meet 4.5:1`,
+    );
+  }
+
+  reportLayoutOverlaps(finalDoc);
+  const totalFrames = finalDoc.conf.artboards.reduce(
+    (sum, a) => sum + artboardDurationFrames(a, finalDoc.fps),
+    0,
+  );
+  return { doc: finalDoc, totalFrames };
+}
+
+/**
  * Vision-aware variant. Same prompt + brief, but Gemini Pro Vision SEES the
  * provided media (an mp4 clip or a screenshot) while writing the JitterDoc —
  * massively improves "recreate this look" fidelity.
@@ -1236,80 +1437,11 @@ export async function generateJitterDocWithMedia(
           .join("\n");
         throw new Error(`Schema validation failed:\n${issues}`);
       }
-      const refErrors = validateCrossRefs(parsed.data);
-      if (refErrors.length) {
-        throw new Error(`Cross-reference errors:\n${refErrors.join("\n")}`);
-      }
-      const targetMs = brief.durationMs ?? 5000;
-      const sumMs = parsed.data.conf.artboards.reduce(
-        (s, a) => s + (a.duration || 0),
-        0,
-      );
-      if (sumMs < targetMs * 0.85) {
-        throw new Error(
-          `Duration deficit: artboards sum to ${sumMs}ms but brief requested ${targetMs}ms. Add ${Math.ceil((targetMs - sumMs) / 4000)} more artboards (hook → features → CTA). Each artboard should be ~4000-8000ms.`,
-        );
-      }
-      const emptyArts2: string[] = [];
-      for (const a of parsed.data.conf.artboards) {
-        const contentLayers = (a.layers || []).filter((l: any) => {
-          if (!l) return false;
-          if (l.type === "custom") {
-            if (
-              l.component === "TemplateBackdrop" ||
-              l.component === "AbstractBackdrop" ||
-              l.component === "MeshGradient" ||
-              l.component === "DotGrid" ||
-              l.component === "LineGrid" ||
-              l.component === "AnimatedGradient" ||
-              l.component === "BlurredBlob" ||
-              l.component === "NoiseField" ||
-              l.component === "FloatingDots" ||
-              l.component === "BeatInvert" ||
-              l.component === "BeatColorSwap"
-            )
-              return false;
-          }
-          if (
-            (l.type === "rect" || l.type === "layerGrp") &&
-            l.background === true
-          )
-            return false;
-          return true;
-        });
-        if (contentLayers.length === 0) emptyArts2.push(a.id);
-      }
-      if (emptyArts2.length) {
-        throw new Error(
-          `Empty artboards (no content layers, only background): ${emptyArts2.join(", ")}. Every artboard MUST have AT LEAST 2 content layers (text/image/mockup/card).`,
-        );
-      }
-      let finalDoc = parsed.data;
-      if (finalDoc.audio?.bpm) {
-        const { doc: snapped, stats } = snapDocToBeats(finalDoc);
-        if (stats.opsShifted || stats.artboardsResized) {
-          console.log(
-            `[JitterComposer/vision] Beat-snap: ${stats.opsShifted} ops shifted, ${stats.artboardsResized} artboards resized, total drift ${stats.totalDriftMs}ms`,
-          );
-        }
-        finalDoc = snapped;
-      }
-      const motion = enforceMotionCoverage(finalDoc);
-      if (motion.exitsAdded || motion.entriesAdded) {
-        console.log(
-          `[JitterComposer/vision] Motion coverage: injected ${motion.entriesAdded} entries, ${motion.exitsAdded} exits`,
-        );
-      }
-      const contrast = enforceTextContrast(finalDoc);
-      if (contrast.textFlipped) {
-        console.log(
-          `[JitterComposer/vision] Contrast: flipped ${contrast.textFlipped} text colors to meet 4.5:1`,
-        );
-      }
-      reportLayoutOverlaps(finalDoc);
-      const totalFrames = finalDoc.conf.artboards.reduce(
-        (sum, a) => sum + artboardDurationFrames(a, finalDoc.fps),
-        0,
+      validateDocContract(parsed.data, brief);
+      const { doc: finalDoc, totalFrames } = finalizeDoc(
+        parsed.data,
+        brief,
+        "JitterComposer/vision",
       );
       return { doc: finalDoc, totalFrames, attempts: attempt, rawText: raw };
     } catch (err) {
@@ -1341,16 +1473,18 @@ export async function generateJitterDoc(
   let lastError: unknown = null;
   let raw = "";
 
-  // Default: Gemini Pro. Override with JITTER_LLM=cloudflare to try CF Kimi K2.6
-  // (warning: historically produces invalid JitterDoc JSON — kept for testing).
-  // The composer emits a large, deeply-nested JSON doc — a job lite/flash models
-  // truncate (returning 1 scene or cutting off mid-array). Use a dedicated
-  // strong model here, independent of the cheap global GEMINI_MODEL used for
-  // vision/relevance. Override via JITTER_COMPOSER_MODEL.
+  // Override with JITTER_LLM=cloudflare to try CF Kimi K2.6 (warning:
+  // historically produces invalid JitterDoc JSON — kept for testing).
+  // Composer model: gemini-3-flash-preview. It does NOT spend the output budget
+  // on thinking tokens the way the *-pro reasoning models do (those blow past
+  // maxOutputTokens → empty response → the chatWithGeminiPro fallback cascade
+  // ends at an unconfigured OpenRouter/Kimi and surfaces a misleading
+  // "OPENROUTER_API_KEY required" error). Truncation/under-delivery is handled
+  // by the retry loop below. Override via JITTER_COMPOSER_MODEL.
   const LARGE_CONFIG = {
     ...CODE_GENERATOR_CONFIG,
     maxTokens: Number(process.env.JITTER_MAX_TOKENS || 16000),
-    model: process.env.JITTER_COMPOSER_MODEL || "gemini-3.5-flash-preview",
+    model: process.env.JITTER_COMPOSER_MODEL || "gemini-3-flash-preview",
   };
   const useCloudflare = process.env.JITTER_LLM === "cloudflare";
 
@@ -1372,90 +1506,11 @@ export async function generateJitterDoc(
           .join("\n");
         throw new Error(`Schema validation failed:\n${issues}`);
       }
-      const refErrors = validateCrossRefs(parsed.data);
-      if (refErrors.length) {
-        throw new Error(`Cross-reference errors:\n${refErrors.join("\n")}`);
-      }
-      // Duration contract: total artboard duration must hit the requested ms within
-      // tolerance. Lite models love to ship 2 short scenes regardless of brief.
-      const targetMs = brief.durationMs ?? 5000;
-      const sumMs = parsed.data.conf.artboards.reduce(
-        (s, a) => s + (a.duration || 0),
-        0,
-      );
-      if (sumMs < targetMs * 0.85) {
-        throw new Error(
-          `Duration deficit: artboards sum to ${sumMs}ms but brief requested ${targetMs}ms. Add ${Math.ceil((targetMs - sumMs) / 4000)} more artboards (hook → features → CTA). Each artboard should be ~4000-8000ms.`,
-        );
-      }
-      const emptyArts: string[] = [];
-      for (const a of parsed.data.conf.artboards) {
-        const contentLayers = (a.layers || []).filter((l: any) => {
-          if (!l) return false;
-          if (l.type === "custom") {
-            // Backgrounds aren't content.
-            if (
-              l.component === "TemplateBackdrop" ||
-              l.component === "AbstractBackdrop" ||
-              l.component === "MeshGradient" ||
-              l.component === "DotGrid" ||
-              l.component === "LineGrid" ||
-              l.component === "AnimatedGradient" ||
-              l.component === "BlurredBlob" ||
-              l.component === "NoiseField" ||
-              l.component === "FloatingDots" ||
-              l.component === "BeatInvert" ||
-              l.component === "BeatColorSwap"
-            )
-              return false;
-          }
-          if (
-            (l.type === "rect" || l.type === "layerGrp") &&
-            l.background === true
-          )
-            return false;
-          return true;
-        });
-        if (contentLayers.length === 0) emptyArts.push(a.id);
-      }
-      if (emptyArts.length) {
-        throw new Error(
-          `Empty artboards (no content layers, only background): ${emptyArts.join(", ")}. Every artboard MUST have AT LEAST 2 content layers (text/image/mockup/card). Add headlines, feature copy, CTAs, or mockups to these scenes.`,
-        );
-      }
-      // Safety net: if BPM provided, snap any stray timings to the half-beat grid.
-      let finalDoc = parsed.data;
-      if (finalDoc.audio?.bpm) {
-        const { doc: snapped, stats } = snapDocToBeats(finalDoc);
-        if (stats.opsShifted || stats.artboardsResized) {
-          console.log(
-            `[JitterComposer] Beat-snap: ${stats.opsShifted} ops shifted, ${stats.artboardsResized} artboards resized, total drift ${stats.totalDriftMs}ms`,
-          );
-        }
-        finalDoc = snapped;
-      }
-      const motion = enforceMotionCoverage(finalDoc);
-      if (motion.exitsAdded || motion.entriesAdded) {
-        console.log(
-          `[JitterComposer] Motion coverage: injected ${motion.entriesAdded} entries, ${motion.exitsAdded} exits`,
-        );
-      }
-      const contrast = enforceTextContrast(finalDoc);
-      if (contrast.textFlipped) {
-        console.log(
-          `[JitterComposer] Contrast: flipped ${contrast.textFlipped} text colors to meet 4.5:1`,
-        );
-      }
-      if (brief.backdrop) {
-        const bd = injectBackdrop(finalDoc, brief.backdrop);
-        console.log(
-          `[JitterComposer] Backdrop injected on ${bd.added} artboards (template=${brief.backdrop.templateName} variant=${brief.backdrop.variant})`,
-        );
-      }
-      reportLayoutOverlaps(finalDoc);
-      const totalFrames = finalDoc.conf.artboards.reduce(
-        (sum, a) => sum + artboardDurationFrames(a, finalDoc.fps),
-        0,
+      validateDocContract(parsed.data, brief);
+      const { doc: finalDoc, totalFrames } = finalizeDoc(
+        parsed.data,
+        brief,
+        "JitterComposer",
       );
       return { doc: finalDoc, totalFrames, attempts: attempt, rawText: raw };
     } catch (err) {

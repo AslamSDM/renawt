@@ -1,0 +1,877 @@
+{
+  "name": "92MWK_9io3NjYdCY7204l",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "j7qdBgeUx37Z1-pUSs5tc",
+        "name": "4 : 3",
+        "x": 719.2451171875,
+        "y": 707.3446044921875,
+        "width": 1600,
+        "height": 1200,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 4600,
+        "fillColor": "#E0E1E4",
+        "background": true,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "tAzrKeQSN9Yof9boNPUcp",
+            "name": "CARDS",
+            "x": 500,
+            "y": 170,
+            "width": 600,
+            "height": 729.6541137695312,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "maskGrp",
+                "id": "Qnze8rqA3UJSUVofV3Jx_",
+                "name": "SCREEN 3 (LOOP)",
+                "x": -153,
+                "y": -238,
+                "width": 1,
+                "height": 1,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "X6975auJaZSOGhYzbczMq",
+                    "name": "Corner-Radius (MASK)",
+                    "x": 152.9999999999999,
+                    "y": 289.3458803398582,
+                    "width": 600,
+                    "height": 600,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 20,
+                    "fillColor": "#633FF4",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "image",
+                    "id": "dioVjnB8x96Ezy0xPAL-A",
+                    "name": "REPLACE ME",
+                    "x": 153,
+                    "y": 289,
+                    "width": 600,
+                    "height": 600,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "https://d154zarmrcpu4a.cloudfront.net/VIip2d_migB9XqfE6Uw10.gif",
+                    "mediaName": "Coinbase -  Moniker.gif"
+                  }
+                ]
+              },
+              {
+                "type": "maskGrp",
+                "id": "ybPk0QeSc_GKBuEwyzU_P",
+                "name": "SCREEN 2 (LOOP)",
+                "x": -153,
+                "y": -239,
+                "width": 1,
+                "height": 1,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "i78eFMDTm2e4YFoaWSXjb",
+                    "name": "Corner-Radius (MASK)",
+                    "x": 152.9999999999999,
+                    "y": 289.3458803398582,
+                    "width": 600,
+                    "height": 600,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 20,
+                    "fillColor": "#633FF4",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "image",
+                    "id": "JncoE9lZX6gJaBYwblq1p",
+                    "name": "REPLACE ME",
+                    "x": 153,
+                    "y": 289,
+                    "width": 600,
+                    "height": 600,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "https://d154zarmrcpu4a.cloudfront.net/vRCrDrqJUF0r-scAlxlp9.png",
+                    "mediaName": "Woman copy.png"
+                  }
+                ]
+              },
+              {
+                "type": "maskGrp",
+                "id": "pCsSNsW-alGsOtDGtPNiz",
+                "name": "SCREEN 1 (LOOP)",
+                "x": -153,
+                "y": -238.34588623046875,
+                "width": 1,
+                "height": 1,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "wsXY__dQNn03O_xHE_ULr",
+                    "name": "Corner-Radius (MASK)",
+                    "x": 152.9999999999999,
+                    "y": 289.3458803398582,
+                    "width": 600,
+                    "height": 600,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 20,
+                    "fillColor": "#633FF4",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "video",
+                    "id": "FHSToyrhw_9w3IlnfwmJy",
+                    "name": "REPLACE ME",
+                    "x": 153,
+                    "y": 289,
+                    "width": 600,
+                    "height": 600,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "https://d154zarmrcpu4a.cloudfront.net/hdOW15SZ_RN6yo0_d5aD0.mp4",
+                    "mediaName": "wild-justifiedstudio-8.mp4"
+                  }
+                ]
+              },
+              {
+                "type": "maskGrp",
+                "id": "HtgObrvJlBs6JiUxcOAYW",
+                "name": "SCREEN 3",
+                "x": -153,
+                "y": -289.34588623046875,
+                "width": 1,
+                "height": 1,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "SX1wHpGnup3Ry7xTIt9mU",
+                    "name": "Corner-Radius (MASK)",
+                    "x": 152.9999999999999,
+                    "y": 289.3458803398582,
+                    "width": 600,
+                    "height": 600,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 20,
+                    "fillColor": "#633FF4",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "image",
+                    "id": "_X2giVJh1EycTh6C5tsrk",
+                    "name": "REPLACE ME",
+                    "x": 153,
+                    "y": 289,
+                    "width": 600,
+                    "height": 600,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "https://d154zarmrcpu4a.cloudfront.net/VIip2d_migB9XqfE6Uw10.gif",
+                    "mediaName": "Coinbase -  Moniker.gif"
+                  }
+                ]
+              },
+              {
+                "type": "maskGrp",
+                "id": "3wgCbCWRFIpT-YwpGcaPz",
+                "name": "SCREEN 2",
+                "x": -153,
+                "y": -229.6917724609375,
+                "width": 1,
+                "height": 1,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "r6Tl5e9MpaRQrS5eSLRwd",
+                    "name": "Corner-Radius (MASK)",
+                    "x": 152.9999999999999,
+                    "y": 289.3458803398582,
+                    "width": 600,
+                    "height": 600,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 20,
+                    "fillColor": "#633FF4",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "image",
+                    "id": "o3saRB0y5YsY1WMTn_SMU",
+                    "name": "REPLACE ME",
+                    "x": 153,
+                    "y": 289,
+                    "width": 600,
+                    "height": 600,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "https://d154zarmrcpu4a.cloudfront.net/vRCrDrqJUF0r-scAlxlp9.png",
+                    "mediaName": "Woman copy.png"
+                  }
+                ]
+              },
+              {
+                "type": "maskGrp",
+                "id": "5g__mahfc9t6zCcJf9SY9",
+                "name": "SCREEN 1",
+                "x": -153,
+                "y": -159.6917724609375,
+                "width": 1,
+                "height": 1,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "layers": [
+                  {
+                    "type": "rect",
+                    "id": "t2d4iEyzPH5l5np0bhKY5",
+                    "name": "Corner-Radius (MASK)",
+                    "x": 152.9999999999999,
+                    "y": 289.3458803398582,
+                    "width": 600,
+                    "height": 600,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 20,
+                    "fillColor": "#633FF4",
+                    "shadowEnabled": false,
+                    "shadowOffsetX": 0,
+                    "shadowOffsetY": 0,
+                    "shadowBlur": 0,
+                    "shadowColor": "#000000",
+                    "shadowOpacity": 50
+                  },
+                  {
+                    "type": "video",
+                    "id": "6LixynFbIlcqc5aGu9xPV",
+                    "name": "REPLACE ME",
+                    "x": 153,
+                    "y": 289,
+                    "width": 600,
+                    "height": 600,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "https://d154zarmrcpu4a.cloudfront.net/hdOW15SZ_RN6yo0_d5aD0.mp4",
+                    "mediaName": "wild-justifiedstudio-8.mp4"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "layerGrp",
+            "id": "YVVzprbzDvkNv3Is4o4zw",
+            "name": "Overlay (HIDE)",
+            "x": 0,
+            "y": 601,
+            "width": 1600,
+            "height": 599,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0,
+            "shadowBlur": 0,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "rect",
+                "id": "LqO7AwQZQCuA0E6XwafWJ",
+                "name": "Black Overlay",
+                "x": 0,
+                "y": 0,
+                "width": 1600,
+                "height": 599,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 50,
+                "cornerRadius": 0,
+                "fillColor": "#ffffff",
+                "shadowEnabled": false,
+                "shadowOffsetX": 0,
+                "shadowOffsetY": 0,
+                "shadowBlur": 0,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50
+              },
+              {
+                "type": "text",
+                "id": "y0Bdd7e9GYdfO6uciTlbV",
+                "name": "RICO.SUPPLY",
+                "x": 1254.6729736328125,
+                "y": 546.5185546875,
+                "width": 305,
+                "height": 20,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 75,
+                "cornerRadius": 0,
+                "text": "RICO.SUPPLY",
+                "color": "#ffffff",
+                "fontSize": 16,
+                "font": {
+                  "type": "googlefont",
+                  "name": "Space Mono",
+                  "weight": 400,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 120,
+                "letterSpacing": 0,
+                "textAlign": "right",
+                "verticalAlign": "top",
+                "case": "normal"
+              },
+              {
+                "type": "image",
+                "id": "GV4pUKCfeERzJ8gHW7HO1",
+                "name": "LOGOTYPE",
+                "x": 39.6729736328125,
+                "y": 547.5185546875,
+                "width": 92,
+                "height": 22,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 75,
+                "cornerRadius": 0,
+                "url": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTc0IiBoZWlnaHQ9IjQyIiB2aWV3Qm94PSIwIDAgMTc0IDQyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTEyNy43MDcgNDEuODUyNEMxMjMuODc4IDQxLjg1MjQgMTIwLjMxNiA0MC45MzE1IDExNy4wNjggMzkuMDY1NUMxMTMuODIxIDM3LjE5OTQgMTExLjIyOCAzNC42NzkxIDEwOS4zMzggMzEuNDgwMkMxMDcuNDQ3IDI4LjI4MTMgMTA2LjUwMiAyNC43NjczIDEwNi41MDIgMjAuOTM4M0MxMDYuNTAyIDE3LjEwOTMgMTA3LjQ0NyAxMy41NzExIDEwOS4zMzggMTAuMzcyMkMxMTEuMjI4IDcuMTczMzEgMTEzLjc5NyA0LjY1Mjk2IDExNy4wNjggMi43ODY5M0MxMjAuMzE2IDAuOTIwODk4IDEyMy44NzggMCAxMjcuNzA3IDBIMTI3Ljg3N0MxMzEuNzA2IDAgMTM1LjI0NCAwLjk0NTEzMiAxMzguNDY3IDIuNzg2OTNDMTQxLjY5IDQuNjI4NzIgMTQ0LjI1OSA3LjE3MzMxIDE0Ni4xNDkgMTAuMzcyMkMxNDguMDQgMTMuNTcxMSAxNDguOTg1IDE3LjA4NTEgMTQ4Ljk4NSAyMC45MzgzQzE0OC45ODUgMjQuNzkxNSAxNDguMDQgMjguMjgxMyAxNDYuMTQ5IDMxLjQ4MDJDMTQ0LjI1OSAzNC42NzkxIDE0MS42OSAzNy4xOTk0IDEzOC40NjcgMzkuMDY1NUMxMzUuMjQ0IDQwLjkzMTUgMTMxLjcwNiA0MS44NTI0IDEyNy44NzcgNDEuODUyNEgxMjcuNzA3Wk0xMjcuODc3IDM0LjI2NzFDMTMwLjI1MiAzNC4yNjcxIDEzMi40ODEgMzMuNjYxMiAxMzQuNTE3IDMyLjQyNTNDMTM2LjU1MyAzMS4xODk0IDEzOC4xNTIgMjkuNTY1NyAxMzkuMzE1IDI3LjUzQzE0MC40NzkgMjUuNDk0MyAxNDEuMDYgMjMuMjg5IDE0MS4wNiAyMC45MTQxQzE0MS4wNiAxOC41MzkxIDE0MC40NzkgMTYuMzA5NiAxMzkuMzE1IDE0LjI3MzlDMTM4LjE1MiAxMi4yMzgyIDEzNi41NTMgMTAuNjE0NiAxMzQuNTE3IDkuMzc4NjJDMTMyLjQ4MSA4LjE2NjkxIDEzMC4yNzYgNy41MzY4MiAxMjcuODc3IDcuNTM2ODJIMTI3LjcwN0MxMjUuMjYgNy41MzY4MiAxMjMuMDMgOC4xNDI2OCAxMjAuOTk0IDkuMzMwMTVDMTE4Ljk1OSAxMC41MTc2IDExNy4zNTkgMTIuMTQxMyAxMTYuMTk2IDE0LjE3N0MxMTUuMDMzIDE2LjIxMjcgMTE0LjQ1MSAxOC40NDIyIDExNC40NTEgMjAuODg5OEMxMTQuNDUxIDIzLjMzNzUgMTE1LjAzMyAyNS41NDI4IDExNi4xOTYgMjcuNTU0MkMxMTcuMzU5IDI5LjU2NTcgMTE4Ljk1OSAzMS4xNjUxIDEyMC45OTQgMzIuNDAxMUMxMjMuMDMgMzMuNjEyOCAxMjUuMjYgMzQuMjQyOSAxMjcuNzA3IDM0LjI0MjlIMTI3Ljg3N1YzNC4yNjcxWiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTQ1LjA4NjIgNDAuOTc5OFYwLjg0ODA4SDUyLjkzOFY0MC45Nzk4SDQ1LjA4NjJaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTE2NS43NzIgMzMuNjgwNEwxNjguODI1IDM4LjE0MDZIMTY3LjkxMUwxNjQuOTEzIDMzLjY4MDRIMTYyLjcwMVYzOC4xNDA2SDE2MS44OTdWMjguMDg3SDE2NS40OEMxNjcuMTQzIDI4LjA4NyAxNjguMzg2IDI5LjI3NTEgMTY4LjM4NiAzMC44NjU0QzE2OC4zODYgMzIuNDU1NyAxNjcuMzI2IDMzLjU1MjUgMTY1Ljc3MiAzMy42ODA0Wk0xNjUuNDYxIDMyLjk2NzVDMTY2LjcwNCAzMi45Njc1IDE2Ny42MTggMzIuMDkwMSAxNjcuNjE4IDMwLjg4MzdDMTY3LjYxOCAyOS42NzczIDE2Ni43MDQgMjguODU0NyAxNjUuNDYxIDI4Ljg1NDdIMTYyLjY4M1YzMi45Njc1SDE2NS40NjFaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTE3My42ODcgMzMuMTMyMUMxNzMuNjg3IDM3LjkyMTIgMTY5Ljc1NyA0MS44NTEzIDE2NC45NSA0MS44NTEzQzE2MC4xNDIgNDEuODUxMyAxNTYuMjQ5IDM3LjkyMTIgMTU2LjI0OSAzMy4xMzIxQzE1Ni4yNDkgMjguMzQyOSAxNjAuMTc5IDI0LjQxMjggMTY0Ljk1IDI0LjQxMjhDMTY5LjcyMSAyNC40MTI4IDE3My42ODcgMjguMzQyOSAxNzMuNjg3IDMzLjEzMjFaTTE3Mi45NzQgMzMuMTMyMUMxNzIuOTc0IDI4LjcwODUgMTY5LjM5MSAyNS4wODkyIDE2NC45ODYgMjUuMDg5MkMxNjAuNTgxIDI1LjA4OTIgMTU2Ljk2MiAyOC42OTAyIDE1Ni45NjIgMzMuMTMyMUMxNTYuOTYyIDM3LjU3MzkgMTYwLjU2MyA0MS4xNzQ5IDE2NC45ODYgNDEuMTc0OUMxNjkuNDEgNDEuMTc0OSAxNzIuOTc0IDM3LjU3MzkgMTcyLjk3NCAzMy4xMzIxWiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTczLjYwMTQgMzguNDExQzc2LjcwMzQgNDAuMTMxNiA4MC4yNDE2IDQwLjk3OTggODQuMTkxNyA0MC45Nzk4SDk5LjU1NjJWMzMuODMwOEg4NC42NTIyQzgyLjE1NjEgMzMuODMwOCA3OS45MjY1IDMzLjI3MzQgNzcuOTM5MyAzMi4xMzQ0Qzc1Ljk3NjMgMzAuOTk1NCA3NC40MjU0IDI5LjQ0NDQgNzMuMjg2NCAyNy41MDU3QzcyLjE0NzQgMjUuNTQyNyA3MS41OSAyMy4zNjE2IDcxLjU5IDIwLjkxNEM3MS41OSAxOC40NjYzIDcyLjE0NzQgMTYuMjYxIDczLjI4NjQgMTQuMjczOEM3NC40MDExIDEyLjI4NjYgNzUuOTUyMSAxMC43NTk5IDc3LjkzOTMgOS42NDUwOEM3OS45MDIzIDguNTU0NTQgODIuMTU2MSA3Ljk5NzE2IDg0LjY1MjIgNy45OTcxNkg5OS41NTYyVjAuODQ4MDhIODQuMTkxN0M4MC4yNDE2IDAuODQ4MDggNzYuNzAzNCAxLjY5NjI4IDczLjYwMTQgMy40MTY5QzcwLjQ5OTQgNS4xMzc1MyA2OC4wNzYgNy41MTI0NyA2Ni4yODI3IDEwLjU2NkM2NC40ODk0IDEzLjYxOTUgNjMuNjE2OSAxNy4wNjA3IDYzLjYxNjkgMjAuOTE0QzYzLjYxNjkgMjQuNzY3MiA2NC41MTM2IDI4LjIwODQgNjYuMjgyNyAzMS4yNjE5QzY4LjA1MTggMzQuMzE1NSA3MC40OTk0IDM2LjY5MDQgNzMuNjAxNCAzOC40MTFaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMCAwLjg0ODA4VjQwLjk3OThINy41ODUyOVY3Ljk5NzE2SDM1LjkzOTNWMC44NDgwOEgwWiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+Cg==",
+                "mediaName": "fallback.svg"
+              },
+              {
+                "type": "text",
+                "id": "WhwxPAEw1K1ZP1ncwzTDs",
+                "name": "Type",
+                "x": 131.6729736328125,
+                "y": 546.5185546875,
+                "width": 1318,
+                "height": 20,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 75,
+                "cornerRadius": 0,
+                "text": "Stack",
+                "color": "#ffffff",
+                "fontSize": 16,
+                "font": {
+                  "type": "googlefont",
+                  "name": "Space Mono",
+                  "weight": 400,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 120,
+                "letterSpacing": 0,
+                "textAlign": "center",
+                "verticalAlign": "top",
+                "case": "normal"
+              },
+              {
+                "type": "text",
+                "id": "LI8Av0qxpH2WU0NE5MGi8",
+                "name": "Number",
+                "x": 817.6729736328125,
+                "y": 546.5185546875,
+                "width": 632,
+                "height": 20,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 75,
+                "cornerRadius": 0,
+                "text": "3-03 (LITE)",
+                "color": "#ffffff",
+                "fontSize": 16,
+                "font": {
+                  "type": "googlefont",
+                  "name": "Space Mono",
+                  "weight": 400,
+                  "fontStyle": "regular"
+                },
+                "lineHeight": 120,
+                "letterSpacing": 0,
+                "textAlign": "center",
+                "verticalAlign": "top",
+                "case": "normal"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "scale",
+            "id": "sJdwk80h3E-nGx8ukHTHI",
+            "targetId": "HtgObrvJlBs6JiUxcOAYW",
+            "startTime": 0,
+            "endTime": 1250,
+            "easing": "natural",
+            "fromValue": 0.8,
+            "toValue": 0.9
+          },
+          {
+            "type": "move",
+            "id": "iLedawQ-sAso0lRe4t16X",
+            "targetId": "HtgObrvJlBs6JiUxcOAYW",
+            "startTime": 0,
+            "endTime": 1250,
+            "easing": "natural",
+            "fromValue": {
+              "x": 0,
+              "y": 0
+            },
+            "toValue": {
+              "x": 0,
+              "y": 59.5
+            }
+          },
+          {
+            "type": "scale",
+            "id": "hZfAyjEZ-Qb08QHtRNk5L",
+            "targetId": "3wgCbCWRFIpT-YwpGcaPz",
+            "startTime": 100,
+            "endTime": 1350,
+            "easing": "natural",
+            "fromValue": 0.9,
+            "toValue": 1
+          },
+          {
+            "type": "move",
+            "id": "KsPJMJyagS4Wv8TkFtVmH",
+            "targetId": "3wgCbCWRFIpT-YwpGcaPz",
+            "startTime": 100,
+            "endTime": 1350,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 70
+            }
+          },
+          {
+            "type": "scale",
+            "id": "ndZ0nSUMRAw9Dp-JLAaeU",
+            "targetId": "5g__mahfc9t6zCcJf9SY9",
+            "startTime": 300,
+            "endTime": 1550,
+            "easing": "natural",
+            "fromValue": 1,
+            "toValue": 1.25
+          },
+          {
+            "type": "move",
+            "id": "6QbIF_Ymbvvu_5fqstxuq",
+            "targetId": "5g__mahfc9t6zCcJf9SY9",
+            "startTime": 300,
+            "endTime": 1550,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1280
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "SLmDfdzvOYIvm3g33m1e3",
+            "targetId": "5g__mahfc9t6zCcJf9SY9",
+            "startTime": 300,
+            "endTime": 1550,
+            "easing": "natural",
+            "toValue": -30
+          },
+          {
+            "type": "scale",
+            "id": "_VDxAKDPzYqjvO_9R7J60",
+            "targetId": "pCsSNsW-alGsOtDGtPNiz",
+            "startTime": 0,
+            "endTime": 1253,
+            "easing": "natural",
+            "fromValue": 0.7,
+            "toValue": 0.8
+          },
+          {
+            "type": "move",
+            "id": "CDVS_Hxqk3WQ4yx2fEYOn",
+            "targetId": "pCsSNsW-alGsOtDGtPNiz",
+            "startTime": 0,
+            "endTime": 1250,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -51
+            }
+          },
+          {
+            "type": "scale",
+            "id": "ypyyyK91KJtfn4Jw0Fz7z",
+            "targetId": "ybPk0QeSc_GKBuEwyzU_P",
+            "startTime": 1550,
+            "endTime": 2803,
+            "easing": "natural",
+            "fromValue": 0.7,
+            "toValue": 0.8
+          },
+          {
+            "type": "move",
+            "id": "1PdCRGZrj8iIe3G1hhmQ2",
+            "targetId": "ybPk0QeSc_GKBuEwyzU_P",
+            "startTime": 1550,
+            "endTime": 2800,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -51
+            }
+          },
+          {
+            "type": "scale",
+            "id": "dZCKhOQJ9mAv53syl89uq",
+            "targetId": "pCsSNsW-alGsOtDGtPNiz",
+            "startTime": 1550,
+            "endTime": 2800,
+            "easing": "natural",
+            "fromValue": 0.8,
+            "toValue": 0.9
+          },
+          {
+            "type": "move",
+            "id": "jB2NWHYoAFlV3NaNNa0sV",
+            "targetId": "pCsSNsW-alGsOtDGtPNiz",
+            "startTime": 1550,
+            "endTime": 2800,
+            "easing": "natural",
+            "fromValue": {
+              "x": 0,
+              "y": 0
+            },
+            "toValue": {
+              "x": 0,
+              "y": 59.5
+            }
+          },
+          {
+            "type": "scale",
+            "id": "06CNavmWrLunjIfRgoo5a",
+            "targetId": "HtgObrvJlBs6JiUxcOAYW",
+            "startTime": 1650,
+            "endTime": 2890,
+            "easing": "natural",
+            "fromValue": 0.9,
+            "toValue": 1
+          },
+          {
+            "type": "move",
+            "id": "KmQZrqVtQ1fVAskjPmoS4",
+            "targetId": "HtgObrvJlBs6JiUxcOAYW",
+            "startTime": 1650,
+            "endTime": 2890,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 70
+            }
+          },
+          {
+            "type": "scale",
+            "id": "HfoKL9_msphKRYlrjx-kW",
+            "targetId": "3wgCbCWRFIpT-YwpGcaPz",
+            "startTime": 1850,
+            "endTime": 3100,
+            "easing": "natural",
+            "fromValue": 1,
+            "toValue": 1.25
+          },
+          {
+            "type": "move",
+            "id": "_yaiC3YZlN7Qt-CAlr4oj",
+            "targetId": "3wgCbCWRFIpT-YwpGcaPz",
+            "startTime": 1850,
+            "endTime": 3100,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1280
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "7khvOXL8oZIUXBSyjCvHm",
+            "targetId": "3wgCbCWRFIpT-YwpGcaPz",
+            "startTime": 1850,
+            "endTime": 3100,
+            "easing": "natural",
+            "toValue": -30
+          },
+          {
+            "type": "scale",
+            "id": "FiRsF_WgNcYTWZI6es9oF",
+            "targetId": "ybPk0QeSc_GKBuEwyzU_P",
+            "startTime": 3100,
+            "endTime": 4350,
+            "easing": "natural",
+            "fromValue": 0.8,
+            "toValue": 0.9
+          },
+          {
+            "type": "move",
+            "id": "9JZ4nLDx9kTk5GneF0-kO",
+            "targetId": "ybPk0QeSc_GKBuEwyzU_P",
+            "startTime": 3100,
+            "endTime": 4350,
+            "easing": "natural",
+            "fromValue": {
+              "x": 0,
+              "y": 0
+            },
+            "toValue": {
+              "x": 0,
+              "y": 59.5
+            }
+          },
+          {
+            "type": "scale",
+            "id": "hSQ_ZQG-CDCp4SDQ8iUYo",
+            "targetId": "pCsSNsW-alGsOtDGtPNiz",
+            "startTime": 3150,
+            "endTime": 4400,
+            "easing": "natural",
+            "fromValue": 0.9,
+            "toValue": 1
+          },
+          {
+            "type": "move",
+            "id": "3kt0EYjCu9qCI051WbYiw",
+            "targetId": "pCsSNsW-alGsOtDGtPNiz",
+            "startTime": 3150,
+            "endTime": 4400,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 70
+            }
+          },
+          {
+            "type": "scale",
+            "id": "26ILbK2Bjte0ooit8_mvM",
+            "targetId": "HtgObrvJlBs6JiUxcOAYW",
+            "startTime": 3350,
+            "endTime": 4600,
+            "easing": "natural",
+            "fromValue": 1,
+            "toValue": 1.25
+          },
+          {
+            "type": "move",
+            "id": "l3r9F4sqgE0DZrc1cIDky",
+            "targetId": "HtgObrvJlBs6JiUxcOAYW",
+            "startTime": 3350,
+            "endTime": 4600,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": 1280
+            }
+          },
+          {
+            "type": "rotate",
+            "id": "o0LJ5Pm8bRKRItXOmXDKi",
+            "targetId": "HtgObrvJlBs6JiUxcOAYW",
+            "startTime": 3350,
+            "endTime": 4600,
+            "easing": "natural",
+            "toValue": -30
+          },
+          {
+            "type": "scale",
+            "id": "JXoZmSnn2lK8DUjIkTnfd",
+            "targetId": "Qnze8rqA3UJSUVofV3Jx_",
+            "startTime": 3100,
+            "endTime": 4353,
+            "easing": "natural",
+            "fromValue": 0.7,
+            "toValue": 0.8
+          },
+          {
+            "type": "move",
+            "id": "C0zaiyg5Wwx5iroI8RW2r",
+            "targetId": "Qnze8rqA3UJSUVofV3Jx_",
+            "startTime": 3100,
+            "endTime": 4350,
+            "easing": "natural",
+            "toValue": {
+              "x": 0,
+              "y": -51
+            }
+          },
+          {
+            "type": "playVideo",
+            "id": "Zc2hbK-1bh_ufr-mqRNo5",
+            "targetId": "_X2giVJh1EycTh6C5tsrk",
+            "startTime": 0,
+            "endTime": 4600,
+            "offset": 0
+          },
+          {
+            "type": "playVideo",
+            "id": "FfCQQ2lBUXMdIdJMwBLjB",
+            "targetId": "dioVjnB8x96Ezy0xPAL-A",
+            "startTime": 0,
+            "endTime": 4600,
+            "offset": 0
+          },
+          {
+            "type": "playVideo",
+            "id": "hx0kI8j57kgGKiZZfUWuM",
+            "targetId": "FHSToyrhw_9w3IlnfwmJy",
+            "startTime": 0,
+            "endTime": 2000,
+            "offset": 0,
+            "volume": 1
+          },
+          {
+            "type": "playVideo",
+            "id": "kvPiMTKfIEkgfslIXyOt0",
+            "targetId": "FHSToyrhw_9w3IlnfwmJy",
+            "startTime": 2000,
+            "endTime": 2600,
+            "offset": 0,
+            "volume": 1
+          },
+          {
+            "type": "playVideo",
+            "id": "WFzggr4UA1VCeAYFKZrxt",
+            "targetId": "FHSToyrhw_9w3IlnfwmJy",
+            "startTime": 2600,
+            "endTime": 4600,
+            "offset": 0,
+            "volume": 1
+          },
+          {
+            "type": "playVideo",
+            "id": "QwP2f3FZV2EPPbTEqFqf6",
+            "targetId": "6LixynFbIlcqc5aGu9xPV",
+            "startTime": 0,
+            "endTime": 2000,
+            "offset": 0,
+            "volume": 1
+          },
+          {
+            "type": "playVideo",
+            "id": "RnecPP_WbW5CqE36Vjny3",
+            "targetId": "6LixynFbIlcqc5aGu9xPV",
+            "startTime": 2000,
+            "endTime": 4000,
+            "offset": 0,
+            "volume": 1
+          }
+        ]
+      }
+    ]
+  }
+}

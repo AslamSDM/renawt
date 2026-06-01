@@ -1,0 +1,211 @@
+{
+  "name": "Instagram Icon",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "5:93",
+        "name": "Instagram",
+        "x": 600,
+        "y": -977,
+        "width": 400,
+        "height": 400,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 3000,
+        "fillColor": "#ffffff",
+        "background": false,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "19:183",
+            "name": "Icon",
+            "x": 80,
+            "y": 80,
+            "width": 240,
+            "height": 240,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 0,
+            "background": false,
+            "fillColor": "#ffffff",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 4,
+            "shadowOffsetY": 4,
+            "shadowBlur": 8,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "image",
+                "id": "qcSttHBB",
+                "name": "Ellipse",
+                "x": 0,
+                "y": 0,
+                "width": 240,
+                "height": 240,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "userAsset:4a517b05-c762-4ac7-92b7-53ad018551eb.png",
+                "mediaName": "Ellipse.png"
+              },
+              {
+                "type": "layerGrp",
+                "id": "5:95",
+                "name": "Logo",
+                "x": 40,
+                "y": 40,
+                "width": 160,
+                "height": 160,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "background": false,
+                "fillColor": "#ffffff",
+                "clipsContent": true,
+                "shadowEnabled": false,
+                "shadowOffsetX": 4,
+                "shadowOffsetY": 4,
+                "shadowBlur": 8,
+                "shadowColor": "#000000",
+                "shadowOpacity": 50,
+                "layers": [
+                  {
+                    "type": "image",
+                    "id": "90:66",
+                    "name": "Camera",
+                    "x": 19.999999958593747,
+                    "y": 20.000000030468755,
+                    "width": 120.5,
+                    "height": 120.5,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "userAsset:69dab2a7-aaae-4533-8291-0feb8398d702.svg",
+                    "mediaName": "IG_Camera.svg"
+                  },
+                  {
+                    "type": "image",
+                    "id": "5:105",
+                    "name": "Lens",
+                    "x": 48.99999989990235,
+                    "y": 48.999999784423835,
+                    "width": 62,
+                    "height": 62,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "userAsset:339afb78-70c2-40bc-885d-8e0b99034ba2.svg",
+                    "mediaName": "IG_Lens.svg"
+                  },
+                  {
+                    "type": "image",
+                    "id": "90:65",
+                    "name": "Flash",
+                    "x": 104.00000021923829,
+                    "y": 39.999999715820316,
+                    "width": 15,
+                    "height": 15,
+                    "scale": 1,
+                    "angle": 0,
+                    "opacity": 100,
+                    "cornerRadius": 0,
+                    "url": "userAsset:fe131cf9-b373-4189-8fa7-6d1ebf248fe3.svg",
+                    "mediaName": "IG_Flash.svg"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "scale",
+            "id": "oesmuylU",
+            "targetId": "19:183",
+            "startTime": 0,
+            "endTime": 400,
+            "easing": "natural",
+            "fromValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "sNQbCfvM",
+            "targetId": "90:66",
+            "startTime": 200,
+            "endTime": 600,
+            "easing": "natural",
+            "fromValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "QQVPGOiC",
+            "targetId": "5:105",
+            "startTime": 300,
+            "endTime": 700,
+            "easing": "natural",
+            "fromValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "iVrz8eEv",
+            "targetId": "90:65",
+            "startTime": 400,
+            "endTime": 800,
+            "easing": "natural",
+            "fromValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "HnWZkTTs",
+            "targetId": "90:65",
+            "startTime": 2500,
+            "endTime": 2800,
+            "easing": "accelerate",
+            "toValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "g5XDKT2b",
+            "targetId": "5:105",
+            "startTime": 2550,
+            "endTime": 2850,
+            "easing": "accelerate",
+            "toValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "QCks3LdB",
+            "targetId": "5:95",
+            "startTime": 2600,
+            "endTime": 2900,
+            "easing": "accelerate",
+            "toValue": 0
+          },
+          {
+            "type": "scale",
+            "id": "QGSBKIRL",
+            "targetId": "19:183",
+            "startTime": 2600,
+            "endTime": 3000,
+            "easing": "accelerate",
+            "toValue": 0
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "name": "Google Play",
+  "fps": 30,
+  "conf": {
+    "id": "root",
+    "version": 4,
+    "artboards": [
+      {
+        "type": "artboard",
+        "id": "15:119",
+        "name": "Google Play",
+        "x": 280,
+        "y": 2732,
+        "width": 310,
+        "height": 120,
+        "scale": 1,
+        "angle": 0,
+        "opacity": 100,
+        "cornerRadius": 0,
+        "clipsContent": true,
+        "duration": 3000,
+        "fillColor": "#ffffff",
+        "background": false,
+        "layers": [
+          {
+            "type": "layerGrp",
+            "id": "17:155",
+            "name": "Badge",
+            "x": 20,
+            "y": 20,
+            "width": 270,
+            "height": 80,
+            "scale": 1,
+            "angle": 0,
+            "opacity": 100,
+            "cornerRadius": 12,
+            "background": true,
+            "fillColor": "#000000",
+            "clipsContent": false,
+            "shadowEnabled": false,
+            "shadowOffsetX": 4,
+            "shadowOffsetY": 4,
+            "shadowBlur": 8,
+            "shadowColor": "#000000",
+            "shadowOpacity": 50,
+            "layers": [
+              {
+                "type": "image",
+                "id": "15:124",
+                "name": "GET IT ON",
+                "x": 82.00000035546876,
+                "y": 13.000017578125,
+                "width": 78.5,
+                "height": 14,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://snackthis-userdata.s3-eu-west-1.amazonaws.com/423dbaf7-6911-4a1c-ab19-47e7c4487dc6.png",
+                "mediaName": "GET IT ON.png"
+              },
+              {
+                "type": "image",
+                "id": "15:132",
+                "name": "Google Play",
+                "x": 81.99999999921874,
+                "y": 34.00004375,
+                "width": 170,
+                "height": 35.5,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://snackthis-userdata.s3-eu-west-1.amazonaws.com/15beffc8-7b9b-48e2-b679-396870bddc36.png",
+                "mediaName": "Google Play.png"
+              },
+              {
+                "type": "image",
+                "id": "15:133",
+                "name": "Icon",
+                "x": 8,
+                "y": 8,
+                "width": 64,
+                "height": 65,
+                "scale": 1,
+                "angle": 0,
+                "opacity": 100,
+                "cornerRadius": 0,
+                "url": "https://snackthis-userdata.s3-eu-west-1.amazonaws.com/dc87d093-b245-4aa9-b344-6866580c8523.png",
+                "mediaName": "Icon.png"
+              }
+            ]
+          }
+        ],
+        "operations": [
+          {
+            "type": "growIn",
+            "id": "VEh9lTgM",
+            "targetId": "17:155",
+            "startTime": 0,
+            "endTime": 300,
+            "easing": "slowDown",
+            "scale": 0.8
+          },
+          {
+            "type": "growIn",
+            "id": "iPIOlZs3",
+            "targetId": "15:133",
+            "startTime": 100,
+            "endTime": 500,
+            "easing": "slowDown",
+            "scale": 0.5
+          },
+          {
+            "type": "slideIn",
+            "id": "cdHFVa98",
+            "targetId": "15:124",
+            "startTime": 200,
+            "endTime": 500,
+            "easing": "slowDown",
+            "direction": "up",
+            "distance": 8
+          },
+          {
+            "type": "slideIn",
+            "id": "qizTRNqP",
+            "targetId": "15:132",
+            "startTime": 250,
+            "endTime": 550,
+            "easing": "slowDown",
+            "direction": "up",
+            "distance": 16
+          },
+          {
+            "type": "shrinkOut",
+            "id": "L0a2TArl",
+            "targetId": "17:155",
+            "startTime": 2600,
+            "endTime": 2800,
+            "easing": "accelerate",
+            "scale": 0.8
+          }
+        ]
+      }
+    ]
+  }
+}
