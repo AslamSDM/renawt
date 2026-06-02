@@ -1149,6 +1149,7 @@ export function TemplateBackdrop({
   intensity = 0.8,
   showGrid = true,
   gridColor = "rgba(255,255,255,0.06)",
+  seed = 0,
 }: any) {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
@@ -1156,6 +1157,19 @@ export function TemplateBackdrop({
   const base = palette[0] ?? "#0a0a0a";
   const accents = palette.slice(1, 5);
   while (accents.length < 3) accents.push("#22d3ee");
+
+  // Seed-driven knobs so the SAME variant reads differently between videos
+  // (cell size, angles, blob count + placement) instead of looking identical.
+  const sr = (n: number) => {
+    const x = Math.sin((Number(seed) || 0) * 999 + n * 53.13) * 43758.5453;
+    return x - Math.floor(x); // 0..1
+  };
+  const cell = 56 + Math.round(sr(1) * 56); // 56..112px
+  const gridTilt = 50 + Math.round(sr(2) * 18); // perspective rotateX
+  const lineAngle = Math.round(sr(3) * 180); // 0..180deg
+  const lineGap = 16 + Math.round(sr(4) * 18); // 16..34px
+  const blobCount = 2 + Math.round(sr(5) * 2); // 2..4 blobs
+  const baseAngle = Math.round(sr(6) * 360);
 
   if (variant === "grid") {
     return (
@@ -1168,8 +1182,8 @@ export function TemplateBackdrop({
               linear-gradient(to right, ${gridColor} 1px, transparent 1px),
               linear-gradient(to bottom, ${gridColor} 1px, transparent 1px)
             `,
-            backgroundSize: "80px 80px",
-            transform: `perspective(1400px) rotateX(58deg) translateY(${Math.sin(t) * 20}px)`,
+            backgroundSize: `${cell}px ${cell}px`,
+            transform: `perspective(1400px) rotateX(${gridTilt}deg) translateY(${Math.sin(t) * 20}px)`,
             transformOrigin: "50% 50%",
             maskImage:
               "radial-gradient(circle at 50% 45%, #000 30%, transparent 90%)",
@@ -1203,7 +1217,7 @@ export function TemplateBackdrop({
             position: "absolute",
             inset: -60,
             backgroundImage: `radial-gradient(${gridColor} 2px, transparent 2.5px)`,
-            backgroundSize: "28px 28px",
+            backgroundSize: `${Math.round(cell / 2)}px ${Math.round(cell / 2)}px`,
             transform: `translate(${Math.sin(t) * 10}px, ${Math.cos(t * 0.8) * 8}px)`,
             maskImage:
               "radial-gradient(circle at 50% 50%, #000 35%, transparent 85%)",
@@ -1240,11 +1254,11 @@ export function TemplateBackdrop({
             position: "absolute",
             inset: 0,
             backgroundImage: `repeating-linear-gradient(
-              ${45 + Math.sin(t) * 5}deg,
+              ${lineAngle + Math.sin(t) * 5}deg,
               ${gridColor} 0px,
               ${gridColor} 1px,
               transparent 1px,
-              transparent 24px
+              transparent ${lineGap}px
             )`,
             maskImage:
               "radial-gradient(circle at 50% 50%, #000 30%, transparent 95%)",
@@ -1273,8 +1287,8 @@ export function TemplateBackdrop({
   if (variant === "mesh") {
     return (
       <div style={{ ...FILL, background: base }}>
-        {accents.slice(0, 4).map((c: string, i: number) => {
-          const phase = (i * Math.PI) / 2;
+        {accents.slice(0, Math.max(3, blobCount)).map((c: string, i: number) => {
+          const phase = (i * Math.PI) / 2 + (baseAngle * Math.PI) / 180;
           const x = 50 + Math.sin(t + phase) * 30;
           const y = 50 + Math.cos(t * 0.9 + phase) * 28;
           return (
@@ -1302,8 +1316,8 @@ export function TemplateBackdrop({
   // default: "blobs" — abstract drifting color blobs with optional grid overlay
   return (
     <div style={{ ...FILL, background: base }}>
-      {accents.slice(0, 3).map((c: string, i: number) => {
-        const phase = (i * Math.PI * 2) / 3;
+      {accents.slice(0, blobCount).map((c: string, i: number) => {
+        const phase = (i * Math.PI * 2) / blobCount + (baseAngle * Math.PI) / 180;
         const x = 50 + Math.sin(t + phase) * 28;
         const y = 50 + Math.cos(t * 1.1 + phase) * 22;
         return (

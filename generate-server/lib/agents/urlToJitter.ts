@@ -39,6 +39,7 @@ import {
 } from "./jitterAssets";
 import { withLlmContext } from "../llm/tokenLogger";
 import { pickTemplateInspirations, pickBackgroundForBrand } from "./jitterTemplateRegistry";
+import { rollDesignSystem } from "./designSystem";
 import { critiqueJitterDoc, applyCritique } from "./jitterCritic";
 import { pickTemplateExamples } from "./jitterTemplateExamples";
 import { noopProgress, type ProgressEmit } from "./progress";
@@ -235,13 +236,30 @@ ${opts.extraNotes ? `\nAdditional direction: ${opts.extraNotes}` : ""}
 
 Match the source page's design language exactly: same colors, same typographic weight, same level of whitespace. Use customComponents for elevated CSS effects (animated gradients, glow halos, glass cards, gradient text).`;
 
-  const backdrop = pickBackgroundForBrand(report.brand.mood, {
-    background: report.brand.background,
-    primary: report.brand.primary,
-    secondary: report.brand.secondary,
-    accent: report.brand.accent,
-    textColor: report.brand.textColor,
-  });
+  // Roll ONE coherent visual style for the whole video. Mood biases the pick
+  // but never locks it, so two videos for the same brand still look different.
+  const design = rollDesignSystem({ mood: report.brand.mood });
+  console.log(
+    `[urlToJitter] designSystem: "${design.styleName}" fonts=${design.fonts.display}/${design.fonts.body} layout=${design.layout} motion=${design.motion.entries.join("+")} backdrop=${design.backdrop.variant}@${design.backdrop.intensity}`,
+  );
+
+  // Backdrop look comes from the rolled design system (variant/intensity/seed)
+  // so the background matches the chosen style — palette still blends brand.
+  const backdrop = pickBackgroundForBrand(
+    report.brand.mood,
+    {
+      background: report.brand.background,
+      primary: report.brand.primary,
+      secondary: report.brand.secondary,
+      accent: report.brand.accent,
+      textColor: report.brand.textColor,
+    },
+    {
+      variant: design.backdrop.variant,
+      intensity: design.backdrop.intensity,
+      seed: design.backdrop.seed,
+    },
+  );
   console.log(
     `[urlToJitter] backdrop: template=${backdrop.templateName} variant=${backdrop.variant} palette=[${backdrop.palette.join(", ")}] (${backdrop.sourceUrl})`,
   );
@@ -303,12 +321,14 @@ Match the source page's design language exactly: same colors, same typographic w
     allowCustomComponents: true,
     templateInspirations: inspirations,
     templateExamples,
+    design,
     backdrop: {
       templateId: backdrop.templateId,
       templateName: backdrop.templateName,
       variant: backdrop.variant,
       palette: backdrop.palette,
       intensity: backdrop.intensity,
+      seed: backdrop.seed,
     },
   };
 }
@@ -414,8 +434,11 @@ function makeChunkBrief(
     .filter(Boolean)
     .join(", ");
 
+  const styleFont = base.design
+    ? `${base.design.fonts.display} / ${base.design.fonts.body} (per the DESIGN SYSTEM)`
+    : report.brand.fontFamily;
   const briefText = `Segment ${idx + 1} of ${total} of ONE continuous ${durSec}s brand video for ${report.productName}.
-This segment is stitched end-to-end with the others, so it MUST look like the same video: identical backdrop, the exact brand palette (${brandStr}) and the same font (${report.brand.fontFamily}). Never restyle, recolor, or switch fonts between segments.
+This segment is stitched end-to-end with the others, so it MUST look like the same video: identical backdrop, the exact brand palette (${brandStr}), the same DESIGN SYSTEM style${base.design ? ` ("${base.design.styleName}")` : ""} and fonts (${styleFont}). Never restyle, recolor, or switch fonts/sizes/motion between segments.
 ${
   idx === 0
     ? "This is the OPENING segment — establish the product."

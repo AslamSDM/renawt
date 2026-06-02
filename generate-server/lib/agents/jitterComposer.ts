@@ -28,6 +28,7 @@ import {
   snapDocToBeats,
 } from "../video/beatSnap";
 import { auditDoc, summarizeAudit } from "./jitterAudit";
+import { describeDesignSystem, type DesignSystem } from "./designSystem";
 
 const AVAILABLE_FONTS = [
   "Inter",
@@ -212,6 +213,8 @@ export interface JitterBrief {
     variant: "blobs" | "mesh" | "grid" | "dots" | "lines";
     palette: string[];
     intensity: number;
+    /** Drives intra-variant visual variation so the same variant differs run-to-run. */
+    seed?: number;
   } | null;
   /** Optional inspiration templates harvested from jitter.video. Surfaced
    *  to the model as compact summaries (id, name, palette, layer/op counts)
@@ -230,6 +233,11 @@ export interface JitterBrief {
    *  proven structure (layer placement + op timing, no verbatim copy) for the
    *  model to imitate. Retrieved via jitterTemplateExamples.pickTemplateExamples. */
   templateExamples?: Array<{ name: string; skeleton: string }>;
+  /** Rolled-once-per-video visual style (fonts, type scale, motion theme,
+   *  layout, backdrop). When present it OVERRIDES the generic sizing/motion
+   *  defaults so consecutive videos look genuinely different. The same system
+   *  is reused across every segment of a long video for coherence. */
+  design?: DesignSystem | null;
 }
 
 const SYSTEM_PROMPT = `You are a motion-graphics composer. You design short videos as Jitter-style documents: primitive layers placed in absolute coordinates, animated by an OPERATIONS timeline that targets layers by id.
@@ -344,11 +352,11 @@ NARRATIVE & DURATION:
 
 DESIGN LANGUAGE — match the brand provided:
 - LOCK to brand.primary / brand.secondary / brand.accent / brand.background EXACTLY. Do not invent off-brand colors.
-- Use brand.fontFamily (otherwise "Inter") for all text. Bold display weights (700-900) for headlines, generous tracking on caps, tight line-height (95-110%).
+- FONTS: if a DESIGN SYSTEM block is present, use ITS display+body fonts (they define this video's look). Only fall back to brand.fontFamily / "Inter" when no design system is given. Bold display weights (700-900) for headlines, tight line-height (95-110%).
 - Generous whitespace: keep at least 10% padding around the frame.
 - Use the page copy verbatim where provided. Do not paraphrase product names, headlines, or features.
 
-TEXT SIZING — strict rules (the previous output had random sizes, fix this):
+TEXT SIZING — when a DESIGN SYSTEM block is provided in the user message, its type scale, fonts, case, and alignment OVERRIDE every default below. Use the defaults below ONLY when no design system is given:
 - For a 1920x1080 artboard:
    * Hero headline (max 6 words): fontSize=128, weight 800, ONE text layer only.
    * Subheadline / section title (max 8 words): fontSize=64, weight 700.
@@ -540,6 +548,8 @@ function buildUserMessage(brief: JitterBrief): string {
       ? "\nCUSTOM COMPONENTS DISABLED — leave customComponents: []."
       : "";
 
+  const designBlock = brief.design ? describeDesignSystem(brief.design) : "";
+
   const fontBlock = `\nAVAILABLE FONTS (pick from this list for any text layer's font.name — anything else falls back to Inter):\n  ${AVAILABLE_FONTS.join(", ")}`;
 
   const backdropBlock = brief.backdrop
@@ -581,7 +591,7 @@ ${brief.brief.trim()}
 TARGET:
 - Canvas: ${w} x ${h}
 - Total duration: ${dur}ms (sum of artboard durations MUST equal this ±200ms)
-- fps: 30${sceneHint}${beatBlock}${brand}${copy}${hero}${stock}${audio}${narration}${userAssetsBlock}${fontBlock}${backdropBlock}${inspirations}${examples}${customs}
+- fps: 30${sceneHint}${designBlock}${beatBlock}${brand}${copy}${hero}${stock}${audio}${narration}${userAssetsBlock}${fontBlock}${backdropBlock}${inspirations}${examples}${customs}
 
 ${BUILTIN_CATALOG}
 
@@ -841,6 +851,7 @@ function injectBackdrop(
         palette: backdrop.palette,
         variant: backdrop.variant,
         intensity: backdrop.intensity,
+        seed: backdrop.seed ?? 0,
         showGrid: true,
         gridColor: "rgba(255,255,255,0.06)",
       },

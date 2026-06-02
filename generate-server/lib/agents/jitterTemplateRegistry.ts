@@ -165,15 +165,6 @@ function pickSeeded<T>(arr: readonly T[], seed: number): T {
   return arr[seed % arr.length];
 }
 
-const MOOD_TO_BG_VARIANT: Record<Mood, "blobs" | "mesh" | "grid" | "dots" | "lines"> = {
-  minimal: "dots",
-  premium: "mesh",
-  techy: "grid",
-  playful: "blobs",
-  warm: "blobs",
-  bold: "lines",
-};
-
 const MOOD_TO_INTENSITY: Record<Mood, number> = {
   minimal: 0.55,
   premium: 0.85,
@@ -225,9 +216,19 @@ export interface PickedBackground {
   variant: "blobs" | "mesh" | "grid" | "dots" | "lines";
   palette: string[];
   intensity: number;
+  /** Per-pick seed → drives intra-variant visual variation in TemplateBackdrop. */
+  seed: number;
   /** ".jitter.video/file/?id=<id>" — for logs. */
   sourceUrl: string;
 }
+
+const ALL_VARIANTS: Array<"blobs" | "mesh" | "grid" | "dots" | "lines"> = [
+  "blobs",
+  "mesh",
+  "grid",
+  "dots",
+  "lines",
+];
 
 /**
  * Pick a scraped jitter.video bg-template (from
@@ -243,10 +244,24 @@ export interface PickedBackground {
 export function pickBackgroundForBrand(
   mood: string,
   brand: BrandPalette,
+  /** Optional overrides — used when a rolled DesignSystem already chose the
+   *  backdrop look so the bg matches the video's style. */
+  override?: { variant?: PickedBackground["variant"]; intensity?: number; seed?: number },
 ): PickedBackground {
   const m = (mood as Mood) || "minimal";
-  const variant = MOOD_TO_BG_VARIANT[m] ?? "blobs";
-  const intensity = MOOD_TO_INTENSITY[m] ?? 0.7;
+  // Variant is now RANDOM by default (mood only nudges intensity). Locking the
+  // variant to mood was why every video had the same background with only the
+  // colors changing. A rolled DesignSystem can still pin a specific look.
+  const variant =
+    override?.variant ?? ALL_VARIANTS[Math.floor(Math.random() * ALL_VARIANTS.length)];
+  const moodIntensity = MOOD_TO_INTENSITY[m] ?? 0.7;
+  // Jitter intensity ±0.15 so even the same variant reads differently run-to-run.
+  const intensity =
+    override?.intensity ??
+    Math.round(
+      Math.min(1, Math.max(0.3, moodIntensity + (Math.random() * 0.3 - 0.15))) * 100,
+    ) / 100;
+  const seed = override?.seed ?? Math.floor(Math.random() * 1_000_000);
 
   const idx = loadJitterTemplateIndex();
   const bgIds = idx.sections.backgrounds ?? [];
@@ -257,6 +272,7 @@ export function pickBackgroundForBrand(
       variant,
       palette: blendPalettes(brand, []),
       intensity,
+      seed,
       sourceUrl: "n/a",
     };
   }
@@ -269,6 +285,7 @@ export function pickBackgroundForBrand(
     variant,
     palette: blendPalettes(brand, summary?.palette ?? []),
     intensity,
+    seed,
     sourceUrl: `https://jitter.video/file/?id=${templateId}`,
   };
 }
