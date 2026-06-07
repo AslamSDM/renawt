@@ -477,9 +477,6 @@ export default function LandingPage() {
             <button onClick={() => router.push("/projects")} className="btn-accent">
               Start a render <ArrowUpRight className="h-4 w-4" />
             </button>
-            <Link href="/#showcase" className="btn-ghost">
-              Browse showcase <ArrowRight className="h-4 w-4" />
-            </Link>
           </div>
         </div>
       </section>
@@ -766,7 +763,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── Showcase ─────────────────────────────────────────── */}
+      {/* ─── Showcase (hidden for now) ─────────────────────────── */}
+      {false && (
       <section className="relative border-t border-rule px-4 py-20 sm:px-6 md:py-32" id="showcase">
         <div className="mx-auto max-w-[1400px]">
           <div className="mb-12 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
@@ -849,6 +847,7 @@ export default function LandingPage() {
           )}
         </div>
       </section>
+      )}
 
       {/* ─── Use cases ────────────────────────────────────────── */}
       <section

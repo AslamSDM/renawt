@@ -117,6 +117,7 @@ export default function JitterProjectPage({
   const [result, setResult] = useState<RenderResult | null>(null);
   const [savedDoc, setSavedDoc] = useState<JitterDoc | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [videoError, setVideoError] = useState<string | null>(null);
   const [hydrating, setHydrating] = useState(true);
   const [narration, setNarration] = useState<NarrationState>({
     enabled: false,
@@ -275,6 +276,60 @@ export default function JitterProjectPage({
     } catch {}
   };
 
+  // Pull the inputs a past generation used back into the form so the user can
+  // re-run with the same settings (optionally after tweaking them).
+  const reuseInputs = (p: any) => {
+    if (!p) return;
+    if (typeof p.url === "string") setUrl(p.url);
+    if (typeof p.durationMs === "number") setDurationMs(p.durationMs);
+    setNotes(typeof p.notes === "string" ? p.notes : "");
+    setSelectedAudio(
+      p.audio?.url
+        ? {
+            key: p.audio.url,
+            url: p.audio.url,
+            name: p.audio.title ?? "Selected track",
+            bpm: p.audio.bpm,
+          }
+        : null,
+    );
+    if (p.narration) {
+      setNarration({
+        enabled: true,
+        text: p.narration.text ?? "",
+        voiceId: p.narration.voiceId ?? "",
+        audioUrl: p.narration.audioUrl ?? null,
+        duration:
+          typeof p.narration.durationMs === "number"
+            ? p.narration.durationMs / 1000
+            : null,
+      });
+    } else {
+      setNarration({
+        enabled: false,
+        text: "",
+        voiceId: "",
+        audioUrl: null,
+        duration: null,
+      });
+    }
+    if (p.captions) {
+      setCaptionsEnabled(p.captions.enabled !== false);
+      if (p.captions.style) setCaptionsStyle(p.captions.style);
+    }
+    setUserAssets(
+      Array.isArray(p.userAssets)
+        ? p.userAssets.map((a: any) => ({
+            url: a.url,
+            alias: a.alias,
+            kind: a.kind === "video" ? "video" : "image",
+            name: a.name,
+          }))
+        : [],
+    );
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const deleteGeneration = async (gid: string) => {
     if (!confirm("Delete this generation?")) return;
     await fetch(`/api/projects/${id}/generations/${gid}`, { method: "DELETE" });
@@ -355,6 +410,7 @@ export default function JitterProjectPage({
       return;
     }
     setError(null);
+    setVideoError(null);
     setResult(null);
     setProgress([]);
     setGenerating(true);
@@ -454,6 +510,21 @@ export default function JitterProjectPage({
       }
       await fetchGenerations();
     }
+  };
+
+  // Short chips describing the inputs a generation used, for the history cards.
+  const inputChips = (p: any): string[] => {
+    if (!p) return [];
+    const chips: string[] = [];
+    if (typeof p.durationMs === "number") chips.push(`${p.durationMs / 1000}s`);
+    if (p.audio?.title) chips.push(`♪ ${p.audio.title}`);
+    else if (p.audio?.url) chips.push("♪ custom");
+    else chips.push("♪ auto");
+    if (p.narration) chips.push("narration");
+    if (p.captions?.enabled) chips.push(`cc:${p.captions.style ?? "bottom"}`);
+    if (Array.isArray(p.userAssets) && p.userAssets.length)
+      chips.push(`${p.userAssets.length} asset${p.userAssets.length > 1 ? "s" : ""}`);
+    return chips;
   };
 
   const formatRelative = (iso: string) => {
@@ -806,13 +877,38 @@ export default function JitterProjectPage({
                 </div>
               ) : result ? (
                 <div className="space-y-4">
-                  <video
-                    src={result.videoUrl}
-                    controls
-                    autoPlay
-                    loop
-                    className="w-full rounded-lg border border-rule"
-                  />
+                  {result.videoUrl?.trim() ? (
+                    <video
+                      key={result.videoUrl}
+                      src={result.videoUrl}
+                      controls
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      preload="metadata"
+                      className="w-full rounded-lg border border-rule bg-black aspect-video object-contain"
+                      onError={() => setVideoError(result.videoUrl)}
+                    />
+                  ) : (
+                    <div className="aspect-video rounded-lg border border-rule bg-paper-2 flex items-center justify-center text-xs text-muted">
+                      Render finished but no video URL was returned.
+                    </div>
+                  )}
+                  {videoError && videoError === result.videoUrl ? (
+                    <div className="text-[11px] text-amber-300">
+                      Inline playback failed.{" "}
+                      <a
+                        href={result.videoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline"
+                      >
+                        Open the mp4 in a new tab
+                      </a>
+                      .
+                    </div>
+                  ) : null}
                   <div className="text-xs text-muted space-y-1">
                     <div className="flex justify-between">
                       <span className="text-muted">Brand</span>
@@ -982,21 +1078,50 @@ export default function JitterProjectPage({
                         {g.params.url}
                       </div>
                     ) : null}
+                    {inputChips(g.params).length ? (
+                      <div className="mt-1.5 flex flex-wrap gap-1">
+                        {inputChips(g.params).map((c, i) => (
+                          <span
+                            key={i}
+                            className="px-1.5 py-0.5 rounded bg-paper-2 border border-rule text-[10px] text-muted whitespace-nowrap"
+                          >
+                            {c}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                    {g.params?.notes ? (
+                      <div className="mt-1 text-[11px] text-muted/80 line-clamp-2">
+                        {g.params.notes}
+                      </div>
+                    ) : null}
                     {failed && g.error ? (
                       <div className="mt-1 text-[11px] text-red-300 line-clamp-2">
                         {g.error}
                       </div>
                     ) : null}
                     <div className="mt-2 flex items-center justify-between gap-2">
-                      <button
-                        type="button"
-                        disabled={running || !g.videoUrl}
-                        onClick={() => openEditor(g.id)}
-                        className="flex items-center gap-1 text-[11px] px-2 py-1 rounded border border-rule hover:border-rule-strong disabled:opacity-40"
-                      >
-                        <Pencil className="w-3 h-3" />
-                        Edit
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          disabled={running || !g.videoUrl}
+                          onClick={() => openEditor(g.id)}
+                          className="flex items-center gap-1 text-[11px] px-2 py-1 rounded border border-rule hover:border-rule-strong disabled:opacity-40"
+                        >
+                          <Pencil className="w-3 h-3" />
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          disabled={!g.params}
+                          onClick={() => reuseInputs(g.params)}
+                          className="flex items-center gap-1 text-[11px] px-2 py-1 rounded border border-rule hover:border-rule-strong disabled:opacity-40"
+                          title="Load these inputs into the form"
+                        >
+                          <History className="w-3 h-3" />
+                          Reuse
+                        </button>
+                      </div>
                       <button
                         type="button"
                         onClick={() => deleteGeneration(g.id)}

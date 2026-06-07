@@ -61,6 +61,10 @@ export default function ProjectsPage() {
   const fetchProjects = async () => {
     try {
       const response = await fetch("/api/projects");
+      if (response.status === 401) {
+        router.push("/signin?callbackUrl=/projects");
+        return;
+      }
       const data = await response.json();
       setProjects(data.projects || []);
     } catch (error) {

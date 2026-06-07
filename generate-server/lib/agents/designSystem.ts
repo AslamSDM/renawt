@@ -340,10 +340,37 @@ function filterByMood(presets: StylePreset[], mood?: string): StylePreset[] {
   return [...biased, ...biased, ...presets];
 }
 
+/** Concrete entry-duration + inter-layer stagger per pacing word, so "snappy"
+ *  vs "smooth" produce measurably different timing instead of just a label. */
+const PACE_TIMING: Record<DesignSystem["motion"]["pace"], string> = {
+  snappy:
+    "entries 300-400ms, cascade layers 120ms apart, exits 250-350ms (accelerate hard). Crisp, on-beat, no lingering.",
+  smooth:
+    "entries 450-600ms, cascade layers 200-250ms apart, exits 400-500ms. Gentle ease-out arrivals, generous holds.",
+  punchy:
+    "entries 350-450ms with a slight overshoot feel (growIn scale 0.7-0.85), cascade 150ms apart, exits 300-400ms. Bold, bouncy, high-energy.",
+};
+
 const CASE_LABEL: Record<HeadingCase, string> = {
   upper: "ALL CAPS",
   title: "Title Case",
   sentence: "Sentence case",
+};
+
+/** Concrete composition recipe per layout bias (for a 1920x1080 frame; scale
+ *  proportionally). Turns the abstract bias word into real placement the
+ *  composer can follow, so videos with different biases actually look different. */
+const LAYOUT_GUIDE: Record<LayoutBias, string> = {
+  centered:
+    "Stack the hero on the vertical centerline, optical center slightly ABOVE true center (~y=380-460). Sub/body directly beneath with ~40px gap. Keep ≥12% side margins. Symmetric, calm.",
+  "left-rail":
+    "Anchor all copy to a left rail starting at x≈140. Hero top-left third, sub/body stacked below it left-aligned. Leave the right ~40% open for a mockup, accent shape, or pure negative space. Never center the text.",
+  split:
+    "Two columns: copy on the LEFT half (x 140-900, left-aligned), the visual (mockup / ScreenshotShowcase / hero image) on the RIGHT half (x ~1000-1780). Vertically center each column. The split is the whole composition.",
+  stacked:
+    "Big type stacked in horizontal bands that fill the frame edge-to-edge (small side margins ~80px). One word/phrase per band, bands touching. Think oversized poster — type IS the layout.",
+  asymmetric:
+    "Deliberately off-balance: hero pushed to one corner (e.g. lower-left x≈140 y≈620), a counterweight accent (line, dot cluster, small stat) in the opposite corner. Use the tension; do NOT recenter.",
 };
 
 /**
@@ -357,6 +384,7 @@ ${ds.vibe}
 - FONTS: headlines/display use "${ds.fonts.display}". Body, labels, captions use "${ds.fonts.body}". Use ONLY these two — never mix in other fonts.
 - HEADINGS: ${CASE_LABEL[ds.headingCase]}, letterSpacing ${ds.letterSpacing}px.
 - DOMINANT ALIGNMENT: ${ds.textAlign}. LAYOUT BIAS: ${ds.layout} (compose every scene around this — do not default to dead-center stacks unless the bias is "centered").
+   PLACEMENT RECIPE: ${LAYOUT_GUIDE[ds.layout]}
 - TYPE SCALE for a 1080p canvas (scale linearly with min(width,height)/1080; ONE hero size + ONE body size per scene — never two roles at the same size):
    * Hero headline (≤6 words): fontSize=${ts.hero}, weight ${ds.headingCase === "upper" ? 800 : 700}.
    * Section/sub headline (≤8 words): fontSize=${ts.sub}, weight 700.
@@ -364,6 +392,7 @@ ${ds.vibe}
    * Caption / label: fontSize=${ts.caption}, weight 500.
    * Stat number (NumberCounter): fontSize=${ts.stat}, weight 800.
 - MOTION THEME (${ds.motion.pace}): use ONLY these entries this video — ${ds.motion.entries.join(", ")}; pair with exits — ${ds.motion.exits.join(", ")}. Reveal text split by ${ds.motion.textSplit}. Stay on this family across ALL scenes for coherence.
+   PACING: ${PACE_TIMING[ds.motion.pace]}
 - SIGNATURE EFFECTS to favor (use 1-2, not all): ${ds.signatures.join(", ")}.
 - BACKDROP is already injected (variant "${ds.backdrop.variant}", intensity ${ds.backdrop.intensity}) — design content ON TOP, do not add your own full-bleed background.
 DIFFERENTIATE FROM OTHER VIDEOS: commit hard to this style's personality. The hero size, font, alignment, and motion above are what make this video look different from the last one — honor them.`;

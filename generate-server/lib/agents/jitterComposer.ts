@@ -346,9 +346,12 @@ B) AI-AUTHORED customComponents[] — only when a shape is not covered by builti
 
 NARRATIVE & DURATION:
 - Split videos longer than 6 seconds into 2-5 ARTBOARDS that tell a story (hook → feature → feature → CTA).
+- Each artboard is ONE scene with ONE job and ONE focal point. If you can't say the scene's single message in 6 words, it's doing too much — split it.
+- THE HOOK: scene 1 must land its first readable element within the first 400ms and deliver the strongest single line of the whole video (the boldest headline, biggest type, hardest motion). A slow or generic open loses the viewer. Never open on a logo-only or background-only beat.
+- THE CTA: the FINAL scene must end on the product name + the call-to-action (cta copy), held steady and centered for its last ~800ms so it's the last thing burned in. Never end on a stat, a bare mockup, or mid-animation.
 - Each artboard is ONE scene with its own background and own intro/outro animations.
 - The SUM of artboard \`duration\` values MUST equal the requested total duration in ms (±200ms tolerance).
-- End each artboard with a graceful exit (shrinkOut / fadeOut / slideIn-out) starting ~400-700ms before its \`duration\`.
+- SCENE TIMING BUDGET (every scene splits into three acts): ENTRY (first ~20%: layers choreograph in) → HOLD (middle ~55%: content sits readable, alive with micro-motion) → EXIT (last ~25%: layers choreograph out, starting ~400-700ms before \`duration\`). Do not let entry+exit eat the whole scene — the viewer needs the HOLD to actually read.
 
 DESIGN LANGUAGE — match the brand provided:
 - LOCK to brand.primary / brand.secondary / brand.accent / brand.background EXACTLY. Do not invent off-brand colors.
@@ -380,10 +383,20 @@ MOTION PRINCIPLES — HARD RULES:
     (a) an ENTRY op at its first visible moment — one of growIn, slideIn, fadeIn (paired with another), blurIn, or textIn for text.
     (b) an EXIT op before scene end — one of shrinkOut, growOut, slideOut, fadeOut, spinOut, blurOut, textOut (paired). Pop-in / pop-out is a BUG.
 - Pair complementary entries/exits (slideIn-up → slideOut-down, growIn → shrinkOut/growOut, blurIn → blurOut, slideIn-left → slideOut-right).
-- Decisive ease curves: \`slowDown\` for entries, \`accelerate\` for exits, \`natural\` for sustained transforms.
+- DIRECTIONAL INTENT: motion has meaning. Content slides in from the side it's anchored to; exits continue the same direction (content leaves the way the eye is already traveling), it does not reverse. The hero enters toward its resting spot, never away from it.
+- Decisive ease curves: \`slowDown\` (ease-out) for entries so they arrive fast then settle; \`accelerate\` (ease-in) for exits so they leave decisively; \`natural\` for sustained mid-scene transforms. NEVER use \`none\` for an entry or exit — linear motion reads as broken/robotic.
+- ENTRY SNAP: keep entries quick — 350-550ms. A 1500ms fade-in feels sluggish; a sub-200ms one pops. The motion should arrive and settle, not crawl.
 - Stagger text reveals with split="letters" at offset 40-60ms; words at offset 80-120ms.
 - Snap event times to the beat / half-beat grid.
-- Avoid pure opacity-only animation — pair fades with subtle translate or scale.
+- Avoid pure opacity-only animation — pair fades with subtle translate (slideIn distance 30-60px) or scale (growIn scale 0.85-0.95). A pure cross-fade looks cheap; movement gives weight.
+
+SCENE CHOREOGRAPHY — HARD RULES (this is what separates pro motion graphics from a slideshow):
+- NEVER enter every layer at startTime 0. Layers arrive in a SEQUENCE that follows the reading order / focal hierarchy: background is already there → primary (hero headline / mockup) enters first (~100-250ms) → secondary (sub / body) follows ~150-300ms later → accents (badges, lines, stats) last. Cascade entry startTimes by 120-250ms so the eye is led, not flooded.
+- FOCAL HIERARCHY: each scene has exactly ONE hero element that is biggest, boldest, enters first, and gets the most motion. Everything else is support and must be visibly quieter (smaller, calmer entry, less travel). Two elements competing for "biggest + loudest" is a BUG.
+- READABLE DWELL (HARD): between the end of a text layer's entry and the start of its exit, leave enough still, readable time to actually read it — at least max(900ms, words × 220ms). Text that enters and immediately leaves is a BUG. The HOLD act exists for reading; protect it.
+- EXIT TOGETHER, MOSTLY: at scene end, exits can cascade slightly (lead element out first) but should overlap so the scene clears in ~400-600ms — don't drag a lone layer out long after the rest are gone.
+- CONTINUITY ACROSS SCENES: keep the hero element in roughly the SAME screen zone scene-to-scene (e.g. headline always upper-third) and reuse the same entry family, so cuts feel like one piece rather than unrelated slides.
+- RHYTHM: align the punchiest motion moments (hero entry, beat hit, stat count) to musical beats when a beat grid is given. Motion that hits on the beat feels designed; motion that ignores it feels random.
 
 LAYOUT QUALITY — HARD RULES (audited after generation):
 - CONTRAST: design text to read clearly — light text on dark bg, near-black on light bg; never gray-on-gray or brand-color-on-brand-color (a post-pass auto-corrects to 4.5:1, but get it right so it isn't fighting you).
@@ -1030,26 +1043,47 @@ function clampLayersToArtboard(
         l.width = newW;
         l.height = newH;
       }
-      // Then shift back inside bounds.
-      if (x + newW > maxX) {
-        x = maxX - newW;
+      // Static `scale` grows the box from its CENTER (transformOrigin "center"
+      // in LayerNode). A scale>1 makes the on-screen box bigger than newW/newH,
+      // so it can spill past the artboard even when w/h fit. Reduce scale so the
+      // effective box fits the usable area, then clamp using effective dims.
+      let scale = Number(l.scale);
+      if (!Number.isFinite(scale) || scale <= 0) scale = 1;
+      let effW = newW * scale;
+      let effH = newH * scale;
+      if (effW > usableW || effH > usableH) {
+        const factor = Math.min(usableW / effW, usableH / effH);
+        scale = Math.max(0.05, scale * factor);
+        if (scale !== 1) l.scale = Number(scale.toFixed(4));
+        else delete l.scale;
+        effW = newW * scale;
+        effH = newH * scale;
         didFix = true;
       }
-      if (y + newH > maxY) {
-        y = maxY - newH;
+      // Effective box is centered on (cx, cy); shift the center back in bounds.
+      let cx = x + newW / 2;
+      let cy = y + newH / 2;
+      if (cx - effW / 2 < minX) {
+        cx = minX + effW / 2;
         didFix = true;
       }
-      if (x < minX) {
-        x = minX;
+      if (cx + effW / 2 > maxX) {
+        cx = maxX - effW / 2;
         didFix = true;
       }
-      if (y < minY) {
-        y = minY;
+      if (cy - effH / 2 < minY) {
+        cy = minY + effH / 2;
         didFix = true;
       }
+      if (cy + effH / 2 > maxY) {
+        cy = maxY - effH / 2;
+        didFix = true;
+      }
+      x = cx - newW / 2;
+      y = cy - newH / 2;
       if (didFix) {
-        l.x = x;
-        l.y = y;
+        l.x = Math.round(x);
+        l.y = Math.round(y);
         clamped++;
       }
     }
