@@ -11,6 +11,8 @@ import { Queue } from "bullmq";
 import IORedis from "ioredis";
 import { existsSync, unlinkSync, createReadStream, statSync } from "fs";
 import { startWorker, jobStatuses } from "./worker.js";
+import { registerThreeRoutes } from "./threeEngine/threeEngineServer.js";
+import { startThreeWorker } from "./threeEngine/threeWorker.js";
 import type { RenderRequest, RenderJobStatus } from "./types.js";
 import { randomUUID } from "crypto";
 
@@ -56,6 +58,10 @@ const renderQueue = new Queue<RenderRequest>(QUEUE_NAME, {
 
 // Start the worker
 startWorker();
+
+// Start the Three.js render engine worker + routes
+startThreeWorker();
+registerThreeRoutes(app);
 
 /**
  * POST /render - Submit a render job

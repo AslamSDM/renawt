@@ -14,6 +14,7 @@ import {
   chatWithGeminiPro,
   chatWithGeminiProVision,
   chatWithCloudflareAI,
+  chatWithOllamaCloud,
   CODE_GENERATOR_CONFIG,
   type ChatMessage,
 } from "./model";
@@ -1535,19 +1536,27 @@ export async function generateJitterDoc(
   // by the retry loop below. Override via JITTER_COMPOSER_MODEL.
   const LARGE_CONFIG = {
     ...CODE_GENERATOR_CONFIG,
+    // DeepSeek V4 Flash on Ollama Cloud — bumped temperature for more varied
+    // creative output. Override via JITTER_COMPOSER_TEMPERATURE / JITTER_MAX_TOKENS.
+    temperature: Number(process.env.JITTER_COMPOSER_TEMPERATURE || 1.0),
     maxTokens: Number(process.env.JITTER_MAX_TOKENS || 16000),
-    model: process.env.JITTER_COMPOSER_MODEL || "gemini-3-flash-preview",
+    model: process.env.JITTER_COMPOSER_MODEL || "deepseek-v4-flash",
   };
   const useCloudflare = process.env.JITTER_LLM === "cloudflare";
+  // JITTER_LLM=ollama-cloud routes code-gen to Ollama Cloud (DeepSeek V4 Flash).
+  // This is the preferred path — Gemini/OpenRouter fall back when unset.
+  const useOllamaCloud = process.env.JITTER_LLM === "ollama-cloud";
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       console.log(
-        `[JitterComposer] Attempt ${attempt}/${maxAttempts} (provider: ${useCloudflare ? "cloudflare-kimi" : "gemini-pro"})`,
+        `[JitterComposer] Attempt ${attempt}/${maxAttempts} (provider: ${useOllamaCloud ? "ollama-cloud-deepseek" : useCloudflare ? "cloudflare-kimi" : "gemini-pro"})`,
       );
-      const resp = useCloudflare
-        ? await chatWithCloudflareAI(messages, LARGE_CONFIG)
-        : await chatWithGeminiPro(messages, LARGE_CONFIG);
+      const resp = useOllamaCloud
+        ? await chatWithOllamaCloud(messages, LARGE_CONFIG)
+        : useCloudflare
+          ? await chatWithCloudflareAI(messages, LARGE_CONFIG)
+          : await chatWithGeminiPro(messages, LARGE_CONFIG);
       raw = resp.content;
       const json = parseModelJson(raw);
       const parsed = JitterDocSchema.safeParse(json);

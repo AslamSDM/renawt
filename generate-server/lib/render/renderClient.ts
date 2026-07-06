@@ -8,14 +8,30 @@ import { uploadVideoBufferToR2, isR2Configured } from "../storage/r2";
 const RENDER_SERVICE_URL =
   process.env.RENDER_SERVICE_URL || "http://localhost:4002";
 const RENDER_API_KEY = process.env.RENDER_API_KEY || "";
+const THREE_RENDER_SERVICE_URL =
+  process.env.THREE_RENDER_SERVICE_URL || RENDER_SERVICE_URL;
+const THREE_RENDER_API_KEY =
+  process.env.THREE_RENDER_API_KEY || RENDER_API_KEY;
 const POLL_INTERVAL_MIN = 2000; // Start at 2 seconds
 const POLL_INTERVAL_MAX = 10000; // Cap at 10 seconds
 const POLL_BACKOFF_FACTOR = 1.3; // Exponential backoff factor
 
-function authHeaders(): Record<string, string> {
+function authHeaders(engine: RenderEngine = "remotion"): Record<string, string> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (RENDER_API_KEY) headers["x-render-key"] = RENDER_API_KEY;
+  const key = engine === "three" ? THREE_RENDER_API_KEY : RENDER_API_KEY;
+  if (key) headers["x-render-key"] = key;
   return headers;
+}
+
+export type RenderEngine = "remotion" | "three";
+
+function engineBaseUrl(engine: RenderEngine): string {
+  return engine === "three" ? THREE_RENDER_SERVICE_URL : RENDER_SERVICE_URL;
+}
+
+function engineRoute(engine: RenderEngine, suffix: string): string {
+  const base = engineBaseUrl(engine);
+  return engine === "three" ? `${base}/render-three${suffix}` : `${base}/render${suffix}`;
 }
 
 export interface RenderJobStatus {
@@ -38,6 +54,13 @@ export interface SubmitRenderOptions {
   fps?: number;
   projectId?: string;
   callbackUrl?: string;
+  /**
+   * Render engine to target.
+   * - "remotion" (default): posts `remotionCode` as Remotion TSX to /render.
+   * - "three": posts `remotionCode` as a SceneSpec JSON string to /render-three.
+   */
+  engine?: RenderEngine;
+  assets?: { audioUrls?: string[]; imageUrls?: string[] };
 }
 
 /**
@@ -46,11 +69,12 @@ export interface SubmitRenderOptions {
 export async function submitRenderJob(
   options: SubmitRenderOptions,
 ): Promise<{ jobId: string }> {
-  console.log("[RenderClient] Submitting render job...");
+  const engine = options.engine ?? "remotion";
+  console.log(`[RenderClient] Submitting ${engine} render job...`);
 
-  const response = await fetch(`${RENDER_SERVICE_URL}/render`, {
+  const response = await fetch(engineRoute(engine, ""), {
     method: "POST",
-    headers: authHeaders(),
+    headers: authHeaders(engine),
     body: JSON.stringify(options),
     signal: AbortSignal.timeout(30000),
   });
@@ -73,6 +97,7 @@ export async function pollRenderStatus(
   jobId: string,
   onProgress?: (status: RenderJobStatus) => void,
   timeoutMs: number = 20 * 60 * 1000, // 20 minutes for slow VPS renders
+  engine: RenderEngine = "remotion",
 ): Promise<RenderJobStatus> {
   const startTime = Date.now();
   let pollInterval = POLL_INTERVAL_MIN;
@@ -80,9 +105,9 @@ export async function pollRenderStatus(
   while (Date.now() - startTime < timeoutMs) {
     try {
       const response = await fetch(
-        `${RENDER_SERVICE_URL}/render/${jobId}/status`,
+        engineRoute(engine, `/${jobId}/status`),
         {
-          headers: authHeaders(),
+          headers: authHeaders(engine),
           signal: AbortSignal.timeout(10000),
         },
       );
@@ -115,11 +140,14 @@ export async function pollRenderStatus(
 /**
  * Download rendered video file from render-service
  */
-async function downloadRenderedFile(jobId: string): Promise<Buffer> {
+async function downloadRenderedFile(
+  jobId: string,
+  engine: RenderEngine = "remotion",
+): Promise<Buffer> {
   console.log(`[RenderClient] Downloading file for job ${jobId}...`);
 
-  const response = await fetch(`${RENDER_SERVICE_URL}/render/${jobId}/file`, {
-    headers: authHeaders(),
+  const response = await fetch(engineRoute(engine, `/${jobId}/file`), {
+    headers: authHeaders(engine),
     signal: AbortSignal.timeout(60000), // 1 minute for large files
   });
 
@@ -140,11 +168,14 @@ async function downloadRenderedFile(jobId: string): Promise<Buffer> {
 /**
  * Cleanup rendered file on render-service
  */
-async function cleanupRenderJob(jobId: string): Promise<void> {
+async function cleanupRenderJob(
+  jobId: string,
+  engine: RenderEngine = "remotion",
+): Promise<void> {
   try {
-    await fetch(`${RENDER_SERVICE_URL}/render/${jobId}/cleanup`, {
+    await fetch(engineRoute(engine, `/${jobId}/cleanup`), {
       method: "DELETE",
-      headers: authHeaders(),
+      headers: authHeaders(engine),
       signal: AbortSignal.timeout(10000),
     });
     console.log(`[RenderClient] Cleanup sent for job ${jobId}`);
@@ -160,8 +191,11 @@ export async function submitAndWaitForRender(
   options: SubmitRenderOptions,
   onProgress?: (status: RenderJobStatus) => void,
 ): Promise<RenderJobStatus> {
+  const engine = options.engine ?? "remotion";
   const { jobId } = await submitRenderJob(options);
-  const status = await pollRenderStatus(jobId, onProgress);
+  // 10-min 3D videos can take ~30 min on GPU; default 20 min is too short.
+  const timeoutMs = engine === "three" ? 35 * 60 * 1000 : 20 * 60 * 1000;
+  const status = await pollRenderStatus(jobId, onProgress, timeoutMs, engine);
 
   if (status.status !== "completed") {
     return status;
@@ -169,7 +203,7 @@ export async function submitAndWaitForRender(
 
   // Download the rendered file from the sandboxed container
   try {
-    const videoBuffer = await downloadRenderedFile(jobId);
+    const videoBuffer = await downloadRenderedFile(jobId, engine);
 
     // Upload to R2 if configured
     if (isR2Configured()) {
@@ -199,7 +233,7 @@ export async function submitAndWaitForRender(
     }
 
     // Cleanup the file on render-service
-    await cleanupRenderJob(jobId);
+    await cleanupRenderJob(jobId, engine);
   } catch (error) {
     console.error("[RenderClient] File download/upload failed:", error);
     status.status = "failed";
@@ -216,6 +250,21 @@ export async function submitAndWaitForRender(
 export async function isRenderServiceAvailable(): Promise<boolean> {
   try {
     const response = await fetch(`${RENDER_SERVICE_URL}/health`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if the Three.js render service (GPU node) is available
+ */
+export async function isThreeRenderServiceAvailable(): Promise<boolean> {
+  try {
+    const response = await fetch(`${THREE_RENDER_SERVICE_URL}/render-three/health`, {
+      headers: authHeaders("three"),
       signal: AbortSignal.timeout(5000),
     });
     return response.ok;

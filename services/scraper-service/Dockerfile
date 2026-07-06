@@ -1,5 +1,5 @@
 # Build stage
-FROM node:20-slim AS builder
+FROM node:20-bullseye-slim AS builder
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
@@ -14,7 +14,7 @@ RUN npx tsc
 RUN npm prune --production
 
 # Final stage
-FROM node:20-slim
+FROM node:20-bullseye-slim
 
 # Install Chromium and fonts
 RUN apt-get update && apt-get install -y --no-install-recommends \

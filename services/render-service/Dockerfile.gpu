@@ -1,5 +1,5 @@
-# Build stage
-FROM node:20-bullseye-slim AS builder
+# Build stage (stays on a plain Node image for compilation)
+FROM node:20-slim AS builder
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
@@ -10,19 +10,22 @@ RUN corepack enable && npm install --legacy-peer-deps
 
 COPY tsconfig.json ./
 COPY src ./src
-# Build the browser-side anime.js bundle (esbuild) before tsc. The bundle is
-# emitted to node_modules/.cache/anime-bundle.js and read at runtime by
-# sceneHost.ts. npm prune below would remove it, so we stash + restore it.
-RUN npm run build:anime && cp node_modules/.cache/anime-bundle.js /tmp/anime-bundle.js
 RUN npx tsc
 RUN npm prune --production --legacy-peer-deps
-RUN mkdir -p node_modules/.cache && cp /tmp/anime-bundle.js node_modules/.cache/anime-bundle.js
 
-# Final stage
-FROM node:20-bullseye-slim
+# Final stage — NVIDIA CUDA runtime base with GPU-accelerated Chromium
+FROM nvidia/cuda:12.4.0-runtime-ubuntu22.04
 
-# Install Chromium, ffmpeg, and fonts for Remotion rendering
+# Install Node 20, Chromium, ffmpeg, fonts, and NVIDIA/Mesa GL driver libs
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    gnupg \
+    && mkdir -p /etc/apt/keyrings \
+    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" > /etc/apt/sources.list.d/nodesource.list \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    nodejs \
     chromium \
     ffmpeg \
     fonts-liberation \
@@ -42,12 +45,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libcairo2 \
     libasound2 \
     libxshmfence1 \
-    curl \
-    ca-certificates \
+    libgl1-mesa-dri \
+    libgl1-mesa-glx \
+    mesa-utils \
     && rm -rf /var/lib/apt/lists/*
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+# GPU passthrough flags for headless Chromium WebGL
+ENV CHROMIUM_FLAGS="--no-sandbox --disable-setuid-sandbox --use-gl=desktop --ignore-gpu-blocklist --enable-webgl --disable-gpu-sandbox"
 ENV PORT=4002
 
 WORKDIR /app
@@ -57,13 +63,12 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./
 
-# Copy shared Remotion components (so generated code can import from '../components/...')
+# Copy shared Remotion components
 COPY components ./components
 
 # Create temp directories
 RUN mkdir -p /app/.remotion-temp /app/public/renders /app/public/audio && chown -R node:node /app
 
-# Run as non-root user
 USER node
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \

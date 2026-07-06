@@ -18,7 +18,7 @@
 import { createHash } from "crypto";
 import { readFileSync } from "fs";
 import { z } from "zod";
-import { chatWithGeminiProVision } from "./model";
+import { chatWithGeminiProVision, chatWithOllamaCloudVision } from "./model";
 import {
   generateJitterDoc,
   type JitterBrief,
@@ -164,14 +164,34 @@ export async function analyzeBrandFromScreenshot(
 
   const maxAttempts = 3;
   let lastError: unknown = null;
+  // Route vision to Ollama Cloud (Kimi K2.6) when OLLAMA_VISION_PROVIDER=ollama-cloud.
+  // Kimi returns a separate `reasoning` field; chatWithOllamaCloudVision handles that
+  // and surfaces the final answer in `content`. High max_tokens leaves room for the
+  // reasoning budget so it doesn't starve the JSON output (the 402 OpenRouter credit
+  // failure that prompted this switch capped us at 1331 tokens — Ollama Cloud has no
+  // such limit).
+  const useOllamaCloudVision =
+    process.env.OLLAMA_VISION_PROVIDER === "ollama-cloud";
+  const visionConfig = {
+    temperature: Number(process.env.OLLAMA_VISION_TEMPERATURE || 0.3),
+    maxTokens: Number(process.env.OLLAMA_VISION_MAX_TOKENS || 8000),
+    model: process.env.OLLAMA_CLOUD_VISION_MODEL || "kimi-k2.6",
+  };
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const resp = await chatWithGeminiProVision(
-        { type: "image", path: screenshotPath },
-        userPrompt,
-        VISION_SYSTEM,
-        { temperature: 0.2, maxTokens: 4000 },
-      );
+      const resp = useOllamaCloudVision
+        ? await chatWithOllamaCloudVision(
+            { type: "image", path: screenshotPath },
+            userPrompt,
+            VISION_SYSTEM,
+            visionConfig,
+          )
+        : await chatWithGeminiProVision(
+            { type: "image", path: screenshotPath },
+            userPrompt,
+            VISION_SYSTEM,
+            { temperature: 0.2, maxTokens: 4000 },
+          );
       const parsed = BrandReportSchema.safeParse(
         JSON.parse(extractJsonBlock(resp.content)),
       );
