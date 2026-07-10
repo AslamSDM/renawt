@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
-import { prisma } from "@/lib/db/prisma";
+import { prisma, withDbRetry } from "@/lib/db/prisma";
 import { auth } from "@/auth";
 
 async function verifyCallbackToken(req?: NextRequest): Promise<boolean> {
@@ -24,7 +24,7 @@ async function verifyCallbackToken(req?: NextRequest): Promise<boolean> {
 async function authorize(id: string, req?: NextRequest) {
   // Internal worker callback — JWT signed with API_KEY, aud:"callback".
   if (await verifyCallbackToken(req)) {
-    const project = await prisma.project.findUnique({ where: { id } });
+    const project = await withDbRetry(() => prisma.project.findUnique({ where: { id } }));
     if (!project) {
       return {
         error: NextResponse.json({ error: "Project not found" }, { status: 404 }),
@@ -39,7 +39,7 @@ async function authorize(id: string, req?: NextRequest) {
       error: NextResponse.json({ error: "Authentication required" }, { status: 401 }),
     };
   }
-  const project = await prisma.project.findUnique({ where: { id } });
+  const project = await withDbRetry(() => prisma.project.findUnique({ where: { id } }));
   if (!project) {
     return {
       error: NextResponse.json({ error: "Project not found" }, { status: 404 }),
@@ -61,7 +61,7 @@ export async function GET(
   const a = await authorize(id, _req);
   if ("error" in a) return a.error;
 
-  const row = await prisma.generation.findUnique({ where: { id: gid } });
+  const row = await withDbRetry(() => prisma.generation.findUnique({ where: { id: gid } }));
   if (!row || row.projectId !== id) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
@@ -88,7 +88,7 @@ export async function PATCH(
 
   const body = await request.json().catch(() => ({}));
 
-  const existing = await prisma.generation.findUnique({ where: { id: gid } });
+  const existing = await withDbRetry(() => prisma.generation.findUnique({ where: { id: gid } }));
   if (!existing || existing.projectId !== id) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
@@ -105,10 +105,12 @@ export async function PATCH(
     } else {
       events.push(ev);
     }
-    const updated = await prisma.generation.update({
-      where: { id: gid },
-      data: { progress: JSON.stringify(events) },
-    });
+    const updated = await withDbRetry(() =>
+      prisma.generation.update({
+        where: { id: gid },
+        data: { progress: JSON.stringify(events) },
+      }),
+    );
     return NextResponse.json({ ok: true, progress: safeJson(updated.progress ?? "[]") });
   }
 
@@ -134,18 +136,19 @@ export async function PATCH(
     data.finishedAt = new Date();
   }
 
-  const row = await prisma.generation.update({
-    where: { id: gid },
-    data,
-  });
+  const row = await withDbRetry(() =>
+    prisma.generation.update({
+      where: { id: gid },
+      data,
+    }),
+  );
 
   if (body.status === "SUCCEEDED") {
     const projUpdate: Record<string, unknown> = { status: "READY" };
     if (row.videoUrl) projUpdate.videoUrl = row.videoUrl;
-    if (row.doc) projUpdate.jitterDoc = row.doc;
-    await prisma.project.update({ where: { id }, data: projUpdate });
+    await withDbRetry(() => prisma.project.update({ where: { id }, data: projUpdate }));
   } else if (body.status === "FAILED") {
-    await prisma.project.update({ where: { id }, data: { status: "DRAFT" } });
+    await withDbRetry(() => prisma.project.update({ where: { id }, data: { status: "DRAFT" } }));
   }
 
   return NextResponse.json({ generation: row });
@@ -159,12 +162,12 @@ export async function DELETE(
   const a = await authorize(id);
   if ("error" in a) return a.error;
 
-  const existing = await prisma.generation.findUnique({ where: { id: gid } });
+  const existing = await withDbRetry(() => prisma.generation.findUnique({ where: { id: gid } }));
   if (!existing || existing.projectId !== id) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  await prisma.generation.delete({ where: { id: gid } });
+  await withDbRetry(() => prisma.generation.delete({ where: { id: gid } }));
   return NextResponse.json({ ok: true });
 }
 

@@ -33,7 +33,7 @@ export async function GET() {
 
   const recentProjects = await prisma.project.findMany({
     where: { userId: session.user.id },
-    select: { id: true, name: true, status: true, updatedAt: true },
+    select: { id: true, name: true, status: true, updatedAt: true, composition: true },
     orderBy: { updatedAt: "desc" },
     take: 5,
   });

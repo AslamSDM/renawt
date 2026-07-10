@@ -8,8 +8,10 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  directUrl    = env("DIRECT_DATABASE_URL")
+  relationMode = "prisma"
 }
 
 model Project {
@@ -21,7 +23,6 @@ model Project {
   productData String?
   script      String?
   composition String?
-  jitterDoc   String?
   audioUrl    String?
   status      String   @default("DRAFT")
   createdAt   DateTime @default(now())
@@ -30,21 +31,8 @@ model Project {
   user            User?               @relation(fields: [userId], references: [id])
   recordings      ScreenRecording[]
   images          ProductImage[]
-  jitterHistory   JitterDocHistory[]
 
   @@index([userId])
-}
-
-model JitterDocHistory {
-  id        String   @id @default(cuid())
-  projectId String
-  doc       String
-  label     String?
-  createdAt DateTime @default(now())
-
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  @@index([projectId, createdAt])
 }
 
 model ScreenRecording {

@@ -32,6 +32,7 @@ interface ShowcaseItem {
   sourceUrl: string | null;
   updatedAt: string;
   status: string;
+  composition?: string | null;
 }
 
 function hostnameFromUrl(u: string | null): string {
@@ -371,6 +372,7 @@ export default function LandingPage() {
           sourceUrl: sourceUrl || undefined,
           productData: { aspect: asp },
           status: "DRAFT",
+          composition: "hyperframes",
         }),
       });
       if (res.status === 401) {
@@ -383,7 +385,7 @@ export default function LandingPage() {
       }
       const data = await res.json();
       if (data.project?.id) {
-        router.push(`/projects/${data.project.id}/jitter`);
+        router.push(`/projects/${data.project.id}/hyperframes`);
       }
     } catch (err) {
       console.error("Failed to create project", err);
@@ -807,7 +809,7 @@ export default function LandingPage() {
                 return (
                   <Link
                     key={p.id}
-                    href={`/projects/${p.id}/jitter`}
+                    href={`/projects/${p.id}/hyperframes`}
                     className="group rounded-2xl p-2.5 transition-transform hover:-translate-y-0.5"
                     style={{ background: "var(--paper)", border: "1px solid var(--rule)" }}
                   >

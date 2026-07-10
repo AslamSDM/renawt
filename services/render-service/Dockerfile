@@ -13,10 +13,8 @@ COPY src ./src
 # Build the browser-side anime.js bundle (esbuild) before tsc. The bundle is
 # emitted to node_modules/.cache/anime-bundle.js and read at runtime by
 # sceneHost.ts. npm prune below would remove it, so we stash + restore it.
-RUN npm run build:anime && cp node_modules/.cache/anime-bundle.js /tmp/anime-bundle.js
 RUN npx tsc
 RUN npm prune --production --legacy-peer-deps
-RUN mkdir -p node_modules/.cache && cp /tmp/anime-bundle.js node_modules/.cache/anime-bundle.js
 
 # Final stage
 FROM node:20-bullseye-slim
@@ -56,9 +54,6 @@ WORKDIR /app
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./
-
-# Copy shared Remotion components (so generated code can import from '../components/...')
-COPY components ./components
 
 # Create temp directories
 RUN mkdir -p /app/.remotion-temp /app/public/renders /app/public/audio && chown -R node:node /app

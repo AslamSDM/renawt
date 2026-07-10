@@ -6,6 +6,24 @@ export interface ScreenshotData {
   description: string;
 }
 
+export interface CrawledPageData {
+  url: string;
+  title: string;
+  text: string;
+  headings: string[];
+  links: string[];
+  imageUrls: string[];
+}
+
+export interface CrawlSiteResult {
+  entryUrl: string;
+  pages: CrawledPageData[];
+  logoUrl?: string;
+  brandImages: string[];
+  allLinks: string[];
+  combinedText: string;
+}
+
 export interface ScrapeResult {
   text: string;
   images: string[];
@@ -16,10 +34,14 @@ export interface ScrapeResult {
     hasPricing: boolean;
     hasSignup: boolean;
   };
+  crawl?: CrawlSiteResult;
 }
 
 export interface ScrapeRequest {
   url: string;
+  crawl?: boolean;
+  maxPages?: number;
+  maxDepth?: number;
 }
 
 export interface ScrapeResponse {

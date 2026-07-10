@@ -22,6 +22,7 @@ interface Project {
   name: string | null;
   sourceUrl: string | null;
   description: string | null;
+  composition: string | null;
   status: string;
   videoUrl: string | null;
   generationCount: number;
@@ -81,23 +82,31 @@ export default function ProjectsPage() {
     return () => clearInterval(t);
   }, [projects]);
 
-  const createProject = async () => {
+  const createProject = async (engine = "hyperframes") => {
     setCreating(true);
     try {
       const response = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "New Project", status: "DRAFT" }),
+        body: JSON.stringify({
+          name: engine === "hyperframes" ? "New HyperFrames Project" : "New Project",
+          status: "DRAFT",
+          composition: engine,
+        }),
       });
       const data = await response.json();
       if (data.project) {
-        router.push(`/projects/${data.project.id}/jitter`);
+        router.push(`/projects/${data.project.id}/${engine}`);
       }
     } catch (error) {
       console.error("Failed to create project:", error);
     } finally {
       setCreating(false);
     }
+  };
+
+  const engineFor = (project: Project): string => {
+    return "hyperframes";
   };
 
   const startEditing = (project: Project, e: React.MouseEvent) => {
@@ -152,6 +161,7 @@ export default function ProjectsPage() {
     e.preventDefault();
     e.stopPropagation();
     try {
+      const engine = engineFor(project);
       const response = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -159,11 +169,12 @@ export default function ProjectsPage() {
           name: `${project.name || "Untitled"} (Copy)`,
           sourceUrl: project.sourceUrl,
           status: "DRAFT",
+          composition: engine,
         }),
       });
       const data = await response.json();
       if (data.project) {
-        router.push(`/projects/${data.project.id}/jitter`);
+        router.push(`/projects/${data.project.id}/${engine}`);
       }
     } catch (error) {
       console.error("Failed to duplicate project:", error);
@@ -268,25 +279,36 @@ export default function ProjectsPage() {
             <p className="mx-auto mt-2 max-w-md text-muted">
               Spin up your first reel and the engine takes it from there.
             </p>
-            <button
-              onClick={() => createProject()}
-              disabled={creating}
-              className="btn-accent mt-8 disabled:opacity-50"
-            >
-              {creating ? (
-                <span className="h-4 w-4 animate-spin rounded-full border border-black/30 border-t-black" />
-              ) : (
+            <div className="mt-8 flex items-center gap-3">
+              <button
+                onClick={() => createProject("hyperframes")}
+                disabled={creating}
+                className="btn-accent disabled:opacity-50"
+              >
+                {creating ? (
+                  <span className="h-4 w-4 animate-spin rounded-full border border-black/30 border-t-black" />
+                ) : (
+                  <Sparkles className="h-4 w-4" strokeWidth={1.6} />
+                )}
+                New HyperFrames project
+              </button>
+              <button
+onClick={() => createProject("hyperframes")}
+                disabled={creating}
+                className="btn-accent disabled:opacity-50"
+                style={{ background: "transparent", border: "1px solid var(--rule-strong)" }}
+              >
                 <Plus className="h-4 w-4" strokeWidth={1.6} />
-              )}
-              Create first project
-            </button>
+                New Jitter project
+              </button>
+            </div>
           </div>
         ) : (
           <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((project) => (
               <Link
                 key={project.id}
-                href={`/projects/${project.id}/jitter`}
+                href={`/projects/${project.id}/${engineFor(project)}`}
                 className="group kinetic-bento flex flex-col p-2.5 transition-transform hover:-translate-y-0.5"
               >
                 <div
@@ -438,9 +460,9 @@ export default function ProjectsPage() {
               </Link>
             ))}
 
-            {/* New project card */}
+            {/* New HyperFrames project card */}
             <button
-              onClick={() => createProject()}
+              onClick={() => createProject("hyperframes")}
               disabled={creating}
               className="group kinetic-bento kinetic-bento-glow flex min-h-[280px] flex-col items-center justify-center gap-4 p-5 transition-transform hover:-translate-y-0.5"
             >
@@ -451,13 +473,36 @@ export default function ProjectsPage() {
                 {creating ? (
                   <span className="h-5 w-5 animate-spin rounded-full border border-rule border-t-ink" />
                 ) : (
-                  <Plus className="h-6 w-6" style={{ color: "var(--accent)" }} strokeWidth={1.4} />
+                  <Sparkles className="h-6 w-6" style={{ color: "var(--accent)" }} strokeWidth={1.4} />
                 )}
               </div>
               <span className="text-xl font-medium tracking-[-0.025em]">
-                {creating ? "Creating..." : "New project"}
+                {creating ? "Creating..." : "New HyperFrames"}
               </span>
-              <span className="mono-tick">TAP TO START</span>
+              <span className="mono-tick">HTML · COMPOSE</span>
+            </button>
+
+            {/* New Jitter project card */}
+            <button
+              onClick={() => createProject("hyperframes")}
+              disabled={creating}
+              className="group kinetic-bento kinetic-bento-glow flex min-h-[280px] flex-col items-center justify-center gap-4 p-5 transition-transform hover:-translate-y-0.5"
+              style={{ borderColor: "var(--rule-strong)" }}
+            >
+              <div
+                className="flex h-14 w-14 items-center justify-center rounded-2xl"
+                style={{ background: "rgba(245,245,247,0.06)", border: "1px solid var(--rule)" }}
+              >
+                {creating ? (
+                  <span className="h-5 w-5 animate-spin rounded-full border border-rule border-t-ink" />
+                ) : (
+                  <Plus className="h-6 w-6" style={{ color: "var(--muted)" }} strokeWidth={1.4} />
+                )}
+              </div>
+              <span className="text-xl font-medium tracking-[-0.025em]">
+                {creating ? "Creating..." : "New Jitter"}
+              </span>
+              <span className="mono-tick">REEL · REMOTION</span>
             </button>
           </div>
         )}

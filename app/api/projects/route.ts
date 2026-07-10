@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db/prisma";
+import { prisma, withDbRetry } from "@/lib/db/prisma";
 import { auth } from "@/auth";
 
 export async function GET() {
@@ -9,26 +9,28 @@ export async function GET() {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
     }
 
-    const rows = await prisma.project.findMany({
-      where: { userId: session.user.id },
-      orderBy: { updatedAt: "desc" },
-      take: 50,
-      include: {
-        generations: {
-          orderBy: { createdAt: "desc" },
-          take: 1,
-          select: {
-            id: true,
-            status: true,
-            videoUrl: true,
-            createdAt: true,
-            startedAt: true,
-            finishedAt: true,
+    const rows = await withDbRetry(() =>
+      prisma.project.findMany({
+        where: { userId: session.user.id },
+        orderBy: { updatedAt: "desc" },
+        take: 50,
+        include: {
+          generations: {
+            orderBy: { createdAt: "desc" },
+            take: 1,
+            select: {
+              id: true,
+              status: true,
+              videoUrl: true,
+              createdAt: true,
+              startedAt: true,
+              finishedAt: true,
+            },
           },
+          _count: { select: { generations: true } },
         },
-        _count: { select: { generations: true } },
-      },
-    });
+      }),
+    );
 
     const projects = rows.map((p) => {
       const latest = p.generations[0] ?? null;
@@ -39,6 +41,7 @@ export async function GET() {
         name: p.name,
         sourceUrl: p.sourceUrl,
         description: p.description,
+        composition: p.composition,
         status: ongoing ? "GENERATING" : p.status,
         videoUrl: p.videoUrl ?? latest?.videoUrl ?? null,
         generationCount: p._count.generations,
@@ -67,19 +70,21 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    const project = await prisma.project.create({
-      data: {
-        userId: session.user.id,
-        name: body.name,
-        sourceUrl: body.sourceUrl,
-        description: body.description,
-        productData: body.productData ? JSON.stringify(body.productData) : null,
-        script: body.script ? JSON.stringify(body.script) : null,
-        composition: body.composition,
-        audioUrl: body.audioUrl,
-        status: body.status || "DRAFT",
-      },
-    });
+    const project = await withDbRetry(() =>
+      prisma.project.create({
+        data: {
+          userId: session.user.id,
+          name: body.name,
+          sourceUrl: body.sourceUrl,
+          description: body.description,
+          productData: body.productData ? JSON.stringify(body.productData) : null,
+          script: body.script ? JSON.stringify(body.script) : null,
+          composition: body.composition,
+          audioUrl: body.audioUrl,
+          status: body.status || "DRAFT",
+        },
+      }),
+    );
 
     return NextResponse.json({ project });
   } catch (error) {

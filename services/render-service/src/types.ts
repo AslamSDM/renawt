@@ -1,6 +1,10 @@
 export interface RenderRequest {
   jobId?: string;
   remotionCode: string;
+  compositionHtml?: string;
+  /** Map of relative file paths (e.g. "compositions/intro.html") to file contents. When provided,
+   *  the renderer writes all files into a project directory before rendering. */
+  projectFiles?: Record<string, string>;
   durationInFrames: number;
   outputFormat?: "mp4" | "webm";
   width?: number;

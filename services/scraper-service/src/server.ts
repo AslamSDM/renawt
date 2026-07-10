@@ -1,10 +1,9 @@
 import express, { type Request, type Response, type NextFunction } from "express";
 import pLimit from "p-limit";
 import {
-  scrapeWebsite,
-  captureScreenshot,
   captureJitterScreenshot,
 } from "./scraper.js";
+import { crawlSite } from "./crawl.js";
 import { scrapePixabayMusic } from "./pixabayMusic.js";
 import type {
   ScrapeRequest,
@@ -23,6 +22,12 @@ const AUTH_TOKEN = process.env.SCRAPER_AUTH_TOKEN || "";
 app.disable("x-powered-by");
 app.use(httpLogger);
 app.use(express.json({ limit: "10mb" }));
+app.use((_req: Request, res: Response, next: NextFunction) => {
+  res.setTimeout(5 * 60 * 1000, () => {
+    res.status(503).json({ success: false, error: "request timeout" });
+  });
+  next();
+});
 
 // Concurrency limit for scraping operations
 const scrapeLimit = pLimit(2);
@@ -50,10 +55,10 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
 }
 
 /**
- * POST /scrape - Full scrape with screenshots and text extraction
+ * POST /scrape - Full scrape with optional crawl, screenshots, logo/images and text extraction
  */
 app.post("/scrape", requireAuth, async (req, res) => {
-  const { url } = req.body as ScrapeRequest;
+  const { url, crawl = false, maxPages = 6, maxDepth = 2 } = req.body as ScrapeRequest;
   const log = (req as any).log;
 
   if (!url) {
@@ -67,21 +72,44 @@ app.post("/scrape", requireAuth, async (req, res) => {
   try {
     const result = await scrapeLimit(async () => {
       metrics.activeJobs++;
-      log.info({ url, activeJobs: metrics.activeJobs }, "scrape start");
+      log.info({ url, activeJobs: metrics.activeJobs, crawl }, "scrape start");
 
       try {
-        const data = await scrapeWebsite(url);
+        const shot = await captureJitterScreenshot({ url, id: `scrape-${Date.now()}`, width: 1920, height: 1080 });
+        const crawlResult = crawl
+          ? await crawlSite({ url, maxPages, maxDepth })
+          : undefined;
         metrics.completed++;
-        return data;
+        return { shot, crawl: crawlResult };
       } finally {
         metrics.activeJobs--;
       }
     });
 
-    const response: ScrapeResponse = { success: true, data: result };
+    const images = result.crawl?.brandImages || [];
+    const screenshots = [
+      {
+        name: result.shot.key,
+        path: result.shot.url,
+        url: result.shot.url,
+        section: "hero" as const,
+        description: "captured screenshot",
+      },
+    ];
+
+    const response: ScrapeResponse = {
+      success: true,
+      data: {
+        text: result.crawl?.combinedText || "",
+        images,
+        title: result.crawl?.pages[0]?.title || "",
+        screenshots,
+        saasIndicators: { hasDemoButton: false, hasPricing: false, hasSignup: false },
+        crawl: result.crawl,
+      },
+    };
     res.json(response);
   } catch (error) {
-    metrics.failed++;
     const errorMsg = error instanceof Error ? error.message : "Unknown error";
     log.error({ url, err: errorMsg }, "scrape failed");
 
@@ -91,9 +119,9 @@ app.post("/scrape", requireAuth, async (req, res) => {
 });
 
 /**
- * POST /capture-jitter - Single viewport screenshot to R2 (jitter pipeline)
+ * POST /capture - Single viewport screenshot to R2 (hyperframes pipeline)
  */
-app.post("/capture-jitter", requireAuth, async (req, res) => {
+app.post("/capture", requireAuth, async (req, res) => {
   const body = req.body as CaptureJitterRequest;
   const log = (req as any).log;
 
@@ -199,18 +227,18 @@ app.get("/screenshot", requireAuth, async (req, res) => {
   metrics.screenshotRequests++;
 
   try {
-    const image = await scrapeLimit(async () => {
+    const result = await scrapeLimit(async () => {
       metrics.activeJobs++;
       try {
-        return await captureScreenshot(url);
+        const r = await captureJitterScreenshot({ url, id: `ss-${Date.now()}`, width: 1920, height: 1080 });
+        return r;
       } finally {
         metrics.activeJobs--;
       }
     });
 
     metrics.completed++;
-    res.setHeader("Content-Type", "image/png");
-    res.send(image);
+    res.json({ success: true, url: result.url, key: result.key });
   } catch (error) {
     metrics.failed++;
     const errorMsg = error instanceof Error ? error.message : String(error);

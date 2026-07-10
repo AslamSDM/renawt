@@ -9,9 +9,7 @@ import { jwtAuth } from "./lib/auth";
 // Routers
 import webhooksRouter from "./routes/webhooks";
 import narrateRouter from "./routes/narrate";
-import jitterRouter from "./routes/jitter";
-import jitterReferenceRouter from "./routes/jitterReference";
-import threeRouter from "./routes/three";
+import hyperframesRouter from "./routes/hyperframes";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -57,19 +55,7 @@ app.use("/webhooks", webhooksRouter);
 
 // Creative API Routes (JWT Auth Required)
 app.use("/api/creative", jwtAuth, narrateRouter);
-app.use("/api/creative", jwtAuth, jitterRouter);
-app.use("/api/creative", jwtAuth, jitterReferenceRouter);
-app.use("/api/creative", jwtAuth, threeRouter);
-
-// Serve Jitter renders + screenshots from the repo /public dir
-app.use(
-  "/jitter",
-  express.static(join(process.cwd(), "..", "public", "jitter")),
-);
-app.use(
-  "/three",
-  express.static(join(process.cwd(), "..", "public", "three")),
-);
+app.use("/api/creative", jwtAuth, hyperframesRouter);
 
 // Fallback error handler — guarantees CORS headers on thrown errors so the
 // browser surfaces the real status instead of a misleading CORS message.
@@ -110,9 +96,7 @@ const server = app.listen(PORT, () => {
   console.log(`[GenerateServer] CORS allowed: ${ALLOWED_ORIGINS.join(", ")}`);
   console.log(`[GenerateServer] Endpoints:`);
   console.log(`  POST /api/creative/narrate          — ElevenLabs TTS narration`);
-  console.log(`  POST /api/creative/jitter           — URL → animated brand video`);
-  console.log(`  POST /api/creative/jitter-reference — reference video → Jitter recreation`);
-  console.log(`  POST /api/creative/three            — brief → 10-min 3D video (Three.js engine)`);
+  console.log(`  POST /api/creative/hyperframes      — URL → animated HTML composition (HyperFrames engine)`);
 });
 
 // Long-running endpoints (jitter, render) can exceed Node's default 2-min

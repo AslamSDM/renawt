@@ -10,10 +10,7 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // Exclude Remotion SSR packages from client-side bundling
   serverExternalPackages: [
-    "@remotion/bundler",
-    "@remotion/renderer",
     "esbuild",
   ],
 

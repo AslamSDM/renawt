@@ -14,6 +14,7 @@ export const PROGRESS_STEPS = [
   "capture",
   "brand",
   "music",
+  "sfx",
   "compose",
   "critique",
   "render",

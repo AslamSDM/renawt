@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     "product launch video",
     "AI video creation platform",
     "no-code video maker",
-    "remotion video",
+    "animated video",
     "video from URL",
   ],
   authors: [{ name: "Remawt", url: "https://remawt.com" }],

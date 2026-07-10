@@ -22,6 +22,7 @@ interface ProfileData {
     name: string | null;
     status: string;
     updatedAt: string;
+    composition?: string | null;
   }[];
 }
 
@@ -177,7 +178,7 @@ export default function ProfilePage() {
                     {profile.recentProjects.map((proj) => (
                       <Link
                         key={proj.id}
-                        href={`/projects/${proj.id}/jitter`}
+                        href={`/projects/${proj.id}/hyperframes`}
                         className="flex items-center justify-between py-4 transition-colors hover:bg-paper-2"
                       >
                         <span className="truncate text-base text-ink">

@@ -19,6 +19,7 @@ export async function GET() {
         sourceUrl: true,
         updatedAt: true,
         status: true,
+        composition: true,
       },
     });
 

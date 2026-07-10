@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db/prisma";
+import { prisma, withDbRetry } from "@/lib/db/prisma";
 import { auth } from "@/auth";
 
 async function authorize(id: string) {
@@ -9,7 +9,9 @@ async function authorize(id: string) {
       error: NextResponse.json({ error: "Authentication required" }, { status: 401 }),
     };
   }
-  const project = await prisma.project.findUnique({ where: { id } });
+  const project = await withDbRetry(() =>
+    prisma.project.findUnique({ where: { id } }),
+  );
   if (!project) {
     return {
       error: NextResponse.json({ error: "Project not found" }, { status: 404 }),
@@ -31,22 +33,24 @@ export async function GET(
   const a = await authorize(id);
   if ("error" in a) return a.error;
 
-  const rows = await prisma.generation.findMany({
-    where: { projectId: id },
-    orderBy: { createdAt: "desc" },
-    take: 30,
-    select: {
-      id: true,
-      status: true,
-      videoUrl: true,
-      params: true,
-      error: true,
-      startedAt: true,
-      finishedAt: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
+  const rows = await withDbRetry(() =>
+    prisma.generation.findMany({
+      where: { projectId: id },
+      orderBy: { createdAt: "desc" },
+      take: 30,
+      select: {
+        id: true,
+        status: true,
+        videoUrl: true,
+        params: true,
+        error: true,
+        startedAt: true,
+        finishedAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    }),
+  );
 
   return NextResponse.json({
     generations: rows.map((r) => ({
@@ -66,19 +70,23 @@ export async function POST(
 
   const body = await request.json().catch(() => ({}));
 
-  const row = await prisma.generation.create({
-    data: {
-      projectId: id,
-      userId: a.userId,
-      status: "RUNNING",
-      params: body?.params ? JSON.stringify(body.params) : null,
-    },
-  });
+  const row = await withDbRetry(() =>
+    prisma.generation.create({
+      data: {
+        projectId: id,
+        userId: a.userId,
+        status: "RUNNING",
+        params: body?.params ? JSON.stringify(body.params) : null,
+      },
+    }),
+  );
 
-  await prisma.project.update({
-    where: { id },
-    data: { status: "GENERATING" },
-  });
+  await withDbRetry(() =>
+    prisma.project.update({
+      where: { id },
+      data: { status: "GENERATING" },
+    }),
+  );
 
   return NextResponse.json({ generation: row });
 }

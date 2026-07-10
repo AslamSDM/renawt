@@ -5,36 +5,22 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build:anime": "esbuild src/threeEngine/anime-entry.ts --bundle --format=esm --platform=browser --outfile=node_modules/.cache/anime-bundle.js --log-level=error",
-    "build": "npm run build:anime && tsc",
+    "build": "tsc",
     "start": "node dist/server.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.478.0",
     "@aws-sdk/s3-request-presigner": "^3.478.0",
-    "@react-three/drei": "^10.0.0",
-    "@react-three/fiber": "^9.0.0",
-    "@remotion/bundler": "4.0.416",
-    "@remotion/cli": "^4.0.416",
-    "@remotion/google-fonts": "^4.0.416",
-    "@remotion/renderer": "4.0.416",
-    "@remotion/three": "4.0.416",
-    "animejs": "^4.5.0",
+    "@hyperframes/core": "^0.7.37",
+    "@hyperframes/producer": "^0.7.37",
     "bullmq": "^5.79.1",
     "express": "^5.2.1",
     "ioredis": "^5.11.1",
-    "postprocessing": "^6.39.1",
-    "puppeteer": "^24.43.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "remotion": "^4.0.416",
-    "three": "^0.175.0"
+    "puppeteer": "^24.43.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^25.9.4",
-    "@types/react": "^19.0.0",
-    "@types/three": "^0.175.0",
     "tsx": "^4.22.4",
     "typescript": "^5.9.3"
   }
