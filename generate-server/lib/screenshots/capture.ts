@@ -6,6 +6,11 @@
 const SCRAPER_URL =
   process.env.SCRAPER_SERVICE_URL || "http://localhost:4001";
 
+const SCRAPER_AUTH =
+  process.env.SCRAPER_AUTH_TOKEN
+    ? `Bearer ${process.env.SCRAPER_AUTH_TOKEN}`
+    : "Bearer dev";
+
 export interface CaptureResult {
   url: string;
   width: number;
@@ -40,7 +45,7 @@ export async function captureForJitter(
 
   const resp = await fetch(`${SCRAPER_URL}/capture`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: "Bearer dev" },
+    headers: { "Content-Type": "application/json", Authorization: SCRAPER_AUTH },
     body: JSON.stringify({ url, id, width, height, settleMs }),
   });
 
@@ -66,7 +71,7 @@ export async function scrapeWithCrawl(
 
   const resp = await fetch(`${SCRAPER_URL}/scrape`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: "Bearer dev" },
+    headers: { "Content-Type": "application/json", Authorization: SCRAPER_AUTH },
     body: JSON.stringify({ url, crawl: true, maxPages, maxDepth }),
   });
 

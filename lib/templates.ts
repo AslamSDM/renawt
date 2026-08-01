@@ -9,6 +9,9 @@ export interface TemplateCard {
   height: number;
   durationMs: number;
   layerCount: number;
+  section: string;
+  sectionLabel: string;
+  previewUrl?: string;
 }
 
 export function listTemplateCards(): TemplateCard[] {

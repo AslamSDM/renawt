@@ -237,7 +237,7 @@ export async function generateLegacyHfComposition(params: {
     ],
     {
       temperature: 1.2,
-      maxTokens: 12000,
+      maxTokens: 65536,
       model: process.env.JITTER_COMPOSER_MODEL || "deepseek-v4-flash",
     },
   );

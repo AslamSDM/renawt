@@ -220,8 +220,8 @@ export default function RecordingEditorPage({
     // First save any pending changes
     await handleSave();
 
-    // Navigate to project studio
-    router.push(`/studio/${recording.projectId}?addRecording=${id}`);
+    // Navigate to project hyperframes page
+    router.push(`/projects/${recording.projectId}/hyperframes`);
   }, [recording, id, handleSave, router]);
 
   // Format time display

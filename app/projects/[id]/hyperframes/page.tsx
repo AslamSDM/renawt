@@ -63,7 +63,7 @@ const DURATION_PRESETS = [
   { label: "30s", value: 30000 },
 ];
 
-const VPS_API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+const VPS_API_URL = "/api";
 
 async function getVpsToken(): Promise<string | null> {
   const res = await fetch("/api/auth/vps-token");
@@ -89,6 +89,9 @@ export default function HyperframesProjectPage({
   const [narrationText, setNarrationText] = useState("");
   const [captionsEnabled, setCaptionsEnabled] = useState(false);
   const [musicMood, setMusicMood] = useState("");
+  const [musicTracks, setMusicTracks] = useState<any[]>([]);
+  const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
+  const [showCustomAudio, setShowCustomAudio] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<RenderResult | null>(null);
   const [compositionHtml, setCompositionHtml] = useState("");
@@ -145,6 +148,15 @@ export default function HyperframesProjectPage({
       alive = false;
     };
   }, [id]);
+
+  useEffect(() => {
+    fetch("/api/music")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.tracks) setMusicTracks(d.tracks);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!generating || !activeGenId) return;
@@ -204,6 +216,31 @@ export default function HyperframesProjectPage({
       }
     } catch {}
   };
+
+  const handleTrackSelect = (track: any) => {
+    if (!track) {
+      setAudioUrl("");
+      setSelectedTrackId(null);
+      setMusicMood("");
+      return;
+    }
+    setAudioUrl(track.url);
+    setSelectedTrackId(track.id);
+    if (track.moods?.length > 0) {
+      setMusicMood(track.moods[0]);
+    }
+  };
+
+  useEffect(() => {
+    fetch("/api/music")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data.tracks)) {
+          setMusicTracks(data.tracks);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const reuseInputs = (p: any) => {
     if (!p) return;
@@ -291,7 +328,7 @@ export default function HyperframesProjectPage({
 
       const callbackUrl = `${window.location.origin}/api/projects/${id}/generations/${gid}`;
 
-      const resp = await fetch(`${VPS_API_URL}/api/creative/hyperframes`, {
+      const resp = await fetch(`${VPS_API_URL}/creative/hyperframes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -485,17 +522,79 @@ export default function HyperframesProjectPage({
 
             <Card className="p-5 md:p-6">
               <label className="block text-sm font-medium text-ink/80 mb-2">
-                Audio URL (optional)
+                <Music className="w-4 h-4 inline mr-2" />
+                Background Music
               </label>
-              <input
-                type="url"
-                value={audioUrl}
-                onChange={(e) => setAudioUrl(e.target.value)}
-                placeholder="https://example.com/bg-music.mp3"
-                className="w-full px-4 py-3 bg-paper-2 border border-rule rounded-lg focus:outline-none focus:border-rule-strong transition-colors text-ink placeholder-gray-600"
-              />
+
+              {musicTracks.length > 0 && (
+                <div className="space-y-1.5 mb-4 max-h-48 overflow-y-auto">
+                  <button
+                    type="button"
+                    onClick={() => { handleTrackSelect(null); setShowCustomAudio(false); }}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                      selectedTrackId === null && !showCustomAudio && !audioUrl
+                        ? "bg-ink text-white"
+                        : "bg-paper-2 hover:bg-paper-3 text-ink"
+                    }`}
+                  >
+                    <span className="font-medium">Auto-detect</span>
+                    <span className="text-muted ml-2">(AI picks based on brand)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setShowCustomAudio(true); setSelectedTrackId(null); }}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                      showCustomAudio
+                        ? "bg-ink text-white"
+                        : "bg-paper-2 hover:bg-paper-3 text-ink"
+                    }`}
+                  >
+                    <span className="font-medium">Custom URL</span>
+                    <span className="text-muted ml-2">(paste your own)</span>
+                  </button>
+                  {musicTracks.map((t: any) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => { handleTrackSelect(t); setShowCustomAudio(false); }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                        selectedTrackId === t.id
+                          ? "bg-ink text-white"
+                          : "bg-paper-2 hover:bg-paper-3 text-ink"
+                      }`}
+                    >
+                      <div className="font-medium truncate">{t.title}</div>
+                      <div className="text-xs opacity-70">
+                        {t.artist} &middot; {t.bpm} BPM
+                        {t.moods?.length > 0 && ` · ${t.moods.slice(0, 2).join(", ")}`}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {showCustomAudio && (
+                <input
+                  type="url"
+                  value={audioUrl}
+                  onChange={(e) => { setAudioUrl(e.target.value); setSelectedTrackId(null); }}
+                  placeholder="https://example.com/bg-music.mp3"
+                  className="w-full px-4 py-3 bg-paper-2 border border-rule rounded-lg focus:outline-none focus:border-rule-strong transition-colors text-ink placeholder-gray-600"
+                />
+              )}
+
+              <div className="flex items-center gap-3 mt-3">
+                <label className="text-xs text-muted">Mood:</label>
+                <input
+                  type="text"
+                  value={musicMood}
+                  onChange={(e) => setMusicMood(e.target.value)}
+                  placeholder="e.g. energetic (auto from brand)"
+                  className="flex-1 px-3 py-1.5 bg-paper-2 border border-rule rounded text-xs focus:outline-none focus:border-rule-strong transition-colors text-ink placeholder-gray-600"
+                />
+              </div>
               <p className="mt-2 text-xs text-muted">
-                Background music or voiceover will be mixed into the rendered video.
+                Pick a track or enter a custom URL. Mood overrides auto-detection from brand analysis.
               </p>
             </Card>
 
@@ -515,22 +614,7 @@ export default function HyperframesProjectPage({
               </p>
             </Card>
 
-            <Card className="p-5 md:p-6">
-              <label className="block text-sm font-medium text-ink/80 mb-2">
-                <Music className="w-4 h-4 inline mr-2" />
-                Music Mood (optional)
-              </label>
-              <input
-                type="text"
-                value={musicMood}
-                onChange={(e) => setMusicMood(e.target.value)}
-                placeholder="e.g. energetic, calm, techy, premium"
-                className="w-full px-4 py-3 bg-paper-2 border border-rule rounded-lg focus:outline-none focus:border-rule-strong transition-colors text-ink placeholder-gray-600"
-              />
-              <p className="mt-2 text-xs text-muted">
-                Override the auto-detected music mood. Leave empty to derive from brand analysis.
-              </p>
-            </Card>
+
 
             <Card className="p-5 md:p-6">
               <label className="block text-sm font-medium text-ink/80 mb-2">

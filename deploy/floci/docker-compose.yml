@@ -1,0 +1,15 @@
+services:
+  floci:
+    image: floci/floci:latest
+    ports:
+      - "4566:4566"
+    environment:
+      FLOCI_HOSTNAME: floci
+      FLOCI_SERVICES_LAMBDA_ENABLED: "true"
+      FLOCI_SERVICES_LAMBDA_HOT_RELOAD_ENABLED: "true"
+      FLOCI_SERVICES_LAMBDA_HOT_RELOAD_ALLOWED_PATHS: /Users/aslam/tempy/remawt/deploy/aws/render-lambda/src
+      FLOCI_SERVICES_LAMBDA_DEFAULT_MEMORY_MB: "3008"
+      FLOCI_SERVICES_LAMBDA_DEFAULT_TIMEOUT_SECONDS: "600"
+    volumes:
+      - ./data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock

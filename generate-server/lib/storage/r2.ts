@@ -4,7 +4,7 @@
  * R2 is S3-compatible, so we use the AWS SDK with R2 endpoint
  */
 
-import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command, HeadObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command, HeadObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { readFileSync } from "fs";
 import { randomUUID } from "crypto";
@@ -15,6 +15,9 @@ const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
 const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
 const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME || "remawt-videos";
 const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL?.replace(/[%\s/]+$/, ''); // Custom domain or public R2 URL
+const R2_ENDPOINT =
+  process.env.R2_ENDPOINT ||
+  (R2_ACCOUNT_ID ? `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com` : "");
 
 // Check if R2 is configured
 export const isR2Configured = (): boolean => {
@@ -65,7 +68,8 @@ const getR2Client = (): S3Client => {
 
   return new S3Client({
     region: "auto",
-    endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    endpoint: R2_ENDPOINT,
+    forcePathStyle: !!process.env.R2_FORCE_PATH_STYLE,
     credentials: {
       accessKeyId: R2_ACCESS_KEY_ID!,
       secretAccessKey: R2_SECRET_ACCESS_KEY!,
@@ -415,6 +419,53 @@ export async function listAudioFiles(): Promise<AudioFile[]> {
   } catch (error) {
     console.error("[R2] Failed to list audio files:", error);
     return [];
+  }
+}
+
+/**
+ * Read a render status object (written by the AWS render Lambda at
+ * `status/{jobId}.json`). Returns null when missing/not configured.
+ */
+export async function getRenderStatusFromR2(
+  jobId: string,
+): Promise<Record<string, unknown> | null> {
+  if (!isR2Configured()) return null;
+  try {
+    const client = getR2Client();
+    const command = new GetObjectCommand({
+      Bucket: R2_BUCKET_NAME,
+      Key: `status/${jobId}.json`,
+    });
+    const response = await client.send(command);
+    if (!response.Body) return null;
+    const chunks: Buffer[] = [];
+    // @ts-ignore - Body is a stream
+    for await (const chunk of response.Body) {
+      chunks.push(Buffer.from(chunk));
+    }
+    const text = Buffer.concat(chunks).toString("utf-8");
+    return text ? JSON.parse(text) : null;
+  } catch (error) {
+    if ((error as { name?: string })?.name === "NoSuchKey") return null;
+    console.error(`[R2] Failed to read status ${jobId}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Delete a render status object from R2.
+ */
+export async function deleteRenderStatusFromR2(jobId: string): Promise<void> {
+  if (!isR2Configured()) return;
+  try {
+    const client = getR2Client();
+    const command = new DeleteObjectCommand({
+      Bucket: R2_BUCKET_NAME,
+      Key: `status/${jobId}.json`,
+    });
+    await client.send(command);
+  } catch (error) {
+    console.warn(`[R2] Failed to delete status ${jobId}:`, error);
   }
 }
 

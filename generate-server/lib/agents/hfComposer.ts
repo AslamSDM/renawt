@@ -279,7 +279,7 @@ export async function generateHfComposition(params: {
     ],
     {
       temperature: 1.1,
-      maxTokens: 16000,
+      maxTokens: 65536,
       model: process.env.JITTER_COMPOSER_MODEL || "deepseek-v4-flash",
     },
   );

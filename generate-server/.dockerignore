@@ -1,0 +1,13 @@
+node_modules
+dist
+lib/generated
+.git
+.env
+.env.*
+tmp
+data
+out
+public/renders
+public/three
+test-results
+*.log

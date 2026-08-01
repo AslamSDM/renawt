@@ -104,3 +104,4 @@ test-results/
 .claude/
 .agent/
 
+.opencode/
