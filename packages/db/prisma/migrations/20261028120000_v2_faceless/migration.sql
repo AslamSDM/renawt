@@ -3,16 +3,10 @@
 -- Generated with: prisma migrate diff --from-url <prod Neon> --to-schema-datamodel
 --   packages/db/prisma/schema.prisma --script   (read-only introspection; NOT applied)
 --
--- DESTRUCTIVE STATEMENTS (v1 data, disposable per docs/PIVOT_PLAN.md):
---   DROP TABLE "Generation";
---   DROP TABLE "JitterDocHistory";      (exists in prod, never in a migration file)
---   DROP TABLE "ProductImage";
---   DROP TABLE "Project";
---   DROP TABLE "ScreenRecording";
---   DROP INDEX "llm_calls_projectId_idx";   (index only; column + rows kept)
---   ALTER TABLE ... DROP CONSTRAINT <fk> on Account, CreditPurchase, Subscription,
---     Generation, JitterDocHistory, ProductImage, Project, ScreenRecording
---     (schema uses relationMode = "prisma"; constraint drops lose NO rows)
+-- NON-DESTRUCTIVE (2026-10-28 decision: KEEP v1 data). v1 tables Project, Generation,
+-- JitterDocHistory, ProductImage, ScreenRecording are left untouched (not in the Prisma
+-- schema any more, so Prisma ignores them). Only FKs on Account/CreditPurchase/Subscription
+-- are dropped (relationMode = "prisma"); no rows are touched.
 --
 -- KEPT TABLES (User, Account, Subscription, CreditPurchase, WebhookEvent, Music,
 -- llm_calls): only ADD COLUMN with defaults / nullable. No rows are touched except
@@ -46,25 +40,7 @@ ALTER TABLE IF EXISTS "Account" DROP CONSTRAINT IF EXISTS "Account_userId_fkey";
 ALTER TABLE IF EXISTS "CreditPurchase" DROP CONSTRAINT IF EXISTS "CreditPurchase_userId_fkey";
 
 -- DropForeignKey
-ALTER TABLE IF EXISTS "Generation" DROP CONSTRAINT IF EXISTS "Generation_projectId_fkey";
-
--- DropForeignKey
-ALTER TABLE IF EXISTS "JitterDocHistory" DROP CONSTRAINT IF EXISTS "JitterDocHistory_projectId_fkey";
-
--- DropForeignKey
-ALTER TABLE IF EXISTS "ProductImage" DROP CONSTRAINT IF EXISTS "ProductImage_projectId_fkey";
-
--- DropForeignKey
-ALTER TABLE IF EXISTS "Project" DROP CONSTRAINT IF EXISTS "Project_userId_fkey";
-
--- DropForeignKey
-ALTER TABLE IF EXISTS "ScreenRecording" DROP CONSTRAINT IF EXISTS "ScreenRecording_projectId_fkey";
-
--- DropForeignKey
 ALTER TABLE IF EXISTS "Subscription" DROP CONSTRAINT IF EXISTS "Subscription_userId_fkey";
-
--- DropIndex
-DROP INDEX IF EXISTS "llm_calls_projectId_idx";
 
 -- AlterTable
 ALTER TABLE "Subscription" ADD COLUMN     "billing" TEXT NOT NULL DEFAULT 'monthly',
@@ -87,21 +63,6 @@ ALTER TABLE "llm_calls" ADD COLUMN     "cachedTokens" INTEGER NOT NULL DEFAULT 0
 ADD COLUMN     "channelId" TEXT,
 ADD COLUMN     "usd" DOUBLE PRECISION,
 ADD COLUMN     "videoId" TEXT;
-
--- DropTable
-DROP TABLE IF EXISTS "Generation";
-
--- DropTable
-DROP TABLE IF EXISTS "JitterDocHistory";
-
--- DropTable
-DROP TABLE IF EXISTS "ProductImage";
-
--- DropTable
-DROP TABLE IF EXISTS "Project";
-
--- DropTable
-DROP TABLE IF EXISTS "ScreenRecording";
 
 -- CreateTable
 CREATE TABLE "UsageLedger" (

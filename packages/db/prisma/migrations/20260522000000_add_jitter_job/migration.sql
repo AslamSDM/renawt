@@ -1,0 +1,2 @@
+-- Placeholder: this migration was applied to production from the v1 repo but its SQL was never committed.
+-- It is recorded in _prisma_migrations, so `prisma migrate deploy` skips it. Intentionally empty.
