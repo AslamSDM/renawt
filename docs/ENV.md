@@ -16,7 +16,7 @@ INNGEST_EVENT_KEY, INNGEST_SIGNING_KEY (dev: inngest dev server, no keys)
 ELEVENLABS_API_KEY
 GOOGLE_AI_API_KEY (Nano Banana images), RECRAFT_API_KEY (optional), PEXELS_API_KEY, PIXABAY_API_KEY
 R2_* (as above)
-RENDER_PROVIDER=lambda|local, RENDER_QUEUE_URL, AWS_REGION, HF_RENDER_SERVICE_URL (local render-service fallback)
+RENDER_PROVIDER=lambda|service|local, RENDER_QUEUE_URL, AWS_REGION, HF_RENDER_SERVICE_URL (render-service), RENDER_API_KEY (render-service x-render-key), HF_RENDER_QUALITY=draft|standard|high (default standard), PUPPETEER_EXECUTABLE_PATH (posters; falls back to system Chrome)
 PUBLISHER_PROVIDER=dryrun|postforme|uploadpost, POSTFORME_API_KEY, UPLOADPOST_API_KEY
 YOUTUBE_API_KEY (radar), REDDIT_CLIENT_ID/SECRET, DATAFORSEO_LOGIN/PASSWORD, EXA_API_KEY, APIFY_TOKEN (optional)
 

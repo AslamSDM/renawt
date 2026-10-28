@@ -1,2 +1,20 @@
 // HyperFrames kit: 9:16 composition contract, format blocks, skill prompts, project scaffolding, render client. See docs/BUILD.md.
-export {};
+export { composeVideo, allocateScenes, resolveScenes, resolvePlan, snapToBeats, audioUrlsFor, videoUrlsOf, ComposeError, GSAP_CDN, ROOT_ID, LAYER_ATTR, MEDIA_MANIFEST_ID } from "./compose";
+export type { ComposeInput, ResolvedScene } from "./compose";
+export { lintComposition, ALLOWED_PROPS } from "./lint";
+export type { LintResult } from "./lint";
+export { scaffoldProject, projectFiles, assetManifest, sanitizeR2Urls } from "./project";
+export { buildSystemPrompt, buildScenePlanPrompt, blockCatalogue } from "./prompts/index";
+export { renderPoster, posterHtml, chromePath } from "./poster";
+export { submitRender, pollRender, renderProvider, renderJobId, renderRequestBody } from "./render/index";
+export type { RenderPoll, RenderStatus, SubmitOptions } from "./render/index";
+export { chunkWords, captionWindows, captionsComposition, CAPTIONS_ID } from "./captions/index";
+export type { CaptionChunk, ChunkOptions } from "./captions/index";
+export { buildAudio, duckingLane, speechRegions, parseAudioTags, mixFilter, MUSIC_VOLUME, DUCK_LEVEL } from "./audio/index";
+export { overlaysComposition, OVERLAYS_ID } from "./overlays/index";
+export { overlayComposition, watermarkHtml, OVERLAY_ID, WATERMARK_TEXT } from "./watermark";
+export { resolveTransition, TRANSITION_NAMES } from "./transitions/index";
+export { SAFE, contentBox, captionBand, typeScale, motionPreset, MOTION, skinVars, googleFontsUrl, fontLinks, BUNDLED_FONTS } from "./skin/index";
+export { BLOCKS, BLOCK_NAMES, BLOCK_SCHEMAS, BLOCK_DOCS, BLOCK_SAMPLES, BLOCK_ALIASES, OVERLAY_NAMES, OVERLAY_SCHEMAS, OVERLAY_SAMPLES, resolveBlockName, isOverlayBlock, iconSvg, KEN_BURNS_MAX } from "./blocks/index";
+export type { BlockName, OverlayName, BlockCtx, BlockOutput, BlockFn } from "./blocks/index";
+export { hyperframesVersion, runHyperframesLint, runHyperframesRender, HYPERFRAMES_VERSION } from "./cli";
