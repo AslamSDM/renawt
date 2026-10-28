@@ -10,7 +10,7 @@ import { PublishSheet } from "@/components/app/video/publish-sheet";
 import { SceneEditor } from "@/components/app/video/scene-editor";
 import { TranscriptPanel } from "@/components/app/video/transcript-panel";
 import { ScriptView } from "@/components/app/video/script-view";
-import { prisma } from "@/lib/db/prisma";
+import { loadVideoDetail } from "@/lib/queries/video-detail";
 import { loadEntitlements } from "@/lib/queries/billing";
 import { formatDateTime, formatSeconds, formatUsd, relativeTime } from "@/lib/queries/format";
 import { ACTIVE_STATUSES } from "@/lib/queries/home";
@@ -25,28 +25,19 @@ const SOURCE_LABEL = { idea: "Radar idea", prompt: "Prompt", video: "Your footag
 export default async function VideoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const viewer = await getViewer(`/app/videos/${id}`);
-  if (viewer.bypass) notFound();
-
-  const video = await prisma.video.findFirst({
-    where: { id, channel: { userId: viewer.userId } },
-    include: {
-      channel: { include: { socialAccounts: { where: { status: "connected" }, orderBy: { platform: "asc" } } } },
-      publications: { orderBy: { scheduledAt: "desc" }, include: { socialAccount: { select: { handle: true } } } },
-      idea: { select: { id: true, hook: true } },
-    },
-  });
+  const video = await loadVideoDetail(viewer, id);
   if (!video) notFound();
   const ent = await loadEntitlements(viewer);
 
   const events = parseProgress(video.progress);
-  const source = readVideoSource(video.progress);
+  const source = readVideoSource(video);
   const script = parseScript(video.script);
   const plan = parseScenePlan(video.scenes);
   const qc = parseQc(video.qc);
   const originality = parseOriginality(video.originality);
   const cost = parseCost(video.cost);
   const cuts = parseCuts(video.cuts);
-  const transcript = source && (source.kind === "video" || source.kind === "audio") ? readTranscript(video.progress) : null;
+  const transcript = source && (source.kind === "video" || source.kind === "audio") ? readTranscript(video.transcript) : null;
   const palette = parseKit(video.kitSnapshot ?? video.channel.kit)?.skin.palette;
   const assets = Array.isArray(video.assets)
     ? video.assets.flatMap((a) =>
@@ -249,11 +240,11 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
                         <Inline gap={2} wrap={false}>
                           <PlatformBadge platform={p.platform} />
                           {p.externalUrl ? (
-                            <a href={p.externalUrl} target="_blank" rel="noreferrer noopener" className="truncate underline decoration-rule-strong underline-offset-4 hover:decoration-ink">
+                            <a href={p.externalUrl} target="_blank" rel="noreferrer noopener" className="hidden truncate underline decoration-rule-strong underline-offset-4 hover:decoration-ink sm:inline">
                               {p.socialAccount.handle ?? "View post"}
                             </a>
                           ) : (
-                            <span className="truncate text-muted">{p.socialAccount.handle ?? "–"}</span>
+                            <span className="hidden truncate text-muted sm:inline">{p.socialAccount.handle ?? "–"}</span>
                           )}
                         </Inline>
                       </TableCell>

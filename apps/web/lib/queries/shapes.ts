@@ -46,21 +46,17 @@ export function parseTranscript(json: unknown): Transcript | null {
   return r.success ? r.data : null;
 }
 
-/**
- * Video source. The schema in packages/db does not have Video.source/sourceKind yet (see docs/REQUESTS.md),
- * so startVideo writes it as the first progress event `{step:"source", output: VideoSource}`.
- */
-export function readVideoSource(progressJson: unknown): VideoSource | null {
-  const ev = parseProgress(progressJson).find((e) => e.step === "source");
-  if (!ev) return null;
-  const r = VideoSourceSchema.safeParse(ev.output);
-  return r.success ? r.data : null;
+/** Video.source (VideoSource JSON), falling back to the sourceKind/sourceUrl columns for rows written without it. */
+export function readVideoSource(video: { source: unknown; sourceKind: string; sourceUrl: string | null }): VideoSource | null {
+  const r = VideoSourceSchema.safeParse(video.source);
+  if (r.success) return r.data;
+  const k = VideoSourceSchema.shape.kind.unwrap().safeParse(video.sourceKind);
+  return k.success ? VideoSourceSchema.parse({ kind: k.data, mediaUrl: video.sourceUrl ?? undefined }) : null;
 }
 
-/** Transcript for video/audio sources. Read from the `transcribe` step output until Video.transcript exists. */
-export function readTranscript(progressJson: unknown): Transcript | null {
-  const ev = [...parseProgress(progressJson)].reverse().find((e) => e.step === "transcribe" && e.status === "done");
-  return ev ? parseTranscript(ev.output) : null;
+/** Video.transcript for video/audio sources. */
+export function readTranscript(transcriptJson: unknown): Transcript | null {
+  return parseTranscript(transcriptJson);
 }
 
 const Num = z.number().finite();

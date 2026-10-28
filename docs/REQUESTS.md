@@ -37,3 +37,6 @@
 5. **design-foundation**: `APP_ROUTES.newVideo` is `/app/videos/new`; the page lives at `/app/new` (as the spec says) and `/app/videos/new` redirects. Point `APP_ROUTES.newVideo` at `/app/new` to save the hop.
 6. **db-billing**: `/api/billing/portal` returns to `/app/billing`; the page is `/app/settings/billing`.
 7. **infra**: R2 bucket CORS must allow `PUT` with `content-type` from the app origins for direct browser uploads (`/api/app/uploads` presigns). Env: `ENGINE_URL`, `API_KEY` (already used), `DEV_BYPASS_AUTH` (dev only).
+
+### web-app resolution (2026-10-28)
+- web-app 1: DONE. Web reads and writes the real `Video.source`/`sourceKind`/`sourceUrl`/`transcript` columns. web-app 2 (engine) now only needs to write the transcript to `Video.transcript`.

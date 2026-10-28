@@ -78,11 +78,7 @@ export async function startVideo(input: z.input<typeof StartVideoInput>): Promis
     (v.text ? v.text.split(/\s+/).slice(0, 10).join(" ").slice(0, 90) : v.kind === "video" ? "Edited upload" : "Voiceover video");
   const format = v.format ?? idea?.format ?? "auto";
   const now = new Date().toISOString();
-  const initial: ProgressEvent[] = [
-    // TODO(db): move to Video.sourceKind/sourceUrl/source once those columns exist in schema.prisma (docs/REQUESTS.md).
-    { step: "source", status: "done", at: now, message: v.kind, output: source },
-    { step: "queued", status: "done", at: now, message: "Waiting for the engine" },
-  ];
+  const initial: ProgressEvent[] = [{ step: "queued", status: "done", at: now, message: "Waiting for the engine" }];
 
   const video = await prisma.video.create({
     data: {
@@ -92,6 +88,9 @@ export async function startVideo(input: z.input<typeof StartVideoInput>): Promis
       format,
       targetSec,
       status: "QUEUED",
+      sourceKind: v.kind,
+      sourceUrl: v.mediaUrl ?? null,
+      source: json(source),
       progress: json(initial),
       kitSnapshot: channel.kit ?? undefined,
     },
@@ -190,26 +189,19 @@ export async function rerenderVideo(videoId: string): Promise<ActionResult> {
 
 const TranscriptKeepInput = z.object({ videoId: z.string(), keep: z.record(z.string(), z.boolean()) });
 
-/** Toggles which transcript segments are kept. Stored on the transcribe step output (see shapes.readTranscript). */
+/** Toggles which transcript segments are kept (Video.transcript). Applied on the next re-render. */
 export async function saveTranscriptKeeps(input: z.input<typeof TranscriptKeepInput>): Promise<ActionResult> {
   const viewer = await getViewerOrNull();
   if (!viewer) return fail(NOT_SIGNED_IN);
   if (viewer.bypass) return fail(BYPASS_READONLY);
   const parsed = TranscriptKeepInput.safeParse(input);
   if (!parsed.success) return fail("Invalid segment selection.");
-  const video = await prisma.video.findFirst({ where: { id: parsed.data.videoId, channel: { userId: viewer.userId } } });
+  const video = await prisma.video.findFirst({ where: { id: parsed.data.videoId, channel: { userId: viewer.userId } }, select: { id: true, transcript: true } });
   if (!video) return fail("Video not found.");
-  const progress = parseProgress(video.progress);
-  let found = false;
-  const next = progress.map((e) => {
-    if (e.step !== "transcribe" || e.status !== "done") return e;
-    const t = TranscriptSchema.safeParse(e.output);
-    if (!t.success) return e;
-    found = true;
-    return { ...e, output: { ...t.data, segments: t.data.segments.map((s) => ({ ...s, keep: parsed.data.keep[s.id] ?? s.keep })) } };
-  });
-  if (!found) return fail("No transcript to edit yet.");
-  await prisma.video.update({ where: { id: video.id }, data: { progress: json(next) } });
+  const t = TranscriptSchema.safeParse(video.transcript);
+  if (!t.success) return fail("No transcript to edit yet.");
+  const next = { ...t.data, segments: t.data.segments.map((s) => ({ ...s, keep: parsed.data.keep[s.id] ?? s.keep })) };
+  await prisma.video.update({ where: { id: video.id }, data: { transcript: json(next) } });
   revalidatePath(`/app/videos/${video.id}`);
   return ok(undefined);
 }

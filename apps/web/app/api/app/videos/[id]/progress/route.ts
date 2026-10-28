@@ -24,9 +24,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   if (!terminal) {
     const res = await engine.progress(viewer.userId, id);
     if (res.ok) {
-      // Keep our local "source" event (engine doesn't know it) at the head of the list.
-      const local = parseProgress(video.progress).filter((e) => e.step === "source" || e.step === "queued");
-      const remote = parseProgress(res.data.progress).filter((e) => e.step !== "source");
+      // Keep our local "queued" event at the head of the list if the engine doesn't report one.
+      const remote = parseProgress(res.data.progress);
+      const local = remote.some((e) => e.step === "queued") ? [] : parseProgress(video.progress).filter((e) => e.step === "queued");
       return NextResponse.json({
         status: res.data.status ?? video.status,
         progress: [...local, ...remote],

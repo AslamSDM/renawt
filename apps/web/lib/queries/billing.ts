@@ -5,7 +5,7 @@ import type { Viewer } from "./viewer";
 /** Entitlements, or the Free plan defaults in dev bypass mode. */
 export async function loadEntitlements(viewer: Viewer): Promise<Entitlements> {
   if (viewer.bypass) {
-    const plan = getPlan("FREE");
+    const plan = getPlan(process.env.DEV_BYPASS_PLAN ?? "FREE");
     const end = new Date();
     end.setDate(end.getDate() + 30);
     return {

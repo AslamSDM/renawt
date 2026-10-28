@@ -48,5 +48,10 @@
 
 The middleware still requires a session cookie. For screenshots I minted one with `next-auth/jwt` `encode` and `AUTH_SECRET`.
 
-## Open items
-See `docs/REQUESTS.md` → "From web-app". The main one: the `Video.sourceKind/sourceUrl/source/transcript` columns exist in the migration SQL but not in `schema.prisma`. Until they are added, the source is stored as the first progress event.
+## Follow-up (2026-10-28)
+- `startVideo` now writes `Video.sourceKind`, `sourceUrl` and `source`, and no longer adds a progress event. `readVideoSource` reads `Video.source`, falling back to `sourceKind`/`sourceUrl`. `readTranscript` and `saveTranscriptKeeps` use `Video.transcript`. That closes REQUESTS item 1.
+- Removed the `/app/videos/new` redirect, since `APP_ROUTES.newVideo` is now `/app/new`.
+- Dev bypass now has a fixture for `/app/videos/dev-video`: a READY "your footage" video with a transcript, 6 scenes, a script, QC, a cost breakdown, and TikTok + YouTube posts. It is in `lib/queries/video-detail.ts`.
+- Set `DEV_BYPASS_PLAN=CREATOR` to see the paid-plan Publish drawer in bypass.
+- Screenshots at 1440 and 375 of the video page, the Scenes tab and the Publish drawer (TikTok block) are clean.
+- Fix: on mobile, post handles now hide in the Posts table so the "When" column fits.

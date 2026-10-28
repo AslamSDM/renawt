@@ -11,7 +11,7 @@ import type { Viewer } from "./viewer";
 export const CHANNEL_COOKIE = "remawt_channel";
 
 /** Dev bypass only: an in-memory channel so channel-scoped pages render their forms and empty states without a DB. */
-function bypassChannel(): Channel {
+export function bypassChannelFixture(): Channel {
   const skin = SKIN_PRESETS[0];
   const kit = IdentityKitSchema.parse({
     audience: "people in their 20s starting to save",
@@ -25,7 +25,7 @@ function bypassChannel(): Channel {
 }
 
 export async function listChannels(viewer: Viewer): Promise<Channel[]> {
-  if (viewer.bypass) return process.env.DEV_BYPASS_EMPTY === "1" ? [] : [bypassChannel()];
+  if (viewer.bypass) return process.env.DEV_BYPASS_EMPTY === "1" ? [] : [bypassChannelFixture()];
   return prisma.channel.findMany({ where: { userId: viewer.userId }, orderBy: { createdAt: "asc" } });
 }
 

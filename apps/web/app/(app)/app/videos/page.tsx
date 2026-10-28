@@ -56,7 +56,7 @@ export default async function VideosPage({ searchParams }: { searchParams: Promi
         where,
         orderBy: { createdAt: "desc" },
         take: 100,
-        select: { id: true, title: true, status: true, format: true, targetSec: true, thumbnailUrl: true, createdAt: true, progress: true, _count: { select: { publications: true } } },
+        select: { id: true, title: true, status: true, format: true, targetSec: true, thumbnailUrl: true, createdAt: true, source: true, sourceKind: true, sourceUrl: true, _count: { select: { publications: true } } },
       });
   const palette = parseKit(channel.kit)?.skin.palette;
   const filtered = !!status || !!format;
@@ -106,7 +106,7 @@ export default async function VideosPage({ searchParams }: { searchParams: Promi
             </TableHeader>
             <TableBody>
               {videos.map((v) => {
-                const src = readVideoSource(v.progress);
+                const src = readVideoSource(v);
                 return (
                   <TableRow key={v.id} className="relative">
                     <TableCell className="max-w-0 w-full">
