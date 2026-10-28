@@ -237,6 +237,7 @@ model Idea {
 enum VideoStatus {
   DRAFT
   QUEUED
+  TRANSCRIBING
   SCRIPTING
   VOICING
   PLANNING

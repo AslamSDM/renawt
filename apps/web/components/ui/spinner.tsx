@@ -1,24 +1,24 @@
-import React from "react";
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
-interface SpinnerProps {
-  size?: "sm" | "md" | "lg";
-  className?: string;
+const SIZES = { xs: "size-3", sm: "size-4", md: "size-5", lg: "size-8" } as const;
+
+export interface SpinnerProps extends React.ComponentProps<"span"> {
+  size?: keyof typeof SIZES;
+  /** Accessible label. Pass "" when the parent already announces loading. */
+  label?: string;
 }
 
-const sizeClasses = {
-  sm: "w-4 h-4 border-2",
-  md: "w-6 h-6 border-2",
-  lg: "w-10 h-10 border-4",
-};
-
-export function Spinner({ size = "md", className = "" }: SpinnerProps) {
+/** Hairline ring spinner. Inherits currentColor. */
+export function Spinner({ size = "sm", label = "Loading", className, ...props }: SpinnerProps) {
   return (
-    <div
-      className={`inline-block border-current border-t-transparent rounded-full animate-spin text-blue-600 ${sizeClasses[size]} ${className}`}
-      role="status"
-      aria-label="Loading"
-    >
-      <span className="sr-only">Loading...</span>
-    </div>
+    <span
+      role={label ? "status" : undefined}
+      aria-label={label || undefined}
+      className={cn("inline-block shrink-0 animate-spin rounded-full border border-current/25 border-t-current", SIZES[size], className)}
+      {...props}
+    />
   );
 }
+
+export default Spinner;

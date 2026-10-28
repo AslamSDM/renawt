@@ -14,12 +14,21 @@ export const ScriptSchema = z.object({
 export type Script = z.infer<typeof ScriptSchema>;
 
 export const WordTimingSchema = z.object({ w: z.string(), s: z.number(), e: z.number() });
+/** Transcript of user-supplied video/audio (Whisper word timestamps). Segments are LLM-chosen beats over the transcript. */
+export const TranscriptSchema = z.object({
+  text: z.string(),
+  language: z.string().default("en"),
+  durationMs: z.number(),
+  words: z.array(WordTimingSchema),
+  segments: z.array(z.object({ id: z.string(), startMs: z.number(), endMs: z.number(), text: z.string(), kind: z.enum(["speech", "silence", "filler"]).default("speech"), keep: z.boolean().default(true) })).default([]),
+});
+export type Transcript = z.infer<typeof TranscriptSchema>;
 export const VoiceTrackSchema = z.object({ audioUrl: z.string(), durationMs: z.number(), words: z.array(WordTimingSchema), provider: z.string(), voiceId: z.string() });
 export type VoiceTrack = z.infer<typeof VoiceTrackSchema>;
 
 export const SceneSchema = z.object({
   id: z.string(), beatId: z.string(), startMs: z.number(), durationMs: z.number(),
-  block: z.string(),                       // registry block / family
+  block: z.string(),                       // registry block / family; "video-segment" = play user footage [data.inMs,data.outMs] from assetId, "overlay-*" = motion graphic drawn over footage
   headline: z.string().optional(),
   body: z.string().optional(),
   data: z.record(z.string(), z.unknown()).optional(),   // chart series, stats, map points...
@@ -29,7 +38,7 @@ export const SceneSchema = z.object({
 export const ScenePlanSchema = z.object({ scenes: z.array(SceneSchema), totalMs: z.number(), musicMood: z.string(), sfxCues: z.array(z.object({ atMs: z.number(), cue: z.string() })).default([]) });
 export type ScenePlan = z.infer<typeof ScenePlanSchema>;
 
-export const AssetSchema = z.object({ id: z.string(), kind: z.enum(["image", "video", "icon", "mascot"]), url: z.string(), source: z.string(), license: z.string().optional(), prompt: z.string().optional(), width: z.number().optional(), height: z.number().optional() });
+export const AssetSchema = z.object({ id: z.string(), kind: z.enum(["image", "video", "icon", "mascot", "user-video", "user-audio"]), url: z.string(), source: z.string(), license: z.string().optional(), prompt: z.string().optional(), width: z.number().optional(), height: z.number().optional() });
 export type Asset = z.infer<typeof AssetSchema>;
 
 export const CompositionSchema = z.object({ indexHtml: z.string(), sceneFiles: z.array(z.object({ id: z.string(), fileName: z.string(), html: z.string() })), registryBlocks: z.array(z.string()).default([]), width: z.number().default(1080), height: z.number().default(1920), fps: z.number().default(30), durationMs: z.number() });
@@ -38,5 +47,5 @@ export type Composition = z.infer<typeof CompositionSchema>;
 export const ProgressEventSchema = z.object({ step: z.string(), status: z.enum(["started", "progress", "done", "failed", "skipped"]), message: z.string().optional(), at: z.string(), output: z.unknown().optional() });
 export type ProgressEvent = z.infer<typeof ProgressEventSchema>;
 
-export const PIPELINE_STEPS = ["ideate", "script", "voice", "plan", "assets", "compose", "lint", "render", "qc", "cuts"] as const;
+export const PIPELINE_STEPS = ["ingest", "transcribe", "ideate", "script", "voice", "plan", "assets", "compose", "lint", "render", "qc", "cuts"] as const;
 export type PipelineStep = (typeof PIPELINE_STEPS)[number];

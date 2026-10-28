@@ -27,26 +27,27 @@ export const viewport: Viewport = {
   themeColor: "#07070a",
 };
 
+const TITLE = "Remawt — Faceless videos that look designed";
+const DESCRIPTION =
+  "Pick a niche, build a channel identity once, and get motion-graphics shorts for TikTok, YouTube Shorts and Reels. Trend-driven ideas, scheduled posting, monetization-safe by design.";
+
 export const metadata: Metadata = {
   title: {
-    default: "Remawt — AI Video Creation Platform for SaaS",
+    default: TITLE,
     template: "%s | Remawt",
   },
-  description:
-    "Create professional product demos, explainer videos, and motion graphics in minutes. Remawt uses AI to transform your SaaS website or idea into stunning videos — no timeline editing required.",
+  description: DESCRIPTION,
   keywords: [
-    "AI video generator",
-    "SaaS demo video",
-    "product demo creator",
-    "AI motion graphics",
+    "faceless youtube channel",
+    "faceless tiktok",
+    "faceless video generator",
+    "ai shorts generator",
+    "motion graphics shorts",
     "explainer video maker",
-    "automated video production",
-    "SaaS marketing videos",
-    "product launch video",
-    "AI video creation platform",
-    "no-code video maker",
-    "animated video",
-    "video from URL",
+    "youtube shorts automation",
+    "tiktok scheduler",
+    "kinetic typography video",
+    "faceless content creator",
   ],
   authors: [{ name: "Remawt", url: "https://remawt.com" }],
   creator: "Remawt",
@@ -65,15 +66,14 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://remawt.com",
     siteName: "Remawt",
-    title: "Remawt — AI Video Creation Platform for SaaS",
-    description:
-      "Create professional product demos, explainer videos, and motion graphics in minutes with AI. No timeline editing required.",
+    title: TITLE,
+    description: "Faceless, not soulless. Motion-graphics shorts with a persistent channel identity, trend-driven ideas and scheduled posting.",
     images: [
       {
         url: "/logo/remwat full logo .svg",
         width: 1116,
         height: 479,
-        alt: "Remawt — AI-Powered Video Creation Platform",
+        alt: "Remawt",
       },
     ],
   },
@@ -81,9 +81,8 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@remawt",
     creator: "@remawt",
-    title: "Remawt — AI Video Creation Platform for SaaS",
-    description:
-      "Create professional product demos, explainer videos, and motion graphics in minutes with AI.",
+    title: TITLE,
+    description: "Faceless, not soulless. Explainer shorts that look designed, not generated.",
     images: ["/logo/remwat full logo .svg"],
   },
   robots: {
@@ -101,7 +100,7 @@ export const metadata: Metadata = {
 };
 
 import { Providers } from "@/components/Providers";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/toast";
 import { CookieConsent } from "@/components/CookieConsent";
 
 export default function RootLayout({
@@ -127,13 +126,13 @@ export default function RootLayout({
               applicationCategory: "MultimediaApplication",
               operatingSystem: "Web",
               description:
-                "AI-powered video creation platform for SaaS. Create professional product demos, explainer videos, and motion graphics in minutes.",
+                "Motion-graphics shorts for faceless channels: persistent channel identity, trend-driven ideas and scheduled posting to TikTok, YouTube Shorts and Reels.",
               offers: {
                 "@type": "AggregateOffer",
-                lowPrice: "20",
-                highPrice: "149",
+                lowPrice: "0",
+                highPrice: "199",
                 priceCurrency: "USD",
-                offerCount: 3,
+                offerCount: 5,
               },
               creator: {
                 "@type": "Organization",
@@ -149,7 +148,7 @@ export default function RootLayout({
         <Providers>
           {children}
           <CookieConsent />
-          <Toaster theme="dark" position="top-right" richColors />
+          <Toaster />
         </Providers>
       </body>
     </html>

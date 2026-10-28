@@ -66,3 +66,11 @@ Write a `ProgressEvent` to `Video.progress` at every step start/done/fail. Updat
 
 ## Design contract
 `docs/DESIGN.md` (written by design-foundation agent) defines tokens, spacing scale, containers, page shell, section rhythm, and the component list. All web pages MUST use `components/layout/*` primitives (PageShell, PageHeader, Section, Stack, Grid, Card) and the spacing scale. No ad-hoc paddings.
+
+## Addendum 2026-10-28 — three starting points for a video
+Every video starts from ONE of these (`VideoSource.kind` in `@remawt/shared` api.ts; `Video.sourceKind/sourceUrl/source/transcript` in DB):
+1. **idea** — a radar Idea (existing flow).
+2. **prompt** — user types an idea/topic in a box ("explain why index funds beat stock picking"). Engine: `ideate`-lite → script → full motion-graphics pipeline. Format auto-picked by the scriptwriter from `FORMATS` if not given.
+3. **video** — user uploads a recorded video (talking head / screen recording, any aspect). Engine: `ingest` (ffprobe, normalise to 1080x1920 with smart crop/blur-pad) → `transcribe` (Groq Whisper word timestamps → `Transcript`) → scriptwriter produces an *edit plan*: which transcript segments to keep (cut fillers/silence), where to insert motion-graphic **cut-ins** (full-screen HF scenes that visualise what was just said: stat, chart, list, headline) and **overlays** (lower-third, keyword pop, b-roll) at `insertDensity`. Speaker audio is the narration (`keepOriginalAudio`). Captions from transcript. `ScenePlan` interleaves `video-segment` scenes (data: {assetId, inMs, outMs, crop}) with HF scenes; `composeVideo` must support `video-segment` + `overlay-*` blocks.
+4. **audio** — user uploads a voice recording. Engine: `transcribe` → script = transcript beats → voice track = the uploaded audio (skip TTS) → full motion-graphics visuals as usual.
+Web: "New video" page has 3 tabs (Idea / Upload video / Upload voice) + the radar idea path. Uploads go direct-to-R2 via presigned PUT (`POST /api/app/uploads` → `CreateUploadRequest/Response` in shared api.ts; web owns this route; key `uploads/{userId}/{channelId}/{uuid}.{ext}`; max 2GB video / 200MB audio). Engine env: `GROQ_API_KEY` (whisper-large-v3-turbo, word timestamps), ffmpeg/ffprobe.

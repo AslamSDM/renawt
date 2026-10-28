@@ -31,7 +31,7 @@ CREATE TYPE "Platform" AS ENUM ('TIKTOK', 'YOUTUBE', 'INSTAGRAM', 'FACEBOOK', 'T
 CREATE TYPE "IdeaStatus" AS ENUM ('SUGGESTED', 'APPROVED', 'QUEUED', 'PRODUCED', 'DISMISSED');
 
 -- CreateEnum
-CREATE TYPE "VideoStatus" AS ENUM ('DRAFT', 'QUEUED', 'SCRIPTING', 'VOICING', 'PLANNING', 'COMPOSING', 'RENDERING', 'QC', 'READY', 'FAILED', 'PUBLISHED');
+CREATE TYPE "VideoStatus" AS ENUM ('DRAFT', 'QUEUED', 'TRANSCRIBING', 'SCRIPTING', 'VOICING', 'PLANNING', 'COMPOSING', 'RENDERING', 'QC', 'READY', 'FAILED', 'PUBLISHED');
 
 -- CreateEnum
 CREATE TYPE "SeriesMode" AS ENUM ('APPROVE', 'AUTO');
@@ -217,6 +217,10 @@ CREATE TABLE "Video" (
     "title" TEXT NOT NULL,
     "format" TEXT NOT NULL,
     "targetSec" INTEGER NOT NULL DEFAULT 45,
+    "sourceKind" TEXT NOT NULL DEFAULT 'idea',
+    "sourceUrl" TEXT,
+    "source" JSONB,
+    "transcript" JSONB,
     "status" "VideoStatus" NOT NULL DEFAULT 'DRAFT',
     "runId" TEXT,
     "progress" JSONB,
