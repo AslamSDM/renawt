@@ -75,6 +75,14 @@ ideas.post("/generate", handle(async (req, res) => {
 }));
 
 // ───── publications ─────
+/** Web target meta → stored Publication.meta (mapped to PublishMeta at publish time). Unknown keys pass through. */
+const TargetMeta = z.object({
+  title: z.string().optional(), caption: z.string().optional(), hashtags: z.array(z.string()).optional(),
+  aiLabel: z.boolean().optional(), aiGenerated: z.boolean().optional(), madeForKids: z.boolean().optional(),
+  privacy: z.enum(["public", "private", "friends", "followers", "unlisted"]).optional(),
+  allowComment: z.boolean().optional(), allowDuet: z.boolean().optional(), allowStitch: z.boolean().optional(),
+  commercial: z.boolean().optional(), brandedContent: z.boolean().optional(), needsApproval: z.boolean().optional(),
+}).passthrough();
 publications.post("/schedule", handle(async (req, res) => {
   const body = parse(SchedulePublicationRequest, req.body);
   const v = await ownedVideo(body.videoId, userId(res));
@@ -85,7 +93,7 @@ publications.post("/schedule", handle(async (req, res) => {
     if (!acct || acct.channelId !== v.channelId) throw new HttpError(400, `social account ${t.socialAccountId} not connected to this channel`);
     const scheduledAt = new Date(t.scheduledAt);
     if (Number.isNaN(scheduledAt.getTime())) throw new HttpError(400, `invalid scheduledAt ${t.scheduledAt}`);
-    const p = await db().publication.create({ data: { videoId: v.id, socialAccountId: acct.id, platform: acct.platform, scheduledAt, status: "SCHEDULED", meta: (t.meta ?? {}) as Prisma.InputJsonValue } });
+    const p = await db().publication.create({ data: { videoId: v.id, socialAccountId: acct.id, platform: acct.platform, scheduledAt, status: "SCHEDULED", meta: parse(TargetMeta, t.meta ?? {}) as Prisma.InputJsonValue } });
     ids.push(p.id);
   }
   if (ids.length) await inngest.send(ids.map((publicationId) => ({ name: EVENTS.publishScheduled, data: { publicationId } })));

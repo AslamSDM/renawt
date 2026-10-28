@@ -18,7 +18,7 @@ async function handler(req: NextRequest) {
     return NextResponse.json({ error: "No billing account yet. Subscribe to a plan first." }, { status: 404 });
   }
   try {
-    const url = await createPortalLink(sub.dodoCustomerId, `${req.nextUrl.origin}/app/billing`);
+    const url = await createPortalLink(sub.dodoCustomerId, `${req.nextUrl.origin}/app/settings/billing`);
     return NextResponse.json({ url });
   } catch (e) {
     console.error("[billing/portal]", e);

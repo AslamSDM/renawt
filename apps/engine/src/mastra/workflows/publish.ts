@@ -4,7 +4,10 @@
  */
 import { z } from "zod";
 import { Prisma, type Platform } from "@remawt/db";
-import { createWorkflow, createStep } from "../inngest.js";
+import { createWorkflow, createStep, inngest, EVENTS } from "../inngest.js";
+
+export const APPROVAL_RECHECK_MS = 15 * 60_000;
+export const APPROVAL_WINDOW_MS = 24 * 3600_000;
 import { db } from "../../lib/db.js";
 import { getPublisher } from "../../lib/publisher.js";
 import type { Platform as PubPlatform } from "@remawt/publisher";
@@ -14,7 +17,7 @@ const PubInput = z.object({ publicationId: z.string() });
 const Loaded = z.object({ publicationId: z.string(), scheduledAt: z.string() });
 const PubOut = z.object({ publicationId: z.string(), status: z.string(), externalUrl: z.string().optional() });
 
-interface PubMeta { title?: string; caption?: string; hashtags?: string[]; privacy?: "public" | "private" | "friends" | "followers" | "unlisted"; aiLabel?: boolean; aiGenerated?: boolean; madeForKids?: boolean; commercial?: boolean; needsApproval?: boolean; approved?: boolean; description?: string; tags?: string[]; [k: string]: unknown }
+interface PubMeta { title?: string; caption?: string; hashtags?: string[]; privacy?: "public" | "private" | "friends" | "followers" | "unlisted"; aiLabel?: boolean; aiGenerated?: boolean; madeForKids?: boolean; commercial?: boolean; brandedContent?: boolean; allowComment?: boolean; allowDuet?: boolean; allowStitch?: boolean; needsApproval?: boolean; approved?: boolean; description?: string; tags?: string[]; [k: string]: unknown }
 
 /** Build provider meta from Publication.meta overrides + Video.cuts per-platform metadata + QC labels. */
 export function publishMetaFor(platform: Platform, pubMeta: PubMeta, cuts: Record<string, { meta?: Record<string, unknown> }> | null, labels?: { syntheticMedia?: boolean; aigc?: boolean }) {
@@ -30,6 +33,10 @@ export function publishMetaFor(platform: Platform, pubMeta: PubMeta, cuts: Recor
     aiGenerated: pubMeta.aiGenerated ?? pubMeta.aiLabel ?? !!(labels?.syntheticMedia || labels?.aigc),
     madeForKids: pubMeta.madeForKids ?? false,
     commercial: pubMeta.commercial,
+    brandedContent: pubMeta.brandedContent,
+    allowComment: pubMeta.allowComment,
+    allowDuet: pubMeta.allowDuet,
+    allowStitch: pubMeta.allowStitch,
   };
 }
 
@@ -38,7 +45,15 @@ export async function publishNow(publicationId: string): Promise<z.infer<typeof 
   if (!pub) return { publicationId, status: "missing" };
   if (pub.status === "CANCELLED" || pub.status === "PUBLISHED") return { publicationId, status: pub.status };
   const meta = (pub.meta ?? {}) as PubMeta;
-  if (meta.needsApproval && !meta.approved) return { publicationId, status: "AWAITING_APPROVAL" };
+  if (meta.needsApproval === true) {
+    // Not approved yet: re-check every 15 min for up to 24h after the scheduled time, then give up.
+    if (Date.now() > pub.scheduledAt.getTime() + APPROVAL_WINDOW_MS) {
+      await db().publication.update({ where: { id: pub.id }, data: { status: "FAILED", error: "not approved" } });
+      return { publicationId, status: "FAILED" };
+    }
+    await inngest.send({ name: EVENTS.publishScheduled, data: { publicationId }, ts: Date.now() + APPROVAL_RECHECK_MS });
+    return { publicationId, status: "AWAITING_APPROVAL" };
+  }
   const videoUrl = pub.video.masterUrl;
   if (!videoUrl || pub.video.status !== "READY" && pub.video.status !== "PUBLISHED") {
     await db().publication.update({ where: { id: pub.id }, data: { status: "FAILED", error: "video not ready" } });

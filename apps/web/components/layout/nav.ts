@@ -26,7 +26,7 @@ export const APP_NAV: NavItem[] = [
 export const APP_NAV_FOOTER: NavItem[] = [{ label: "Channel settings", href: "/app/settings", icon: Settings2 }];
 
 export const APP_ROUTES = {
-  newVideo: "/app/videos/new",
+  newVideo: "/app/new",
   newChannel: "/onboarding",
   billing: "/app/settings/billing",
   pricing: "/pricing",

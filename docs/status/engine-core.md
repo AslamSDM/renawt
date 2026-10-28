@@ -62,3 +62,10 @@ Owner: engine-core. Scope: `apps/engine/**`. The code is not committed.
 - `Video.sourceKind/sourceUrl/source/transcript` are now real columns. `lib/videoSource.ts` reads and writes them directly; the `qc._source/_transcript` mirror and the casts are gone.
 - The critic is not given rendered keyframes yet. The API supports images, but no pre-render keyframe capture exists.
 - The TikTok 60s+ cut is only flagged (`cuts.tiktok.needsLongCut`). The Batch API / DeepSeek off-peak queueing for scheduled jobs is not implemented.
+
+## Follow-up (web-app requests 2–3)
+- `Video.progress` is append-only: atomic `jsonb ||` concat. No code path overwrites it, so the `source`/`queued` events the web wrote first are kept.
+- The `transcribe` step's `done` event now has `output: { transcript }`. The transcript is also saved to `Video.transcript`.
+- `/v1/publications/schedule` validates the target `meta`: title, caption, hashtags, aiLabel/aiGenerated, madeForKids, privacy, allowComment/Duet/Stitch, commercial, brandedContent. Unknown keys pass through. At publish time these map into `PublishMeta`. `aiGenerated` falls back to `aiLabel`, then to the QC labels.
+- Approval gate: a publication whose `meta.needsApproval === true` is never published. At wake time the engine checks it again, re-sends `publication/scheduled` (Inngest `ts` +15 min) and checks again, up to 24h after `scheduledAt`. After that it sets FAILED with the reason "not approved". APPROVE-mode series publications are created with `meta.needsApproval = true`.
+- Typecheck passes and 24/24 tests pass. The approval loop is not exercised against Inngest.

@@ -125,7 +125,7 @@ export async function runTranscribe(ctx: PipelineCtx): Promise<Transcript | null
     await addCost(v.id, "sttUsd", usd);
     await saveTranscript(v.id, { ...transcript, srcHash: media.srcHash });
     return { ...transcript, provider } as Transcript;
-  }, { output: (t) => ({ words: t.words.length, segments: t.segments.length, durationMs: t.durationMs }) });
+  }, { output: (t) => ({ transcript: t }) });
 }
 
 // ───────────────────────── script ─────────────────────────
