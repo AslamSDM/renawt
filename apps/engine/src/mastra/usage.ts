@@ -27,11 +27,20 @@ export function normalizeUsage(u: unknown): NormalizedUsage {
 
 export interface LlmCallRecord { label: string; model: string; usage?: unknown; latencyMs: number; ok: boolean; error?: string }
 
+type LlmCallListener = (r: { label: string; model: string; usd: number; ok: boolean; usage: NormalizedUsage }) => void;
+const listeners = new Set<LlmCallListener>();
+/** In-process hook (scripts/eval.ts uses it to total spend without a DB). Returns an unsubscribe fn. */
+export function onLlmCall(cb: LlmCallListener): () => void {
+  listeners.add(cb);
+  return () => listeners.delete(cb);
+}
+
 export function recordLlmCall(rec: LlmCallRecord): number {
   const ctx = getCallContext();
   const u = normalizeUsage(rec.usage);
   const provider = providerOf(rec.model);
   const usd = rec.ok ? estimateLlmUsd(provider, rec.model, u) ?? 0 : 0;
+  for (const cb of listeners) { try { cb({ label: rec.label, model: rec.model, usd, ok: rec.ok, usage: u }); } catch { /* listener errors never break a call */ } }
   log.info("llm_call", { label: rec.label, model: rec.model, in: u.inputTokens, out: u.outputTokens, cached: u.cachedTokens, usd, ms: rec.latencyMs, ok: rec.ok, videoId: ctx.videoId });
   if (has.db()) {
     db().llmCall.create({

@@ -14,7 +14,7 @@ export const MODELS = {
 
 export type ModelId = (typeof MODELS)[keyof typeof MODELS];
 export type Quality = "draft" | "standard" | "premium";
-export type ModelRole = "classify" | "draft" | "script" | "plan" | "compose" | "critic" | "premium" | "metadata" | "tag" | "ideate";
+export type ModelRole = "classify" | "draft" | "script" | "plan" | "compose" | "critic" | "premium" | "metadata" | "tag" | "ideate" | "repair";
 
 export interface ModelEntry { model: ModelId; maxRetries: number }
 
@@ -32,12 +32,15 @@ function chain(...ids: ModelId[]): ModelEntry[] {
  *  compose:   Sonnet → Opus      (premium: Opus → Sonnet)
  *  critic:    Sonnet (standard) | Opus (premium)
  *  premium:   Opus
+ *  repair:    Haiku → Sonnet   (scene data repair; tiny structured calls)
  */
 export function modelsFor(role: ModelRole, quality: Quality = "standard"): ModelEntry[] {
   switch (role) {
     case "classify":
     case "metadata":
       return chain(MODELS.haiku, MODELS.deepseek);
+    case "repair":
+      return chain(MODELS.haiku, MODELS.sonnet);
     case "tag":
     case "draft":
       return chain(MODELS.deepseek, MODELS.haiku);

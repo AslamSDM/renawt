@@ -1,7 +1,8 @@
 import type { Asset, Composition, FormatTemplate, IdentityKit, ScenePlan, Script, VisualSkin, VoiceTrack } from "@remawt/shared";
 import { z } from "zod";
 import { Anim } from "./anim";
-import { BLOCKS, BLOCK_SCHEMAS, NEEDS_HEADLINE, OVERLAY_SCHEMAS, isOverlayBlock, resolveBlockName, type BlockName } from "./blocks/index";
+import { isHanddrawn, prerenderSketch } from "./sketch/index";
+import { BLOCKS, BLOCK_SCHEMAS, NEEDS_HEADLINE, OVERLAY_SCHEMAS, isOverlayBlock, resolveBlockName, type BlockCtx, type BlockName } from "./blocks/index";
 import { OVERLAYS_ID, overlaysComposition, type OverlayItem } from "./overlays/index";
 import { CAPTIONS_ID, captionsComposition, chunkWords } from "./captions/index";
 import { buildAudio, type MusicInput, type SfxInput } from "./audio/index";
@@ -98,6 +99,7 @@ export function resolvePlan(input: Pick<ComposeInput, "plan" | "assets" | "voice
       if (!a) throw new ComposeError(`${p}.assetIds[${k}]`, `asset "${id}" not found in assets[]`);
       return a;
     });
+    if (block === "image" && !sceneAssets.some((a) => a.kind !== "video" && a.kind !== "user-video")) throw new ComposeError(`${p}.assetIds`, "image block needs an image asset (scene.assetIds[0] or data.assetId)");
     let durationMs = sc.durationMs;
     if (block === "video-segment") {
       const v = parsed.data as { inMs: number; outMs: number };
@@ -172,16 +174,24 @@ export function allocateScenes(format: FormatTemplate, totalMs: number, words: V
   return beats.map((b, i) => ({ beatId: b.id, block: b.block.split("|")[0], startMs: bounds[i], durationMs: bounds[i + 1] - bounds[i] }));
 }
 
+type SceneOpts = { s: ResolvedScene; index: number; count: number; skin: VisualSkin; kit: IdentityKit; width: number; height: number; fps: number; nextTransition?: string; nextBlock?: BlockName; videoHasAudio?: boolean };
+
+function blockCtx(opts: SceneOpts): BlockCtx {
+  const { s, skin, width, height, fps } = opts;
+  const motion = motionPreset(skin);
+  const isFirst = opts.index === 0, isLast = opts.index === opts.count - 1;
+  return {
+    sid: s.sid, index: opts.index, isFirst, isLast, headline: s.headline, body: s.body, data: s.data, durationS: s.durationMs / 1000,
+    width, height, skin, kit: opts.kit, motion, type: typeScale(width), box: contentBox(width, height), assets: s.assets, anim: new Anim(motion, { instant: isFirst }), fps, videoHasAudio: opts.videoHasAudio,
+  };
+}
+
 function sceneFile(opts: { s: ResolvedScene; index: number; count: number; skin: VisualSkin; kit: IdentityKit; width: number; height: number; fps: number; nextTransition?: string; nextBlock?: BlockName; videoHasAudio?: boolean }): string {
   const { s, skin, width, height, fps } = opts;
   const motion = motionPreset(skin);
   const isFirst = opts.index === 0, isLast = opts.index === opts.count - 1;
-  const anim = new Anim(motion, { instant: isFirst });
   const durationS = s.durationMs / 1000;
-  const out = BLOCKS[s.block]({
-    sid: s.sid, index: opts.index, isFirst, isLast, headline: s.headline, body: s.body, data: s.data, durationS,
-    width, height, skin, kit: opts.kit, motion, type: typeScale(width), box: contentBox(width, height), assets: s.assets, anim, fps, videoHasAudio: opts.videoHasAudio,
-  });
+  const out = BLOCKS[s.block](blockCtx(opts));
   const tAnim = new Anim(motion);
   // Footage cuts hard by default (an editor's cut); graphics scenes use the skin transition.
   const inKind = resolveTransition(s.transitionIn ?? (s.block === "video-segment" ? "cut" : undefined), motion);
@@ -228,6 +238,8 @@ export function composeVideo(input: ComposeInput): Composition {
   const totalMs = scenes.reduce((a, s) => a + s.durationMs, 0);
   const totalS = r3(totalMs / 1000);
 
+  // Hand-drawn skins: render every scene's Excalidraw SVG in one headless Chrome up front (cached).
+  if (isHanddrawn(skin)) prerenderSketch(scenes.map((s, i) => ({ block: s.block, ctx: blockCtx({ s, index: i, count: scenes.length, skin, kit: input.kit, width, height, fps, videoHasAudio }) })));
   const sceneFiles = scenes.map((s, i) => ({
     id: s.sid,
     fileName: `${s.sid}.html`,

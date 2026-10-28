@@ -136,7 +136,7 @@ export const headlineCard: BlockFn<z.infer<typeof HeadlineCardData>> = (ctx) => 
         <div id="${sid}-card" class="${sid}-card ${sid}-hcard">
           <div id="${sid}-top" class="${sid}-htop">${d.category ? `<span class="${sid}-cat">${esc(d.category)}</span>` : ""}<span class="${sid}-outlet">${esc(d.outlet)}</span></div>
           <div id="${sid}-hl" class="${sid}-display ${sid}-hh" style="font-size:${size}px">${ws.map((w) => `<span class="${sid}-hw">${esc(w)}</span>`).join(" ")}</div>
-          <div id="${sid}-meta" class="${sid}-hmeta"><span>${esc(d.date)}</span>${d.url ? `<span>${esc(domainOf(d.url))}</span>` : ""}</div>
+          <div id="${sid}-meta" class="${sid}-hmeta">${d.date ? `<span>${esc(d.date)}</span>` : ""}${d.url ? `<span>${esc(domainOf(d.url))}</span>` : ""}</div>
         </div>
       </div>`;
   const css = `

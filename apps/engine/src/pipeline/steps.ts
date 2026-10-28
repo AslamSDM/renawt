@@ -38,6 +38,8 @@ import { writeScript } from "../mastra/agents/scriptwriter.js";
 import { planScenes, PlannerOutputSchema, type PlannerOutput } from "../mastra/agents/planner.js";
 import { refineComposition } from "../mastra/agents/composer.js";
 import { critique } from "../mastra/agents/critic.js";
+import { repairScene } from "../mastra/agents/repair.js";
+import { composeWithRepair, ComposeRepairError, type RepairLogEntry } from "../lib/planning/repair.js";
 import { writeMetadata, fallbackMetadata } from "../mastra/agents/metadata.js";
 import type { Quality } from "../mastra/models.js";
 import { pickFormat, heuristicFormat, beatifyTranscript, planVideoEdit, type EditPlan } from "../mastra/agents/editor.js";
@@ -420,7 +422,7 @@ export async function runAssets(ctx: PipelineCtx): Promise<Asset[]> {
 
 // ───────────────────────── compose + review loop ─────────────────────────
 
-export interface ComposeState { ok: boolean; attempts: number; lint?: LintReport }
+export interface ComposeState { ok: boolean; attempts: number; lint?: LintReport; repair?: "clean" | "coerced" | "llm" }
 
 function composeInputs(v: VideoWithChannel) {
   const script = ScriptSchema.parse(v.script);
@@ -439,11 +441,25 @@ export async function runCompose(ctx: PipelineCtx): Promise<ComposeState> {
   const v = await loadVideo(ctx.videoId);
   return trackStep(v.id, "compose", () => stepContext(v, "compose", async () => {
     const i = composeInputs(v);
-    const baseline = CompositionSchema.parse(hfkit.composeVideo({
+    const res = await composeWithRepair({
       script: i.script, voice: i.voice, plan: i.plan, kit: i.kit, assets: i.assets,
       music: i.music ? { url: i.music.url, bpm: i.music.bpm, durationMs: i.music.durationMs } : null,
       sfx: i.sfx, width: 1080, height: 1920, fps: 30, watermark: ctx.watermark, media: i.media,
-    }));
+    }, {
+      repairScene: has.anthropic() ? repairScene : null,
+      onEvent: (message) => appendProgress(v.id, { step: "compose", status: "progress", message }),
+    }).catch(async (e) => {
+      if (e instanceof ComposeRepairError) await saveRepairs(v, { outcome: "failed", firstError: e.firstError, repairs: e.repairs });
+      throw e;
+    });
+    if (res.outcome !== "clean") {
+      // Persist the repaired plan so lint/review/rerender use the same scenes.
+      const stored = (v.scenes ?? {}) as StoredScenes;
+      await db().video.update({ where: { id: v.id }, data: { scenes: json({ ...stored, plan: res.plan }) } });
+      await saveRepairs(v, { outcome: res.outcome, firstError: res.firstError, repairs: res.repairs });
+      i.plan = res.plan;
+    }
+    const baseline = CompositionSchema.parse(res.comp);
     let comp = baseline;
     let lint = hfkit.lintComposition(baseline);
     if (ctx.quality !== "draft" && has.anthropic()) {
@@ -456,8 +472,13 @@ export async function runCompose(ctx: PipelineCtx): Promise<ComposeState> {
       }
     }
     await db().video.update({ where: { id: v.id }, data: { composition: json(comp) } });
-    return { ok: lint.ok, attempts: 0, lint };
-  }), { output: (s) => ({ lintOk: s.ok, errors: s.lint?.errors.length ?? 0 }) });
+    return { ok: lint.ok, attempts: 0, lint, repair: res.outcome };
+  }), { output: (s) => ({ lintOk: s.ok, errors: s.lint?.errors.length ?? 0, repair: s.repair }) });
+}
+
+async function saveRepairs(v: VideoWithChannel, r: { outcome: string; firstError?: string; repairs: RepairLogEntry[] }) {
+  const cur = ((await db().video.findUnique({ where: { id: v.id }, select: { qc: true } }))?.qc ?? {}) as Record<string, unknown>;
+  await db().video.update({ where: { id: v.id }, data: { qc: json({ ...cur, repairs: { outcome: r.outcome, firstError: r.firstError ?? null, at: new Date().toISOString(), log: r.repairs.slice(0, 200) } }) } });
 }
 
 /** One lint/critic iteration. Loop condition: ok || attempts >= 2. */

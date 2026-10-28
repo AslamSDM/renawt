@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { lenient } from "./coerce";
 
 /**
  * `scene.data` schema for every block. The engine's composer agent fills these; composeVideo
@@ -25,7 +26,7 @@ export const DiagramData = z.object({
     x: num.min(0).max(1).optional().describe("optional manual position 0..1 inside the content box"),
     y: num.min(0).max(1).optional(),
   })).min(1).max(8),
-  edges: z.array(z.object({ from: text(30), to: text(30), label: z.string().max(24).optional() })).max(12).default([]),
+  edges: z.array(z.object({ from: text(30).describe("node id"), to: text(30).describe("node id"), label: z.string().max(24).optional() })).max(12).default([]),
 });
 
 export const CounterData = z.object({
@@ -92,7 +93,7 @@ export const SourceCardData = z.object({
 export const HeadlineCardData = z.object({
   outlet: text(40),
   headline: z.string().min(1).max(140).optional().describe("defaults to scene.headline"),
-  date: text(24),
+  date: z.string().min(1).max(24).optional(),
   url: z.string().max(200).optional(),
   category: z.string().max(20).optional(),
 });
@@ -150,19 +151,27 @@ export const OverlayKeywordData = z.object({ text: text(32), atMs: num.min(0).op
 export const OverlayStatData = z.object({ value: text(14), label: text(48) });
 export const OverlayProgressData = z.object({ current: z.number().int().min(1), total: z.number().int().min(1).max(12), label: z.string().max(40).optional() });
 
-export const OVERLAY_SCHEMAS = {
+/** Strict overlay schemas (renderer contract). */
+export const STRICT_OVERLAY_SCHEMAS = {
   "overlay-lower-third": OverlayLowerThirdData,
   "overlay-keyword": OverlayKeywordData,
   "overlay-stat": OverlayStatData,
   "overlay-progress": OverlayProgressData,
 } as const;
-export type OverlayName = keyof typeof OVERLAY_SCHEMAS;
-export const OVERLAY_NAMES = Object.keys(OVERLAY_SCHEMAS) as OverlayName[];
+export type OverlayName = keyof typeof STRICT_OVERLAY_SCHEMAS;
+export const OVERLAY_NAMES = Object.keys(STRICT_OVERLAY_SCHEMAS) as OverlayName[];
+type LenientMap<M extends Record<string, z.ZodType>> = { [K in keyof M]: z.ZodPipe<z.ZodTransform<unknown, unknown>, M[K]> };
+function lenientMap<M extends Record<string, z.ZodType>>(m: M): LenientMap<M> {
+  return Object.fromEntries(Object.entries(m).map(([k, s]) => [k, lenient(k, s)])) as LenientMap<M>;
+}
+/** Lenient overlay schemas: coerce obvious LLM shapes (see ./coerce.ts), then validate strictly. */
+export const OVERLAY_SCHEMAS = lenientMap(STRICT_OVERLAY_SCHEMAS);
 export function isOverlayBlock(raw: string): raw is OverlayName {
   return String(raw).trim().toLowerCase() in OVERLAY_SCHEMAS;
 }
 
-export const BLOCK_SCHEMAS = {
+/** Strict block data schemas (renderer contract; used for prompt shapes). */
+export const STRICT_BLOCK_SCHEMAS = {
   "kinetic-headline": KineticHeadlineData,
   diagram: DiagramData,
   counter: CounterData,
@@ -181,8 +190,14 @@ export const BLOCK_SCHEMAS = {
   "video-segment": VideoSegmentData,
 } as const;
 
-export type BlockName = keyof typeof BLOCK_SCHEMAS;
-export const BLOCK_NAMES = Object.keys(BLOCK_SCHEMAS) as BlockName[];
+/**
+ * Lenient block data schemas used by composeVideo: bare strings → {label}, "$4,000" → 4000, a bare number
+ * series → {values}, key synonyms, too-long text truncated, extra keys stripped. Then the strict schema.
+ */
+export const BLOCK_SCHEMAS = lenientMap(STRICT_BLOCK_SCHEMAS);
+
+export type BlockName = keyof typeof STRICT_BLOCK_SCHEMAS;
+export const BLOCK_NAMES = Object.keys(STRICT_BLOCK_SCHEMAS) as BlockName[];
 
 /** Whether a block needs scene.headline (validated in composeVideo). */
 export const NEEDS_HEADLINE: Partial<Record<BlockName, boolean>> = { "kinetic-headline": true };

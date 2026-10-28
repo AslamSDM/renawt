@@ -6,16 +6,20 @@
  *
  * Steps whose provider keys are missing are skipped with a canned stand-in (script without ANTHROPIC_API_KEY,
  * narration without ELEVENLABS_API_KEY/DEEPINFRA_API_KEY, render without R2/ffmpeg).
+ * --offline never touches a database: scripts/_offline-env.ts removes DATABASE_URL & co. before anything loads.
+ * Compose goes through the same repair path as runCompose (lenient schemas → coercePlan → Haiku repairScene).
  */
-import "dotenv/config";
+import "./_offline-env.js"; // must stay first: strips DB URLs in --offline mode
 import { writeFileSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { IdentityKitSchema, SKIN_PRESETS, getFormat, CompositionSchema, type Script, type VoiceTrack, type IdentityKit } from "@remawt/shared";
+import { IdentityKitSchema, SKIN_PRESETS, getFormat, CompositionSchema, type Script, type IdentityKit } from "@remawt/shared";
 import { has } from "../src/lib/env.js";
 import { estimateWordTimings } from "../src/lib/captions.js";
-import { alignScenes } from "../src/lib/planning/allocate.js";
 import { hfkit } from "../src/lib/hfkit.js";
+import { composeWithRepair } from "../src/lib/planning/repair.js";
+import { repairScene } from "../src/mastra/agents/repair.js";
+import { estimatedVoice, alignDraft } from "./_offline-pipeline.js";
 import { writeScript } from "../src/mastra/agents/scriptwriter.js";
 import { planScenes } from "../src/mastra/agents/planner.js";
 
@@ -52,16 +56,19 @@ async function offlineRun() {
   const script = has.anthropic() ? await writeScript({ kit, format, niche: "science", targetSec: 35, idea }, "standard") : CANNED;
   say("script", { title: script.title, lines: script.lines.length, sources: script.sources.length, llm: has.anthropic() });
   writeFileSync(join(out, "script.json"), JSON.stringify(script, null, 2));
-  const text = script.lines.map((l) => l.text).join(" ");
-  const durationMs = Math.round(script.estimatedSec * 1000);
-  const voice: VoiceTrack = { audioUrl: "", durationMs, words: estimateWordTimings(text, durationMs), provider: "estimate", voiceId: "" };
+  const voice = estimatedVoice(script);
   const draft = has.anthropic() ? await planScenes({ script, voice, format, kit }, "standard") : { musicMood: "curious", scenes: script.lines.map((l, i) => ({ id: `s${i + 1}`, beatId: l.beatId, block: "kinetic-headline", headline: l.onScreen ?? l.text.split(" ").slice(0, 5).join(" ") })) };
-  say("plan", { scenes: draft.scenes.length, mood: draft.musicMood });
-  const timed = alignScenes({ scenes: draft.scenes, lines: script.lines, beats: format.beats, words: voice.words, totalMs: durationMs, beatMs: 60000 / 120 });
-  const plan = { scenes: draft.scenes.map((s) => ({ ...s, ...timed.find((t) => t.id === s.id)!, assetIds: [] as string[] })), totalMs: durationMs, musicMood: draft.musicMood, sfxCues: [] };
+  say("plan", { scenes: draft.scenes.length, mood: draft.musicMood, blocks: draft.scenes.map((s) => s.block).join(",") });
+  const plan = alignDraft(draft, script, voice, format);
   writeFileSync(join(out, "plan.json"), JSON.stringify(plan, null, 2));
   try {
-    const comp = CompositionSchema.parse(hfkit.composeVideo({ script, voice, plan, kit, assets: [], music: null, sfx: [], watermark: true }));
+    const res = await composeWithRepair({ script, voice, plan, kit, assets: [], music: null, sfx: [], watermark: true }, {
+      repairScene: has.anthropic() ? repairScene : null,
+      onEvent: (m) => say(`compose: ${m}`),
+    });
+    say("compose", { outcome: res.outcome, coercions: res.repairs.filter((r) => r.stage === "coerce").length, llmRepairs: res.repairs.filter((r) => r.stage === "llm").length, firstError: res.firstError });
+    if (res.outcome !== "clean") writeFileSync(join(out, "plan.repaired.json"), JSON.stringify({ plan: res.plan, repairs: res.repairs }, null, 2));
+    const comp = CompositionSchema.parse(res.comp);
     const lint = hfkit.lintComposition(comp);
     writeFileSync(join(out, "composition.json"), JSON.stringify(comp, null, 2));
     say("compose+lint", { scenes: comp.sceneFiles.length, ok: lint.ok, errors: lint.errors.slice(0, 5), warnings: lint.warnings.length });

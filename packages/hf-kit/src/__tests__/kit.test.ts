@@ -206,7 +206,8 @@ test("prompts include every block schema and the beat slots", () => {
   const f = FORMATS[1];
   const sys = buildSystemPrompt({ kit, format: f, width: 1080, height: 1920, durationMs: 45000 });
   for (const b of BLOCK_NAMES) assert.ok(sys.includes(`### ${b}`), b);
-  assert.ok(sys.includes("data schema"));
+  assert.ok(sys.includes("data shape"));
+  assert.ok(sys.includes("must match the block's example shape exactly"));
   const sc = demoScript(f);
   const user = buildScenePlanPrompt({ script: sc, voice: fakeVoice(sc, 45000), format: f, kit });
   for (const b of f.beats) assert.ok(user.includes(`- ${b.id}: start`), b.id);

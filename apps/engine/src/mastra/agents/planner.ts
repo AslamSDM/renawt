@@ -2,6 +2,8 @@
  * Visual planner: script + (estimated or real) word timings + format → scene list.
  * The LLM decides content per scene (block, headline, data, asset need, sfx cue); timings are computed
  * deterministically afterwards (lib/planning/allocate.ts) from beat shares + real word boundaries.
+ * Prompts come from hf-kit (single source): `buildSystemPrompt({output:"draft"})` carries the block catalogue
+ * with shapes generated from the zod schemas, sent as a cacheable system block; `buildScenePlanPrompt` is the user turn.
  */
 import { z } from "zod";
 import type { Script, VoiceTrack, FormatTemplate, IdentityKit } from "@remawt/shared";
@@ -10,13 +12,20 @@ import type { Quality } from "../models.js";
 import { hfkit } from "../../lib/hfkit.js";
 import { SFX_CUES } from "../../lib/audio/sfx.js";
 
+/** LLMs sometimes send data as a JSON string or a bare array; normalise to an object so validation doesn't burn a retry. */
+const PlannedData = z.preprocess((v) => {
+  if (typeof v === "string") { try { const p = JSON.parse(v); return p && typeof p === "object" && !Array.isArray(p) ? p : {}; } catch { return {}; } }
+  if (Array.isArray(v)) return { items: v };
+  return v === null ? undefined : v;
+}, z.record(z.string(), z.unknown()).optional());
+
 export const PlannedSceneSchema = z.object({
   id: z.string(),
   beatId: z.string(),
   block: z.string(),
   headline: z.string().optional(),
   body: z.string().optional(),
-  data: z.record(z.string(), z.unknown()).optional(),
+  data: PlannedData,
   asset: z.object({ kind: z.enum(["none", "image", "stock", "stock-video", "icon"]), prompt: z.string().optional(), query: z.string().optional() }).optional(),
   transitionIn: z.string().optional(),
   sfx: z.string().optional(),
@@ -27,39 +36,36 @@ export const PlannerOutputSchema = z.object({
 });
 export type PlannerOutput = z.infer<typeof PlannerOutputSchema>;
 
+/** Engine-specific rules appended to hf-kit's system prompt (asset + sfx policy). */
+export const PLANNER_RULES = [
+  `"asset": choose {"kind":"none"} when typography/diagram/chart is enough (preferred); "icon" for a simple pictogram (prompt); "image" for an illustrative AI image (prompt, no text, no real people; use block "image"); "stock"/"stock-video" for real-world footage (short search query). At most one asset per scene and at most 4 non-"none" assets per video.`,
+  `"sfx": optional cue name for a scene's entrance, on only 20–40% of scenes. Allowed cues: ${Object.keys(SFX_CUES).join(", ")}.`,
+  `"musicMood": one of upbeat, calm, dramatic, curious, serious, playful.`,
+  `Scene ids are "s1", "s2", … in order. Every scene's beatId is one of the format's beat ids. headline ≤ 7 words on non-headline blocks; body ≤ 14 words.`,
+  `Charts and evidence scenes (chart, source-card, counter with a statistic) must name the source (data.source or the source-card's source).`,
+];
+
 export const plannerSpec: AgentSpec = {
   id: "planner",
   name: "Visual planner",
   role: "plan",
-  instructions: `You plan the visuals of a vertical 1080x1920 faceless explainer built from HyperFrames registry blocks.
-- Produce scenes in narration order. Every scene has a beatId from the format, and uses the beat's suggested block family unless a different family clearly serves the line better.
-- One idea per scene; 1–3 scenes per beat; a new scene roughly every 2–5 seconds of narration.
-- headline ≤ 7 words; body ≤ 14 words. Put structured data in "data" (e.g. chart series {labels:[], values:[], unit, source}, stats {left:{label,value}, right:{...}}, list items, map points, source {title,url}).
-- Charts and evidence scenes MUST include the source name in data.source.
-- asset: choose "none" when typography/diagram/chart is enough (preferred); "icon" for a simple pictogram (prompt); "image" for an illustrative AI image (prompt, no text, no real people); "stock"/"stock-video" for real-world footage (short search query). At most one asset per scene, and at most 4 non-"none" assets per video.
-- sfx: optional cue name for a scene's entrance, only on 20–40% of scenes. Allowed cues: ${Object.keys(SFX_CUES).join(", ")}.
-- musicMood: one of upbeat, calm, dramatic, curious, serious, playful.
-- Scene ids: "s1", "s2", ... Return JSON only.`,
+  // The block catalogue (generated shapes + valid examples) comes from hf-kit's cached system prompt; see buildPlannerSystem.
+  instructions: `You are the visual planner for a vertical 1080x1920 faceless explainer. Follow the system prompt's block catalogue exactly: for every scene, "data" must match that block's example shape exactly. Return JSON only.`,
 };
 
+export function buildPlannerSystem(opts: { format: FormatTemplate; kit: IdentityKit; durationMs: number }): string {
+  return hfkit.buildSystemPrompt({ kit: opts.kit, format: opts.format, width: 1080, height: 1920, durationMs: opts.durationMs, output: "draft", extraRules: PLANNER_RULES });
+}
+
 export function buildPlanPrompt(opts: { script: Script; voice: VoiceTrack; format: FormatTemplate; kit: IdentityKit }): string {
-  // Prefer hf-kit's prompt builder (it knows the block registry); fall back to a local one.
-  try {
-    return hfkit.buildScenePlanPrompt(opts);
-  } catch { /* fall back to the local prompt below */ }
-  const { script, format, kit } = opts;
-  return [
-    `FORMAT: ${format.name}. Beats: ${format.beats.map((b) => `${b.id}→${b.block}`).join(", ")}. Visual hints: ${format.visualHints.join(", ")}.`,
-    `SKIN: ${kit.skin.name} (motion ${kit.skin.motion}, shapes ${kit.skin.shapes}, captions ${kit.skin.captionStyle}).`,
-    `NARRATION DURATION: ${Math.round(opts.voice.durationMs / 100) / 10}s`,
-    `SCRIPT LINES:\n${script.lines.map((l, i) => `${i + 1}. [${l.beatId}] "${l.text}"${l.onScreen ? ` | on-screen: ${l.onScreen}` : ""}${l.visualNote ? ` | visual: ${l.visualNote}` : ""}`).join("\n")}`,
-    script.sources.length ? `SOURCES: ${script.sources.map((s) => `${s.title} (${s.url})`).join("; ")}` : "",
-    `Return {scenes:[{id, beatId, block, headline, body, data, asset:{kind,prompt,query}, transitionIn, sfx}], musicMood}.`,
-  ].filter(Boolean).join("\n\n");
+  return hfkit.buildScenePlanPrompt({ ...opts, output: "draft" });
 }
 
 export async function planScenes(opts: { script: Script; voice: VoiceTrack; format: FormatTemplate; kit: IdentityKit }, quality: Quality): Promise<PlannerOutput> {
-  const out = await generateStructured({ spec: plannerSpec, quality, label: "plan", schema: PlannerOutputSchema, prompt: buildPlanPrompt(opts), maxOutputTokens: 12000 });
+  const out = await generateStructured({
+    spec: plannerSpec, quality, label: "plan", schema: PlannerOutputSchema, prompt: buildPlanPrompt(opts),
+    cachedSystem: buildPlannerSystem({ format: opts.format, kit: opts.kit, durationMs: opts.voice.durationMs }), maxOutputTokens: 12000,
+  });
   // Normalise: unique ids, only known beat ids (unknown → nearest previous beat).
   const beatIds = new Set(opts.format.beats.map((b) => b.id));
   let lastBeat = opts.format.beats[0].id;
