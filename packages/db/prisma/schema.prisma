@@ -114,6 +114,7 @@ model Channel {
   niche     String // niche slug from @remawt/shared NICHES
   kit       Json // IdentityKit (zod schema in @remawt/shared)
   timezone  String        @default("UTC")
+  publisherProfileId String?               // aggregator-side profile id (Post for Me / Upload-Post)
   status    ChannelStatus @default(DRAFT)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
@@ -257,6 +258,10 @@ model Video {
   title        String
   format       String
   targetSec    Int           @default(45) // 30–90
+  sourceKind  String      @default("idea")  // idea | prompt | video | audio
+  sourceUrl   String?                        // R2 URL of uploaded footage / voice recording
+  source      Json?                          // VideoSource (shared api.ts)
+  transcript  Json?                          // Transcript (shared pipeline.ts) for video/audio sources
   status       VideoStatus   @default(DRAFT)
   runId        String? // Mastra/Inngest run id
   progress     Json? // [{step, status, message, at, output?}]

@@ -125,6 +125,7 @@ CREATE TABLE "Channel" (
     "niche" TEXT NOT NULL,
     "kit" JSONB NOT NULL,
     "timezone" TEXT NOT NULL DEFAULT 'UTC',
+    "publisherProfileId" TEXT,
     "status" "ChannelStatus" NOT NULL DEFAULT 'DRAFT',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
