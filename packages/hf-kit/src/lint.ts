@@ -6,6 +6,8 @@ export interface LintResult { ok: boolean; errors: string[]; warnings: string[] 
 /** GSAP properties the kit (and the legacy composer contract) allows on DOM targets. */
 export const ALLOWED_PROPS = new Set([
   "opacity", "x", "y", "scale", "scaleX", "scaleY", "rotation", "color", "backgroundColor", "clipPath", "letterSpacing", "filter",
+  // hand-drawn (sketch) skins draw SVG strokes on with a dash offset
+  "strokeDashoffset",
 ]);
 /** Tween control keys (not animated properties). */
 const CONTROL_KEYS = new Set([

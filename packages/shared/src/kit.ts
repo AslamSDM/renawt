@@ -22,6 +22,8 @@ export const VisualSkinSchema = z.object({
   shapes: z.enum(["sharp", "rounded", "pill"]).default("sharp"),
   intro: z.object({ enabled: z.boolean(), sting: z.string().optional() }).default({ enabled: false }),
   outro: z.object({ enabled: z.boolean(), cta: z.string().optional() }).default({ enabled: false }),
+  /** Hand-drawn (Excalidraw-style) rendering: blocks draw stroke by stroke, text is hand-written one line at a time. */
+  handdrawn: z.boolean().optional(),
 });
 export type VisualSkin = z.infer<typeof VisualSkinSchema>;
 
@@ -75,7 +77,7 @@ export const IdentityKitSchema = z.object({
 });
 export type IdentityKit = z.infer<typeof IdentityKitSchema>;
 
-/** Six starter skins. Previews are rendered per channel with niche-specific copy. */
+/** Starter skins (six flat + two hand-drawn). Previews are rendered per channel with niche-specific copy. */
 export const SKIN_PRESETS: VisualSkin[] = [
   { id: "ledger", name: "Ledger", palette: { bg: "#07070a", surface: "#14141a", ink: "#f5f5f7", accent: "#3b82f6" }, type: { display: "Inter", body: "Inter", mono: "JetBrains Mono" }, motion: "editorial", captionStyle: "bottom", grain: false, shapes: "sharp", intro: { enabled: true }, outro: { enabled: true } },
   { id: "paper", name: "Paper", palette: { bg: "#f6f1e7", surface: "#ffffff", ink: "#1a1a1a", accent: "#d14b2a" }, type: { display: "EB Garamond", body: "Inter" }, motion: "smooth", captionStyle: "centered", grain: true, shapes: "sharp", intro: { enabled: false }, outro: { enabled: true } },
@@ -83,4 +85,7 @@ export const SKIN_PRESETS: VisualSkin[] = [
   { id: "chalk", name: "Chalk", palette: { bg: "#1f2a24", surface: "#27352e", ink: "#f2f2e9", accent: "#ffd166" }, type: { display: "Patrick Hand", body: "Inter" }, motion: "playful", captionStyle: "bottom", grain: true, shapes: "rounded", intro: { enabled: false }, outro: { enabled: true } },
   { id: "terminal", name: "Terminal", palette: { bg: "#0a0f0a", surface: "#101810", ink: "#d7ffd7", accent: "#39ff14" }, type: { display: "JetBrains Mono", body: "JetBrains Mono", mono: "JetBrains Mono" }, motion: "snappy", captionStyle: "minimal", grain: false, shapes: "sharp", intro: { enabled: true }, outro: { enabled: false } },
   { id: "pastel", name: "Pastel", palette: { bg: "#fdf6ff", surface: "#ffffff", ink: "#2b2140", accent: "#7c5cff", accent2: "#ffb3c7" }, type: { display: "Fraunces", body: "Inter" }, motion: "smooth", captionStyle: "centered", grain: false, shapes: "pill", intro: { enabled: false }, outro: { enabled: true } },
+  // Hand-drawn Excalidraw look (3Blue1Brown palette on #1F2126, Excalifont). Embedded font; Kalam is the Google fallback.
+  { id: "sketch", name: "Sketch", palette: { bg: "#1F2126", surface: "#2A2D34", ink: "#ECECEC", accent: "#58C4DD", accent2: "#F0AC5F" }, type: { display: "Excalifont", body: "Excalifont" }, motion: "playful", captionStyle: "minimal", grain: true, shapes: "rounded", intro: { enabled: false }, outro: { enabled: true }, handdrawn: true },
+  { id: "sketch-paper", name: "Sketch Paper", palette: { bg: "#FAF8F3", surface: "#F1ECE1", ink: "#1E1E1E", accent: "#1971C2", accent2: "#E8590C" }, type: { display: "Excalifont", body: "Excalifont" }, motion: "playful", captionStyle: "minimal", grain: true, shapes: "rounded", intro: { enabled: false }, outro: { enabled: true }, handdrawn: true },
 ];

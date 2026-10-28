@@ -2,6 +2,16 @@ import type { VisualSkin, VoiceTrack } from "@remawt/shared";
 import { Anim } from "../anim";
 import { MOTION, captionBand, mixHex, sceneBaseCss } from "../skin/index";
 import { esc, fitFontSize, r3 } from "../util";
+import { isHanddrawn } from "../skin/sketch";
+import { mulberry32 } from "../sketch/board";
+
+/** Static wobbly double-stroke underline (seeded), for the active karaoke word in hand-drawn skins. */
+function roughUnderline(seed: number): string {
+  const r = mulberry32(seed);
+  const j = (a: number) => (r() - 0.5) * a;
+  const pass = () => `M${2 + j(2)} ${6 + j(3)} Q ${30 + j(8)} ${3 + j(4)} ${55 + j(6)} ${6 + j(3)} T ${98 + j(2)} ${6 + j(3)}`;
+  return `${pass()} ${pass()}`;
+}
 
 type Word = VoiceTrack["words"][number];
 
@@ -67,7 +77,8 @@ export function captionsComposition(opts: { chunks: CaptionChunk[]; skin: Visual
 
   const groups = chunks.map((c, i) => {
     const size = fitFontSize(style === "karaoke" ? c.text.toUpperCase() : c.text, { maxWidth: band.w - 80, maxLines: 2, base, min: 44, factor: big ? 0.6 : 0.55 });
-    const ws = c.words.map((w, j) => `<span id="${sid}-g${i}w${j}" class="${sid}-w">${esc(w.w)}</span>`).join(" ");
+    const rough = style === "karaoke" && isHanddrawn(skin);
+    const ws = c.words.map((w, j) => `<span id="${sid}-g${i}w${j}" class="${sid}-w">${esc(w.w)}${rough ? `<svg id="${sid}-g${i}u${j}" class="${sid}-ul" viewBox="0 0 100 12" preserveAspectRatio="none"><path d="${roughUnderline(i * 97 + j + 1)}" fill="none" stroke="${skin.palette.accent2 ?? skin.palette.accent}" stroke-width="2.4" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>` : ""}</span>`).join(" ");
     return `<div id="${sid}-g${i}" class="${sid}-g"><span class="${sid}-box" style="font-size:${size}px">${ws}</span></div>`;
   }).join("\n    ");
 
@@ -83,6 +94,12 @@ export function captionsComposition(opts: { chunks: CaptionChunk[]; skin: Visual
         const sel = `#${sid}-g${i}w${j}`;
         anim.to(sel, { color: skin.palette.accent, scale: 1.08, duration: 0.06, ease: "power1.out" }, Math.max(s, w.s) / 1000);
         anim.to(sel, { color: ink, scale: 1, duration: 0.1, ease: "power1.out" }, Math.max(s, w.e) / 1000);
+        if (isHanddrawn(skin)) {
+          // Hand-drawn skins: a rough marker underline is drawn under the active word.
+          const ul = `#${sid}-g${i}u${j}`;
+          anim.fromTo(ul, { scaleX: 0, transformOrigin: "0% 50%" }, { scaleX: 1, duration: 0.14, ease: "power1.out", transformOrigin: "0% 50%" }, Math.max(s, w.s) / 1000);
+          anim.set(ul, { opacity: 0 }, Math.max(s, w.e) / 1000);
+        }
       });
     }
   });
@@ -100,7 +117,8 @@ export function captionsComposition(opts: { chunks: CaptionChunk[]; skin: Visual
     ${sceneBaseCss(sid, skin, width, height).replace(new RegExp(`#${sid}-bg[^\\n]*\\n`), "")}
     .${sid}-g { position: absolute; left: ${band.x}px; top: ${band.y}px; width: ${band.w}px; height: ${band.h}px; display: flex; align-items: center; justify-content: center; text-align: center; overflow: visible; }
     .${sid}-box { display: inline-block; font-family: ${font}; max-width: ${band.w - 40}px; }
-    .${sid}-w { display: inline-block; }
+    .${sid}-w { display: inline-block; position: relative; }
+    .${sid}-ul { position: absolute; left: -4%; width: 108%; bottom: -0.1em; height: 0.28em; overflow: visible; }
     ${styleCss[style] ?? styleCss.bottom}
   </style>
   <div id="root" data-composition-id="${sid}" data-width="${width}" data-height="${height}">

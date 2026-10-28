@@ -35,3 +35,10 @@ export type { BlockCtx, BlockOutput, BlockFn } from "./types";
 export { iconSvg, iconExists } from "./icons";
 export { resolveRegions } from "./map";
 export { KEN_BURNS_MAX } from "./media";
+export * from "./coerce";
+
+// Hand-drawn skins (skin.handdrawn): blocks with a sketch variant render through src/sketch.
+import { renderSketchBlock } from "../sketch/index";
+for (const [name, fn] of Object.entries(BLOCKS) as Array<[BlockName, BlockFn]>) {
+  BLOCKS[name] = (ctx) => ((ctx.skin as { handdrawn?: boolean }).handdrawn && renderSketchBlock(name, ctx)) || fn(ctx);
+}

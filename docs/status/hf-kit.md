@@ -135,3 +135,50 @@ Additive extras:
 - `composeVideo` now throws a `ComposeError` (not a plain Error at render time) for an `image` scene with no image asset.
 - **Prompts**: the catalogue shows a compact `data shape` per block generated from the strict zod schemas (`shapeOf`) and an example; a test asserts every example parses strictly with zero coercions, so they cannot drift. `DATA_SHAPE_RULE` ("data must match the example shape exactly…") is rule 5. `buildSystemPrompt({output: "draft", extraRules})` / `buildScenePlanPrompt({output: "draft"})` give the engine planner a content-only output (no timings, no footage/overlay blocks).
 - Tests: 113 pass (`src/__tests__/coerce.test.ts`: 3 messy fixtures per block × 16 blocks, each coerced → strict-valid → composed → lint clean; plus plan-level tests).
+
+## Sketch style (2026-10-28, sketch-style agent)
+A hand-drawn, Excalidraw look modelled on `contentgen/yt` (`tools/theme.py`, `tools/exdraw.py`, `tools/excalidraw/render.mjs`).
+- **Skins** (`packages/shared/src/kit.ts`):
+  - `sketch`: theme.py palette. bg `#1F2126`, surface `#2A2D34`, ink `#ECECEC`, accent `#58C4DD`, accent2 `#F0AC5F`.
+  - `sketch-paper`: bg `#FAF8F3`, ink `#1E1E1E`, accent `#1971C2`, accent2 `#E8590C`.
+  - Both use Excalifont, `playful` motion, `minimal` captions, `rounded` shapes and grain.
+  - New optional field `VisualSkin.handdrawn?: boolean`. It is `.optional()`, not `.default(false)`, so the six existing typed presets stay valid. Absent means false.
+- **Font**: `packages/hf-kit/assets/fonts/`.
+  - The files are Latin subsets of Excalifont from `@excalidraw/utils@0.1.5`: `Excalifont-latin.woff2` (22 KB) and `Excalifont.ttf` (52 KB). The full TTF is 23 MB and is not vendored.
+  - License: SIL OFL 1.1, as the font's own name table says. See `OFL.txt`.
+  - Every composition embeds the face as a `data:` URL in an `@font-face` rule, because `hyperframes lint` (`font_family_without_font_face`) checks each file. Renders need neither a font file nor network access.
+  - Kalam is not used. A Google Fonts family cannot be declared in each composition without `@import`.
+  - `src/sketch/metrics.data.ts` holds the advance widths, so text wraps and measures exactly in Node.
+- **Rendering** (`src/sketch/`):
+  - Approach:
+    - `board.ts` is a TS port of exdraw `Board` (box, ellipse, line, arrow, `arrowBetween`, group). It is seeded (mulberry32).
+    - **Each text element is exactly one line.** `segLine` creates coloured segments that share one line unit.
+    - Excalidraw's own `exportToSvg` (dependency `@excalidraw/utils@0.1.5`) renders the elements in headless Chrome. The child process is `render-svg.mjs`, and it serves the utils dist the same way `render.mjs` does.
+    - The result is static rough SVG. Paths get ids, a measured `getTotalLength`, and a dasharray/offset that starts hidden.
+  - excalidraw-animate:
+    - It emits SMIL `<animate>` `d`-morphs. HyperFrames does not seek SMIL: nothing in the CLI or the skills drives `setCurrentTime`. Its `animateSvg` also pulls in `@excalidraw/excalidraw` (React).
+    - So the kit keeps its unit and ordering model, and `draw.ts` emits the GSAP equivalent on the scene's paused timeline:
+      - `strokeDashoffset → 0` per path;
+      - hachure fills scribble in after their outline;
+      - solid fills fade in;
+      - text is written by a left→right `clipPath` sweep per line at 14 chars/s;
+      - shapes draw at about 900 px/s of visible pen travel (1800 px/s of path length, because each path holds both passes), between 0.25 s and 1.1 s per unit, with 80 ms gaps.
+    - Units are strictly sequential: no two units overlap, and the next line starts only after the previous line ends. When the units do not fit in the scene, every duration is scaled by the same factor.
+  - `compose.ts` calls `prerenderSketch` first. It renders every scene in one Chrome (about 1.6 s for a 45 s video) and caches the results in memory and in `$TMPDIR/remawt-sketch-cache/<hash>.json`. A recompose takes about 10 ms.
+  - `lint.ts` allows `strokeDashoffset`.
+- **Blocks**: `src/sketch/blocks/*`. The dispatcher is `renderSketchBlock` in `src/sketch/index.ts`, hooked into `blocks/index.ts` by a single `handdrawn` wrapper.
+  - Blocks with a sketch variant: `kinetic-headline`, `diagram`, `counter`, `chart`, `split-title`, `split-stat`, `numbered-card`, `strike-through`, `source-card`, `headline-card`, `bullet-stack` and `outro`.
+  - `map`, `icon-grid`, `image` and `video-segment` keep their normal renderers.
+  - Pages hold at most 7 lines. `fit()` truncates with an ellipsis. `bullet-stack` and `split-stat` paginate into sequential pages inside the scene, and the old page fades out.
+  - Diagram and chart labels are exempt from the line limit.
+  - Body text is at least 44 px. Content stays in the safe content box.
+- **Captions**: with the `karaoke` style and a hand-drawn skin, the active word gets a static rough marker underline (seeded path, `scaleX` reveal).
+- **Verified**:
+  - `pnpm --filter @remawt/hf-kit typecheck` is clean.
+  - `test` passes 121 of 121 (`src/sketch/sketch.test.ts`, 8 tests). They cover: presets; one line per text element; Board determinism; `exportToSvg` path determinism across two renders; sequential schedule, including when compressed; a 3-line headline giving 3 non-overlapping write intervals; and all 12 sketch blocks composing and passing lint in both skins, with at most 7 lines per page and the fallback for blocks without a variant.
+  - `pnpm --filter @remawt/hf-kit demo:sketch [--frames=<dir>]` runs did-you-know and chart-explains (`sketch`) and wish-i-knew (`sketch-paper`), written to `$TMPDIR/remawt-hfkit-demo/sketch-*/`. All three show kit lint ok, `hyperframes lint` 0 errors and 0 warnings, `hyperframes check` ok, and a draft render ok (4.2 MB, 4.3 MB and 2.4 MB).
+- **Not done or open**:
+  - Composing a hand-drawn skin needs Chrome, the same requirement as `renderPoster`: `PUPPETEER_EXECUTABLE_PATH` or a known path.
+  - `@excalidraw/utils` is about 94 MB on disk, which counts against the engine image size.
+  - Chart annotations avoid each other but not the other series' line.
+  - The web landing `fontStack()` has no Excalifont mapping, so web previews of the sketch skins fall back to sans.

@@ -1,4 +1,5 @@
 import type { VisualSkin } from "@remawt/shared";
+import { SKETCH_FONT, excalifontFaceCss } from "./sketch";
 
 /**
  * Skin → design tokens for a 1080×1920 vertical canvas.
@@ -92,9 +93,14 @@ export function fontFamilies(skin: VisualSkin): string[] {
   return [...new Set([skin.type.display, skin.type.body, skin.type.mono ?? "JetBrains Mono"])];
 }
 
+/** Families fetched from Google Fonts (embedded faces such as Excalifont are not). */
+function googleFamilies(skin: VisualSkin): string[] {
+  return fontFamilies(skin).filter((f) => f !== SKETCH_FONT);
+}
+
 /** Google Fonts stylesheet URL for the skin's display/body/mono families. */
 export function googleFontsUrl(skin: VisualSkin): string {
-  const fams = fontFamilies(skin).map((f) => {
+  const fams = googleFamilies(skin).map((f) => {
     const w = GF_WEIGHTS[f];
     const name = f.trim().replace(/\s+/g, "+");
     return `family=${name}${w ? `:${w}` : ""}`;
@@ -103,7 +109,9 @@ export function googleFontsUrl(skin: VisualSkin): string {
 }
 
 export function fontLinks(skin: VisualSkin): string {
+  const embedded = fontFamilies(skin).includes(SKETCH_FONT) ? [`<style>${excalifontFaceCss()}</style>`] : [];
   return [
+    ...embedded,
     `<link rel="preconnect" href="https://fonts.googleapis.com">`,
     `<link rel="preconnect" href="https://fonts.gstatic.com">`,
     `<link rel="stylesheet" href="${googleFontsUrl(skin).replace(/&/g, "&amp;")}">`,
@@ -111,6 +119,7 @@ export function fontLinks(skin: VisualSkin): string {
 }
 
 function stack(f: string, generic: string): string {
+  if (f === SKETCH_FONT) return `"${f}", cursive`;
   return `"${f}", ${generic}`;
 }
 
@@ -175,7 +184,9 @@ export function grainBackground(seed = 7): string {
  * The scene root (#root) carries only layout + tokens: NO background on the root.
  */
 export function sceneBaseCss(sid: string, skin: VisualSkin, width = 1080, height = 1920): string {
-  return `
+  // Embedded faces are declared in every composition (hyperframes lint checks @font-face per file).
+  const faces = fontFamilies(skin).includes(SKETCH_FONT) ? `\n    ${excalifontFaceCss()}` : "";
+  return `${faces}
     #root { position: absolute; inset: 0; overflow: hidden; ${varsCss(skinVars(skin, width, height))} color: var(--ink); font-family: var(--font-body); }
     #${sid}-bg { position: absolute; inset: 0; background: var(--bg); }
     #${sid}-stage { position: absolute; inset: 0; }
