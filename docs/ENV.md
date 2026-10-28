@@ -46,3 +46,16 @@ UPLOADPOST_API_KEY, UPLOADPOST_BASE_URL (optional, default https://api.upload-po
 YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, YOUTUBE_REDIRECT_URI (youtube_direct, experimental; engine also supplies a tokenStore)
 PUBLISHER_CAPS (optional, e.g. "TIKTOK=10,INSTAGRAM=50" overrides default daily caps)
 DRYRUN_PLATFORMS (optional, e.g. "TIKTOK,YOUTUBE,INSTAGRAM"; platforms the dryrun adapter reports as connected)
+
+## apps/engine (engine-core additions, 2026-10-28)
+ENGINE_PUBLIC_URL (public base URL of the engine; used in render callback URLs, e.g. https://engine.remawt.com)
+MASTRA_DB_SCHEMA (default `mastra`; @mastra/pg `schemaName`), POSTHOG_KEY (or POSTHOG_API_KEY), POSTHOG_HOST (Mastra trace exporter)
+INNGEST_DEV=1 (dev only; never in prod), INNGEST_BASE_URL (optional, dev server URL)
+ELEVENLABS_MODEL_ID (optional override; default: v4 turbo/flash if GET /v1/models lists it, else eleven_flash_v2_5)
+DEEPINFRA_API_KEY (Kokoro TTS for FREE plan)
+NANOBANANA_MODEL (Gemini image model id; default gemini-3.1-flash-image — verify), RECRAFT_MODEL (default recraftv3)
+GROQ_API_KEY, GROQ_STT_MODEL (default whisper-large-v3-turbo) — transcription for video/audio uploads
+CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID (Workers AI whisper fallback)
+HYPERFRAMES_BIN / HYPERFRAMES_VERSION (local render CLI override; default node_modules/.bin/hyperframes or npx hyperframes@0.8.212), KEEP_RENDER_DIRS=1 (debug)
+PUBLISHER_WEBHOOK_SECRET (checked against `x-webhook-secret` on /webhooks/publisher/:provider)
+LOG_LEVEL (debug|info|warn|error)

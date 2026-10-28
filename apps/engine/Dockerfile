@@ -1,51 +1,44 @@
-# Build stage
-FROM node:22-bullseye-slim AS builder
+# remawt engine (ECS). Build from the REPO ROOT:
+#   docker build -f apps/engine/Dockerfile -t remawt-engine .
+# Runs TypeScript directly via tsx (workspace packages ship TS sources).
+FROM node:24-bookworm-slim
 
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV NODE_ENV=production \
+    PORT=3001 \
+    PUPPETEER_SKIP_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
+    CHROME_PATH=/usr/bin/chromium \
+    HYPERFRAMES_TELEMETRY=0
 
-WORKDIR /app
-
-COPY package.json pnpm-lock.yaml ./
-COPY prisma ./prisma
-RUN corepack enable && corepack prepare pnpm@10.15.0 --activate && pnpm install --frozen-lockfile
-
-COPY tsconfig.json ./
-COPY server.ts ./
-COPY routes ./routes
-COPY lib ./lib
-COPY scripts ./scripts
-RUN npx tsc
-
-# Final stage
-FROM node:22-bullseye-slim
-
+# ffmpeg/ffprobe for mux, ingest, thumbnails; chromium + fonts for hyperframes local render and kit posters.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    openssl \
-    ca-certificates \
-    curl \
+      ca-certificates curl openssl ffmpeg chromium \
+      fonts-liberation fonts-noto-color-emoji fonts-noto-core fonts-dejavu-core \
+      libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 \
+      libxfixes3 libxrandr2 libgbm1 libasound2 libpango-1.0-0 libcairo2 \
     && rm -rf /var/lib/apt/lists/*
 
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV PORT=3001
-ENV NODE_ENV=production
+RUN corepack enable && corepack prepare pnpm@10.34.5 --activate
+WORKDIR /repo
 
-WORKDIR /app
+# Manifests first for layer caching.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/engine/package.json apps/engine/
+COPY packages/db/package.json packages/db/
+COPY packages/shared/package.json packages/shared/
+COPY packages/hf-kit/package.json packages/hf-kit/
+COPY packages/publisher/package.json packages/publisher/
+COPY packages/radar/package.json packages/radar/
+RUN pnpm install --frozen-lockfile --prod=false --filter @remawt/engine... --config.dangerously-allow-all-builds=true
 
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
-COPY --from=builder /app/lib/generated ./lib/generated
-COPY --from=builder /app/lib/generated ./dist/lib/generated
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/server.ts ./
+COPY packages ./packages
+COPY apps/engine ./apps/engine
+RUN pnpm --filter @remawt/db generate
 
-# Runtime directories (static assets + pipeline scratch space)
-RUN mkdir -p public/renders public/three tmp/hf-audio tmp/hf-projects && chown -R node:node /app
-
+WORKDIR /repo/apps/engine
+RUN mkdir -p /tmp/remawt && chown -R node:node /tmp/remawt
 USER node
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
-  CMD curl -f http://localhost:3001/health || exit 1
-
 EXPOSE 3001
-CMD ["node", "dist/server.js"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 CMD curl -fsS http://localhost:3001/health || exit 1
+CMD ["node", "--import", "tsx", "src/server.ts"]
