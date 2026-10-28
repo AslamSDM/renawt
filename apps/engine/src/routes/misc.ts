@@ -5,7 +5,8 @@ import { Prisma, type Platform } from "@remawt/db";
 import { db } from "../lib/db.js";
 import { hashOf } from "../lib/hash.js";
 import { existingObject, putObject } from "../lib/r2.js";
-import { elevenlabs, kokoro } from "../lib/tts/index.js";
+import { elevenlabs, kokoro, fish } from "../lib/tts/index.js";
+import { FISH_SAMPLE_TEXT, resolveFishVoice } from "../lib/tts/fish.js";
 import { KOKORO_VOICES } from "../lib/tts/kokoro.js";
 import { getPublisher } from "../lib/publisher.js";
 import { weekKey } from "@remawt/radar";
@@ -34,23 +35,27 @@ kit.post("/previews", handle(async (req, res) => {
   return r.result;
 }));
 
-const VoiceSample = z.object({ voiceId: z.string(), provider: z.enum(["elevenlabs", "kokoro", "inworld"]).default("elevenlabs"), text: z.string().min(1).max(400) });
+const VoiceSample = z.object({ voiceId: z.string(), provider: z.enum(["fish", "elevenlabs", "kokoro", "inworld"]).default("fish"), text: z.string().min(1).max(400).optional() });
 kit.post("/voice-sample", handle(async (req) => {
   const body = parse(VoiceSample, req.body);
-  const key = `voice-samples/${body.provider}-${hashOf(body.voiceId, body.text)}.mp3`;
+  const text = body.text ?? FISH_SAMPLE_TEXT;
+  // Fish previews of the stock line are cached per voice at voices/fish/<id>.mp3.
+  const key = body.provider === "fish" && text === FISH_SAMPLE_TEXT
+    ? `voices/fish/${resolveFishVoice(body.voiceId)}.mp3`
+    : `voice-samples/${body.provider}-${hashOf(body.voiceId, text)}.mp3`;
   const hit = await existingObject(key);
   if (hit) return { audioUrl: hit.url };
-  const provider = body.provider === "kokoro" ? kokoro : elevenlabs;
+  const provider = body.provider === "kokoro" ? kokoro : body.provider === "fish" ? fish : elevenlabs;
   if (!provider.isConfigured()) throw new HttpError(503, `${body.provider} not configured`);
-  const { audio, contentType } = await provider.sample!({ text: body.text, voiceId: body.voiceId });
+  const { audio, contentType } = await provider.sample!({ text, voiceId: body.voiceId });
   return { audioUrl: await putObject(key, audio, contentType) };
 }));
 
 // ───── voices ─────
 voices.get("/", handle(async () => {
-  const el = await elevenlabs.listVoices();
+  const [fi, el] = await Promise.all([fish.isConfigured() ? fish.listVoices() : Promise.resolve([]), elevenlabs.listVoices()]);
   const ko = kokoro.isConfigured() ? KOKORO_VOICES.map((v) => ({ voiceId: v, name: v.replace(/^[a-z]+_/, "").replace(/^./, (c) => c.toUpperCase()), provider: "kokoro", tags: [v.startsWith("a") ? "american" : "british", v[1] === "f" ? "female" : "male", "free"] })) : [];
-  return [...el, ...ko];
+  return [...fi, ...el, ...ko];
 }));
 
 // ───── radar ─────

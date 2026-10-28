@@ -8,16 +8,11 @@ export interface VoiceOption {
   tags?: string[];
 }
 
-/** ElevenLabs premade voices, used when the engine's /v1/voices is unreachable. */
+/** Fish Audio default narrators (engine FISH_DEFAULT_VOICES), used when the engine's /v1/voices is unreachable. */
 export const FALLBACK_VOICES: VoiceOption[] = [
-  { voiceId: "21m00Tcm4TlvDq8ikWAM", name: "Rachel", provider: "elevenlabs", tags: ["calm", "narration", "female"] },
-  { voiceId: "pNInz6obpgDQGcFmaJgB", name: "Adam", provider: "elevenlabs", tags: ["deep", "narration", "male"] },
-  { voiceId: "ErXwobaYiN019PkySvjV", name: "Antoni", provider: "elevenlabs", tags: ["warm", "well-rounded", "male"] },
-  { voiceId: "EXAVITQu4vr4xnSDxMaL", name: "Bella", provider: "elevenlabs", tags: ["soft", "friendly", "female"] },
-  { voiceId: "TxGEqnHWrfWFTfGW9XjX", name: "Josh", provider: "elevenlabs", tags: ["young", "energetic", "male"] },
-  { voiceId: "MF3mGyEYCl7XYWbV9V6O", name: "Elli", provider: "elevenlabs", tags: ["bright", "emotional", "female"] },
-  { voiceId: "AZnzlk1XvdvUeBnXmlld", name: "Domi", provider: "elevenlabs", tags: ["strong", "confident", "female"] },
-  { voiceId: "yoZ06aMxZJJ28mfd3POQ", name: "Sam", provider: "elevenlabs", tags: ["raspy", "casual", "male"] },
+  { voiceId: "536d3a5e000945adb7038665781a4aca", name: "Ethan", provider: "fish", tags: ["neutral", "educational", "narration", "male"] },
+  { voiceId: "bf322df2096a46f18c579d0baa36f41d", name: "Adrian", provider: "fish", tags: ["calm", "storytelling", "narration", "male"] },
+  { voiceId: "802e3bc2b27e49c2995d23ef70e6ac89", name: "Energetic Male", provider: "fish", tags: ["energetic", "social-media", "clear", "male"] },
 ];
 
 export const DISPLAY_FONTS = ["Inter", "EB Garamond", "Space Grotesk", "Fraunces", "Patrick Hand", "JetBrains Mono"] as const;

@@ -26,7 +26,7 @@ export const VisualSkinSchema = z.object({
 export type VisualSkin = z.infer<typeof VisualSkinSchema>;
 
 export const VoiceSchema = z.object({
-  provider: z.enum(["elevenlabs", "kokoro", "inworld"]).default("elevenlabs"),
+  provider: z.enum(["fish", "elevenlabs", "kokoro", "inworld"]).default("fish"),
   voiceId: z.string(),
   name: z.string(),
   speed: z.number().min(0.8).max(1.2).default(1),

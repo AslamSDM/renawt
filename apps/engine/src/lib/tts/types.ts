@@ -16,10 +16,14 @@ export interface SynthesizeResult extends VoiceTrack {
   chars: number;
   usd: number;
   cached: boolean;
+  /** Where word timings came from (Fish: fish-native | fish-asr | whisper | estimate). */
+  timingSource?: string;
+  /** Raw mp3 when no storageKey was given (nothing persisted). */
+  audio?: Buffer;
 }
 
 export interface TtsProvider {
-  readonly id: "elevenlabs" | "kokoro";
+  readonly id: "fish" | "elevenlabs" | "kokoro";
   isConfigured(): boolean;
   synthesize(req: SynthesizeRequest): Promise<SynthesizeResult>;
   /** Raw audio without persistence (voice samples). */

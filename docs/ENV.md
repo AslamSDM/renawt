@@ -59,3 +59,10 @@ CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID (Workers AI whisper fallback)
 HYPERFRAMES_BIN / HYPERFRAMES_VERSION (local render CLI override; default node_modules/.bin/hyperframes or npx hyperframes@0.8.212), KEEP_RENDER_DIRS=1 (debug)
 PUBLISHER_WEBHOOK_SECRET (checked against `x-webhook-secret` on /webhooks/publisher/:provider)
 LOG_LEVEL (debug|info|warn|error)
+
+## apps/engine — TTS (fish-audio, 2026-10-28)
+TTS_PROVIDER=fish|elevenlabs|kokoro (optional; used when the kit voice has no configured provider. Order: kit `voice.provider` → TTS_PROVIDER → fish → elevenlabs → kokoro, first configured wins; FREE plan prefers kokoro when DEEPINFRA_API_KEY is set)
+FISH_AUDIO_API_KEY — Fish Audio (default TTS). TTS/ASR bill against *API credit* (separate from platform credit; 402 "Insufficient API credit" when empty)
+FISH_TTS_MODEL (optional; default s2.1-pro at $0.015 / 1K UTF-8 bytes. s2.1-pro-free = same model at $0, fair use, no latency SLA — fine for dev; s2-pro; drama-3 $0.05/1K. s1 retires 2026-12-31)
+FISH_DEFAULT_VOICE_CALM / FISH_DEFAULT_VOICE_NEUTRAL / FISH_DEFAULT_VOICE_ENERGETIC (optional Fish reference_id overrides; defaults Adrian bf322df2…, Ethan 536d3a5e…, Energetic Male 802e3bc2…). FISH_DEFAULT_VOICE = alias for NEUTRAL
+Word timings: Fish native (/v1/tts/stream/with-timestamp) → Fish ASR transcribe-1-pro ($0.36/hr) → Workers AI whisper (CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID, must be in apps/engine/.env) → estimate; always snapped to the script text
