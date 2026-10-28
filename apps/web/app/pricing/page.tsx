@@ -43,6 +43,7 @@ export default function PricingPage() {
     <PageShell>
       <MarketingSection
         rule={false}
+        titleAs="h1"
         title={
           <>
             Priced per video. <span className="font-serif-italic text-muted">Nothing to decode.</span>

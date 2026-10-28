@@ -28,7 +28,7 @@ export function SheetContent({
       <SheetPrimitive.Content
         data-slot="sheet-content"
         className={cn(
-          "fixed z-50 flex flex-col overflow-y-auto border-rule-strong bg-paper text-ink shadow-[0_0_48px_rgba(0,0,0,0.6)]",
+          "fixed z-50 flex flex-col overflow-hidden border-rule-strong bg-paper text-ink shadow-[0_0_48px_rgba(0,0,0,0.6)]",
           "duration-300 ease-out-expo data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-200",
           SIDES[side],
           className,
@@ -50,13 +50,13 @@ export function SheetContent({
 }
 
 export function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("flex flex-col gap-1.5 border-b border-rule p-5 pr-12", className)} {...props} />;
+  return <div className={cn("flex shrink-0 flex-col gap-1.5 border-b border-rule p-5 pr-12", className)} {...props} />;
 }
 export function SheetBody({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("flex flex-1 flex-col gap-6 p-5", className)} {...props} />;
+  return <div className={cn("flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto overscroll-contain p-5", className)} {...props} />;
 }
 export function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("mt-auto flex gap-2 border-t border-rule p-5", className)} {...props} />;
+  return <div className={cn("mt-auto flex shrink-0 gap-2 border-t border-rule p-5", className)} {...props} />;
 }
 export function SheetTitle({ className, ...props }: React.ComponentProps<typeof SheetPrimitive.Title>) {
   return <SheetPrimitive.Title className={cn("type-heading text-ink", className)} {...props} />;

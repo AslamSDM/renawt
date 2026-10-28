@@ -36,7 +36,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
               {sub?.cancelAtPeriodEnd && sub.currentPeriodEnd ? ` Ends ${formatDate(sub.currentPeriodEnd, { month: "long", day: "numeric" })}.` : ""}
             </CardDescription>
             <CardAction>
-              <Badge variant={ent.plan.id === "FREE" ? "neutral" : sub?.status === "active" ? "success" : "warning"}>{ent.plan.id === "FREE" ? "Free" : (sub?.status ?? "active")}</Badge>
+              <Badge variant={ent.plan.id === "FREE" ? "neutral" : !sub || sub.status === "active" ? "success" : "warning"}>{ent.plan.id === "FREE" ? "Free" : (sub?.status ?? "active")}</Badge>
             </CardAction>
           </CardHeader>
           <div className="flex flex-col gap-2">

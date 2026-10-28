@@ -55,3 +55,15 @@ export function zonedWeek(timeZone: string, offsetWeeks = 0) {
   const end = zonedToUtc(endDay.toISOString().slice(0, 10), "00:00", timeZone);
   return { start, end, days };
 }
+
+/**
+ * Next default posting slot: today at `hour`:00 in the zone if that is still at least
+ * `leadMinutes` away, otherwise tomorrow. Matches the series default (18:00).
+ */
+export function nextSlot(timeZone: string, hour = 18, leadMinutes = 30): { date: string; time: string } {
+  const now = zonedNow(timeZone, leadMinutes);
+  const time = `${String(hour).padStart(2, "0")}:00`;
+  if (now.time <= time) return { date: now.date, time };
+  const [y, m, d] = now.date.split("-").map(Number);
+  return { date: new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10), time };
+}

@@ -7,6 +7,7 @@ import { Badge, Button, Card, Table, TableBody, TableCell, TableHead, TableHeade
 import { FormatBadge, PlatformBadge, PublicationStatusBadge } from "@/components/app/badges";
 import { ProgressTimeline } from "@/components/app/video/progress-timeline";
 import { PublishSheet } from "@/components/app/video/publish-sheet";
+import { RetryVideoButton } from "@/components/app/video/retry-button";
 import { SceneEditor } from "@/components/app/video/scene-editor";
 import { TranscriptPanel } from "@/components/app/video/transcript-panel";
 import { ScriptView } from "@/components/app/video/script-view";
@@ -61,6 +62,12 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
   const aiDefault = qc?.labels ? !!(qc.labels.aigc ?? qc.labels.syntheticMedia ?? true) : true;
   const criticNotes = Array.isArray(qc?.criticNotes) ? qc.criticNotes : qc?.criticNotes ? [qc.criticNotes] : [];
 
+  const progressSection = (
+    <Section title="Progress">
+      <ProgressTimeline videoId={video.id} initialStatus={video.status} initialEvents={events} expectedSteps={[...expected]} />
+    </Section>
+  );
+
   return (
     <>
       <PageHeader
@@ -102,8 +109,9 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
           <p className="type-subheading text-ink">This video failed</p>
           <p className="type-small text-muted">{video.error ?? "The engine stopped before the render finished."} Your video credit was returned if nothing was rendered.</p>
           <Inline gap={2}>
+            <RetryVideoButton channelId={video.channelId} source={source} ideaId={video.idea?.id ?? null} format={video.format} targetSec={video.targetSec} />
             <Button asChild size="sm" variant="outline">
-              <Link href={video.idea ? `/app/new?ideaId=${video.idea.id}` : "/app/new"}>Start again</Link>
+              <Link href={video.idea ? `/app/new?ideaId=${video.idea.id}` : "/app/new"}>Change inputs</Link>
             </Button>
           </Inline>
         </Card>
@@ -111,9 +119,10 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
 
       <Grid cols="aside" gap={8}>
         <Stack gap={7} className="min-w-0 lg:order-2">
+          {busy && progressSection}
           <Section title="Preview">
             <div
-              className="phone-frame w-full max-w-[320px] self-center lg:self-stretch"
+              className="phone-frame w-full max-w-[240px] self-center sm:max-w-[280px] lg:max-w-none lg:self-stretch"
               style={!video.masterUrl && !video.thumbnailUrl && palette ? { background: palette.bg } : undefined}
             >
               {video.masterUrl ? (
@@ -141,9 +150,7 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
               </Inline>
             )}
           </Section>
-          <Section title="Progress">
-            <ProgressTimeline videoId={video.id} initialStatus={video.status} initialEvents={events} expectedSteps={[...expected]} />
-          </Section>
+          {!busy && progressSection}
         </Stack>
 
         <Stack gap={8} className="min-w-0 lg:order-1">

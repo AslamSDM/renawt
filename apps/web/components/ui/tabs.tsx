@@ -22,8 +22,9 @@ export function TabsList({ className, variant = "underline", ...props }: React.C
         data-slot="tabs-list"
         className={cn(
           variant === "underline"
-            ? "no-scrollbar flex h-10 items-stretch gap-6 overflow-x-auto border-b border-rule"
-            : "inline-flex h-8 items-center gap-0.5 rounded-[2px] border border-rule bg-paper p-0.5",
+            ? // Rule drawn as an inset shadow: a border would sit outside the scroll box and clip the active underline.
+              "no-scrollbar flex h-10 items-stretch gap-6 overflow-x-auto shadow-[inset_0_-1px_0_var(--rule)]"
+            : "inline-flex h-8 w-fit items-center gap-0.5 self-start rounded-[2px] border border-rule bg-paper p-0.5",
           className,
         )}
         {...props}
@@ -40,8 +41,8 @@ export function TabsTrigger({ className, ...props }: React.ComponentProps<typeof
       className={cn(
         "type-small inline-flex shrink-0 items-center gap-2 whitespace-nowrap font-medium text-muted transition-colors duration-200 hover:text-ink disabled:pointer-events-none disabled:opacity-45 [&_svg]:size-4",
         variant === "underline"
-          ? "relative -mb-px border-b border-transparent data-[state=active]:border-ink data-[state=active]:text-ink"
-          : "h-full rounded-[1px] px-3 data-[state=active]:bg-paper-3 data-[state=active]:text-ink",
+          ? "relative focus-visible:outline-offset-[-2px] after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-transparent after:transition-colors after:duration-200 data-[state=active]:text-ink data-[state=active]:after:bg-ink"
+          : "h-full rounded-[1px] px-3 focus-visible:outline-offset-0 data-[state=active]:bg-paper-3 data-[state=active]:text-ink",
         className,
       )}
       {...props}

@@ -88,7 +88,7 @@ function ChannelSwitcher() {
         </span>
         <span className="flex min-w-0 flex-col">
           <span className="type-small truncate font-medium text-ink">Create a channel</span>
-          <span className="mono-tick truncate">Pick a niche to start</span>
+          <span className="mono-tick truncate">About 3 minutes</span>
         </span>
       </Link>
     );
@@ -266,9 +266,12 @@ export function AppShell({ children, topbarStart, topbarEnd }: AppShellProps) {
   React.useEffect(() => {
     void useAppStore.persist.rehydrate();
   }, []);
-  React.useEffect(() => {
+  // Close the drawer whenever the route changes (including back/forward), without an effect.
+  const [drawerPath, setDrawerPath] = React.useState(pathname);
+  if (drawerPath !== pathname) {
+    setDrawerPath(pathname);
     setMobileOpen(false);
-  }, [pathname]);
+  }
 
   return (
     <TooltipProvider>
@@ -302,14 +305,15 @@ export function AppShell({ children, topbarStart, topbarEnd }: AppShellProps) {
               </div>
               <div className="hidden min-w-0 flex-1 lg:block">{topbarStart}</div>
               <div className="ml-auto flex items-center gap-2">
-                {topbarEnd ?? (
+                {topbarEnd ??
+                  (pathname?.startsWith(APP_ROUTES.newVideo) ? null : (
                   <Button asChild size="sm">
                     <Link href={APP_ROUTES.newVideo}>
                       <Plus /> <span className="hidden sm:inline">New video</span>
                       <span className="sm:hidden">New</span>
                     </Link>
                   </Button>
-                )}
+                  ))}
                 <UserMenu />
               </div>
             </div>

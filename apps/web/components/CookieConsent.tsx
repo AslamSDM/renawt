@@ -1,20 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 const STORAGE_KEY = "remawt-cookie-consent";
 
-export function CookieConsent() {
-  const [visible, setVisible] = useState(false);
+function subscribeStorage(cb: () => void) {
+  window.addEventListener("storage", cb);
+  return () => window.removeEventListener("storage", cb);
+}
+function readChoice(): string | null {
+  try {
+    return localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return "unavailable";
+  }
+}
 
-  useEffect(() => {
-    try {
-      if (!localStorage.getItem(STORAGE_KEY)) setVisible(true);
-    } catch {
-      // localStorage unavailable — skip banner
-    }
-  }, []);
+export function CookieConsent() {
+  const [dismissed, setDismissed] = useState(false);
+  // "ssr" on the server and during hydration, the stored choice after; unavailable storage skips the banner.
+  const stored = useSyncExternalStore(subscribeStorage, readChoice, () => "ssr");
+  const visible = !dismissed && stored === null;
 
   function choose(value: "accepted" | "rejected") {
     try {
@@ -22,43 +30,28 @@ export function CookieConsent() {
     } catch {
       // ignore
     }
-    setVisible(false);
+    setDismissed(true);
   }
 
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[100] px-4 pb-4 sm:px-6 sm:pb-6">
-      <div className="mx-auto flex max-w-[1100px] flex-col gap-4 border border-rule bg-surface/95 p-5 shadow-lg backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:p-6">
-        <div className="text-sm leading-relaxed text-ink/85">
-          <p className="mono-tick mb-1">COOKIES</p>
-          <p>
-            We use essential cookies to run Remawt and optional analytics cookies
-            to improve it. See our{" "}
-            <Link
-              href="/cookies"
-              className="text-ink underline decoration-rule-strong underline-offset-4 hover:decoration-ink"
-            >
-              Cookie Policy
-            </Link>
-            .
-          </p>
-        </div>
-        <div className="flex shrink-0 gap-3">
-          <button
-            type="button"
-            onClick={() => choose("rejected")}
-            className="btn-ghost"
-          >
+    <div role="region" aria-label="Cookie consent" className="fixed inset-x-0 bottom-0 z-[100] px-4 pb-4 sm:px-6 sm:pb-6">
+      <div className="mx-auto flex max-w-[720px] flex-col gap-4 rounded-[2px] border border-rule-strong bg-paper/95 p-5 shadow-lg backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+        <p className="type-small text-muted">
+          We use essential cookies to run Remawt and optional analytics cookies to improve it. See our{" "}
+          <Link href="/cookies" className="text-ink underline decoration-rule-strong underline-offset-4 hover:decoration-ink">
+            cookie policy
+          </Link>
+          .
+        </p>
+        <div className="flex shrink-0 gap-2">
+          <Button variant="outline" size="sm" onClick={() => choose("rejected")}>
             Reject
-          </button>
-          <button
-            type="button"
-            onClick={() => choose("accepted")}
-            className="btn-accent"
-          >
+          </Button>
+          <Button size="sm" onClick={() => choose("accepted")}>
             Accept
-          </button>
+          </Button>
         </div>
       </div>
     </div>

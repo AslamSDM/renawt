@@ -20,6 +20,7 @@ export function FormatPicker({ value, onChange, seconds, allowAuto = true }: { v
               <Wand2 className="size-4 text-subtle" aria-hidden />
             </span>
             <span className="type-small text-muted">The scriptwriter picks the format that fits your topic best.</span>
+            <span className="mono-tick mt-auto">Default</span>
           </RadioCard>
         )}
         {FORMATS.map((f) => (
@@ -29,7 +30,10 @@ export function FormatPicker({ value, onChange, seconds, allowAuto = true }: { v
               {f.risk !== "low" && <Badge variant="warning">{f.risk} risk</Badge>}
             </span>
             <span className="type-small text-muted">{f.tagline}</span>
-            <BeatBar beats={f.beats} seconds={seconds} className="pt-2" />
+            <BeatBar beats={f.beats} showLabels={false} className="pt-2" />
+            <span className="mono-tick tabular-nums">
+              {f.beats.length} beats{seconds ? ` · ${seconds}s` : ""}
+            </span>
           </RadioCard>
         ))}
       </Grid>

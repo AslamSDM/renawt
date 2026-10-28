@@ -138,7 +138,7 @@ export async function listAudioFiles(): Promise<AudioFile[]> {
               bpm = headResponse.Metadata["bpm"] ? parseInt(headResponse.Metadata["bpm"]) : undefined;
               duration = headResponse.Metadata["duration"] ? parseInt(headResponse.Metadata["duration"]) : undefined;
             }
-          } catch (e) {
+          } catch {
             // Metadata might not exist
           }
           

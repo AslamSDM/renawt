@@ -55,6 +55,14 @@ export function SceneEditor({
   const [rendering, startRender] = React.useTransition();
   const byId = new Map(scenes.map((s) => [s.id, s]));
 
+  // Guard unsaved edits against an accidental tab close or reload.
+  React.useEffect(() => {
+    if (!dirty) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
+
   if (!plan || scenes.length === 0) {
     return <EmptyState size="compact" title="Scenes appear after planning" description="Once the scene plan step finishes you can edit every headline, number and asset here." />;
   }
@@ -196,9 +204,16 @@ export function SceneEditor({
         })}
       </ol>
       <Inline gap={3} justify="between">
-        <span className="type-small text-muted tabular-nums">
-          {rerendersLeft > 0 ? `${rerendersLeft} of ${rerendersTotal} free re-renders left` : "No free re-renders left on this video"}
-        </span>
+        <Inline gap={3}>
+          {dirty && (
+            <Badge variant="warning" dot>
+              Unsaved changes
+            </Badge>
+          )}
+          <span className="type-small text-muted tabular-nums">
+            {rerendersLeft > 0 ? `${rerendersLeft} of ${rerendersTotal} free re-renders left` : "No free re-renders left on this video"}
+          </span>
+        </Inline>
         <Inline gap={2}>
           <Button variant="outline" onClick={() => startSave(async () => void ((await save()) && toast.success("Scene edits saved.")))} loading={saving} disabled={!dirty || busy}>
             <Save /> Save edits
@@ -209,13 +224,13 @@ export function SceneEditor({
                 if (dirty && !(await save())) return;
                 const res = await rerenderVideo(videoId);
                 if (!res.ok) return void toast.error(res.error);
-                toast.success("Re-render started. Progress is on the left.");
+                toast.success(`Re-render started. ${Math.max(0, rerendersLeft - 1)} free re-render${rerendersLeft - 1 === 1 ? "" : "s"} left.`);
               })
             }
             loading={rendering}
             disabled={busy || rerendersLeft <= 0}
           >
-            <RotateCcw /> Re-render
+            <RotateCcw /> {dirty ? "Save and re-render" : "Re-render"}
           </Button>
         </Inline>
       </Inline>

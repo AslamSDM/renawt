@@ -28,7 +28,7 @@ export const buttonVariants = cva(
         link: "h-auto! px-0! text-ink underline decoration-rule-strong underline-offset-4 hover:decoration-ink",
       },
       size: {
-        sm: "h-8 px-3 text-[13px] [&_svg:not([class*='size-'])]:size-3.5",
+        sm: "h-8 px-3 text-[13px] [&_svg:not([class*='size-'])]:size-3.5 pointer-coarse:after:absolute pointer-coarse:after:inset-x-0 pointer-coarse:after:-inset-y-1",
         md: "h-10 px-4 text-sm [&_svg:not([class*='size-'])]:size-4",
         lg: "h-12 px-6 text-[15px] [&_svg:not([class*='size-'])]:size-4",
       },
@@ -81,7 +81,7 @@ export function Button({
 }
 
 const ICON_SIZES = {
-  sm: "size-8 [&_svg:not([class*='size-'])]:size-3.5",
+  sm: "size-8 [&_svg:not([class*='size-'])]:size-3.5 pointer-coarse:after:-inset-x-1",
   md: "size-10 [&_svg:not([class*='size-'])]:size-4",
   lg: "size-12 [&_svg:not([class*='size-'])]:size-5",
 } as const;

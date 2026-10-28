@@ -1,10 +1,10 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowRight, Clapperboard, Lightbulb, Plus, Radar } from "lucide-react";
 import { EmptyState, Grid, Inline, PageHeader, Section, StatTile } from "@/components/layout";
 import { Badge, Button, Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui";
 import { FormatBadge } from "@/components/app/badges";
 import { QueueList } from "@/components/app/queue-list";
-import { NoChannel } from "@/components/app/no-channel";
 import { VideoThumb } from "@/components/app/video-thumb";
 import { getActiveChannel } from "@/lib/queries/channels";
 import { loadEntitlements } from "@/lib/queries/billing";
@@ -19,20 +19,8 @@ export default async function HomePage() {
   const viewer = await getViewer();
   const [channel, ent] = await Promise.all([getActiveChannel(viewer), loadEntitlements(viewer)]);
 
-  if (!channel) {
-    return (
-      <>
-        <PageHeader title="Home" description="Your channel’s week at a glance: fresh ideas, videos in production and what posted." />
-        <Grid cols="stats">
-          <StatTile label="Videos left" value={ent.videosRemaining} hint={`${ent.plan.name} plan`} />
-          <StatTile label="Scheduled" value={0} />
-          <StatTile label="Published 7d" value={0} />
-          <StatTile label="Avg outlier" value="–" />
-        </Grid>
-        <NoChannel what="ideas, videos and posts" />
-      </>
-    );
-  }
+  // First run: a new account has no channel yet, so the kit wizard is the only useful next step.
+  if (!channel) redirect("/onboarding");
 
   const data = await loadHome(viewer, channel);
   const kit = parseKit(channel.kit);
@@ -55,11 +43,6 @@ export default async function HomePage() {
             <Button asChild variant="outline">
               <Link href="/app/radar">
                 <Radar /> Open radar
-              </Link>
-            </Button>
-            <Button asChild>
-              <Link href="/app/new">
-                <Plus /> New video
               </Link>
             </Button>
           </>

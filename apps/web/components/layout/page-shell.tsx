@@ -14,10 +14,12 @@ export interface PageShellProps {
    */
   offsetNav?: boolean;
   className?: string;
+  /** Focused flow (onboarding): no center nav links, navbar aligned to the app column. */
+  focused?: boolean;
 }
 
 /** Marketing page frame: fixed Navbar, main, Footer. */
-export function PageShell({ children, bare = false, offsetNav = true, className }: PageShellProps) {
+export function PageShell({ children, bare = false, offsetNav = true, focused = false, className }: PageShellProps) {
   return (
     <TooltipProvider>
       <div className={cn("relative flex min-h-dvh flex-col overflow-x-clip bg-surface text-ink", className)}>
@@ -27,7 +29,7 @@ export function PageShell({ children, bare = false, offsetNav = true, className 
         >
           Skip to content
         </a>
-        <Navbar />
+        {focused ? <Navbar showNavLinks={false} width="app" /> : <Navbar />}
         <main id="main" className={cn("flex-1", offsetNav && "pt-16")}>
           {children}
         </main>

@@ -9,7 +9,7 @@ export function Switch({ className, ...props }: React.ComponentProps<typeof Swit
     <SwitchPrimitive.Root
       data-slot="switch"
       className={cn(
-        "peer inline-flex h-5 w-9 shrink-0 items-center rounded-full border border-rule-strong bg-paper-3 p-0.5 transition-colors duration-200 ease-out-expo",
+        "peer relative inline-flex h-5 w-9 shrink-0 pointer-coarse:after:absolute pointer-coarse:after:-inset-x-1 pointer-coarse:after:-inset-y-2.5 items-center rounded-full border border-rule-strong bg-paper-3 p-0.5 transition-colors duration-200 ease-out-expo",
         "data-[state=checked]:border-accent data-[state=checked]:bg-accent disabled:cursor-not-allowed disabled:opacity-45",
         className,
       )}

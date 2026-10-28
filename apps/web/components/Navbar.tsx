@@ -24,12 +24,14 @@ const NAV_LINKS = [
 ];
 
 export interface NavbarProps {
-  /** Hide center links (auth/legal pages). */
+  /** Hide center links (auth pages, onboarding). */
   showNavLinks?: boolean;
+  /** Match the content column below: marketing 1400 (default) or app 1200 (onboarding). */
+  width?: "marketing" | "app";
 }
 
 /** Fixed marketing navbar: 64px, blur, hairline rule. */
-export function Navbar({ showNavLinks = true }: NavbarProps) {
+export function Navbar({ showNavLinks = true, width = "marketing" }: NavbarProps) {
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const [open, setOpen] = React.useState(false);
@@ -52,7 +54,7 @@ export function Navbar({ showNavLinks = true }: NavbarProps) {
         scrolled ? "glass border-rule" : "border-transparent bg-surface/40 backdrop-blur-md",
       )}
     >
-      <nav aria-label="Primary" className="mx-auto flex h-full max-w-[1400px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <nav aria-label="Primary" className={cn("mx-auto flex h-full items-center", width === "app" ? "max-w-[1200px]" : "max-w-[1400px]", "justify-between gap-4 px-4 sm:px-6 lg:px-8")}>
         <Link href="/" aria-label="Remawt home" className="flex shrink-0 items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo/remwat full logo .svg" alt="Remawt" className="block h-9 w-auto" />
@@ -82,14 +84,16 @@ export function Navbar({ showNavLinks = true }: NavbarProps) {
 
         <div className="flex items-center gap-2">
           {status === "loading" ? (
-            <span className="h-8 w-24 animate-pulse rounded-[2px] bg-paper-3" aria-hidden />
+            <span className={cn("h-8 animate-pulse bg-paper-3", width === "app" ? "w-8 rounded-full" : "w-24 rounded-[2px]")} aria-hidden />
           ) : user ? (
             <>
-              <Button asChild size="sm" className="hidden sm:inline-flex">
-                <Link href="/app">
-                  Open app <ArrowUpRight />
-                </Link>
-              </Button>
+              {width !== "app" && (
+                <Button asChild size="sm" className="hidden sm:inline-flex">
+                  <Link href="/app">
+                    Open app <ArrowUpRight />
+                  </Link>
+                </Button>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger className="rounded-full transition-opacity hover:opacity-80" aria-label="Account menu">
                   <Avatar src={user.image} name={user.name ?? user.email} size="md" />

@@ -126,7 +126,7 @@ export function PlanGrid({
                   </Button>
                 ) : p.id === "FREE" ? (
                   <Button block variant="ghost" disabled>
-                    {currentRank > 0 ? "Downgrade in the billing portal" : "Free"}
+                    {currentRank > 0 ? "Downgrade in portal" : "Free"}
                   </Button>
                 ) : (
                   <Button

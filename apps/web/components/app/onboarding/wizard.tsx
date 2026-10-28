@@ -28,6 +28,9 @@ const COPY: Record<(typeof STEPS)[number]["id"], { title: string; description: s
   review: { title: "Review your kit", description: "Name the channel and create it. Everything here can be edited later in channel settings." },
 };
 
+/** Steps that already have a good default; the user can jump straight to review. */
+const OPTIONAL_STEPS = new Set<string>(["skin", "voice", "persona", "mascot"]);
+
 function slugHandle(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, ".").replace(/^\.+|\.+$/g, "").slice(0, 30);
 }
@@ -90,7 +93,24 @@ export function OnboardingWizard({ voices, voicesLive }: { voices: VoiceOption[]
       toast.error(err);
       return;
     }
-    s.go(Math.min(s.step + 1, STEPS.length - 1));
+    // Sensible defaults so a newcomer can click straight through: the niche's example
+    // audience and promise, and a channel name derived from the niche. All editable.
+    if (step.id === "niche" && s.niche) {
+      const c = nicheCopy(s.niche);
+      s.set({ audience: s.audience.trim() || c.audience, promise: s.promise.trim() || c.promise });
+    }
+    const to = Math.min(s.step + 1, STEPS.length - 1);
+    if (STEPS[to].id === "review") prefillName();
+    s.go(to);
+  }
+
+  function prefillName() {
+    if (!s.name.trim() && niche) s.set({ name: `${niche.name.split(/[\s&]+/)[0]} Explained` });
+  }
+
+  function skipToReview() {
+    prefillName();
+    s.go(STEPS.length - 1);
   }
 
   function buildKit(): IdentityKit | null {
@@ -196,21 +216,12 @@ export function OnboardingWizard({ voices, voicesLive }: { voices: VoiceOption[]
 
         {step.id === "audience" && (
           <Stack gap={4} className="max-w-[640px]">
-            <FormField label="Audience" required hint={`For example: “${copy.audience}”.`}>
+            <FormField label="Audience" required hint="Filled in from your niche. Make it more specific if you can.">
               <Input value={s.audience} onChange={(e) => s.set({ audience: e.target.value })} maxLength={160} placeholder={copy.audience} />
             </FormField>
-            <FormField label="Promise" required hint={`What every video delivers. For example: “${copy.promise}”.`}>
+            <FormField label="Promise" required hint="What every video delivers, in one line.">
               <Textarea value={s.promise} onChange={(e) => s.set({ promise: e.target.value })} maxLength={240} rows={3} placeholder={copy.promise} />
             </FormField>
-            <Inline gap={2}>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => s.set({ audience: s.audience || copy.audience, promise: s.promise || copy.promise })}
-              >
-                Use the examples
-              </Button>
-            </Inline>
           </Stack>
         )}
 
@@ -278,13 +289,17 @@ export function OnboardingWizard({ voices, voicesLive }: { voices: VoiceOption[]
           </Grid>
         )}
 
-        <footer className="flex items-center justify-between gap-3 border-t border-rule pt-6">
+        {/* Sticky so Continue is always one click away, even on the long niche list. */}
+        <footer className="sticky bottom-0 z-10 -mx-4 flex items-center justify-between gap-3 border-t border-rule bg-surface/95 px-4 py-4 backdrop-blur sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0">
           <Button variant="ghost" onClick={() => s.go(Math.max(0, s.step - 1))} disabled={s.step === 0}>
             <ArrowLeft /> Back
           </Button>
-          <Inline gap={2}>
-            {step.id === "mascot" && !s.mascot.enabled && (
-              <span className="type-small hidden text-muted sm:inline">No mascot is fine.</span>
+          <Inline gap={2} wrap={false}>
+            {OPTIONAL_STEPS.has(step.id) && (
+              <Button variant="ghost" onClick={skipToReview}>
+                <span className="sm:hidden">Skip</span>
+                <span className="hidden sm:inline">Skip, use defaults</span>
+              </Button>
             )}
             {step.id === "review" ? (
               <Button onClick={submit} loading={submitting}>

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui";
 export default function NotFound() {
   return (
     <EmptyState
+      titleAs="h1"
       icon={Clapperboard}
       title="Video not found"
       description="It may have been deleted, or it belongs to another account."

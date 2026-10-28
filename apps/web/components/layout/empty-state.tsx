@@ -12,6 +12,8 @@ interface StateProps {
   action?: React.ReactNode;
   /** compact = inside a card/table (py-10), default = page-level (py-16). */
   size?: "compact" | "default";
+  /** Use "h1" when the state is the whole page (not-found, error boundary). */
+  titleAs?: "p" | "h1" | "h2";
   className?: string;
 }
 
@@ -31,7 +33,7 @@ function Frame({ size = "default", className, children, role }: { size?: StatePr
 }
 
 /** Nothing here yet. Always say what goes here and give the one action that fills it. */
-export function EmptyState({ icon: Icon, title, description, action, size, className }: StateProps) {
+export function EmptyState({ icon: Icon, title, description, action, size, titleAs: Title = "p", className }: StateProps) {
   return (
     <Frame size={size} className={className}>
       {Icon && (
@@ -40,7 +42,7 @@ export function EmptyState({ icon: Icon, title, description, action, size, class
         </span>
       )}
       <div className="flex max-w-[44ch] flex-col gap-1.5">
-        <p className="type-subheading text-ink">{title}</p>
+        <Title className="type-subheading text-ink">{title}</Title>
         {description && <p className="type-small text-muted">{description}</p>}
       </div>
       {action && <div className="flex flex-wrap items-center justify-center gap-2 pt-1">{action}</div>}
@@ -49,14 +51,14 @@ export function EmptyState({ icon: Icon, title, description, action, size, class
 }
 
 /** Something failed. Name the problem and the recovery; action is usually "Try again". */
-export function ErrorState({ icon: Icon = AlertTriangle, title, description, action, size, className }: StateProps) {
+export function ErrorState({ icon: Icon = AlertTriangle, title, description, action, size, titleAs: Title = "p", className }: StateProps) {
   return (
     <Frame size={size} role="alert" className={cn("border-solid border-danger/30 bg-danger-soft/40", className)}>
       <span className="grid size-10 place-items-center rounded-[2px] border border-danger/30 bg-danger-soft text-danger">
         <Icon className="size-5" strokeWidth={1.6} aria-hidden />
       </span>
       <div className="flex max-w-[44ch] flex-col gap-1.5">
-        <p className="type-subheading text-ink">{title}</p>
+        <Title className="type-subheading text-ink">{title}</Title>
         {description && <p className="type-small text-muted">{description}</p>}
       </div>
       {action && <div className="flex flex-wrap items-center justify-center gap-2 pt-1">{action}</div>}

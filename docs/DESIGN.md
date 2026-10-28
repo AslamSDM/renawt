@@ -176,20 +176,20 @@ All exported from `@/components/ui` (primitives) and `@/components/layout` (stru
 ### Layout (`components/layout`)
 | Component | Props |
 |---|---|
-| `PageShell` | marketing frame (Navbar + main + Footer). `bare`, `offsetNav` |
+| `PageShell` | marketing frame (Navbar + main + Footer). `bare`, `offsetNav`, `focused` (onboarding: no center links, navbar aligned to the 1200 app column) |
 | `Container` | `width: marketing \| app \| prose \| full`, `flush`, `as` |
-| `MarketingSection` | `title`, `lead`, `action`, `tone: default \| wash`, `rule`, `width`, `id`, `bodyClassName` |
+| `MarketingSection` | `title`, `lead`, `action`, `tone: default \| wash`, `rule`, `width`, `id`, `bodyClassName`, `titleAs: h2 \| h1` (h1 when the section opens the page) |
 | `AppShell` | wraps `(app)` routes. `topbarStart`, `topbarEnd` |
 | `AppShellData` | client bridge: `channels`, `activeChannelId`, `plan`, `usage`. Render it from any server layout/page to feed the shell. |
 | `useAppStore`, `useActiveChannel` | zustand store (channels, activeChannelId (persisted), plan, usage, ready, hydrate) |
-| `APP_NAV`, `APP_ROUTES` | route config (`/app`, `/app/radar`, `/app/ideas`, `/app/videos`, `/app/schedule`, `/app/analytics`, `/app/series`, `/app/settings`, new video `/app/videos/new`, new channel `/onboarding`, billing `/app/settings/billing`) |
+| `APP_NAV`, `APP_NAV_FOOTER`, `APP_ROUTES` | route config (`/app`, `/app/radar`, `/app/ideas`, `/app/videos`, `/app/schedule`, `/app/analytics`, `/app/series`, `/app/settings`, new video `/app/videos/new`, new channel `/onboarding`, billing `/app/settings/billing`) |
 | `PageHeader` | `title`, `description`, `actions`, `back {href,label}`, `meta`, `tabs` |
 | `Section` | `title`, `description`, `action`, children |
 | `Stack` | `gap` (step), `align`, `justify`, `as` |
 | `Inline` | `gap` (step), `align`, `justify`, `wrap`, `as` |
 | `Grid` | `cols: 1 \| 2 \| 3 \| 4 \| 6 \| stats \| tiles \| aside`, `gap` (step) |
 | `Toolbar`, `ToolbarGroup` | filter/action row |
-| `EmptyState`, `ErrorState`, `LoadingState` | `icon`, `title`, `description`, `action`, `size: default \| compact` |
+| `EmptyState`, `ErrorState`, `LoadingState` | `icon`, `title`, `description`, `action`, `size: default \| compact`, `titleAs: p \| h1 \| h2` (h1 when the state is the whole page: not-found, error boundaries) |
 | `StatTile` | `label`, `value`, `delta`, `deltaLabel`, `higherIsBetter`, `hint`, `loading` |
 | `KeyValueList` | `items [{label, value, numeric}]`, `layout: inline \| stacked` |
 
@@ -208,6 +208,19 @@ All exported from `@/components/ui` (primitives) and `@/components/layout` (stru
 AppShell already provides the container, gutters, top padding and the `gap-8` between these siblings. Do not wrap pages in another container or add margins.
 
 ## 7. States
+
+Structural rules added in the UX pass (2026-10-28):
+- **One h1 per page.** PageHeader owns it in the app; `MarketingSection titleAs="h1"` on marketing pages without a hero; `titleAs="h1"` on whole-page Empty/Error states.
+- **Active nav** matches nested routes. `NavItem.also` adds extra path patterns (channel settings also matches `/app/channels/[id]/settings`), `NavItem.exclude` removes sub-paths that have their own item (`/app/settings/billing` → Billing).
+- **Topbar CTA** ("New video") is the app-wide primary action. Pages do not repeat it in their PageHeader; it hides on `/app/new` itself.
+- **Touch targets:** sm Buttons, sm IconButtons, Checkbox and Switch keep their visual size but get an invisible hit area of at least 40px on coarse pointers (`pointer-coarse:after:*`). Custom toggles (series day pills) use `h-10` below `sm`.
+- **Sheets** keep the header and footer fixed; only `SheetBody` scrolls. Put the confirm summary and the reason a confirm is disabled in the `SheetFooter`.
+- **Dialogs** `md`/`lg` go full screen below `sm`; `sm` confirms stay centered.
+- **Disabled primary actions** always show the reason next to the button (new video footer, publish drawer footer), not only in a toast after clicking.
+- **Underline tabs** draw the rule as an inset shadow so the active underline is not clipped by the scroll container. Segmented tabs size to content (`w-fit`).
+- **Long flows** (onboarding) use a sticky footer so the primary action stays in reach, and offer "Skip, use defaults" on steps that already have good defaults.
+- **Unsaved edits** (scene editor) show a warning `Badge` ("Unsaved changes") and guard `beforeunload`.
+- **Elapsed times** in mono columns use `m:ss` (stopwatch), never `1M 00S`.
 
 | State | Style |
 |---|---|

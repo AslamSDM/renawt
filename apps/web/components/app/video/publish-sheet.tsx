@@ -34,7 +34,8 @@ import {
 import { schedulePublication } from "@/lib/actions/publish";
 import { platformLabel } from "@/lib/queries/format";
 import { ChipInput } from "../chip-input";
-import { zonedNow, zonedToUtc } from "@/lib/queries/tz";
+import { nextSlot, zonedNow, zonedToUtc } from "@/lib/queries/tz";
+import { formatDateTime } from "@/lib/queries/format";
 
 export interface PublishAccount {
   id: string;
@@ -129,7 +130,7 @@ function TikTokBlock({ acc, t, set }: { acc: PublishAccount; t: Target; set: (p:
       {t.promotes && (
         <Stack gap={3}>
           <span className="flex items-start gap-2">
-            <Checkbox id={`${acc.id}-brand`} checked={t.yourBrand} onCheckedChange={(v) => set({ yourBrand: v === true })} />
+            <Checkbox className="mt-0.5" id={`${acc.id}-brand`} checked={t.yourBrand} onCheckedChange={(v) => set({ yourBrand: v === true })} />
             <Stack gap={1}>
               <Label htmlFor={`${acc.id}-brand`}>Your brand</Label>
               <span className="type-caption text-muted">You’re promoting yourself or your own business.</span>
@@ -137,6 +138,7 @@ function TikTokBlock({ acc, t, set }: { acc: PublishAccount; t: Target; set: (p:
           </span>
           <span className="flex items-start gap-2">
             <Checkbox
+              className="mt-0.5"
               id={`${acc.id}-branded`}
               checked={t.branded}
               onCheckedChange={(v) => set({ branded: v === true, ...(v === true && t.privacy === "private" ? { privacy: null } : {}) })}
@@ -156,8 +158,8 @@ function TikTokBlock({ acc, t, set }: { acc: PublishAccount; t: Target; set: (p:
         </Stack>
       )}
       <span className="flex items-start gap-2">
-        <Checkbox id={`${acc.id}-consent`} checked={t.consent} onCheckedChange={(v) => set({ consent: v === true })} aria-required />
-        <Label htmlFor={`${acc.id}-consent`} className="type-small font-normal text-muted">
+        <Checkbox className="mt-0.5" id={`${acc.id}-consent`} checked={t.consent} onCheckedChange={(v) => set({ consent: v === true })} aria-required />
+        <Label htmlFor={`${acc.id}-consent`} className="type-small block font-normal text-muted">
           By posting, you agree to TikTok’s{" "}
           <a href="https://www.tiktok.com/legal/page/global/music-usage-confirmation/en" target="_blank" rel="noreferrer noopener" className="text-ink underline decoration-rule-strong underline-offset-4">
             Music Usage Confirmation
@@ -196,7 +198,9 @@ export function PublishSheet({
   ready: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
-  const initial = React.useMemo(() => zonedNow(timezone), [timezone]);
+  // Reference time for the "in the future" check; refreshed each time the drawer opens.
+  const [openedAt, setOpenedAt] = React.useState(() => Date.now());
+  const initial = React.useMemo(() => nextSlot(timezone), [timezone]);
   const [date, setDate] = React.useState(initial.date);
   const [time, setTime] = React.useState(initial.time);
   const [now, setNow] = React.useState(false);
@@ -227,19 +231,33 @@ export function PublishSheet({
   const set = (id: string, p: Partial<Target>) => setTargets((t) => ({ ...t, [id]: { ...t[id], ...p } }));
   const selected = accounts.filter((a) => targets[a.id]?.enabled);
 
-  function submit() {
-    if (selected.length === 0) return void toast.error("Pick at least one account.");
-    const when = now ? new Date(Date.now() + 60_000) : zonedToUtc(date, time, timezone);
-    if (!now && when.getTime() < Date.now()) return void toast.error("Pick a time in the future.");
+  const when = now ? null : date && time ? zonedToUtc(date, time, timezone) : null;
+  // First thing still missing, shown next to the confirm button instead of a surprise toast.
+  const blocker = React.useMemo(() => {
+    if (selected.length === 0) return "Pick at least one account.";
+    if (!now && (!when || when.getTime() < openedAt)) return "Pick a time in the future.";
     for (const a of selected) {
       const t = targets[a.id];
       if (a.platform === "TIKTOK") {
-        if (!t.privacy) return void toast.error(`Choose who can view the post on ${a.handle ?? "TikTok"}.`);
-        if (t.promotes && !t.yourBrand && !t.branded) return void toast.error("Pick what the TikTok post promotes, or turn the disclosure off.");
-        if (!t.consent) return void toast.error("Confirm TikTok’s Music Usage Confirmation.");
+        if (!t.privacy) return "Choose who can view the TikTok post.";
+        if (t.promotes && !t.yourBrand && !t.branded) return "Pick what the TikTok post promotes, or turn the disclosure off.";
+        if (!t.consent) return "Tick TikTok’s Music Usage Confirmation.";
       }
-      if (a.platform === "YOUTUBE" && !t.title.trim()) return void toast.error("YouTube needs a title.");
+      if (a.platform === "YOUTUBE" && !t.title.trim()) return "Add a YouTube title.";
     }
+    return null;
+  }, [selected, now, when, targets, openedAt]);
+  const summary =
+    selected.length === 0
+      ? null
+      : `${selected.length} post${selected.length === 1 ? "" : "s"} · ${selected.map((a) => platformLabel(a.platform)).join(", ")} · ${
+          now ? "now" : when ? `${formatDateTime(when, timezone)} ${timezone.split("/").pop()?.replace(/_/g, " ")}` : "no time set"
+        }`;
+
+  function submit() {
+    if (blocker) return void toast.error(blocker);
+    if (!now && when && when.getTime() < Date.now()) return void toast.error("Pick a time in the future.");
+    const at = now || !when ? new Date(Date.now() + 60_000) : when;
     start(async () => {
       const res = await schedulePublication({
         videoId,
@@ -248,7 +266,7 @@ export function PublishSheet({
           const tt = a.platform === "TIKTOK";
           return {
             socialAccountId: a.id,
-            scheduledAt: when.toISOString(),
+            scheduledAt: at.toISOString(),
             title: a.platform === "YOUTUBE" ? t.title.trim() : undefined,
             caption: t.caption,
             hashtags: t.hashtags,
@@ -275,7 +293,13 @@ export function PublishSheet({
   }
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet
+      open={open}
+      onOpenChange={(o) => {
+        if (o) setOpenedAt(Date.now());
+        setOpen(o);
+      }}
+    >
       <SheetTrigger asChild>
         <Button disabled={!ready}>
           <Send /> Publish
@@ -318,7 +342,7 @@ export function PublishSheet({
                     <FormField label="Date">
                       <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} min={zonedNow(timezone, 0).date} />
                     </FormField>
-                    <FormField label="Time" aside={timezone.split("/").pop()?.replace(/_/g, " ")}>
+                    <FormField label="Time" aside={timezone.split("/").pop()?.replace(/_/g, " ")} hint="Defaults to the next 18:00 slot.">
                       <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} step={900} />
                     </FormField>
                   </div>
@@ -373,13 +397,19 @@ export function PublishSheet({
           )}
         </SheetBody>
         {canPublish && accounts.length > 0 && (
-          <SheetFooter className="justify-end">
-            <Button variant="ghost" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={submit} loading={pending} disabled={selected.length === 0}>
-              {now ? "Post now" : `Schedule ${selected.length || ""}`.trim()}
-            </Button>
+          <SheetFooter className="flex-col items-stretch gap-3">
+            <div className="flex min-w-0 flex-col gap-0.5" aria-live="polite">
+              {summary && <span className="type-small text-ink tabular-nums">{summary}</span>}
+              <span className={cn("type-caption", blocker ? "text-muted" : "text-success")}>{blocker ?? "Ready to go."}</span>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={submit} loading={pending} disabled={!!blocker}>
+                {now ? "Post now" : selected.length > 1 ? `Schedule ${selected.length} posts` : "Schedule"}
+              </Button>
+            </div>
           </SheetFooter>
         )}
       </SheetContent>

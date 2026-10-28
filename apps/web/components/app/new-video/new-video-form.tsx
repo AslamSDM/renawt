@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AudioLines, FileVideo, Lightbulb, Mic, PenLine, RotateCcw, Upload, X } from "lucide-react";
+import { AudioLines, CircleCheck, FileVideo, Lightbulb, Mic, PenLine, RotateCcw, TriangleAlert, Upload, X } from "lucide-react";
 import type { PlanId } from "@remawt/shared";
 import { Grid, Inline, Section, Stack } from "@/components/layout";
 import {
@@ -97,6 +97,42 @@ function UploadStatus({ state, onRetry, onClear }: { state: UploadState; onRetry
   );
 }
 
+type Check = { label: string; value: string; tone: "ok" | "warn" | "pending" };
+
+/** Size / aspect / duration checks shown as soon as the browser reads the file, before anything is submitted. */
+function FileChecks({ checks }: { checks: Check[] }) {
+  return (
+    <ul className="flex flex-col divide-y divide-rule rounded-[2px] border border-rule" aria-label="File checks">
+      {checks.map((c) => (
+        <li key={c.label} className="flex min-h-10 items-center gap-3 px-3">
+          {c.tone === "ok" ? (
+            <CircleCheck className="size-4 shrink-0 text-success" aria-label="Passed" />
+          ) : c.tone === "warn" ? (
+            <TriangleAlert className="size-4 shrink-0 text-warning" aria-label="Heads up" />
+          ) : (
+            <span className="grid size-4 shrink-0 place-items-center" aria-label="Checking">
+              <span className="size-1.5 rounded-full bg-subtle" />
+            </span>
+          )}
+          <span className="mono-tick w-20 shrink-0">{c.label}</span>
+          <span className="type-small min-w-0 flex-1 text-ink">{c.value}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function fmtDuration(ms: number) {
+  const s = Math.round(ms / 1000);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
+const NEXT_STEPS = [
+  ["Script", "Researched and written in your channel’s voice, then split into scenes."],
+  ["Render", "Voice, visuals and captions in your kit’s look, checked before render."],
+  ["Review", "Edit any scene, re-render for free, then publish or schedule."],
+] as const;
+
 export function NewVideoForm({ channelId, plan, videosRemaining, defaultDuration, idea, initialTab }: NewVideoFormProps) {
   const router = useRouter();
   const [kind, setKind] = React.useState<Kind>(initialTab);
@@ -133,6 +169,41 @@ export function NewVideoForm({ channelId, plan, videosRemaining, defaultDuration
   const maxQ = qualities.indexOf(plan.quality);
   const uploadReady = kind === "prompt" || (active?.state.status === "done" && !!active.state.publicUrl);
   const outOfVideos = videosRemaining <= 0;
+
+  function checksFor(k: "video" | "audio"): Check[] {
+    const st = (k === "video" ? videoUp : audioUp).state;
+    const limit = k === "video" ? 2_000 : 200;
+    const mb = (st.file?.size ?? 0) / 1e6;
+    const list: Check[] = [{ label: "Size", value: `${mb.toFixed(1)} MB of ${limit.toLocaleString()} MB max`, tone: "ok" }];
+    if (k === "video")
+      list.push(
+        media.aspect
+          ? media.aspect === "9:16"
+            ? { label: "Aspect", value: "9:16 vertical, used as is", tone: "ok" }
+            : { label: "Aspect", value: `${media.aspect}, reframed to 9:16 with a smart crop`, tone: "warn" }
+          : { label: "Aspect", value: "Reading the file", tone: "pending" },
+      );
+    list.push(
+      media.durationMs == null
+        ? { label: "Length", value: "Reading the file", tone: "pending" }
+        : media.durationMs / 1000 > plan.maxDurationSec
+          ? { label: "Length", value: `${fmtDuration(media.durationMs)}, trimmed to ${plan.maxDurationSec}s on ${plan.name}`, tone: "warn" }
+          : media.durationMs < 10_000
+            ? { label: "Length", value: `${fmtDuration(media.durationMs)}, very short; 20s or more works best`, tone: "warn" }
+            : { label: "Length", value: `${fmtDuration(media.durationMs)}, within the ${plan.maxDurationSec}s limit`, tone: "ok" },
+    );
+    return list;
+  }
+
+  const blocker = outOfVideos
+    ? "You’re out of videos this period."
+    : kind !== "prompt" && active?.state.status === "idle"
+      ? `Upload a ${kind === "video" ? "video" : "voice recording"} to continue.`
+      : kind !== "prompt" && active?.state.status === "error"
+        ? "The upload failed. Retry it to continue."
+        : !uploadReady
+          ? "Waiting for the upload to finish."
+          : null;
 
   function submit() {
     setErrors({});
@@ -290,6 +361,7 @@ export function NewVideoForm({ channelId, plan, videosRemaining, defaultDuration
                   <Stack gap={4}>
                     <UploadStatus state={videoUp.state} onRetry={() => videoUp.state.file && pickFile(videoUp.state.file, "video")} onClear={videoUp.reset} />
                     <Progress value={videoUp.state.status === "signing" ? null : videoUp.state.progress * 100} tone={videoUp.state.status === "error" ? "danger" : videoUp.state.status === "done" ? "success" : "accent"} size="sm" aria-label="Upload progress" />
+                    {videoUp.state.status !== "error" && <FileChecks checks={checksFor("video")} />}
                     <Stack gap={4}>
                       <div className="flex items-start justify-between gap-6">
                         <Stack gap={1}>
@@ -373,12 +445,7 @@ export function NewVideoForm({ channelId, plan, videosRemaining, defaultDuration
                       onLoadedMetadata={(e) => setMedia({ durationMs: Math.round(e.currentTarget.duration * 1000) })}
                     />
                   )}
-                  {media.durationMs != null && (
-                    <p className="mono-tick tabular-nums">
-                      {Math.floor(media.durationMs / 60000)}:{String(Math.round(media.durationMs / 1000) % 60).padStart(2, "0")} recorded
-                      {media.durationMs / 1000 > plan.maxDurationSec ? ` · will be trimmed to ${plan.maxDurationSec}s on ${plan.name}` : ""}
-                    </p>
-                  )}
+                  {audioUp.state.status !== "error" && <FileChecks checks={checksFor("audio")} />}
                 </Card>
               )}
               <FormField label="Notes" aside="Optional" hint="Visual direction: charts, maps, things to show on screen.">
@@ -391,22 +458,37 @@ export function NewVideoForm({ channelId, plan, videosRemaining, defaultDuration
         </TabsContent>
       </Tabs>
 
-      <footer className="flex flex-col-reverse gap-3 border-t border-rule pt-6 sm:flex-row sm:items-center sm:justify-between">
-        <p className="type-small text-muted">
+      <Section title="What happens next">
+        <ol className="grid grid-cols-1 border-y border-rule sm:grid-cols-3">
+          {NEXT_STEPS.map(([title, body], i) => (
+            <li key={title} className="flex flex-col gap-1 border-rule py-4 max-sm:not-first:border-t sm:px-5 sm:first:pl-0 sm:not-first:border-l">
+              <span className="mono-tick tabular-nums">
+                {String(i + 1).padStart(2, "0")} · {title}
+              </span>
+              <span className="type-small text-muted">{body}</span>
+            </li>
+          ))}
+        </ol>
+      </Section>
+
+      <footer className="flex flex-col gap-3 border-t border-rule pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <p className="type-small text-muted" aria-live="polite">
           {outOfVideos ? (
             <>
               You’re out of videos this period.{" "}
               <Link href="/app/settings/billing" className="text-ink underline decoration-rule-strong underline-offset-4 hover:decoration-ink">
-                Upgrade
+                See plans
               </Link>
             </>
+          ) : blocker ? (
+            blocker
           ) : (
             <>
-              Uses 1 of <span className="tabular-nums text-ink">{videosRemaining}</span> videos left on {plan.name}.
+              Uses 1 video. <span className="tabular-nums text-ink">{videosRemaining}</span> left this period on {plan.name}.
             </>
           )}
         </p>
-        <Button size="lg" onClick={submit} loading={pending} disabled={outOfVideos || !uploadReady}>
+        <Button size="lg" onClick={submit} loading={pending} disabled={!!blocker} className="max-sm:w-full">
           Make video
         </Button>
       </footer>

@@ -141,7 +141,7 @@ export function SeriesDialog({ channelId, initial, timezone }: { channelId: stri
                       aria-pressed={on}
                       onClick={() => set({ days: toggle(v.days, i + 1).sort() })}
                       className={cn(
-                        "type-small h-8 w-12 rounded-[2px] border transition-colors duration-120",
+                        "type-small h-10 w-12 rounded-[2px] sm:h-8 border transition-colors duration-120",
                         on ? "border-accent bg-accent-soft text-ink" : "border-rule-strong text-muted hover:border-ink/40 hover:text-ink",
                       )}
                     >

@@ -18,7 +18,7 @@ export function Section({ title, description, action, className, children, ...pr
   return (
     <section className={cn("flex min-w-0 flex-col gap-4", className)} {...props}>
       {hasHeader && (
-        <div className="flex min-h-8 flex-wrap items-end justify-between gap-x-4 gap-y-2">
+        <div className={cn("flex flex-wrap items-end justify-between gap-x-4 gap-y-2", action && "min-h-8")}>
           <div className="flex min-w-0 flex-col gap-1">
             {title && <h2 className="type-heading text-ink">{title}</h2>}
             {description && <p className="type-small max-w-[64ch] text-muted">{description}</p>}
@@ -43,6 +43,8 @@ export interface MarketingSectionProps extends Omit<React.ComponentProps<"sectio
   rule?: boolean;
   width?: "marketing" | "prose";
   bodyClassName?: string;
+  /** Heading level. Use "h1" when this section opens the page (pricing). */
+  titleAs?: "h1" | "h2";
 }
 
 /**
@@ -58,6 +60,7 @@ export function MarketingSection({
   width = "marketing",
   className,
   bodyClassName,
+  titleAs: Title = "h2",
   children,
   ...props
 }: MarketingSectionProps) {
@@ -70,7 +73,7 @@ export function MarketingSection({
       <Container width={width}>
         {hasHeader && (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-end lg:gap-8">
-            {title && <h2 className="type-display text-ink lg:col-span-7">{title}</h2>}
+            {title && <Title className="type-display text-ink lg:col-span-7">{title}</Title>}
             {(lead || action) && (
               <div className="flex flex-col items-start gap-6 lg:col-span-5 lg:pb-2">
                 {lead && <p className="type-body-lg max-w-[52ch] text-muted">{lead}</p>}

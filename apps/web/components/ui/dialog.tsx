@@ -41,6 +41,9 @@ export function DialogContent({
           "fixed left-1/2 top-1/2 z-50 flex max-h-[calc(100dvh-32px)] w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-6 overflow-y-auto rounded-[2px] border border-rule-strong bg-paper p-6 text-ink shadow-[0_24px_64px_-24px_rgba(0,0,0,0.9)]",
           "duration-200 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-[0.98] data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-[0.98]",
           WIDTHS[size],
+          // Forms (md/lg) take the whole screen on phones; short confirms (sm) stay centered.
+          size !== "sm" &&
+            "max-sm:inset-0 max-sm:max-h-dvh max-sm:w-full max-sm:max-w-none max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-none max-sm:border-0 max-sm:p-4 max-sm:pt-6",
           className,
         )}
         {...props}

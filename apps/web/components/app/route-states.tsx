@@ -12,6 +12,7 @@ export function RouteError({ what, error, reset }: { what: string; error: Error 
   }, [error, what]);
   return (
     <ErrorState
+      titleAs="h1"
       title={`Couldn’t load ${what}.`}
       description={
         <>
