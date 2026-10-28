@@ -2,15 +2,16 @@
   "name": "@remawt/db",
   "version": "2.0.0",
   "private": true,
+  "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
     "generate": "prisma generate",
-    "migrate:dev": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
     "studio": "prisma studio",
     "typecheck": "tsc --noEmit",
-    "build": "prisma generate"
+    "build": "prisma generate",
+    "seed:music": "tsx scripts/seed-music.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0"
@@ -18,6 +19,11 @@
   "devDependencies": {
     "prisma": "^5.22.0",
     "typescript": "^5.9.3",
-    "@types/node": "^20"
+    "@types/node": "^20",
+    "tsx": "^4.20.0"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
   }
 }

@@ -12,19 +12,19 @@ datasource db {
 // ───────────────────────── Auth & billing (kept from v1) ─────────────────────────
 
 model User {
-  id            String    @id @default(cuid())
-  email         String?   @unique
-  name          String?
-  image         String?
-  emailVerified DateTime?
+  id               String    @id @default(cuid())
+  email            String?   @unique
+  name             String?
+  image            String?
+  emailVerified    DateTime?
   // Add-on credits (AI video clips, custom music). Plan quota is videos/month, tracked below.
-  creditBalance Int       @default(0)
-  videoAllowance Int      @default(3)   // videos per period for current plan (Free = 3)
-  videosUsed     Int      @default(0)   // consumed in current period
-  rolloverVideos Int      @default(0)   // unused from previous period, 1-month rollover
-  usagePeriodStart DateTime @default(now())
-  onboardedAt   DateTime?
-  createdAt     DateTime  @default(now())
+  creditBalance    Int       @default(0)
+  videoAllowance   Int       @default(3) // videos per period for current plan (Free = 3)
+  videosUsed       Int       @default(0) // consumed in current period
+  rolloverVideos   Int       @default(0) // unused from previous period, 1-month rollover
+  usagePeriodStart DateTime  @default(now())
+  onboardedAt      DateTime?
+  createdAt        DateTime  @default(now())
 
   channels        Channel[]
   subscription    Subscription?
@@ -46,20 +46,27 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([provider, providerAccountId])
   @@index([userId])
 }
 
 model Subscription {
-  id        String @id @default(cuid())
-  userId    String @unique
-  plan      String // FREE | STARTER | CREATOR | PRO | AGENCY
-  status    String // active | cancelled | past_due | ...
-  dodoSubId String
-  billing   String @default("monthly") // monthly | annual
-  currentPeriodEnd DateTime?
-  user User @relation(fields: [userId], references: [id])
+  id                String    @id @default(cuid())
+  userId            String    @unique
+  plan              String // FREE | STARTER | CREATOR | PRO | AGENCY
+  status            String // active | cancelled | past_due | ...
+  dodoSubId         String
+  dodoCustomerId    String?
+  dodoProductId     String?
+  billing           String    @default("monthly") // monthly | annual
+  currentPeriodEnd  DateTime?
+  cancelAtPeriodEnd Boolean   @default(false)
+  updatedAt         DateTime  @default(now()) @updatedAt
+  user              User      @relation(fields: [userId], references: [id])
+
+  @@index([dodoSubId])
 }
 
 model CreditPurchase {
@@ -68,7 +75,8 @@ model CreditPurchase {
   amount         Int
   dodoPurchaseId String
   createdAt      DateTime @default(now())
-  user User @relation(fields: [userId], references: [id])
+  user           User     @relation(fields: [userId], references: [id])
+
   @@index([userId])
 }
 
@@ -80,12 +88,14 @@ model UsageLedger {
   id        String   @id @default(cuid())
   userId    String
   videoId   String?
-  delta     Int      // -1 per video produced, +N on period reset / rollover, etc.
-  kind      String   // video | rerender | addon_credit | reset | rollover | refund
+  delta     Int // -1 per video produced, +N on period reset / rollover, etc.
+  kind      String // video | rerender | addon_credit | reset | rollover | refund
   note      String?
   createdAt DateTime @default(now())
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId, createdAt])
+  @@index([videoId])
 }
 
 // ───────────────────────── Channels & identity ─────────────────────────
@@ -101,8 +111,8 @@ model Channel {
   userId    String
   name      String
   handle    String?
-  niche     String        // niche slug from @remawt/shared NICHES
-  kit       Json          // IdentityKit (zod schema in @remawt/shared)
+  niche     String // niche slug from @remawt/shared NICHES
+  kit       Json // IdentityKit (zod schema in @remawt/shared)
   timezone  String        @default("UTC")
   status    ChannelStatus @default(DRAFT)
   createdAt DateTime      @default(now())
@@ -113,6 +123,7 @@ model Channel {
   ideas          Idea[]
   videos         Video[]
   series         Series[]
+
   @@index([userId])
   @@index([niche])
 }
@@ -126,23 +137,27 @@ enum Platform {
   LINKEDIN
   X
   PINTEREST
+  REDDIT
+  GOOGLE_TRENDS
+  NEWS
 }
 
 model SocialAccount {
-  id         String   @id @default(cuid())
-  channelId  String
-  platform   Platform
-  provider   String   // postforme | uploadpost | ayrshare | youtube_direct | meta_direct | tiktok_direct | dryrun
-  externalId String   // provider-side account/profile id
-  handle     String?
-  avatarUrl  String?
-  tokens     Json?    // encrypted blob for direct providers
-  caps       Json?    // {dailyLimit, remaining, resetAt}
-  status     String   @default("connected") // connected | expired | revoked | error
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id           String        @id @default(cuid())
+  channelId    String
+  platform     Platform
+  provider     String // postforme | uploadpost | ayrshare | youtube_direct | meta_direct | tiktok_direct | dryrun
+  externalId   String // provider-side account/profile id
+  handle       String?
+  avatarUrl    String?
+  tokens       Json? // encrypted blob for direct providers
+  caps         Json? // {dailyLimit, remaining, resetAt}
+  status       String        @default("connected") // connected | expired | revoked | error
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   channel      Channel       @relation(fields: [channelId], references: [id], onDelete: Cascade)
   publications Publication[]
+
   @@unique([channelId, platform, externalId])
   @@index([channelId])
 }
@@ -150,19 +165,20 @@ model SocialAccount {
 // ───────────────────────── Trend radar (shared across users) ─────────────────────────
 
 model TrendItem {
-  id        String   @id @default(cuid())
-  niche     String
-  platform  Platform
-  url       String
-  externalId String?
-  title     String
-  caption   String?
-  creator   String?
+  id                 String    @id @default(cuid())
+  niche              String
+  platform           Platform
+  url                String
+  externalId         String?
+  title              String
+  caption            String?
+  creator            String?
   creatorMedianViews Int?
-  stats     Json     // {views, likes, comments, shares, ageHours, velocity, outlier}
-  tags      Json?    // {topic, format, hookType, lengthSec, visualStyle}
-  fetchedAt DateTime @default(now())
-  publishedAt DateTime?
+  stats              Json // {views, likes, comments, shares, ageHours, velocity, outlier}
+  tags               Json? // {topic, format, hookType, lengthSec, visualStyle}
+  fetchedAt          DateTime  @default(now())
+  publishedAt        DateTime?
+
   @@unique([platform, url])
   @@index([niche, fetchedAt])
 }
@@ -170,16 +186,17 @@ model TrendItem {
 model TrendCard {
   id        String   @id @default(cuid())
   niche     String
-  weekKey   String   // e.g. 2026-W44
+  weekKey   String // e.g. 2026-W44
   topic     String
-  format    String   // format id from @remawt/shared FORMATS
+  format    String // format id from @remawt/shared FORMATS
   hookType  String?
   score     Float
   summary   String
-  exemplars Json     // [{url, title, views, platform}]
-  evidence  Json?    // [{url, title, source}]
+  exemplars Json // [{url, title, views, platform}]
+  evidence  Json? // [{url, title, source}]
   createdAt DateTime @default(now())
-  ideas Idea[]
+  ideas     Idea[]
+
   @@index([niche, weekKey, score])
 }
 
@@ -201,17 +218,18 @@ model Idea {
   title     String
   format    String
   angle     String?
-  beats     Json       // [{label, durationSec, note}]
-  evidence  Json?      // [{url, title}]
-  risk      Json?      // {level, flags[]}
+  beats     Json // [{label, durationSec, note}]
+  evidence  Json? // [{url, title}]
+  risk      Json? // {level, flags[]}
   score     Float      @default(0)
   status    IdeaStatus @default(SUGGESTED)
   source    String     @default("radar") // radar | user | series
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
-  channel Channel    @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  card    TrendCard? @relation(fields: [cardId], references: [id])
-  videos  Video[]
+  channel   Channel    @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  card      TrendCard? @relation(fields: [cardId], references: [id])
+  videos    Video[]
+
   @@index([channelId, status])
   @@index([cardId])
 }
@@ -231,36 +249,37 @@ enum VideoStatus {
 }
 
 model Video {
-  id          String      @id @default(cuid())
-  channelId   String
-  ideaId      String?
-  seriesId    String?
-  title       String
-  format      String
-  targetSec   Int         @default(45)      // 30–90
-  status      VideoStatus @default(DRAFT)
-  runId       String?     // Mastra/Inngest run id
-  progress    Json?       // [{step, status, message, at, output?}]
-  script      Json?       // Script (zod in shared)
-  voice       Json?       // {audioUrl, durationMs, words:[{w,s,e}]}
-  scenes      Json?       // ScenePlan
-  assets      Json?       // [{id, kind, url, license, prompt?}]
-  composition Json?       // {indexHtml, sceneFiles[], registryBlocks[]}
-  kitSnapshot Json?
-  masterUrl   String?
-  cuts        Json?       // {youtube:{url,sec}, tiktok:{url,sec}, instagram:{url,sec}}
+  id           String        @id @default(cuid())
+  channelId    String
+  ideaId       String?
+  seriesId     String?
+  title        String
+  format       String
+  targetSec    Int           @default(45) // 30–90
+  status       VideoStatus   @default(DRAFT)
+  runId        String? // Mastra/Inngest run id
+  progress     Json? // [{step, status, message, at, output?}]
+  script       Json? // Script (zod in shared)
+  voice        Json? // {audioUrl, durationMs, words:[{w,s,e}]}
+  scenes       Json? // ScenePlan
+  assets       Json? // [{id, kind, url, license, prompt?}]
+  composition  Json? // {indexHtml, sceneFiles[], registryBlocks[]}
+  kitSnapshot  Json?
+  masterUrl    String?
+  cuts         Json? // {youtube:{url,sec}, tiktok:{url,sec}, instagram:{url,sec}}
   thumbnailUrl String?
-  originality Json?       // {score, flags[], comparedTo}
-  qc          Json?       // {lintPassed, criticNotes, labels:{syntheticMedia, aigc}}
-  cost        Json?       // {llmUsd, ttsUsd, imagesUsd, renderUsd, totalUsd}
-  rerenders   Int         @default(0)
-  error       String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  originality  Json? // {score, flags[], comparedTo}
+  qc           Json? // {lintPassed, criticNotes, labels:{syntheticMedia, aigc}}
+  cost         Json? // {llmUsd, ttsUsd, imagesUsd, renderUsd, totalUsd}
+  rerenders    Int           @default(0)
+  error        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   channel      Channel       @relation(fields: [channelId], references: [id], onDelete: Cascade)
   idea         Idea?         @relation(fields: [ideaId], references: [id])
   series       Series?       @relation(fields: [seriesId], references: [id])
   publications Publication[]
+
   @@index([channelId, createdAt])
   @@index([status])
   @@index([ideaId])
@@ -273,18 +292,19 @@ enum SeriesMode {
 }
 
 model Series {
-  id         String     @id @default(cuid())
-  channelId  String
-  name       String
-  cadence    Json       // {perWeek, days:[1..7], hourLocal, formats:[...]}
-  platforms  Platform[]
-  mode       SeriesMode @default(APPROVE)
-  active     Boolean    @default(true)
-  nextRunAt  DateTime?
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  videos  Video[]
+  id        String     @id @default(cuid())
+  channelId String
+  name      String
+  cadence   Json // {perWeek, days:[1..7], hourLocal, formats:[...]}
+  platforms Platform[]
+  mode      SeriesMode @default(APPROVE)
+  active    Boolean    @default(true)
+  nextRunAt DateTime?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  channel   Channel    @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  videos    Video[]
+
   @@index([channelId])
   @@index([active, nextRunAt])
 }
@@ -309,34 +329,36 @@ model Publication {
   externalPostId  String?
   externalUrl     String?
   providerJobId   String?
-  meta            Json?             // {title, caption, hashtags[], privacy, aiLabel, madeForKids, commercial}
+  meta            Json? // {title, caption, hashtags[], privacy, aiLabel, madeForKids, commercial}
   status          PublicationStatus @default(SCHEDULED)
   error           String?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
-  video         Video           @relation(fields: [videoId], references: [id], onDelete: Cascade)
-  socialAccount SocialAccount   @relation(fields: [socialAccountId], references: [id], onDelete: Cascade)
-  metrics       MetricSnapshot[]
+  video           Video             @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  socialAccount   SocialAccount     @relation(fields: [socialAccountId], references: [id], onDelete: Cascade)
+  metrics         MetricSnapshot[]
+
   @@index([videoId])
   @@index([socialAccountId])
   @@index([status, scheduledAt])
 }
 
 model MetricSnapshot {
-  id            String   @id @default(cuid())
+  id            String      @id @default(cuid())
   publicationId String
-  t             String   // 1h | 6h | 24h | 72h | 7d
-  views         Int      @default(0)
-  likes         Int      @default(0)
-  comments      Int      @default(0)
-  shares        Int      @default(0)
-  saves         Int      @default(0)
+  t             String // 1h | 6h | 24h | 72h | 7d
+  views         Int         @default(0)
+  likes         Int         @default(0)
+  comments      Int         @default(0)
+  shares        Int         @default(0)
+  saves         Int         @default(0)
   avgWatchSec   Float?
-  retention     Json?    // [{ratio, watch}]
+  retention     Json? // [{ratio, watch}]
   outlierScore  Float?
   raw           Json?
-  capturedAt    DateTime @default(now())
-  publication Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  capturedAt    DateTime    @default(now())
+  publication   Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+
   @@unique([publicationId, t])
   @@index([publicationId])
 }
@@ -356,16 +378,17 @@ model Music {
   license    String?
   enabled    Boolean  @default(true)
   createdAt  DateTime @default(now())
+
   @@index([source])
   @@index([bpm])
 }
 
 model SfxAsset {
-  id        String   @id @default(cuid())
-  cue       String   @unique // whoosh_soft, riser_short, pop, tick ...
-  url       String
+  id         String   @id @default(cuid())
+  cue        String   @unique // whoosh_soft, riser_short, pop, tick ...
+  url        String
   durationMs Int?
-  createdAt DateTime @default(now())
+  createdAt  DateTime @default(now())
 }
 
 model LlmCall {
@@ -384,7 +407,9 @@ model LlmCall {
   videoId      String?
   channelId    String?
   userId       String?
+  projectId    String? // v1 legacy (kept so historical llm_calls rows keep their project link)
   createdAt    DateTime @default(now())
+
   @@index([videoId])
   @@index([userId])
   @@index([createdAt])

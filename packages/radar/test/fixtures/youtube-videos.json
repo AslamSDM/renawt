@@ -1,0 +1,18 @@
+{
+  "kind": "youtube#videoListResponse",
+  "items": [
+    {
+      "id": "abc123",
+      "snippet": { "publishedAt": "2026-10-27T12:00:00Z", "channelId": "UC_small", "title": "Index funds vs ETFs: which wins?", "description": "We compare fees, taxes and returns.", "channelTitle": "Money Maps", "thumbnails": { "high": { "url": "https://i.ytimg.com/vi/abc123/hqdefault.jpg" } } },
+      "statistics": { "viewCount": "250000", "likeCount": "12000", "commentCount": "800" },
+      "contentDetails": { "duration": "PT48S" }
+    },
+    {
+      "id": "def456",
+      "snippet": { "publishedAt": "2026-10-26T00:00:00Z", "channelId": "UC_big", "title": "5 things I wish I knew before investing", "description": "", "channelTitle": "Big Finance" },
+      "statistics": { "viewCount": "90000" },
+      "contentDetails": { "duration": "PT1M5S" }
+    },
+    { "id": "bad", "snippet": {} }
+  ]
+}

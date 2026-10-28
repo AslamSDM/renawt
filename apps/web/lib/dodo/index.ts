@@ -1,49 +1,62 @@
 import { getDodoClient } from "./client";
-import { productToIdMap, annualProductToIdMap, Product } from "./subscription";
+import {
+  addonProductEnvName,
+  addonProductId,
+  isAddonId,
+  isPaidPlanId,
+  planProductEnvName,
+  planProductId,
+  type AddonId,
+  type Billing,
+  type PaidPlanId,
+} from "./subscription";
 
-export type Metadata = {
-    userId: string
-    product: Product
-    quantity: string
-    billing?: string
-}
+export * from "./subscription";
+export { getDodoClient } from "./client";
+
+/** Metadata attached to every checkout session; echoed back on webhooks. */
+export type CheckoutMetadata = {
+  userId: string;
+  kind: "plan" | "addon";
+  planId?: PaidPlanId;
+  addonId?: AddonId;
+  billing?: Billing;
+};
+
+export class CheckoutConfigError extends Error {}
 
 export async function createCheckoutSession(
-    userId: string,
-    product: Product,
-    quantity: number,
-    billing: "monthly" | "annual" = "monthly"
+  userId: string,
+  item: PaidPlanId | AddonId,
+  billing: Billing = "monthly",
+  opts: { email?: string | null; name?: string | null; returnUrl?: string } = {},
 ) {
+  let productId: string | undefined;
+  let metadata: CheckoutMetadata;
+  if (isPaidPlanId(item)) {
+    productId = planProductId(item, billing);
+    if (!productId) throw new CheckoutConfigError(`${planProductEnvName(item, billing)} is not set`);
+    metadata = { userId, kind: "plan", planId: item, billing };
+  } else if (isAddonId(item)) {
+    productId = addonProductId(item);
+    if (!productId) throw new CheckoutConfigError(`${addonProductEnvName(item)} is not set`);
+    metadata = { userId, kind: "addon", addonId: item };
+  } else {
+    throw new CheckoutConfigError(`Unknown plan or addon: ${String(item)}`);
+  }
 
-    const metadata = {
-        userId,
-        product,
-        quantity: quantity.toString(),
-        billing,
-    }
+  const dodo = getDodoClient();
+  return dodo.checkoutSessions.create({
+    product_cart: [{ product_id: productId, quantity: 1 }],
+    metadata: metadata as unknown as Record<string, string>,
+    ...(opts.email ? { customer: { email: opts.email, name: opts.name ?? undefined } } : {}),
+    return_url: opts.returnUrl || process.env.DODO_PAYMENTS_RETURN_URL || "https://remawt.com/app/billing",
+  });
+}
 
-    const idMap = billing === "annual" ? annualProductToIdMap : productToIdMap;
-
-    try {
-        const dodo = getDodoClient();
-        const session = await dodo.checkoutSessions.create({
-            product_cart: [
-                {
-                    product_id: idMap[product],
-                    quantity: quantity
-                }
-            ],
-            metadata: metadata,
-            return_url: process.env.DODO_PAYMENTS_RETURN_URL || 'https://remawt.com/projects/',
-        });
-
-        console.log('Checkout URL:', session.checkout_url);
-        console.log('Session ID:', session.session_id);
-
-        return session;
-
-    } catch (error) {
-        console.error('Failed to create checkout session:', error);
-        throw error;
-    }
+/** Customer portal link (manage card, cancel, invoices). */
+export async function createPortalLink(customerId: string, returnUrl?: string): Promise<string> {
+  const dodo = getDodoClient();
+  const session = await dodo.customers.customerPortal.create(customerId, returnUrl ? { return_url: returnUrl } : undefined);
+  return session.link;
 }

@@ -1,95 +1,58 @@
-export type ProductType = {
-  name: string;
-  title: string;
-  productId: string;
-  annualProductId?: string;
-  creditsPerCycle: number;
-  price: string;
-  annualPrice?: string;
-  description: string;
-  features: string[];
-  cta: string;
-  popular: boolean;
-  type: "SUBSCRIPTION_PLANS" | "EXTRA_CREDITS";
-};
+import { ADDONS, PLANS, getPlan, type Plan, type PlanId } from "@remawt/shared";
 
-export const products: ProductType[] = [
-  {
-    type: "SUBSCRIPTION_PLANS",
-    name: "SUBSCRIPTION_STARTER",
-    title: "Starter",
-    productId: "pdt_0NZiEwZzmh4cnrXMd1CHZ",
-    annualProductId: "pdt_0NZiEwZzmh4cnrXMd1CHZ", // TODO: replace with actual annual product ID from Dodo dashboard
-    creditsPerCycle: 100,
-    price: "20",
-    annualPrice: "216",
-    description: "Perfect for trying out the platform",
-    features: [
-      "100 video credits/month",
-      "720p & 1080p exports",
-      "All templates included",
-      "Standard rendering",
-    ],
-    cta: "Get Started",
-    popular: false,
-  },
-  {
-    type: "SUBSCRIPTION_PLANS",
-    name: "SUBSCRIPTION_CREATOR",
-    title: "Creator",
-    productId: "pdt_0NZiF3JVG17K5uXKLcoqS",
-    annualProductId: "pdt_0NZiF3JVG17K5uXKLcoqS", // TODO: replace with actual annual product ID from Dodo dashboard
-    creditsPerCycle: 500,
-    price: "39",
-    annualPrice: "421",
-    description: "Best value for regular creators",
-    features: [
-      "500 video credits/month",
-      "Up to 4K exports",
-      "All templates + custom",
-      "Priority rendering",
-      "API access",
-    ],
-    cta: "Get Started",
-    popular: true,
-  },
-  {
-    type: "SUBSCRIPTION_PLANS",
-    name: "SUBSCRIPTION_STUDIO",
-    title: "Studio",
-    productId: "pdt_0NZiFASqHgwe6Xw6IUmoN",
-    annualProductId: "pdt_0NZiFASqHgwe6Xw6IUmoN", // TODO: replace with actual annual product ID from Dodo dashboard
-    creditsPerCycle: 2000,
-    price: "149",
-    annualPrice: "1,609",
-    description: "For agencies and high-volume creators",
-    features: [
-      "2000 video credits/month",
-      "Up to 4K exports",
-      "All templates + custom",
-      "Fastest rendering",
-      "API access",
-      "Dedicated support",
-    ],
-    cta: "Get Started",
-    popular: false,
-  },
-] as const;
+export type Billing = "monthly" | "annual";
+export type PaidPlanId = Exclude<PlanId, "FREE">;
+export type AddonId = (typeof ADDONS)[number]["id"];
+export type Addon = (typeof ADDONS)[number];
 
-export type Product = (typeof products)[number]["name"];
+export const PAID_PLAN_IDS = PLANS.filter((p) => p.id !== "FREE").map((p) => p.id) as PaidPlanId[];
+export const ADDON_IDS = ADDONS.map((a) => a.id) as AddonId[];
 
-export const subscriptionPlans = products.filter(
-  (product) => product.type === "SUBSCRIPTION_PLANS",
-);
+export function isPaidPlanId(id: unknown): id is PaidPlanId {
+  return typeof id === "string" && (PAID_PLAN_IDS as string[]).includes(id);
+}
+export function isAddonId(id: unknown): id is AddonId {
+  return typeof id === "string" && (ADDON_IDS as string[]).includes(id);
+}
 
-export const productToIdMap = Object.fromEntries(
-  products.map((p) => [p.name, p.productId]),
-) as Record<string, string>;
+/** Env var holding the Dodo product id, e.g. DODO_PRODUCT_CREATOR_ANNUAL. */
+export function planProductEnvName(planId: PaidPlanId, billing: Billing): string {
+  return `DODO_PRODUCT_${planId}_${billing === "annual" ? "ANNUAL" : "MONTHLY"}`;
+}
+/** Env var holding the Dodo product id, e.g. DODO_PRODUCT_ADDON_AI_VIDEO_CLIPS_10. */
+export function addonProductEnvName(addonId: AddonId): string {
+  return `DODO_PRODUCT_ADDON_${addonId}`;
+}
 
-export const annualProductToIdMap = Object.fromEntries(
-  products.map((p) => [p.name, p.annualProductId || p.productId]),
-) as Record<string, string>;
+export function planProductId(planId: PaidPlanId, billing: Billing): string | undefined {
+  return process.env[planProductEnvName(planId, billing)] || undefined;
+}
+export function addonProductId(addonId: AddonId): string | undefined {
+  return process.env[addonProductEnvName(addonId)] || undefined;
+}
 
-export const productToCreditMap = Object.fromEntries(
-  products.map((p) => [p.name, p.creditsPerCycle]),
-) as Record<string, number>;
+export type CatalogEntry =
+  | { kind: "plan"; plan: Plan; billing: Billing; productId: string }
+  | { kind: "addon"; addon: Addon; productId: string };
+
+/** Reverse lookup: Dodo product id -> plan/addon. */
+export function resolveProduct(productId: string | null | undefined): CatalogEntry | null {
+  if (!productId) return null;
+  for (const planId of PAID_PLAN_IDS) {
+    for (const billing of ["monthly", "annual"] as const) {
+      if (planProductId(planId, billing) === productId) {
+        return { kind: "plan", plan: getPlan(planId), billing, productId };
+      }
+    }
+  }
+  for (const addon of ADDONS) {
+    if (addonProductId(addon.id as AddonId) === productId) return { kind: "addon", addon, productId };
+  }
+  return null;
+}
+
+export function getAddon(id: AddonId): Addon {
+  const a = ADDONS.find((x) => x.id === id);
+  if (!a) throw new Error(`Unknown addon: ${id}`);
+  return a;
+}

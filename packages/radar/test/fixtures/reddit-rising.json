@@ -1,0 +1,10 @@
+{
+  "kind": "Listing",
+  "data": {
+    "children": [
+      { "kind": "t3", "data": { "name": "t3_aaa", "id": "aaa", "title": "Index funds vs ETFs for a beginner?", "selftext": "I am 24 and confused about fees.", "author": "throwaway1", "score": 420, "num_comments": 133, "created_utc": 1793102400, "permalink": "/r/personalfinance/comments/aaa/index_funds_vs_etfs/", "subreddit": "personalfinance", "thumbnail": "self" } },
+      { "kind": "t3", "data": { "name": "t3_sticky", "title": "Weekly thread", "permalink": "/r/personalfinance/comments/sticky/", "stickied": true, "score": 5 } },
+      { "kind": "t3", "data": { "name": "t3_nsfw", "title": "nsfw post", "permalink": "/r/x/comments/nsfw/", "over_18": true, "score": 5 } }
+    ]
+  }
+}

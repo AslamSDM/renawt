@@ -1,0 +1,12 @@
+{
+  "status_code": 20000,
+  "tasks": [
+    { "status_code": 20000, "result": [ { "keywords": ["money", "saving"], "items": [
+      { "type": "google_trends_graph", "data": [] },
+      { "type": "google_trends_queries_list", "keywords": ["money", "saving"], "data": {
+        "top": [ { "query": "money market", "value": 100 } ],
+        "rising": [ { "query": "index funds vs etfs", "value": 350 }, { "query": "high yield savings 2026", "value": 5000 }, { "query": "Index Funds vs ETFs", "value": 10 } ]
+      } }
+    ] } ] }
+  ]
+}

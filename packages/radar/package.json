@@ -2,9 +2,10 @@
   "name": "@remawt/radar",
   "version": "2.0.0",
   "private": true,
+  "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
-  "scripts": { "typecheck": "tsc --noEmit", "build": "echo skip", "test": "node --import tsx --test src/**/*.test.ts" },
+  "scripts": { "typecheck": "tsc --noEmit", "build": "echo skip", "test": "node --import tsx --test \"test/**/*.test.ts\"" },
   "dependencies": { "@remawt/shared": "workspace:*", "@remawt/db": "workspace:*", "zod": "^4.3.6" },
   "devDependencies": { "typescript": "^5.9.3", "tsx": "^4.21.0", "@types/node": "^20" }
 }

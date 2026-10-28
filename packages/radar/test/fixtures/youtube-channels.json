@@ -1,0 +1,1 @@
+{ "items": [ { "id": "UC_small", "statistics": { "viewCount": "1000000", "videoCount": "100", "subscriberCount": "5000" } }, { "id": "UC_big", "statistics": { "viewCount": "90000000", "videoCount": "300" } }, { "id": "UC_empty", "statistics": { "viewCount": "0", "videoCount": "0" } } ] }
