@@ -40,3 +40,10 @@
 
 ### web-app resolution (2026-10-28)
 - web-app 1: DONE. Web reads and writes the real `Video.source`/`sourceKind`/`sourceUrl`/`transcript` columns. web-app 2 (engine) now only needs to write the transcript to `Video.transcript`.
+
+## 3D blocks (from hf-kit, 2026-10-29)
+hf-kit now has four Three.js blocks (`chart-3d`, `globe-3d`, `stat-3d`, `scene-3d`). A composition that uses one loads `https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js` in index.html and draws into a WebGL `<canvas>` per scene (seek-driven, no rAF). Local renders (`hyperframes render` 0.8.212) need no extra flags: with no GPU the CLI falls back to SwiftShader itself (verified with `--no-browser-gpu`). For **render-lambda (deploy/aws/render-lambda)**:
+1. WebGL must work in the Lambda's chrome-headless-shell (no GPU). Check that `@hyperframes/producer@0.7.37` launches it with software GL. If not, pass `--use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader --ignore-gpu-blocklist` (or set `PRODUCER_BROWSER_GPU_MODE=software` if 0.7.x reads it), or bump the producer to the CLI's 0.8.212, which adds these flags in software mode. Without WebGL the 3D scenes render their DOM layer only (titles, labels; stat-3d shows a flat fallback number), not a black frame and not a crash.
+2. Lambda needs outbound HTTPS to cdn.jsdelivr.net (it already loads GSAP from there). If egress is restricted, vendor three.min.js (r158, 650 KB) next to GSAP.
+3. SwiftShader is CPU-bound, so each 3D frame adds CPU time on top of the DOM capture (not measured on Lambda yet). Keep Lambda memory ≥ 3008 MB (more vCPU) and measure render time on the smoke test below. hf-kit lint caps a video at 8 WebGL scenes (warning above 3).
+4. Smoke test after deploying: render `pnpm --filter @remawt/hf-kit demo --only=3d --no-render` output (`$TMPDIR/remawt-hfkit-demo/<block>/`) through the Lambda and check that frames at 3–5 s are not empty.

@@ -14,6 +14,7 @@ import { lintComposition } from "../lint";
 import { scaffoldProject } from "../project";
 import { hyperframesVersion, runHyperframesLint, runHyperframesRender } from "../cli";
 import { FORMATS, demoAssets, demoKit, demoPlan, demoScript, fakeVoice } from "./fixtures";
+import { THREE_DEMO_IDS, isThreeDemo, threeDemo } from "./three";
 
 const args = process.argv.slice(2);
 const noRender = args.includes("--no-render");
@@ -56,26 +57,27 @@ function videoEdit(dir: string): Composition {
     ],
   };
   const voice = { audioUrl: "", durationMs: 0, words, provider: "transcript", voiceId: "user" };
-  return composeVideo({ script: demoScript(FORMATS[0]), voice, plan, kit, assets: [userVideo], media: { userVideo }, watermark: true });
+  return composeVideo({ script: demoScript(FORMATS[0]), voice, plan, kit, assets: [userVideo], media: { userVideo } });
 }
 
 async function main() {
   const hfv = hyperframesVersion();
   console.log(`[demo] output: ${ROOT}  hyperframes CLI: ${hfv ?? "unavailable"}`);
   const rows: Row[] = [];
-  const targets = [...FORMATS.map((f) => f.id), "video-edit"].filter((id) => !only || id === only);
+  const targets = [...FORMATS.map((f) => f.id), "video-edit", ...THREE_DEMO_IDS].filter((id) => !only || id === only || (only === "3d" && isThreeDemo(id)));
   for (const id of targets) {
     const dir = join(ROOT, id);
     rmSync(dir, { recursive: true, force: true });
     mkdirSync(join(dir, "assets"), { recursive: true });
     let comp: Composition;
     if (id === "video-edit") comp = videoEdit(dir);
+    else if (isThreeDemo(id)) comp = threeDemo(id, { audioUrl: makeTone(join(dir, "assets", "narration.mp3"), 8) ? "assets/narration.mp3" : "" });
     else {
       const format = FORMATS.find((f) => f.id === id)!;
       const script = demoScript(format);
       const hasTone = makeTone(join(dir, "assets", "narration.mp3"), 45);
       const voice = fakeVoice(script, 45000, hasTone ? "assets/narration.mp3" : "");
-      comp = composeVideo({ script, voice, plan: demoPlan(format, voice), kit: demoKit("ledger"), assets: demoAssets(), watermark: id === "did-you-know" });
+      comp = composeVideo({ script, voice, plan: demoPlan(format, voice), kit: demoKit("ledger"), assets: demoAssets() });
     }
     scaffoldProject(comp, dir);
     writeFileSync(join(dir, "composition.json"), JSON.stringify(comp, null, 2));

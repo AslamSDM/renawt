@@ -326,6 +326,13 @@ const firstText = (o: Obj, keys: string[]) => { for (const k of keys) { const t 
 
 type Pre = (d: Obj, ctx: CoerceCtx, ch: (note: string, at?: string) => void) => Obj;
 
+/**
+ * 1-node diagrams are deliberately NOT coerced into another block (kinetic-headline / card): the
+ * node's icon + sub would be lost, the scene's block choice would silently change under the planner,
+ * and a coercion here could not see the scene headline it would need. Instead the diagram block lays
+ * a single node out centred and large (layout "single" in blocks/diagram.ts), and the planner
+ * catalogue's text budget tells the model to use kinetic-headline for a lone idea.
+ */
 function preDiagram(d: Obj, _ctx: CoerceCtx, ch: (n: string, at?: string) => void): Obj {
   let nodes = d.nodes;
   if (typeof nodes === "string") { nodes = nodes.split(/\s*(?:→|->|=>|\n|;|,)\s*/).filter(Boolean); ch("nodes string split on arrows/commas", "nodes"); }
@@ -832,3 +839,265 @@ export function shapeOf(schema: AnyZ, depth = 0): string {
     default: return "any";
   }
 }
+
+// ───────────────────────── 3D blocks (chart-3d, globe-3d, stat-3d, scene-3d) ─────────────────────────
+// Import declarations are hoisted; kept here so the 3D additions stay in one appended section.
+import { placeCoords } from "./three/places";
+
+/** chart-3d: {labels, values} / chart-style series / {Japan: 1130} maps / "Japan: 1130" strings → items[]. */
+function preChart3d(d0: Obj, ctx: CoerceCtx, ch: (n: string, at?: string) => void): Obj {
+  const d: Obj = { ...d0 };
+  let items = d.items ?? d.bars ?? d.columns ?? d.rows ?? d.data;
+  for (const k of ["bars", "columns", "rows"]) delete d[k];
+  if (items === d.data) delete d.data;
+  if (items === undefined && Array.isArray(d.values)) {
+    const labels = Array.isArray(d.labels) ? d.labels : [];
+    items = (d.values as unknown[]).map((v, i) => ({ label: textOf(labels[i]) ?? `#${i + 1}`, value: v }));
+    ch("labels + values → items");
+    delete d.values; delete d.labels;
+  }
+  if (items === undefined && Array.isArray(d.series) && isObj(d.series[0]) && Array.isArray((d.series[0] as Obj).values)) {
+    const labels = Array.isArray(d.labels) ? d.labels : [];
+    items = ((d.series[0] as Obj).values as unknown[]).map((v, i) => ({ label: textOf(labels[i]) ?? `#${i + 1}`, value: v }));
+    ch("chart series[0] → items");
+    delete d.series; delete d.labels;
+  }
+  if (isObj(items)) { items = Object.entries(items).map(([label, value]) => ({ label, value })); ch("object map → items"); }
+  if (Array.isArray(items)) {
+    let unit: string | undefined;
+    items = items.map((it) => {
+      if (Array.isArray(it) && it.length >= 2) return { label: textOf(it[0]), value: it[1] };
+      if (typeof it === "string") {
+        const m = it.match(/^(.*?)[:=–-]\s*([^:=]+)$/);
+        if (m) return { label: m[1].trim(), value: m[2].trim() };
+      }
+      if (isObj(it)) {
+        const o: Obj = { ...it };
+        if (o.label === undefined) { const l = firstText(o, ["name", "title", "country", "category", "x", "key"]); if (l) o.label = l; }
+        if (o.value === undefined) for (const k of ["amount", "y", "count", "total", "number", "stat", "score"]) if (o[k] !== undefined) { o.value = o[k]; break; }
+        for (const k of ["name", "title", "country", "category", "x", "key", "amount", "y", "count", "total", "number", "stat", "score"]) delete o[k];
+        for (const k of ["highlighted", "winner", "accent", "best", "top"]) if (o[k] !== undefined) { if (o.highlight === undefined) o.highlight = o[k]; delete o[k]; }
+        return o;
+      }
+      return it;
+    }).map((it) => {
+      if (isObj(it) && typeof it.value === "string") {
+        const p = parseNumber(it.value);
+        if (p) { unit ??= p.prefix && /^[$€£¥₹]$/.test(p.prefix) ? p.prefix : p.suffix === "%" ? "%" : undefined; return { ...it, value: p.scaled }; }
+      }
+      return it;
+    });
+    if (d.unit === undefined && unit) { d.unit = unit; ch(`unit "${unit}" taken from the values`, "unit"); }
+    d.items = items;
+  }
+  const hi = d.highlight ?? d.winner ?? d.highlighted;
+  for (const k of ["highlight", "winner", "highlighted"]) delete d[k];
+  if (typeof hi === "string" && Array.isArray(d.items)) {
+    d.items = (d.items as unknown[]).map((it) => (isObj(it) && norm(String(it.label ?? "")) === norm(hi) ? { ...it, highlight: true } : it));
+    ch(`highlight "${hi}" → items[].highlight`, "items");
+  }
+  if (d.caption === undefined) { const c = d.source ?? d.note ?? d.subtitle ?? d.footnote; if (c !== undefined) { d.caption = textOf(c); ch("caption ← source/note", "caption"); } }
+  for (const k of ["source", "note", "subtitle", "footnote", "type"]) delete d[k];
+  if (d.title === undefined && !ctx.headline && typeof d.heading === "string") d.title = d.heading;
+  if (typeof d.unit === "string") { const s = d.unit.trim().toLowerCase(); if (s === "percent" || s === "percentage") d.unit = "%"; else if (s === "usd" || s === "dollars") d.unit = "$"; }
+  return d;
+}
+
+/** A place: [lat,lng,label] / {latitude,longitude,name} / "Seoul" → {lat,lng,label}. */
+function placeOf(v: unknown, ch: (n: string, at?: string) => void, at: string): unknown {
+  if (Array.isArray(v) && v.length >= 2) return { lat: toNumber(v[0]), lng: toNumber(v[1]), ...(v[2] !== undefined ? { label: textOf(v[2]) } : {}) };
+  if (typeof v === "string") {
+    const c = placeCoords(v);
+    if (c) { ch(`"${v}" → ${c.lat}, ${c.lng}`, at); return { ...c, label: v.trim() }; }
+    return v;
+  }
+  if (!isObj(v)) return v;
+  const o: Obj = { ...v };
+  if (isObj(o.coordinates)) Object.assign(o, o.coordinates);
+  if (Array.isArray(o.coordinates) && o.coordinates.length >= 2) { o.lat ??= o.coordinates[0]; o.lng ??= o.coordinates[1]; }
+  delete o.coordinates;
+  if (o.lat === undefined && o.latitude !== undefined) o.lat = o.latitude;
+  if (o.lng === undefined) for (const k of ["lon", "long", "longitude"]) if (o[k] !== undefined) { o.lng = o[k]; break; }
+  if (o.label === undefined) { const l = firstText(o, ["name", "city", "title", "place", "country", "text"]); if (l) o.label = l; }
+  for (const k of ["latitude", "lon", "long", "longitude", "name", "city", "title", "place", "country", "text"]) delete o[k];
+  if ((o.lat === undefined || o.lng === undefined) && typeof o.label === "string") {
+    const c = placeCoords(o.label);
+    if (c) { o.lat = c.lat; o.lng = c.lng; ch(`coordinates for "${o.label}" looked up`, at); }
+  }
+  if (o.label === undefined && typeof o.lat === "number" && typeof o.lng === "number") {
+    o.label = `${Math.abs(o.lat).toFixed(1)}°${o.lat >= 0 ? "N" : "S"} ${Math.abs(o.lng).toFixed(1)}°${o.lng >= 0 ? "E" : "W"}`;
+  }
+  return o;
+}
+
+function preGlobe3d(d0: Obj, _ctx: CoerceCtx, ch: (n: string, at?: string) => void): Obj {
+  const d: Obj = { ...d0 };
+  let focus = d.focus ?? d.location ?? d.target ?? d.to ?? d.destination ?? d.place ?? d.city ?? d.point;
+  let from = d.from ?? d.origin ?? d.start ?? d.source;
+  for (const k of ["location", "target", "to", "destination", "place", "city", "point", "origin", "start", "source"]) delete d[k];
+  if (focus === undefined && (d.lat !== undefined || d.latitude !== undefined)) { focus = { lat: d.lat ?? d.latitude, lng: d.lng ?? d.lon ?? d.longitude, label: d.label ?? d.name }; ch("top-level lat/lng → focus", "focus"); }
+  for (const k of ["lat", "lng", "lon", "latitude", "longitude", "label", "name"]) delete d[k];
+  if (Array.isArray(d.points) && d.points.length) {
+    if (focus === undefined) focus = d.points[d.points.length - 1];
+    if (from === undefined && d.points.length > 1) from = d.points[0];
+    ch("points[] → from/focus", "focus");
+  }
+  delete d.points;
+  if (focus !== undefined) d.focus = placeOf(focus, ch, "focus");
+  if (from !== undefined) d.from = placeOf(from, ch, "from");
+  return d;
+}
+
+function preStat3d(d0: Obj, ctx: CoerceCtx, ch: (n: string, at?: string) => void): Obj {
+  const d: Obj = { ...d0 };
+  if (d.value === undefined) {
+    for (const k of ["word", "phrase", "number", "stat", "amount", "count", "big", "headline"]) if (d[k] !== undefined) { d.value = d[k]; delete d[k]; ch(`${k} → value`, "value"); break; }
+  }
+  // "text" may already have been renamed to label by the generic alias pass: a label with no value is the value.
+  if (d.value === undefined && typeof d.label === "string" && d.label.length <= 14) { d.value = d.label; delete d.label; ch("label → value (no value given)", "value"); }
+  if (d.label === undefined) { const l = d.sub ?? d.subtitle ?? d.description ?? d.caption ?? d.subLabel; if (l !== undefined) { d.label = l; ch("label ← subtitle/description", "label"); } }
+  for (const k of ["sub", "subtitle", "description", "caption", "subLabel"]) delete d[k];
+  const isNumberish = typeof d.value === "string" && (() => { const p = parseNumber(d.value as string); return !!p && !/[a-z]{3,}/i.test(p.suffix); })();
+  if (d.value === undefined || typeof d.value === "number" || isNumberish) return preCounter(d, ctx, ch);
+  if (typeof d.value === "string") {
+    const w = d.value.trim().split(/\s+/);
+    if (w.length > 3) { d.value = w.slice(0, 3).join(" "); ch("value kept to 3 words", "value"); }
+  }
+  return d;
+}
+
+const SHAPE_SYNONYMS: Record<string, string> = {
+  ball: "sphere", planet: "sphere", sun: "sphere", moon: "sphere", globe: "sphere", earth: "sphere", orb: "sphere", atom: "sphere", circle: "sphere", dot: "sphere", particle: "sphere",
+  cube: "box", block: "box", crate: "box", brick: "box", square: "box", cuboid: "box", building: "box",
+  donut: "torus", doughnut: "torus", tyre: "torus", tire: "torus",
+  pyramid: "cone", triangle: "cone", spike: "cone",
+  tube: "cylinder", pipe: "cylinder", can: "cylinder", column: "cylinder", pillar: "cylinder", disc: "cylinder", disk: "cylinder", coin: "cylinder",
+  vector: "arrow", force: "arrow", pointer: "arrow", line: "arrow",
+  floor: "plane", ground: "plane", surface: "plane", table: "plane", sheet: "plane", board: "plane",
+  hoop: "ring", halo: "ring", orbitring: "ring", ellipse: "ring",
+};
+const MOTION_SYNONYMS: Record<string, string> = {
+  rotate: "spin", rotation: "spin", turn: "spin", spinning: "spin", twirl: "spin",
+  revolve: "orbit", circle: "orbit", circling: "orbit", orbiting: "orbit", revolution: "orbit",
+  float: "bob", hover: "bob", bounce: "bob", bobbing: "bob", wobble: "bob",
+  beat: "pulse", throb: "pulse", breathe: "pulse", heartbeat: "pulse", pulsing: "pulse",
+  move: "path", translate: "path", slide: "path", travel: "path", fly: "path", moveto: "path", roll: "path",
+  appear: "scale-in", pop: "scale-in", popin: "scale-in", grow: "scale-in", enter: "scale-in", fadein: "scale-in", scalein: "scale-in", spawn: "scale-in",
+};
+const CAMERA_SYNONYMS: Record<string, string> = {
+  isometric: "three-quarter", "34": "three-quarter", threequarters: "three-quarter", perspective: "three-quarter", angled: "three-quarter", default: "three-quarter",
+  side: "front", straight: "front", frontal: "front", eyelevel: "front",
+  overhead: "top", birdseye: "top", topdown: "top", above: "top",
+  rotating: "orbit", turntable: "orbit", orbiting: "orbit", circling: "orbit", flyaround: "orbit",
+};
+const ROLE_SYNONYMS: Record<string, string> = {
+  primary: "accent", highlight: "accent", main: "accent", brand: "accent", secondary: "accent2", alt: "accent2", second: "accent2",
+  text: "ink", foreground: "ink", white: "ink", black: "ink", fg: "ink", contrast: "ink",
+  background: "bg", card: "surface", muted: "surface", neutral: "surface", grey: "surface", gray: "surface", base: "surface",
+};
+
+function vecOf(v: unknown): unknown {
+  if (isObj(v) && ("x" in v || "y" in v || "z" in v)) return [toNumber(v.x) ?? 0, toNumber(v.y) ?? 0, toNumber(v.z) ?? 0];
+  if (Array.isArray(v) && v.length === 2) return [v[0], v[1], 0];
+  if (typeof v === "string") { const n = v.split(/[\s,]+/).map(Number).filter((x) => Number.isFinite(x)); if (n.length >= 2) return [n[0], n[1], n[2] ?? 0]; }
+  return v;
+}
+/** Seconds-looking values (< 30) become ms. */
+const msOf = (v: unknown): number | undefined => { const n = toNumber(v); return n === undefined ? undefined : n < 30 ? Math.round(n * 1000) : Math.round(n); };
+
+function preScene3d(d0: Obj, _ctx: CoerceCtx, ch: (n: string, at?: string) => void): Obj {
+  const d: Obj = { ...d0 };
+  let objects = d.objects ?? d.shapes ?? d.elements ?? d.meshes ?? d.primitives ?? d.nodes ?? d.items;
+  for (const k of ["shapes", "elements", "meshes", "primitives", "nodes", "items"]) delete d[k];
+  if (isObj(objects)) objects = Object.entries(objects).map(([id, o]) => (isObj(o) ? { id, ...o } : o));
+  if (typeof d.camera === "string") {
+    const n = norm(d.camera);
+    const c = CAMERA_SYNONYMS[n] ?? (n.includes("orbit") ? "orbit" : n.includes("top") ? "top" : n.includes("front") ? "front" : undefined);
+    if (c && c !== d.camera) { ch(`camera "${d.camera}" → "${c}"`, "camera"); d.camera = c; }
+  } else if (d.camera === undefined) { const c = d.view ?? d.cameraPreset ?? d.angle; if (c !== undefined) { d.camera = c; ch("camera ← view", "camera"); } }
+  for (const k of ["view", "cameraPreset", "angle"]) delete d[k];
+  if (d.caption === undefined) { const c = d.subtitle ?? d.note; if (c !== undefined) d.caption = c; }
+  for (const k of ["subtitle", "note"]) delete d[k];
+  if (!Array.isArray(objects)) { if (objects !== undefined) d.objects = objects; return d; }
+  const ids = new Set<string>();
+  const list = objects.map((raw, i) => {
+    let o: Obj = typeof raw === "string" ? { shape: raw } : isObj(raw) ? { ...raw } : {};
+    if (o.shape === undefined) { const s = o.type ?? o.kind ?? o.geometry ?? o.primitive ?? o.object; if (s !== undefined) o.shape = s; }
+    for (const k of ["type", "kind", "geometry", "primitive", "object"]) delete o[k];
+    if (typeof o.shape === "string") {
+      const n = norm(o.shape);
+      const fuzzy = Object.keys(SHAPE_SYNONYMS).find((k) => k.length >= 4 && n.includes(k));
+      const s = SHAPE_SYNONYMS[n] ?? (fuzzy ? SHAPE_SYNONYMS[fuzzy] : undefined);
+      if (s && !["sphere", "box", "torus", "cone", "cylinder", "arrow", "plane", "ring"].includes(n)) { ch(`shape "${o.shape}" → "${s}"`, `objects[${i}].shape`); o.shape = s; }
+    }
+    if (o.label === undefined) { const l = o.name ?? o.title ?? o.text; if (l !== undefined) o.label = l; }
+    for (const k of ["name", "title", "text"]) delete o[k];
+    if (o.position === undefined) { const p = o.pos ?? o.at ?? o.location ?? o.center; if (p !== undefined) o.position = p; else if (o.x !== undefined || o.y !== undefined || o.z !== undefined) o.position = { x: o.x, y: o.y, z: o.z }; }
+    for (const k of ["pos", "at", "location", "center", "x", "y", "z"]) delete o[k];
+    if (o.position !== undefined) o.position = vecOf(o.position);
+    if (o.rotation !== undefined) o.rotation = vecOf(o.rotation);
+    if (o.scale === undefined) {
+      if (o.radius !== undefined) { const r = toNumber(o.radius); if (r !== undefined) { o.scale = r * 2; ch("radius → scale (diameter)", `objects[${i}].scale`); } }
+      else if (o.size !== undefined) o.scale = o.size;
+    }
+    delete o.radius; delete o.size;
+    if (Array.isArray(o.scale) || isObj(o.scale)) { const v = vecOf(o.scale) as unknown[]; const ns = v.map(toNumber).filter((x): x is number => x !== undefined); if (ns.length) { o.scale = ns.reduce((a, b) => a + b, 0) / ns.length; ch("scale vector → uniform", `objects[${i}].scale`); } }
+    if (o.color === undefined) { const c = o.colour ?? o.colorRole ?? o.role ?? o.fill; if (c !== undefined) o.color = c; }
+    for (const k of ["colour", "colorRole", "role", "fill"]) delete o[k];
+    if (typeof o.color === "string" && !["bg", "surface", "ink", "accent", "accent2"].includes(o.color)) {
+      const n = norm(o.color);
+      const r = ROLE_SYNONYMS[n] ?? (n === "accent2" ? "accent2" : i % 2 ? "accent2" : "accent");
+      ch(`color "${o.color}" → role "${r}"`, `objects[${i}].color`); o.color = r;
+    }
+    let ms = o.motions ?? o.motion ?? o.animations ?? o.animation ?? o.anims ?? o.moves;
+    for (const k of ["motion", "animations", "animation", "anims", "moves"]) delete o[k];
+    if (ms !== undefined && !Array.isArray(ms)) ms = [ms];
+    if (Array.isArray(ms)) {
+      o.motions = ms.map((m0, j) => {
+        let m: Obj = typeof m0 === "string" ? { type: m0 } : isObj(m0) ? { ...m0 } : {};
+        if (m.type === undefined) { const t = m.kind ?? m.name ?? m.animation ?? m.motion; if (t !== undefined) m.type = t; }
+        for (const k of ["kind", "name", "animation", "motion"]) delete m[k];
+        if (typeof m.type === "string") {
+          const n = norm(m.type);
+          const t = MOTION_SYNONYMS[n] ?? (["orbit", "spin", "bob", "pulse", "path", "scalein"].includes(n) ? (n === "scalein" ? "scale-in" : n) : undefined);
+          if (t && t !== m.type) { ch(`motion "${m.type}" → "${t}"`, `objects[${i}].motions[${j}].type`); m.type = t; }
+        }
+        if (m.to === undefined) { const t = m.target ?? m.end ?? m.destination ?? m.toPosition; if (t !== undefined && typeof t !== "number") m.to = t; }
+        if (m.from === undefined && (Array.isArray(m.start) || isObj(m.start))) { m.from = m.start; delete m.start; }
+        for (const k of ["target", "end", "destination", "toPosition"]) delete m[k];
+        if (m.to !== undefined) m.to = vecOf(m.to);
+        if (m.from !== undefined) m.from = vecOf(m.from);
+        if (m.startMs === undefined) { const s = m.start ?? m.delay ?? m.at ?? m.startSec ?? m.begin; if (s !== undefined) { const v = msOf(s); if (v !== undefined) m.startMs = v; } }
+        if (m.durationMs === undefined) { const s = m.duration ?? m.dur ?? m.length ?? m.durationSec ?? m.time; if (s !== undefined) { const v = msOf(s); if (v !== undefined) m.durationMs = v; } }
+        for (const k of ["start", "delay", "at", "startSec", "begin", "duration", "dur", "length", "durationSec", "time"]) delete m[k];
+        if (m.turns === undefined) { const t = m.revolutions ?? m.rotations ?? m.times ?? m.count; if (t !== undefined) m.turns = t; }
+        if (m.amount === undefined) { const a = m.height ?? m.amplitude ?? m.distance ?? m.strength; if (a !== undefined) m.amount = a; }
+        for (const k of ["revolutions", "rotations", "times", "count", "height", "amplitude", "distance", "strength"]) delete m[k];
+        if (typeof m.axis === "string") m.axis = m.axis.trim().toLowerCase().replace(/[^xyz]/g, "").slice(0, 1) || "y";
+        return m;
+      });
+    }
+    let id = typeof o.id === "string" || typeof o.id === "number" ? slug(String(o.id)) : "";
+    if (!id) { id = slug(String(o.label ?? o.shape ?? `obj-${i + 1}`)) || `obj-${i + 1}`; ch(`id missing → "${id}"`, `objects[${i}].id`); }
+    while (ids.has(id)) id = `${id.slice(0, 17)}-${i + 1}`;
+    ids.add(id); o.id = id;
+    return o;
+  });
+  // Positions from a bigger coordinate system (pixels, 0..10 grids) are rescaled to fit ±3 instead of clamped.
+  const coords = list.flatMap((o) => [o.position, ...(Array.isArray(o.motions) ? (o.motions as Obj[]).flatMap((m) => [m.to, m.from]) : [])])
+    .filter((v): v is number[] => Array.isArray(v)).flat().map((v) => toNumber(v) ?? 0);
+  const max = Math.max(0, ...coords.map(Math.abs));
+  if (max > 4) {
+    const k = 3 / max;
+    const sc = (v: unknown) => (Array.isArray(v) ? v.map((x) => Math.round((toNumber(x) ?? 0) * k * 100) / 100) : v);
+    for (const o of list) {
+      o.position = sc(o.position);
+      if (Array.isArray(o.motions)) for (const m of o.motions as Obj[]) { m.to = sc(m.to); m.from = sc(m.from); if (m.to === undefined) delete m.to; if (m.from === undefined) delete m.from; }
+    }
+    ch(`positions rescaled ×${Math.round(k * 1000) / 1000} to fit the view`, "objects");
+  }
+  d.objects = list;
+  return d;
+}
+
+Object.assign(PRE, { "chart-3d": preChart3d, "globe-3d": preGlobe3d, "stat-3d": preStat3d, "scene-3d": preScene3d } satisfies Record<string, Pre>);

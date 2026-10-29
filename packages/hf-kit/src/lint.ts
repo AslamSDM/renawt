@@ -1,5 +1,6 @@
-import type { Composition } from "@remawt/shared";
+import type { Composition, ScenePlan } from "@remawt/shared";
 import { KEN_BURNS_MAX } from "./blocks/media";
+import { planTextIssues, type TextIssue } from "./textfit";
 
 export interface LintResult { ok: boolean; errors: string[]; warnings: string[] }
 
@@ -244,6 +245,8 @@ export function lintComposition(comp: Composition): LintResult {
   const referenced = new Set(hosts.map((h) => h.src));
   for (const f of comp.sceneFiles) if (!referenced.has(`compositions/${f.fileName}`)) warnings.push(`compositions/${f.fileName}: not mounted by any host`);
 
+  lintTextFit(comp, errors);
+  lintThree(comp, hosts.map((h) => ({ cid: h.cid, dur: h.dur })), errors, warnings);
   return { ok: errors.length === 0, errors: [...new Set(errors)], warnings: [...new Set(warnings)] };
 }
 
@@ -292,4 +295,75 @@ function checkUrl(where: string, url: string, errors: string[], warnings: string
   if (/^(file:|\/)/.test(url)) { errors.push(`${where}: local path "${url}" will not exist on the renderer; upload to R2 and use its https URL`); return; }
   if (/^assets\//.test(url)) { warnings.push(`${where}: "${url}" must be shipped in projectFiles`); return; }
   errors.push(`${where}: unresolvable asset reference "${url}"`);
+}
+
+/**
+ * Text that a block had to cut with "…" to keep it inside its box (blocks/common.ts fitHtml marks it
+ * data-fit="truncated"). Overflow itself cannot happen (text is fitted); a cut label is still a defect.
+ */
+function lintTextFit(comp: Composition, errors: string[]): void {
+  for (const f of comp.sceneFiles) {
+    for (const m of f.html.matchAll(/<[^>]*\sdata-fit="truncated"[^>]*>/g)) {
+      const tag = m[0];
+      const text = (attr(tag, "data-fit-text") ?? "").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+      const role = attr(tag, "data-fit-role") ?? "text";
+      const max = attr(tag, "data-fit-max");
+      errors.push(`compositions/${f.fileName}: ${role} "${text}" (${text.length} chars) does not fit its box and was cut with "…"${max ? `; shorten it to ≤ ${max} chars` : ""} [scene ${f.id}]`);
+    }
+  }
+}
+
+/**
+ * Measure-based text checks on a ScenePlan, before composing: every label longer than its block's
+ * documented budget, or estimated (same estimator + fitter as the blocks) to be cut in its box.
+ * `issues` have the PlanIssue shape ({sceneId, index, block, path, message}) the engine's repair loop
+ * (repairScene) takes; `errors` are the same as strings.
+ */
+export function lintPlanText(plan: ScenePlan): LintResult & { issues: TextIssue[] } {
+  const issues = planTextIssues(plan);
+  return { ok: issues.length === 0, errors: issues.map((i) => `${i.path}: ${i.message}`), warnings: [], issues };
+}
+
+// ───────────────────────── 3D blocks (Three.js / WebGL) ─────────────────────────
+
+/** Max WebGL scenes per video: Chrome keeps ~16 live contexts per page; past that the oldest are lost. */
+export const MAX_3D_SCENES = 8;
+/** Planner budget: more than this many 3D scenes in one short is a warning (render time, novelty). */
+export const WARN_3D_SCENES = 3;
+const THREE_LABEL_MAX: Record<string, number> = { "chart-3d": 16, "globe-3d": 24, "stat-3d": 18, "scene-3d": 20 };
+const THREE_MIN_S = 1.5, THREE_MAX_S = 12;
+
+/**
+ * Checks for scenes that render a Three.js canvas (marked with data-remawt-3d): the runtime <script> is in
+ * index.html and pinned, scene count stays under the WebGL context budget, object counts / label lengths /
+ * motion timing stay in bounds, and the canvas has a fixed pixel size.
+ */
+function lintThree(comp: Composition, hosts: Array<{ cid?: string; dur: number }>, errors: string[], warnings: string[]): void {
+  let n = 0;
+  for (const f of comp.sceneFiles) {
+    for (const m of f.html.matchAll(/<canvas\b[^>]*\sdata-remawt-3d="([^"]*)"[^>]*>/g)) {
+      n++;
+      const w = `compositions/${f.fileName}`;
+      const tag = m[0];
+      if (!/\swidth="\d+"/.test(tag) || !/\sheight="\d+"/.test(tag)) errors.push(`${w}: 3D canvas needs fixed width/height attributes`);
+      let meta: { block?: string; objects?: number; labels?: string[]; motionsEndMs?: number; durationMs?: number };
+      try { meta = JSON.parse(m[1].replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&")); } catch { errors.push(`${w}: data-remawt-3d is not valid JSON`); continue; }
+      const block = meta.block ?? "3d";
+      if ((meta.objects ?? 0) > 8) errors.push(`${w}: ${block} has ${meta.objects} objects (max 8)`);
+      if ((meta.objects ?? 0) < 1) errors.push(`${w}: ${block} has no objects`);
+      const max = THREE_LABEL_MAX[block] ?? 24;
+      for (const l of meta.labels ?? []) if (String(l).length > max) errors.push(`${w}: ${block} label "${l}" is longer than ${max} chars`);
+      const slot = hosts.find((h) => h.cid === f.id)?.dur ?? (meta.durationMs ?? 0) / 1000;
+      if (slot && slot < THREE_MIN_S) warnings.push(`${w}: ${block} scene is ${slot}s; 3D needs at least ${THREE_MIN_S}s to read`);
+      if (slot > THREE_MAX_S) warnings.push(`${w}: ${block} scene is ${slot}s; keep 3D scenes under ${THREE_MAX_S}s`);
+      if (meta.motionsEndMs && slot && meta.motionsEndMs > slot * 1000 + 1) warnings.push(`${w}: ${block} motions end at ${meta.motionsEndMs}ms, after the ${Math.round(slot * 1000)}ms scene (they will be cut)`);
+      if (!/addEventListener\(\s*"hf-seek"/.test(f.html)) errors.push(`${w}: 3D scene must render from the hf-seek event`);
+    }
+  }
+  if (!n) return;
+  const tag = comp.indexHtml.match(/<script\s+src="([^"]*\/three@[^"]*)"/);
+  if (!tag) errors.push(`index.html: ${n} 3D scene(s) but no Three.js <script src>`);
+  else if (!/three@\d+\.\d+\.\d+\//.test(tag[1])) errors.push(`index.html: Three.js URL must pin an exact version (${tag[1]})`);
+  if (n > MAX_3D_SCENES) errors.push(`index.html: ${n} 3D scenes (max ${MAX_3D_SCENES}: WebGL context limit)`);
+  else if (n > WARN_3D_SCENES) warnings.push(`index.html: ${n} 3D scenes; more than ${WARN_3D_SCENES} slows the render and dulls the effect`);
 }

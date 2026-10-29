@@ -22,7 +22,7 @@ Additive extras:
   - a Google Fonts `<link>` for the skin's display, body and mono fonts;
   - a full-bleed background `<div>`;
   - one host per scene, back to back, on track 1;
-  - an `overlays` host (track 2), a `captions` host (track 3) and a `chrome` host for grain and watermark (track 4). Hosts above the scene sequence carry `data-remawt-layer`;
+  - an `overlays` host (track 2), a `captions` host (track 3) and a `chrome` host for film grain (track 4). Hosts above the scene sequence carry `data-remawt-layer`;
   - root-level `<audio>` elements;
   - a `#remawt-media` JSON manifest when the video has footage;
   - an empty paused `window.__timelines["main"]`.
@@ -72,7 +72,7 @@ Additive extras:
   - The music is ducked under speech with a `data-automation` volume lane: down to 0.32× during speech, with a 0.6 s fade-in and a 1.5 s fade-out.
   - A music track shorter than the video is tiled.
   - `mixFilter()` builds the equivalent ffmpeg graph: adelay, volume and sidechaincompress.
-- **Watermark**: "made with remawt", bottom-left under the captions, FREE plan only (`watermark: true`).
+- **No watermark**: removed 2026-10-29; no tier gets a "made with remawt" mark.
 - **Lint** (`src/lint.ts`):
   - Structure: root attributes, host attributes, host id = composition id, scene files exist, `<template>` wrappers, timeline registration (and that it comes after the tweens), paused timelines.
   - Forbidden code and tweens: `fromTo` with opacity, forbidden or non-contract tween properties, `Math.random`, `Date`, fetch, timers, `repeat: -1`, `play()`/`pause()`, adding a scene timeline to another timeline.
@@ -111,7 +111,7 @@ Additive extras:
 
 | demo | kit lint | hyperframes lint | draft render |
 |---|---|---|---|
-| did-you-know (with watermark) | ok | ok | ok, 3.5 MB, 27 s |
+| did-you-know | ok | ok | ok, 3.5 MB, 27 s |
 | chart-explains | ok | ok | ok, 3.4 MB, 29 s |
 | x-vs-y | ok | ok | ok, 3.3 MB, 26 s |
 | wish-i-knew | ok | ok | ok, 3.4 MB, 26 s |

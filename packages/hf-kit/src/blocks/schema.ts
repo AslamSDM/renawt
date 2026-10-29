@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { lenient } from "./coerce";
+import { STRICT_THREE_SCHEMAS, THREE_ALIASES, THREE_DOCS, THREE_SAMPLES } from "./three/schema";
 
 /**
  * `scene.data` schema for every block. The engine's composer agent fills these; composeVideo
@@ -188,6 +189,7 @@ export const STRICT_BLOCK_SCHEMAS = {
   image: ImageData,
   outro: OutroData,
   "video-segment": VideoSegmentData,
+  ...STRICT_THREE_SCHEMAS,
 } as const;
 
 /**
@@ -225,6 +227,7 @@ export const BLOCK_ALIASES: Record<string, BlockName> = {
   photo: "image",
   "b-roll": "image",
   cta: "outro",
+  ...THREE_ALIASES,
 };
 
 export function resolveBlockName(raw: string): BlockName | null {
@@ -252,6 +255,7 @@ export const BLOCK_DOCS: Record<BlockName, string> = {
   image: "Full-bleed image asset with a gentle Ken Burns (≤ 6%). Needs scene.assetIds[0] or data.assetId.",
   outro: "CTA + handle. Callback to the hook in headline if possible.",
   "video-segment": "The user's own footage, trimmed to [inMs, outMs] of the source (scene duration = outMs − inMs). assetIds[0] = the user-video asset. crop: cover | blur-pad | {x,y,w,h}.",
+  ...THREE_DOCS,
 };
 
 export const OVERLAY_DOCS: Record<OverlayName, string> = {
@@ -313,6 +317,7 @@ export const BLOCK_SAMPLES: Record<BlockName, { headline?: string; body?: string
   image: { headline: "Tokyo never sleeps", data: { caption: "Shinjuku, 2am", kenBurns: "in" }, assetIds: ["img-1"] },
   outro: { headline: "Follow for one money idea a day", data: { cta: "Follow for more", handle: "@theledger" } },
   "video-segment": { data: { inMs: 0, outMs: 3000, crop: "cover" }, assetIds: ["vid-1"] },
+  ...THREE_SAMPLES,
 };
 
 export const OVERLAY_SAMPLES: Record<OverlayName, Record<string, unknown>> = {

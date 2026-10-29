@@ -1,7 +1,7 @@
 import type { z } from "zod";
 import type { BlockFn } from "./types";
 import type { CounterData } from "./schema";
-import { titleCss, titleHtml } from "./common";
+import { fitCss, fitHtml, fitLines, titleCss, titleHtml } from "./common";
 import { esc, formatNumber } from "../util";
 
 type D = z.infer<typeof CounterData>;
@@ -35,18 +35,19 @@ export const counter: BlockFn<D> = (ctx) => {
       ${t.html}
       <div id="${sid}-c" class="${sid}-ct">
         <div id="${sid}-num" class="${sid}-display ${sid}-num" style="font-size:${size}px" aria-label="${esc(formatted)}">${cols}</div>
-        ${d.label ? `<div id="${sid}-lbl" class="${sid}-ct-lbl">${esc(d.label)}</div>` : ""}
+        ${d.label ? `<div id="${sid}-lbl" class="${sid}-ct-lbl">${fitHtml(sid, d.label, fitLines(d.label, { maxWidth: box.w, maxLines: 2, base: ctx.type.body, min: 30 }), { cls: `${sid}-ct-lt`, role: "counter label", max: 48 })}</div>` : ""}
       </div>`;
 
   const css = `
     ${titleCss(ctx)}
+    ${fitCss(sid)}
     #${sid}-c { position: absolute; left: ${box.x}px; top: ${box.y + t.h}px; width: ${box.w}px; height: ${box.h - t.h}px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 40px; }
     .${sid}-num { display: flex; align-items: flex-start; line-height: 1; font-weight: 900; font-variant-numeric: tabular-nums; color: var(--accent); letter-spacing: -0.03em; }
     .${sid}-col { display: inline-block; height: 1em; overflow: hidden; }
     .${sid}-strip { display: flex; flex-direction: column; }
     .${sid}-cell { display: block; height: 1em; line-height: 1; text-align: center; }
     .${sid}-ch { display: inline-block; line-height: 1; }
-    .${sid}-ct-lbl { font-size: var(--fs-body); color: var(--muted); text-align: center; max-width: ${box.w}px; line-height: 1.3; }
+    .${sid}-ct-lbl { color: var(--muted); text-align: center; display: flex; justify-content: center; max-width: ${box.w}px; line-height: 1.3; }
   `;
 
   if (t.html) anim.enter(`#${sid}-title`, ctx.isFirst ? 0 : 0.1, { from: "up", dist: 30 });

@@ -1,6 +1,7 @@
 import type { FormatTemplate, IdentityKit, Script, VoiceTrack } from "@remawt/shared";
 import { BLOCK_DOCS, BLOCK_NAMES, BLOCK_SAMPLES, OVERLAY_DOCS, OVERLAY_NAMES, OVERLAY_SAMPLES, STRICT_BLOCK_SCHEMAS, STRICT_OVERLAY_SCHEMAS } from "../blocks/schema";
 import { shapeOf } from "../blocks/coerce";
+import { textBudgetNote } from "../textfit";
 import { allocateScenes } from "../compose";
 import { SAFE } from "../skin/index";
 
@@ -15,10 +16,11 @@ export function blockCatalogue(opts: { footage?: boolean } = {}): string {
   if (hit) return hit;
   const blocks = BLOCK_NAMES.filter((b) => footage || b !== "video-segment").map((b) => {
     const ex = BLOCK_SAMPLES[b];
-    return `### ${b}\n${BLOCK_DOCS[b]}\ndata shape: ${shapeOf(STRICT_BLOCK_SCHEMAS[b])}\nexample: ${JSON.stringify({ block: b, headline: ex.headline, body: ex.body, data: ex.data, assetIds: ex.assetIds })}`;
+    const budget = textBudgetNote(b);
+    return `### ${b}\n${BLOCK_DOCS[b]}${budget ? `\n${budget}` : ""}\ndata shape: ${shapeOf(STRICT_BLOCK_SCHEMAS[b])}\nexample: ${JSON.stringify({ block: b, headline: ex.headline, body: ex.body, data: ex.data, assetIds: ex.assetIds })}`;
   });
   const overlays = (footage ? OVERLAY_NAMES : []).map((b) => `### ${b} (overlay)\n${OVERLAY_DOCS[b]}\ndata shape: ${shapeOf(STRICT_OVERLAY_SCHEMAS[b])}\nexample: ${JSON.stringify({ block: b, data: OVERLAY_SAMPLES[b] })}`);
-  const out = [...blocks, ...overlays].join("\n\n");
+  const out = [...blocks, ...overlays, THREE_USAGE].join("\n\n");
   catalogueCache.set(footage, out);
   return out;
 }
@@ -113,3 +115,10 @@ NATURAL CUT POINTS (ms, pauses/punctuation): ${gaps.map((g) => g.at).join(", ") 
 ${opts.assets?.length ? `\nASSETS (use ids in assetIds):\n${opts.assets.map((a) => `- ${a.id} (${a.kind})${a.prompt ? `: ${a.prompt}` : ""}`).join("\n")}\n` : ""}
 ${opts.output === "draft" ? "Write the scene list JSON for this video (no timings; use the slots only to pace scenes per beat). Every scene's data must match its block's example shape exactly." : `Write the ScenePlan JSON for this video. totalMs = ${Math.round(total)}.`}`;
 }
+
+/**
+ * When the 3D blocks earn their slot (appended to the catalogue). They are the most striking blocks in the kit,
+ * so the planner needs both a nudge to use them where depth or place matters and a cap so they stay special.
+ */
+export const THREE_USAGE = `### 3D blocks (chart-3d, globe-3d, stat-3d, scene-3d) — when to use
+Pick a 3D block when depth, place or physical motion IS the point of the beat: a ranking/comparison reveal (chart-3d), a location or route (globe-3d), the single hero number or word (stat-3d), a mechanism with moving parts (scene-3d). Use at most 2 per video, never back to back, each 3–8 s long, and never for the hook (the hook must read at frame 0). Keep the flat block when the data is a time series (chart), several countries (map) or a process of labelled steps (diagram).`;

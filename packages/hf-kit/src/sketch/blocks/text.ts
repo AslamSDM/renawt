@@ -2,7 +2,7 @@ import type { BlockCtx } from "../../blocks/types";
 import { formatNumber } from "../../util";
 import { domainOf, withUnit } from "../../blocks/common";
 import type { SketchDoc } from "../doc";
-import { Pager, SK, titleFit, fit, lineH, measureText, tick, underline, writeEmphasis } from "./common";
+import { Pager, SK, titleFit, fit, fitLine, lineH, measureText, tick, underline, writeEmphasis } from "./common";
 
 /** kinetic-headline: kicker, then the headline hand-written line by line, a marker underline, the sub. */
 export function skHeadline(ctx: BlockCtx<{ kicker?: string; emphasis?: string[]; align?: "center" | "left" }>): SketchDoc {
@@ -129,9 +129,11 @@ export function skSource(ctx: BlockCtx<{ quote: string; source: string; date?: s
   let y = box.y + Math.max(0, (box.h - cardH - statH) * 0.4);
   const cx = box.x + box.w / 2;
   if (d.stat) {
-    b.text(cx, y, d.stat.value, { size: 120, color: pal.accent, align: "center" });
+    const sv = fitLine(d.stat.value, box.w - 40, 120, 72);
+    b.text(cx, y, sv.line, { size: sv.size, color: pal.accent, align: "center" });
     y += lineH(120);
-    b.text(cx, y, d.stat.label, { size: 46, color: pal.muted, align: "center" });
+    const sl = fitLine(d.stat.label, box.w - 40, 46, 36);
+    b.text(cx, y, sl.line, { size: sl.size, color: pal.muted, align: "center" });
     y += lineH(46) + 50;
   }
   b.box(box.x, y, box.w, cardH, { stroke: pal.ink, strokeWidth: SK.thin, fill: pal.panel, fillStyle: "solid" });
@@ -169,7 +171,8 @@ export function skNews(ctx: BlockCtx<{ outlet: string; headline?: string; date: 
   const inner = b.box(box.x + 14, y + 14, box.w - 28, h - 28, { stroke: pal.ink, strokeWidth: 2, rounded: false });
   b.group(outer, inner);
   y += pad;
-  b.text(cx, y, d.outlet, { size: 68, color: pal.ink, align: "center" });
+  const ol = fitLine(d.outlet, box.w - pad * 2, 68, 44);
+  b.text(cx, y, ol.line, { size: ol.size, color: pal.ink, align: "center" });
   y += lineH(68) + 16;
   const r1 = b.line([[box.x + pad, y], [box.x + box.w - pad, y]], { stroke: pal.ink, strokeWidth: 3 });
   const r2 = b.line([[box.x + pad, y + 10], [box.x + box.w - pad, y + 10]], { stroke: pal.ink, strokeWidth: 2 });

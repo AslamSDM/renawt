@@ -2,7 +2,7 @@ import type { BlockCtx } from "../../blocks/types";
 import { formatNumber } from "../../util";
 import { withUnit } from "../../blocks/common";
 import type { SketchDoc } from "../doc";
-import { Pager, SK, titleFit, fit, lineH, measureText } from "./common";
+import { Pager, SK, titleFit, fit, fitLine, lineH, measureText } from "./common";
 
 interface Side { label: string; sub?: string; icon?: string; color?: string }
 interface Round { metric: string; left: number; right: number; unit?: string; decimals?: number; higherIsBetter?: boolean }
@@ -26,7 +26,12 @@ export function skSplitStat(ctx: BlockCtx<{ left: Side; right: Side; rounds: Rou
       const t = titleFit(ctx.headline, box.w - 20);
       y = b.lines(cx, y, t.lines, { size: t.size, color: pal.ink, align: "center" }).bottom + 40;
     }
-    b.segLine(cx, y, [{ text: `${d.left.label} `, color: cL }, { text: "vs ", color: pal.muted }, { text: d.right.label, color: cR }], { size: 64, align: "center" });
+    // Header "left vs right": shrink to fit, then cut each side's label to its half of the line.
+    let hs = 64;
+    while (hs > SK.small && measureText(`${d.left.label} vs ${d.right.label}`, hs) > box.w - 20) hs -= 2;
+    const half = (box.w - 20 - measureText(" vs ", hs)) / 2;
+    const hl = fitLine(d.left.label, half, hs, hs).line, hr = fitLine(d.right.label, half, hs, hs).line;
+    b.segLine(cx, y, [{ text: `${hl} `, color: cL }, { text: "vs ", color: pal.muted }, { text: hr, color: cR }], { size: hs, align: "center" });
     y += lineH(64) + 30;
     const label = d.roundNumber ? `Round ${d.roundNumber + k}: ${r.metric}` : r.metric;
     const m = fit(label, box.w - 40, SK.sub, SK.small, 2);
@@ -47,7 +52,8 @@ export function skSplitStat(ctx: BlockCtx<{ left: Side; right: Side; rounds: Rou
       const vy = base - h - lineH(valSize) - 10;
       b.text(xs[i], vy, fmt(v), { size: valSize, color, align: "center" });
       heads.push({ x: xs[i], y: vy, w: measureText(fmt(v), valSize) });
-      b.text(xs[i], base + 14, i === 0 ? d.left.label : d.right.label, { size: SK.body, color: pal.muted, align: "center" });
+      const sl = fitLine(i === 0 ? d.left.label : d.right.label, box.w / 2 - 30, SK.body, 36);
+      b.text(xs[i], base + 14, sl.line, { size: sl.size, color: pal.muted, align: "center" });
     });
     const w = heads[better];
     b.ellipse(w.x - w.w / 2 - 34, w.y - 14, w.w + 68, lineH(valSize) + 28, { stroke: pal.green, strokeWidth: SK.stroke, roughness: 1.6 });
@@ -70,7 +76,10 @@ export function skSplitTitle(ctx: BlockCtx<{ left: Side; right: Side; question?:
     const l = fit(s.label, box.w - 160, 96, 60, 1);
     const th = lineH(l.size) + (s.sub ? lineH(SK.body) : 0);
     b.text(cx, yy + (bh - th) / 2, l.lines[0] ?? s.label, { size: l.size, color, align: "center" });
-    if (s.sub) b.text(cx, yy + (bh - th) / 2 + lineH(l.size), s.sub, { size: SK.body, color: pal.muted, align: "center" });
+    if (s.sub) {
+      const sub = fitLine(s.sub, box.w - 160, SK.body, 36);
+      b.text(cx, yy + (bh - th) / 2 + lineH(l.size), sub.line, { size: sub.size, color: pal.muted, align: "center" });
+    }
   };
   side(d.left, d.left.color ?? pal.accent, y);
   y += bh;
@@ -79,6 +88,6 @@ export function skSplitTitle(ctx: BlockCtx<{ left: Side; right: Side; question?:
   y += gap;
   side(d.right, d.right.color ?? pal.accent2, y);
   y += bh + 50;
-  if (d.question) b.text(cx, y, d.question, { size: SK.sub, color: pal.yellow, align: "center" });
+  if (d.question) { const q = fitLine(d.question, box.w - 20, SK.sub, SK.small); b.text(cx, y, q.line, { size: q.size, color: pal.yellow, align: "center" }); }
   return p.doc();
 }

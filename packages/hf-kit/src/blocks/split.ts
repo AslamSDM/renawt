@@ -2,7 +2,10 @@ import type { z } from "zod";
 import type { BlockFn } from "./types";
 import type { SplitStatData, SplitTitleData } from "./schema";
 import { iconSvg } from "./icons";
-import { withUnit } from "./common";
+import { fitCss, fitHtml, fitLines, withUnit } from "./common";
+
+/** Text budgets (chars); lint + planner catalogue use the same numbers. */
+export const SPLIT_TEXT = { label: 14, sub: 22, metric: 28 } as const;
 import { esc, fitFontSize, formatNumber, r1 } from "../util";
 
 type TD = z.infer<typeof SplitTitleData>;
@@ -17,10 +20,13 @@ export const splitTitle: BlockFn<TD> = (ctx) => {
   const panelH = Math.round((box.h - kickerH - qH - 40) / 2);
   const colors = [d.left.color ?? skin.palette.accent, d.right.color ?? skin.palette.accent2 ?? skin.palette.ink];
   const panel = (side: TD["left"], key: "l" | "r", top: number, col: string) => {
-    const size = fitFontSize(side.label, { maxWidth: box.w - 260, maxLines: 2, base: ctx.type.xl, min: 60 });
+    const tw = box.w - 112 - (side.icon ? 184 : 0);
+    const lab = fitLines(side.label, { maxWidth: tw, maxLines: 2, base: ctx.type.xl, min: 48, weight: 900 });
+    // sub is uppercase mono with 0.1em tracking: budget the width accordingly.
+    const sub = side.sub ? fitLines(side.sub.toUpperCase(), { maxWidth: tw / 1.12, maxLines: 1, base: ctx.type.label, min: 22, mono: true }) : null;
     return `<div id="${sid}-${key}" class="${sid}-panel ${sid}-card" style="top:${top}px;height:${panelH}px;border-color:${col}">
           ${side.icon ? `<span class="${sid}-pic" style="color:${col}">${iconSvg(side.icon, 140, { stroke: 1.75 })}</span>` : ""}
-          <span class="${sid}-ptx"><span class="${sid}-display ${sid}-pl" style="font-size:${size}px">${esc(side.label)}</span>${side.sub ? `<span class="${sid}-ps">${esc(side.sub)}</span>` : ""}</span>
+          <span class="${sid}-ptx">${fitHtml(sid, side.label, lab, { cls: `${sid}-display ${sid}-pl`, role: "split-title label", max: SPLIT_TEXT.label })}${sub ? fitHtml(sid, side.sub!, sub, { cls: `${sid}-ps`, role: "split-title sub", max: SPLIT_TEXT.sub }) : ""}</span>
         </div>`;
   };
   const topY = box.y + kickerH;
@@ -32,12 +38,13 @@ export const splitTitle: BlockFn<TD> = (ctx) => {
       <div id="${sid}-vs" class="${sid}-vs" style="top:${r1(topY + panelH + 20 - 90)}px">VS</div>
       ${d.question ? `<div id="${sid}-q" class="${sid}-display ${sid}-q">${esc(d.question)}</div>` : ""}`;
   const css = `
+    ${fitCss(sid)}
     .${sid}-sk { position: absolute; left: ${box.x}px; top: ${box.y}px; width: ${box.w}px; text-align: center; font-size: var(--fs-small); }
     .${sid}-panel { position: absolute; left: ${box.x}px; width: ${box.w}px; box-sizing: border-box; display: flex; align-items: center; gap: 44px; padding: 0 56px; border-width: 4px; }
     .${sid}-pic { display: flex; flex: none; }
-    .${sid}-ptx { display: flex; flex-direction: column; gap: 10px; }
+    .${sid}-ptx { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
     .${sid}-pl { font-weight: 900; }
-    .${sid}-ps { font-family: var(--font-mono); font-size: var(--fs-label); color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+    .${sid}-ps { font-family: var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
     .${sid}-vs { position: absolute; left: ${ctx.width / 2 - 90}px; width: 180px; height: 180px; border-radius: 50%; background: var(--accent); color: var(--on-accent); font-family: var(--font-display); font-weight: 900; font-size: 76px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 14px var(--bg); }
     .${sid}-q { position: absolute; left: ${box.x}px; top: ${box.y + box.h - qH + 20}px; width: ${box.w}px; text-align: center; font-size: var(--fs-m); }
   `;
@@ -75,10 +82,10 @@ export const splitStat: BlockFn<SD> = (ctx) => {
     const column = (side: "l" | "r", label: string, v: number, h: number, win: boolean | null, x: number) => `
           <div id="${sid}-r${j}${side}v" class="${sid}-sv${win ? ` ${sid}-win` : ""}" style="left:${x}px;top:${r1(baseY - h - valH)}px;width:${colW}px">${esc(fmt(v, r.unit, r.decimals))}</div>
           <div id="${sid}-r${j}${side}b" class="${sid}-sb${win === false ? ` ${sid}-lose` : ""}" style="left:${r1(x + colW * 0.18)}px;top:${r1(baseY - h)}px;width:${r1(colW * 0.64)}px;height:${r1(h)}px;background:${col(win)}"></div>
-          <div id="${sid}-r${j}${side}n" class="${sid}-sn" style="left:${x}px;top:${baseY + 22}px;width:${colW}px">${win ? `<span class="${sid}-crown">${iconSvg("crown", 40)}</span>` : ""}${esc(label)}</div>`;
+          <div id="${sid}-r${j}${side}n" class="${sid}-sn" style="left:${x}px;top:${baseY + 22}px;width:${colW}px">${win ? `<span class="${sid}-crown">${iconSvg("crown", 40)}</span>` : ""}${fitHtml(sid, label, fitLines(label, { maxWidth: colW - (win ? 56 : 0), maxLines: 1, base: ctx.type.small, min: 24, weight: 700 }), { cls: `${sid}-snt`, role: "split-stat side label", max: SPLIT_TEXT.label })}</div>`;
     return `<div id="${sid}-g${j}" class="${sid}-grp">
           <div id="${sid}-r${j}k" class="${sid}-kicker ${sid}-rk">Round ${(d.roundNumber ?? 1) + j}</div>
-          <div id="${sid}-r${j}m" class="${sid}-display ${sid}-rm">${esc(r.metric)}</div>
+          <div id="${sid}-r${j}m" class="${sid}-display ${sid}-rm">${fitHtml(sid, r.metric, fitLines(r.metric, { maxWidth: box.w, maxLines: 2, base: ctx.type.m, min: 40, weight: 800 }), { cls: `${sid}-rmt`, role: "split-stat metric", max: SPLIT_TEXT.metric, style: "align-items:center" })}</div>
           ${column("l", d.left.label, r.left, hl, leftWins, box.x)}
           ${column("r", d.right.label, r.right, hr, leftWins === null ? null : !leftWins, box.x + colW + 60)}
           <div class="${sid}-base" style="top:${baseY}px"></div>
@@ -86,14 +93,15 @@ export const splitStat: BlockFn<SD> = (ctx) => {
   }).join("\n      ");
 
   const css = `
+    ${fitCss(sid)}
     .${sid}-grp { position: absolute; inset: 0; }
     .${sid}-rk { position: absolute; left: ${box.x}px; top: ${box.y}px; width: ${box.w}px; text-align: center; }
-    .${sid}-rm { position: absolute; left: ${box.x}px; top: ${box.y + 56}px; width: ${box.w}px; text-align: center; font-size: var(--fs-m); }
+    .${sid}-rm { position: absolute; left: ${box.x}px; top: ${box.y + 56}px; width: ${box.w}px; text-align: center; display: flex; justify-content: center; }
     .${sid}-sv { position: absolute; text-align: center; font-family: var(--font-display); font-weight: 900; font-size: 64px; line-height: ${90}px; }
     .${sid}-win { color: var(--accent); }
     .${sid}-sb { position: absolute; border-radius: var(--r-md) var(--r-md) 0 0; }
     .${sid}-lose { border: 3px solid var(--line); border-bottom: 0; box-sizing: border-box; }
-    .${sid}-sn { position: absolute; text-align: center; font-size: var(--fs-small); font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 12px; }
+    .${sid}-sn { position: absolute; text-align: center; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 12px; }
     .${sid}-crown { color: var(--accent); display: inline-flex; }
     .${sid}-base { position: absolute; left: ${box.x}px; width: ${box.w}px; height: 4px; background: var(--line); }
   `;

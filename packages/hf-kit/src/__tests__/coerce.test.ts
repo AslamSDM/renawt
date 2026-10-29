@@ -95,6 +95,26 @@ const MESSY: Record<string, Fixture[]> = {
     { data: { startMs: 1000, endMs: 4000, crop: "contain" }, assetIds: ["vid-1"], check: (d) => { assert.equal(d.inMs, 1000); assert.equal(d.crop, "blur-pad"); } },
     { data: { start: 1.5, end: 4, crop: { x: "0.1", y: 0, w: 0.8, h: 1 } }, assetIds: ["vid-1"], check: (d) => { assert.equal(d.inMs, 1500); assert.equal(d.outMs, 4000); } },
   ],
+  "chart-3d": [
+    { headline: "Debt holders", data: { labels: ["Japan", "China", "UK"], values: ["$1,130", "$768", "$723"], source: "US Treasury" }, check: (d) => { assert.deepEqual((d.items as Array<{ value: number }>).map((i) => i.value), [1130, 768, 723]); assert.equal(d.unit, "$"); assert.equal(d.caption, "US Treasury"); } },
+    { headline: "Market share", data: { bars: { Chrome: "65%", Safari: "18%", Edge: "5%" }, highlight: "Chrome" }, check: (d) => { const it = d.items as Array<{ label: string; value: number; highlight?: boolean }>; assert.equal(it[0].label, "Chrome"); assert.equal(it[0].value, 65); assert.equal(it[0].highlight, true); assert.equal(d.unit, "%"); } },
+    { headline: "Population", data: { items: ["India: 1.43B", ["China", 1.41], { name: "USA", amount: "335M", winner: false }] }, check: (d) => { const it = d.items as Array<{ label: string; value: number }>; assert.equal(it[0].value, 1.43e9); assert.equal(it[1].label, "China"); assert.equal(it[2].value, 335e6); } },
+  ],
+  "globe-3d": [
+    { headline: "Where it started", data: { location: "Tokyo" }, check: (d) => assert.deepEqual(d.focus, { lat: 35.68, lng: 139.69, label: "Tokyo" }) },
+    { headline: "The route", data: { origin: [51.5, -0.13, "London"], destination: { latitude: "40.7", longitude: -74, name: "New York" } }, check: (d) => { assert.deepEqual(d.from, { lat: 51.5, lng: -0.13, label: "London" }); assert.equal((d.focus as { lng: number }).lng, -74); } },
+    { headline: "Here", data: { lat: 64.15, lon: -21.94 }, check: (d) => { assert.equal((d.focus as { lat: number }).lat, 64.15); assert.match(String((d.focus as { label: string }).label), /64\.2°N 21\.9°W/); } },
+  ],
+  "stat-3d": [
+    { headline: "Could cover $1,000", data: { value: "39%", subtitle: "from savings" }, check: (d) => { assert.equal(d.value, 39); assert.equal(d.suffix, "%"); assert.equal(d.label, "from savings"); } },
+    { headline: "The secret", data: { text: "Patience" }, check: (d) => { assert.equal(d.value, "Patience"); } },
+    { headline: "The rule", data: { phrase: "Time in the market wins", description: "not timing it" }, check: (d) => { assert.equal(d.value, "Time in the"); assert.equal(d.label, "not timing it"); } },
+  ],
+  "scene-3d": [
+    { headline: "Orbits", data: { shapes: [{ type: "planet", pos: { x: 0, y: 0, z: 0 }, animation: "rotate", color: "#3b82f6" }, { type: "moon", position: [2, 0], motions: ["revolve"] }], view: "isometric" }, check: (d) => { const o = d.objects as Array<{ id: string; shape: string; position: number[]; motions: Array<{ type: string }>; color: string }>; assert.equal(o[0].shape, "sphere"); assert.equal(o[0].motions[0].type, "spin"); assert.deepEqual(o[1].position, [2, 0, 0]); assert.equal(o[1].motions[0].type, "orbit"); assert.equal(d.camera, "three-quarter"); assert.equal(o[0].color, "accent"); assert.notEqual(o[0].id, o[1].id); } },
+    { headline: "Rolling", data: { objects: [{ id: "ball", shape: "ball", position: [-300, 0, 0], motions: [{ type: "move", to: [300, 0, 0], duration: 2, delay: 0.5 }] }, { id: "floor", shape: "floor", size: [8, 1, 8] }] }, check: (d) => { const o = d.objects as Array<{ position: number[]; scale: number; motions: Array<{ type: string; to: number[]; durationMs: number; startMs: number }> }>; assert.deepEqual(o[0].position, [-3, 0, 0]); assert.deepEqual(o[0].motions[0].to, [3, 0, 0]); assert.equal(o[0].motions[0].type, "path"); assert.equal(o[0].motions[0].durationMs, 2000); assert.equal(o[0].motions[0].startMs, 500); assert.ok(Math.abs(o[1].scale - 17 / 3) < 1e-9); } },
+    { headline: "Forces", data: { objects: [{ shape: "arrow", label: "Gravity", rotation: { z: -90 }, colour: "secondary", motions: { type: "pulse", amount: 0.2 } }, "cube"], camera: "overhead" }, check: (d) => { const o = d.objects as Array<{ id: string; shape: string; color: string; rotation: number[]; motions: unknown[] }>; assert.equal(o[0].id, "gravity"); assert.equal(o[0].color, "accent2"); assert.deepEqual(o[0].rotation, [0, 0, -90]); assert.equal(o[0].motions.length, 1); assert.equal(o[1].shape, "box"); assert.equal(d.camera, "top"); } },
+  ],
 };
 
 const kit = demoKit("ledger");

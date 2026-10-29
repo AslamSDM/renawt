@@ -10,6 +10,7 @@ import { bulletStack, iconGrid } from "./lists";
 import { map } from "./map";
 import { image, outro } from "./media";
 import { videoSegment } from "./video";
+import { THREE_BLOCKS } from "./three/index";
 
 export const BLOCKS: Record<BlockName, BlockFn> = {
   "kinetic-headline": kineticHeadline,
@@ -28,6 +29,7 @@ export const BLOCKS: Record<BlockName, BlockFn> = {
   image,
   outro,
   "video-segment": videoSegment,
+  ...THREE_BLOCKS,
 };
 
 export * from "./schema";
@@ -36,6 +38,7 @@ export { iconSvg, iconExists } from "./icons";
 export { resolveRegions } from "./map";
 export { KEN_BURNS_MAX } from "./media";
 export * from "./coerce";
+export { THREE_CDN, THREE_VERSION, THREE_ATTR, THREE_BLOCK_NAMES, isThreeBlock, threeScriptTag } from "./three/index";
 
 // Hand-drawn skins (skin.handdrawn): blocks with a sketch variant render through src/sketch.
 import { renderSketchBlock } from "../sketch/index";

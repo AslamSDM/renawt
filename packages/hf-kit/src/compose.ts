@@ -3,10 +3,11 @@ import { z } from "zod";
 import { Anim } from "./anim";
 import { isHanddrawn, prerenderSketch } from "./sketch/index";
 import { BLOCKS, BLOCK_SCHEMAS, NEEDS_HEADLINE, OVERLAY_SCHEMAS, isOverlayBlock, resolveBlockName, type BlockCtx, type BlockName } from "./blocks/index";
+import { threeScriptTag } from "./blocks/three/runtime";
 import { OVERLAYS_ID, overlaysComposition, type OverlayItem } from "./overlays/index";
 import { CAPTIONS_ID, captionsComposition, chunkWords } from "./captions/index";
 import { buildAudio, type MusicInput, type SfxInput } from "./audio/index";
-import { OVERLAY_ID, overlayComposition } from "./watermark";
+import { OVERLAY_ID, overlayComposition } from "./chrome";
 import { contentBox, fontLinks, motionPreset, sceneBaseCss, typeScale } from "./skin/index";
 import { resolveTransition, transitionIn, transitionOut } from "./transitions/index";
 import { esc, r3, safeId } from "./util";
@@ -29,7 +30,6 @@ export interface ComposeInput {
   width?: number;
   height?: number;
   fps?: number;
-  watermark?: boolean;
   /** Video/voice-upload flows: user footage + the speech track that replaces voice.audioUrl as narration. */
   media?: { userVideo?: Asset; speechAudioUrl?: string };
 }
@@ -250,7 +250,7 @@ export function composeVideo(input: ComposeInput): Composition {
   if (chunks.length) sceneFiles.push({ id: CAPTIONS_ID, fileName: `${CAPTIONS_ID}.html`, html: captionsComposition({ chunks, skin, width, height, totalMs }) });
   const overlaysHtml = overlaysComposition({ items: overlayItems, skin, width, height, totalMs });
   if (overlaysHtml) sceneFiles.push({ id: OVERLAYS_ID, fileName: `${OVERLAYS_ID}.html`, html: overlaysHtml });
-  const overlay = overlayComposition({ skin, watermark: !!input.watermark, width, height, totalMs });
+  const overlay = overlayComposition({ skin, width, height, totalMs });
   if (overlay) sceneFiles.push({ id: OVERLAY_ID, fileName: `${OVERLAY_ID}.html`, html: overlay });
 
   const voice = speechUrl ? { ...input.voice, audioUrl: speechUrl } : input.voice;
@@ -279,6 +279,7 @@ export function composeVideo(input: ComposeInput): Composition {
     <title>${title}</title>
     ${fontLinks(skin)}
     <script src="${GSAP_CDN}"></script>
+    ${threeScriptTag(scenes.map((s) => s.block))}
     <style>
       html, body { margin: 0; padding: 0; width: ${width}px; height: ${height}px; overflow: hidden; background: ${skin.palette.bg}; }
       #root { position: relative; width: ${width}px; height: ${height}px; overflow: hidden; }

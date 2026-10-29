@@ -115,5 +115,29 @@ export function blockGuide(block: string): BlockGuide | null {
   }
   const k = s.name as BlockName;
   const ex = BLOCK_SAMPLES[k];
-  return { block: k, doc: BLOCK_DOCS[k], shape: shapeOf(s.schema), example: { headline: ex.headline, body: ex.body, data: ex.data } };
+  return { block: k, doc: `${BLOCK_DOCS[k]}${REPAIR_EXAMPLES[k] ? `\nCommon fixes (wrong → right):\n${REPAIR_EXAMPLES[k]}` : ""}`, shape: shapeOf(s.schema), example: { headline: ex.headline, body: ex.body, data: ex.data } };
 }
+
+/**
+ * Wrong → right pairs for the blocks whose shape the planner gets wrong in non-obvious ways (shown to the
+ * Haiku repair agent inside blockGuide().doc). Each "right" side parses strictly (see three.test.ts).
+ */
+export const REPAIR_EXAMPLES: Partial<Record<BlockName, string>> = {
+  "chart-3d": [
+    `{"labels":["Japan","China"],"values":["$1.1T","$0.8T"]} → {"items":[{"label":"Japan","value":1.1},{"label":"China","value":0.8}],"unit":"$","caption":"Trillions of dollars"}`,
+    `{"items":[{"name":"Japan","amount":1130,"winner":true}]} → {"items":[{"label":"Japan","value":1130,"highlight":true},{"label":"China","value":768}]} (2–8 items)`,
+  ].join("\n"),
+  "globe-3d": [
+    `{"location":"Seoul"} → {"focus":{"lat":37.57,"lng":126.98,"label":"Seoul"}}`,
+    `{"from":[51.5,-0.13],"to":{"latitude":40.7,"longitude":-74,"name":"New York"}} → {"from":{"lat":51.5,"lng":-0.13,"label":"London"},"focus":{"lat":40.7,"lng":-74,"label":"New York"}}`,
+  ].join("\n"),
+  "stat-3d": [
+    `{"value":"39%","sub":"could cover $1,000"} → {"value":39,"suffix":"%","label":"could cover $1,000"}`,
+    `{"text":"Compound interest is magic"} → {"value":"Compounding","label":"Compound interest is magic"} (value ≤ 3 words and ≤ 14 chars; the rest goes in label)`,
+  ].join("\n"),
+  "scene-3d": [
+    `{"objects":[{"type":"planet","pos":{"x":0,"y":0,"z":0},"animation":"rotate"}]} → {"objects":[{"id":"planet","shape":"sphere","position":[0,0,0],"motions":[{"type":"spin","durationMs":3000}]}]}`,
+    `{"objects":[{"id":"ball","shape":"sphere","motions":[{"type":"move","to":[3,0,0],"duration":2}]}]} → {"objects":[{"id":"ball","shape":"sphere","position":[-3,0,0],"motions":[{"type":"path","to":[3,0,0],"durationMs":2000}]}]}`,
+    `colors are roles, not hex: "#ff0000" → "accent"; positions are [x,y,z] in -4..4 (y up); ≤ 8 objects, ≤ 3 motions each.`,
+  ].join("\n"),
+};

@@ -1,7 +1,7 @@
 import type { z } from "zod";
 import type { BlockFn } from "./types";
 import type { HeadlineCardData, NumberedCardData, SourceCardData, StrikeThroughData } from "./schema";
-import { domainOf } from "./common";
+import { domainOf, fitCss, fitHtml, fitLines } from "./common";
 import { iconSvg } from "./icons";
 import { esc, fitFontSize, words } from "../util";
 import { mixHex } from "../skin/index";
@@ -13,25 +13,27 @@ export const numberedCard: BlockFn<z.infer<typeof NumberedCardData>> = (ctx) => 
   const title = d.title ?? ctx.headline ?? "";
   const body = d.body ?? ctx.body;
   const num = String(d.n).padStart(2, "0");
-  const tSize = fitFontSize(title, { maxWidth: box.w - 120, maxLines: 3, base: ctx.type.l, min: 56 });
+  const tFit = fitLines(title, { maxWidth: box.w - 120, maxLines: 3, base: ctx.type.l, min: 44, weight: 800 });
+  const bFit = body ? fitLines(body, { maxWidth: box.w - 120, maxLines: 3, base: ctx.type.body, min: 30 }) : null;
   const dots = d.total ? Array.from({ length: d.total }, (_, i) => `<i class="${i + 1 === d.n ? `${sid}-on` : ""}"></i>`).join("") : "";
   const html = `
       <div id="${sid}-c" class="${sid}-nc">
         <div id="${sid}-num" class="${sid}-display ${sid}-nn">${num}</div>
         <div id="${sid}-card" class="${sid}-card ${sid}-ncard">
           ${d.icon ? `<span id="${sid}-ic" class="${sid}-nic">${iconSvg(d.icon, 96, { stroke: 1.75 })}</span>` : ""}
-          <div id="${sid}-t" class="${sid}-display ${sid}-nt" style="font-size:${tSize}px">${esc(title)}</div>
-          ${body ? `<div id="${sid}-b" class="${sid}-nb">${esc(body)}</div>` : ""}
+          ${fitHtml(sid, title, tFit, { id: `${sid}-t`, cls: `${sid}-display ${sid}-nt`, role: "numbered-card title", max: 40 })}
+          ${bFit ? fitHtml(sid, body!, bFit, { id: `${sid}-b`, cls: `${sid}-nb`, role: "numbered-card body", max: 90 }) : ""}
         </div>
         ${dots ? `<div id="${sid}-dots" class="${sid}-dots">${dots}</div>` : ""}
       </div>`;
   const css = `
+    ${fitCss(sid)}
     #${sid}-c { position: absolute; left: ${box.x}px; top: ${box.y}px; width: ${box.w}px; height: ${box.h}px; display: flex; flex-direction: column; justify-content: center; gap: 28px; }
     .${sid}-nn { font-size: 300px; font-weight: 900; line-height: 0.9; color: var(--accent); letter-spacing: -0.05em; }
     .${sid}-ncard { padding: 56px 60px; display: flex; flex-direction: column; gap: 26px; }
     .${sid}-nic { color: var(--accent); display: flex; }
-    .${sid}-nt { font-weight: 800; }
-    .${sid}-nb { font-size: var(--fs-body); line-height: 1.3; color: var(--muted); }
+    .${sid}-nt { font-weight: 800; line-height: 1.08; }
+    .${sid}-nb { line-height: 1.3; color: var(--muted); }
     .${sid}-dots { display: flex; gap: 14px; }
     .${sid}-dots i { display: block; width: 44px; height: 10px; border-radius: 5px; background: var(--line); }
     .${sid}-dots i.${sid}-on { background: var(--accent); }

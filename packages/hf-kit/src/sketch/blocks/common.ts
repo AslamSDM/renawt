@@ -39,25 +39,43 @@ export class Pager {
   doc(): SketchDoc { return { pages: this.pages }; }
 }
 
+/** Cut `line` so that `line…` fits `maxWidth` at `size`. */
+export function ellipsizeSk(line: string, size: number, maxWidth: number): string {
+  let s = line.trimEnd();
+  if (measureText(s, size) <= maxWidth) return s;
+  while (s.length > 1 && measureText(`${s}…`, size) > maxWidth) s = s.slice(0, -1).trimEnd();
+  return `${s}…`;
+}
+
 /**
  * Wrapped lines of `text`, fitted between base..min to ≤ maxLines. If it still does not fit at
- * `min`, the last line is cut with an ellipsis: a page never exceeds its line budget.
+ * `min`, the last line is cut with an ellipsis (and any single word wider than the line is cut too):
+ * a page never exceeds its line budget and no line is wider than maxWidth.
  */
-export function fit(text: string, maxWidth: number, base: number, min: number, maxLines: number): { size: number; lines: string[] } {
+export function fit(text: string, maxWidth: number, base: number, min: number, maxLines: number): { size: number; lines: string[]; truncated: boolean } {
   const r = fitText(text, { maxWidth, maxLines, base, min });
-  if (r.lines.length <= maxLines) return r;
-  const lines = r.lines.slice(0, Math.max(1, maxLines));
-  let last = `${lines[lines.length - 1]}…`;
-  while (last.length > 2 && measureText(last, r.size) > maxWidth) last = `${last.slice(0, -2).trimEnd()}…`;
-  lines[lines.length - 1] = last;
-  return { size: r.size, lines };
+  const wide = r.lines.some((l) => measureText(l, r.size) > maxWidth);
+  if (r.lines.length <= maxLines && !wide) return { ...r, truncated: false };
+  const lines = r.lines.slice(0, Math.max(1, maxLines)).map((l) => ellipsizeSk(l, r.size, maxWidth));
+  if (r.lines.length > maxLines) {
+    const last = lines[lines.length - 1];
+    lines[lines.length - 1] = last.endsWith("…") ? last : ellipsizeSk(`${last}…`, r.size, maxWidth);
+  }
+  return { size: r.size, lines, truncated: true };
+}
+
+/** One line: the largest size in [min, base] at which it fits, else cut with an ellipsis at `min`. */
+export function fitLine(text: string, maxWidth: number, base: number, min: number): { size: number; line: string; truncated: boolean } {
+  const f = fit(text, maxWidth, base, min, 1);
+  return { size: f.size, line: f.lines[0] ?? "", truncated: f.truncated };
 }
 
 /** Scene title: one line when it fits at ≥ 60px, else up to two lines. */
 export function titleFit(text: string, maxWidth: number): { size: number; lines: string[] } {
   const one = fitText(text, { maxWidth, maxLines: 1, base: SK.title, min: 60 });
   if (one.lines.length === 1) return one;
-  return fitText(text, { maxWidth, maxLines: 2, base: 68, min: 52 });
+  const two = fit(text, maxWidth, 68, 52, 2);
+  return { size: two.size, lines: two.lines };
 }
 
 export function lineH(size: number): number {

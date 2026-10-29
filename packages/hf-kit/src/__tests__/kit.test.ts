@@ -83,10 +83,11 @@ function planFor(block: string, extra: Partial<ScenePlan["scenes"][number]> = {}
 
 for (const block of BLOCK_NAMES) {
   test(`block ${block} renders and passes lint`, () => {
-    const comp = composeVideo({ script, voice, plan: planFor(block), kit, assets, music: { url: "https://cdn.example.com/m.mp3", bpm: 120, durationMs: 4000 }, sfx: [{ atMs: 2000, url: "https://cdn.example.com/s.mp3" }], watermark: true });
+    const comp = composeVideo({ script, voice, plan: planFor(block), kit, assets, music: { url: "https://cdn.example.com/m.mp3", bpm: 120, durationMs: 4000 }, sfx: [{ atMs: 2000, url: "https://cdn.example.com/s.mp3" }] });
     const r = lintComposition(comp);
     assert.deepEqual(r.errors, [], r.errors.join("\n"));
     assert.ok(comp.sceneFiles.some((f) => f.id === "x"));
+    assert.ok(!comp.sceneFiles.some((f) => /made with remawt/i.test(f.html)), "no watermark on any tier");
   });
 }
 
