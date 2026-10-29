@@ -52,16 +52,16 @@ async function startRun(workflowId: WorkflowId, runId: string, inputData: Record
 const produceTrigger = inngest.createFunction(
   { id: "produce-trigger", triggers: [{ event: EVENTS.produceRequested }], idempotency: "event.data.runId" },
   async ({ event, step }) => {
-    const d = event.data as { videoId: string; runId: string; quality: string; watermark: boolean; notes?: string };
-    return step.run("start-run", () => startRun("produceVideo", d.runId, { videoId: d.videoId, quality: d.quality, watermark: d.watermark, notes: d.notes }));
+    const d = event.data as { videoId: string; runId: string; quality: string; notes?: string };
+    return step.run("start-run", () => startRun("produceVideo", d.runId, { videoId: d.videoId, quality: d.quality, notes: d.notes }));
   },
 );
 
 const rerenderTrigger = inngest.createFunction(
   { id: "rerender-trigger", triggers: [{ event: EVENTS.rerenderRequested }], idempotency: "event.data.runId" },
   async ({ event, step }) => {
-    const d = event.data as { videoId: string; runId: string; quality: string; watermark: boolean };
-    return step.run("start-run", () => startRun("rerenderVideo", d.runId, { videoId: d.videoId, quality: d.quality, watermark: d.watermark }));
+    const d = event.data as { videoId: string; runId: string; quality: string };
+    return step.run("start-run", () => startRun("rerenderVideo", d.runId, { videoId: d.videoId, quality: d.quality }));
   },
 );
 

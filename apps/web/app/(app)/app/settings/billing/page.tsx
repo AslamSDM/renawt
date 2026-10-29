@@ -31,7 +31,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
             <CardTitle>{ent.plan.name} plan</CardTitle>
             <CardDescription>
               {ent.plan.id === "FREE"
-                ? "Watermarked drafts, no auto-posting."
+                ? "Draft quality, no auto-posting."
                 : `$${price}/mo, billed ${sub?.billing === "annual" ? "yearly" : "monthly"}.`}
               {sub?.cancelAtPeriodEnd && sub.currentPeriodEnd ? ` Ends ${formatDate(sub.currentPeriodEnd, { month: "long", day: "numeric" })}.` : ""}
             </CardDescription>

@@ -62,7 +62,7 @@ async function offlineRun() {
   const plan = alignDraft(draft, script, voice, format);
   writeFileSync(join(out, "plan.json"), JSON.stringify(plan, null, 2));
   try {
-    const res = await composeWithRepair({ script, voice, plan, kit, assets: [], music: null, sfx: [], watermark: true }, {
+    const res = await composeWithRepair({ script, voice, plan, kit, assets: [], music: null, sfx: [] }, {
       repairScene: has.anthropic() ? repairScene : null,
       onEvent: (m) => say(`compose: ${m}`),
     });
@@ -93,7 +93,7 @@ async function fullRun() {
   const channel = await db().channel.create({ data: { userId: user.id, name: "Smoke Science", niche: "science", kit: kit as never, status: "ACTIVE" } });
   const video = await db().video.create({ data: { channelId: channel.id, title: idea.title, format: format.id, targetSec: 35, status: "QUEUED" } });
   await db().usageLedger.create({ data: { userId: user.id, videoId: video.id, delta: -1, kind: "video", note: "smoke" } });
-  const ctx = { videoId: video.id, quality: "standard" as const, watermark: false };
+  const ctx = { videoId: video.id, quality: "standard" as const };
   say(`video ${video.id} → ${out}`);
 
   if (!has.anthropic()) { await db().video.update({ where: { id: video.id }, data: { script: CANNED as never, title: CANNED.title } }); say("script: canned (no ANTHROPIC_API_KEY)"); }

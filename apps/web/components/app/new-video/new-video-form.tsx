@@ -42,7 +42,7 @@ type Aspect = "9:16" | "16:9" | "1:1" | "4:5";
 type Density = "light" | "medium" | "heavy";
 
 const QUALITY_LABEL: Record<Quality, { label: string; hint: string; plan: string }> = {
-  draft: { label: "Draft", hint: "Fast preview render, watermarked on Free", plan: "Free" },
+  draft: { label: "Draft", hint: "Fast preview render", plan: "Free" },
   standard: { label: "Standard", hint: "Full 1080×1920 render", plan: "Starter" },
   premium: { label: "Premium", hint: "Extra critic pass on script and motion", plan: "Pro" },
 };

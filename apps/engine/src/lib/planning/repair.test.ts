@@ -11,7 +11,7 @@ const plan = (scenes: Array<Partial<ScenePlan["scenes"][number]>>): ScenePlan =>
   totalMs: 9000, musicMood: "calm", sfxCues: [],
   scenes: scenes.map((s, i) => ({ id: `s${i + 1}`, beatId: "hook", startMs: i * 3000, durationMs: 3000, block: "kinetic-headline", assetIds: [], ...s })),
 });
-const input = (p: ScenePlan) => ({ script, voice, plan: p, kit, assets: [], music: null, sfx: [], watermark: false });
+const input = (p: ScenePlan) => ({ script, voice, plan: p, kit, assets: [], music: null, sfx: [] });
 void FORMATS;
 
 test("composeWithRepair: clean plan (lenient schemas absorb bare-string diagram nodes)", async () => {

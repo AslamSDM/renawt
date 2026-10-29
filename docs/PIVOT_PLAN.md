@@ -135,7 +135,7 @@ Rules: every paid step idempotent (Inngest/Mastra may re-run); cap retries, down
 | Stock | Pexels + Pixabay portrait → R2 w/ license metadata | Storyblocks later (indemnity) | same |
 | Music | existing Music table (BPM-tagged) | Lyria 3 Clip $0.04 / ElevenLabs Music $0.15/min | same |
 | SFX | ElevenLabs SFX generated once → cached library | | |
-| Render | HyperFrames 0.8.x, arm64 Lambda, 1080×1920, ~$0.01–0.06/video | | draft quality + watermark |
+| Render | HyperFrames 0.8.x, arm64 Lambda, 1080×1920, ~$0.01–0.06/video | | draft quality |
 
 ### 4.5 COGS per 60s video (uncached list → with cache+batch)
 | Path | Cost |
@@ -199,7 +199,7 @@ Metering: 1 video = 1 unit of plan quota; re-renders free ×3; add-on credits on
 ## 6. Pricing & packaging (Dodo)
 | Tier | $/mo (annual −20%) | Channels | Videos/mo | Includes |
 |---|---|---|---|---|
-| Free | 0 | 1 | 3 (watermark, draft quality) | limited radar, no auto-post |
+| Free | 0 | 1 | 3 (draft quality) | limited radar, no auto-post |
 | Starter | 24 (19) | 1 | 30 | 3 platforms, idea feed, library voices |
 | Creator (anchor) | 49 (39) | 2 | 60 | all platforms, voice clone, full radar, originality check |
 | Pro | 99 (79) | 5 | 150 | 60–90s TikTok mode, Opus-quality, priority render |
@@ -260,7 +260,7 @@ Margin check (standard path ~$0.35 with cache+batch): Starter 30 videos ≈ $10.
 3. Keep "remawt" name/domain for the faceless product? (Research shows no conflict; brand is neutral.)
 4. Launch niches (recommend 5: tech/AI explainers, personal finance data-viz, history, psychology, science facts).
 5. Keep URL→brand-explainer as a secondary format for founders (Phase 3) or drop entirely.
-6. Free tier: watermarked drafts (recommended) vs no free tier (AutoShorts paused theirs due to abuse/cost).
+6. ~~Free tier: watermarked drafts vs no free tier~~ Decided 2026-10-29: keep a Free tier (3 draft-quality videos/month), no watermark on any tier.
 
 ## 10. Open verifications (from research)
 - TikTok Direct Post spec/duration limits (docs returned 503).

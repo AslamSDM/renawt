@@ -140,7 +140,7 @@ async function runCase(format: FormatTemplate, skin: string, niche: string): Pro
       const strictValid = issues.length === 0;
       const common = { ...base, scenes: plan.scenes.length, strictValid, firstIssue: issues[0] ? `${issues[0]!.path.replace(/^plan\./, "")}: ${issues[0]!.message} (${issues[0]!.block})` : undefined, scriptUsd: scriptUsd / 2 };
       try {
-        const res = await composeWithRepair({ script, voice, plan, kit, assets: [], music: null, sfx: [], watermark: false }, { repairScene });
+        const res = await composeWithRepair({ script, voice, plan, kit, assets: [], music: null, sfx: [] }, { repairScene });
         const lint = hfkit.lintComposition(res.comp);
         const llmRepairs = res.repairs.filter((r) => r.stage === "llm").length;
         const coercions = strictValid ? 0 : hfkit.coercePlan(plan).changes.length;

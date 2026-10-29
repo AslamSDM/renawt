@@ -22,7 +22,6 @@ const ROWS: { label: string; value: (p: Plan) => React.ReactNode }[] = [
   { label: "Max video length", value: (p) => `${p.maxDurationSec}s` },
   { label: "Render quality", value: (p) => <span className="capitalize">{p.quality}</span> },
   { label: "Free re-renders per video", value: (p) => p.rerendersPerVideo },
-  { label: "No watermark", value: (p) => (p.watermark ? no : yes) },
   { label: "Niche radar", value: (p) => (p.radar === "full" ? "Full" : "Limited") },
   { label: "Voice clone", value: (p) => (p.voiceClone ? yes : no) },
   { label: "Series autopilot", value: (p) => (p.id === "FREE" || p.id === "STARTER" ? no : yes) },

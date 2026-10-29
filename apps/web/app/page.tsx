@@ -479,7 +479,6 @@ export default function LandingPage() {
                 ["YouTube · synthetic media", "Auto"],
                 ["TikTok · AI-generated", "Auto"],
                 ["On-screen sources", "On"],
-                ["Our watermark on your video", "Never"],
               ].map(([k, v]) => (
                 <li key={k} className="flex h-10 items-center justify-between gap-4 border-b border-rule last:border-b-0">
                   <span className="type-small text-muted">{k}</span>
@@ -552,7 +551,7 @@ export default function LandingPage() {
                   <span className="type-display text-ink tabular-nums">${p.monthlyUsd}</span>
                   <span className="type-small text-muted">/ mo</span>
                 </p>
-                <p className="type-caption text-subtle tabular-nums">{p.monthlyUsd === 0 ? "Watermarked drafts" : `$${p.annualMonthlyUsd}/mo billed yearly`}</p>
+                <p className="type-caption text-subtle tabular-nums">{p.monthlyUsd === 0 ? "Draft quality" : `$${p.annualMonthlyUsd}/mo billed yearly`}</p>
               </div>
               <ul className="flex flex-col gap-2 border-t border-rule pt-4">
                 {p.features.slice(0, 4).map((f) => (
@@ -617,7 +616,7 @@ export default function LandingPage() {
               </Link>
             </Button>
           </div>
-          <p className="mono-tick">Free plan · 3 watermarked videos a month</p>
+          <p className="mono-tick">Free plan · 3 videos a month</p>
         </Container>
       </section>
     </PageShell>

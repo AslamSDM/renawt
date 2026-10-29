@@ -21,15 +21,14 @@ import { db } from "../../lib/db.js";
 export const CtxSchema = z.object({
   videoId: z.string(),
   quality: z.enum(["draft", "standard", "premium"]),
-  watermark: z.boolean(),
   notes: z.string().optional(),
 });
 const LoopSchema = CtxSchema.extend({ ok: z.boolean(), attempts: z.number(), errors: z.array(z.string()).default([]) });
 const ResumeSchema = z.object({ status: z.enum(["queued", "rendering", "completed", "failed"]), videoUrl: z.string().optional(), error: z.string().optional() });
 const DoneSchema = z.object({ videoId: z.string(), masterUrl: z.string(), thumbnailUrl: z.string().nullable() });
 
-const ctxOf = (i: z.infer<typeof CtxSchema>): PipelineCtx => ({ videoId: i.videoId, quality: i.quality, watermark: i.watermark });
-const pass = (i: z.infer<typeof CtxSchema>) => ({ videoId: i.videoId, quality: i.quality, watermark: i.watermark, notes: i.notes });
+const ctxOf = (i: z.infer<typeof CtxSchema>): PipelineCtx => ({ videoId: i.videoId, quality: i.quality });
+const pass = (i: z.infer<typeof CtxSchema>) => ({ videoId: i.videoId, quality: i.quality, notes: i.notes });
 
 export const renderCallbackUrl = (videoId: string) => `${env.publicUrl}/webhooks/render?videoId=${encodeURIComponent(videoId)}&token=${signToken(env.apiKey, videoId)}`;
 

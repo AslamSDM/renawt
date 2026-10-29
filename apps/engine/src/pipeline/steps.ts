@@ -20,7 +20,7 @@ import { log, errMsg } from "../lib/logger.js";
 import { hashOf } from "../lib/hash.js";
 import { withCallContext } from "../lib/context.js";
 import { addCost, appendProgress, loadVideo, setStatus, trackStep, type VideoWithChannel } from "../lib/video.js";
-import { refundVideo } from "../lib/billing.js";
+import { planForUser, refundVideo } from "../lib/billing.js";
 import { ttsFor } from "../lib/tts/index.js";
 import { estimateWordTimings, type Word } from "../lib/captions.js";
 import { alignScenes } from "../lib/planning/allocate.js";
@@ -49,7 +49,7 @@ import { transcribe } from "../lib/stt/index.js";
 import { editTimeline, remapWords, timelineDuration, cutInTarget, isFiller, type Segment, type TimelinePiece } from "../lib/edit/segments.js";
 import { fetchBuffer } from "../lib/r2.js";
 
-export interface PipelineCtx { videoId: string; quality: Quality; watermark: boolean }
+export interface PipelineCtx { videoId: string; quality: Quality }
 
 const json = (v: unknown) => v as Prisma.InputJsonValue;
 
@@ -233,7 +233,9 @@ export async function runVoice(ctx: PipelineCtx): Promise<VoiceTrack> {
     return VoiceTrackSchema.parse(prev);
   }
   return trackStep(v.id, "voice", () => stepContext(v, "voice", async () => {
-    const tts = ttsFor(kit.voice.provider, { free: ctx.watermark });
+    // Free plan gets the free TTS tier (Kokoro when configured).
+    const plan = await planForUser(v.channel.userId);
+    const tts = ttsFor(kit.voice.provider, { free: plan === "FREE" });
     const r = await tts.synthesize({ text, voiceId: kit.voice.voiceId, speed: kit.voice.speed, stability: kit.voice.stability, quality: ctx.quality, storageKey: `narration/${v.id}` });
     if (r.usd) await addCost(v.id, "ttsUsd", r.usd);
     const track: VoiceTrack = { audioUrl: r.audioUrl, durationMs: r.durationMs, words: r.words, provider: r.provider, voiceId: r.voiceId };
@@ -444,7 +446,7 @@ export async function runCompose(ctx: PipelineCtx): Promise<ComposeState> {
     const res = await composeWithRepair({
       script: i.script, voice: i.voice, plan: i.plan, kit: i.kit, assets: i.assets,
       music: i.music ? { url: i.music.url, bpm: i.music.bpm, durationMs: i.music.durationMs } : null,
-      sfx: i.sfx, width: 1080, height: 1920, fps: 30, watermark: ctx.watermark, media: i.media,
+      sfx: i.sfx, width: 1080, height: 1920, fps: 30, media: i.media,
     }, {
       repairScene: has.anthropic() ? repairScene : null,
       onEvent: (message) => appendProgress(v.id, { step: "compose", status: "progress", message }),

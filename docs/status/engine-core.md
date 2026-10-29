@@ -47,7 +47,7 @@ Owner: engine-core. Scope: `apps/engine/**`. The code is not committed.
 - Re-run after the shim removal: typecheck passes, the 24 tests pass, offline smoke passes (compose+lint ok), and the server boots with 15 Inngest functions.
 - 24 unit tests pass (`node --test`). They cover beat allocation and word-gap snapping, caption chunking, character→word alignment, originality, pricing (including DeepSeek off-peak), transcript segmentation and timeline remap, the cut-in target, fit choice, ffmpeg argv, the policy linter and the video edit plan.
 - The server boots. `/health` works, and `/api/inngest` registers 15 functions in dev mode. Bearer auth rejects requests that have no key.
-- `smoke --offline --render`: canned script → align → **real hf-kit `composeVideo` → lint ok** → **local `hyperframes render` + ffmpeg mux** produced a 1080x1920 30fps 30.3s mp4. A sampled frame shows headline, captions and watermark.
+- `smoke --offline --render`: canned script → align → **real hf-kit `composeVideo` → lint ok** → **local `hyperframes render` + ffmpeg mux** produced a 1080x1920 30fps 30.3s mp4. A sampled frame shows headline and captions.
 - A live Mastra → Anthropic call reached the API, but the `ANTHROPIC_API_KEY` in `apps/engine/.env` is **invalid** (401). LLM output quality is therefore unverified.
 
 ## Not verified / stubbed

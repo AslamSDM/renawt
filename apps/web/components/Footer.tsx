@@ -65,7 +65,7 @@ export function Footer() {
       <div className="border-t border-rule">
         <Container className="flex flex-col items-start justify-between gap-3 py-6 sm:flex-row sm:items-center">
           <p className="mono-tick">© {year} Remawt</p>
-          <p className="mono-tick tabular-nums">1080 × 1920 · 30 fps · H.264 · no watermark on paid plans</p>
+          <p className="mono-tick tabular-nums">1080 × 1920 · 30 fps · H.264</p>
         </Container>
       </div>
     </footer>
